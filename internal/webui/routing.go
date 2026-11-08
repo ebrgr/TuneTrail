@@ -1,7 +1,7 @@
 package webui
 
 import (
-	"github.com/gabehf/koito/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/adminui"
 	"net/http"
 	"net/url"
 	"regexp"

@@ -8,9 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/queue"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/queue"
 	"github.com/google/uuid"
 )
 

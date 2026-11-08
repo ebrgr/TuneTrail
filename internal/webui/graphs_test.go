@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine/handlers"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/engine/handlers"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -131,7 +131,7 @@ func TestActivityReaderPreservesFilterAndLocalTimezone(t *testing.T) {
 	}
 }
 
-func TestInterestSVGFiniteNaturalCurveAndAccessibleIntervals(t *testing.T) {
+func TestInterestSVGFiniteBoundedCurveAndAccessibleIntervals(t *testing.T) {
 	for _, counts := range [][]int64{{}, {0, 0}, {3}, {5, 5, 5, 5}, {0, 100, 0, 100, 0}, {math.MaxInt64, 0}} {
 		items := []db.InterestBucket{}
 		for i, c := range counts {
@@ -153,7 +153,7 @@ func TestInterestSVGFiniteNaturalCurveAndAccessibleIntervals(t *testing.T) {
 			t.Fatal("empty chart fabricated a path")
 		}
 		if len(counts) > 1 && graph.Total > 0 && !strings.Contains(graph.Line, " C") {
-			t.Fatal("natural curve missing")
+			t.Fatal("bounded curve missing")
 		}
 		if len(counts) == 1 && graph.Total > 0 && graph.SingleX == "" {
 			t.Fatal("single value is invisible")

@@ -95,7 +95,7 @@ def main():
             raise RuntimeError(f'SIGTERM exit code {code}')
         with tempfile.TemporaryDirectory(prefix='koito034-sqlite-') as temporary:
             database = Path(temporary) / 'copy.db'
-            docker('cp', f'{container}:/etc/koito/koito.db', database)
+            docker('cp', f'{container}:/etc/koito/tunetrail.db', database)
             with sqlite3.connect(database) as conn:
                 if conn.execute('PRAGMA integrity_check').fetchall() != [('ok',)] or conn.execute('PRAGMA foreign_key_check').fetchall():
                     raise AssertionError('database integrity')

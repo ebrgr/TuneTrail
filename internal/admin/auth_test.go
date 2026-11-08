@@ -2,10 +2,10 @@ package admin_test
 
 import (
 	"context"
-	"github.com/gabehf/koito/internal/admin"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/db/sqlite"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"

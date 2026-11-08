@@ -17,6 +17,14 @@
 
 ### Changed
 
+- Migrate legacy `koito.db` databases to `tunetrail.db` with a consistent backup, schema v2-to-v3 upgrade, and conflict protection.
+
+- Name the built application executable `tunetrail`.
+
+- Use the TuneTrail Go module path and update repository and container references.
+
+- Publish the `latest` container tag alongside each versioned image.
+
 - Update project links and the target container image for the TuneTrail repository.
 
 - Adopt TuneTrail 0.x versioning, starting at 0.3, independently of the Koito engine version.
@@ -34,6 +42,8 @@
   are bundled with the server. Existing `KOITO_WEB_UI=react` must be removed.
 
 ### Fixed
+
+- Prevent the listening-interest curve from overshooting its values and disappearing at the graph boundaries.
 
 - Automatic artist and album images are protected from orphan cleanup while
   their catalog associations are being saved.

@@ -7,12 +7,12 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/images"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/mbz"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/images"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 )
 

@@ -15,10 +15,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/imagefetch"
-	"github.com/gabehf/koito/internal/imagepipeline"
-	"github.com/gabehf/koito/internal/imagework"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/imagefetch"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/imagework"
 	"github.com/google/uuid"
 )
 

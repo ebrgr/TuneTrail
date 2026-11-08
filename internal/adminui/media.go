@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/admin"
-	"github.com/gabehf/koito/internal/adminweb"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/webquery"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/webquery"
 )
 
 type mergeCandidate struct {

@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/version"
+	"github.com/ebrgr/TuneTrail/internal/version"
 )
 
 //go:embed templates/*.html static palettes.json

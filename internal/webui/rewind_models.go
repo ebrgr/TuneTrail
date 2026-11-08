@@ -1,6 +1,6 @@
 package webui
 
-import "github.com/gabehf/koito/internal/summary"
+import "github.com/ebrgr/TuneTrail/internal/summary"
 
 type RewindChoice struct {
 	Label, URL        string

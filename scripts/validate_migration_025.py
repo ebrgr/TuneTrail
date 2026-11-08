@@ -53,9 +53,9 @@ def migrate(binary, root, name, mode, stack, wal=False):
     server = Server(binary, directory, environment={'KOITO_WEB_UI': mode, 'KOITO_FORCE_TZ': 'UTC'})
     stack.callback(server.stop)
     server.start()
-    after = snapshot(database)
+    after = snapshot(directory / "tunetrail.db")
     assert all(after[table] == digest for table, digest in before.items()), 'legacy columns changed during migration'
-    backups = list(directory.glob('koito.db.pre-profiles-*.bak'))
+    backups = list(directory.glob('koito.db.pre-tunetrail-*.bak'))
     assert len(backups) == 1 and snapshot(backups[0]) == before, 'missing or incorrect v2 backup'
     restored = directory / 'restored-test.db'
     with contextlib.closing(sqlite3.connect(f'{backups[0].resolve().as_uri()}?mode=ro',uri=True)) as src, contextlib.closing(sqlite3.connect(restored)) as dst:
@@ -64,7 +64,7 @@ def migrate(binary, root, name, mode, stack, wal=False):
     with contextlib.closing(sqlite3.connect(restored)) as conn:
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (2,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
-    with contextlib.closing(sqlite3.connect(database)) as conn:
+    with contextlib.closing(sqlite3.connect(directory / 'tunetrail.db')) as conn:
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (3,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
         assert not conn.execute('PRAGMA foreign_key_check').fetchall()

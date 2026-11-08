@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 func GetAlbumHandler(store db.AlbumStore) func(w http.ResponseWriter, r *http.Request) {

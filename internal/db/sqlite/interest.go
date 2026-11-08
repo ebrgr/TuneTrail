@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 // GetInterest computes N evenly-spaced listen-count buckets spanning the entity's

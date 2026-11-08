@@ -4,7 +4,7 @@ package listening
 import (
 	"context"
 	"fmt"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 type Stats struct {

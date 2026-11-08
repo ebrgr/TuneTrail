@@ -34,8 +34,8 @@ jobs:
       - run: make multiuser.check
       - name: Verify static Linux builds
         run: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /tmp/koito-linux-amd64 ./cmd/api
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /tmp/koito-linux-arm64 ./cmd/api
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /tmp/tunetrail-linux-amd64 ./cmd/api
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /tmp/tunetrail-linux-arm64 ./cmd/api
       - name: Verify migration and isolation with the race detector
         run: CGO_ENABLED=1 go test -race ./internal/db/sqlite ./engine -run 'Test(Profile|Consolidated|AdminAccount)' -timeout 120s
       - name: Validate deployment configuration
@@ -50,17 +50,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the production container
-        run: docker build -t koito-sum:ci .
+        run: docker build -t tunetrail:ci .
       - name: Verify container startup and Go interface
         shell: bash
         run: |
-          docker run -d --name koito-ci -p 127.0.0.1:14110:4110 \
+          docker run -d --name tunetrail-ci -p 127.0.0.1:14110:4110 \
             --health-interval=2s --health-start-period=0s --health-retries=15 \
             -e KOITO_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
             -e KOITO_LOG_LEVEL=warn -e KOITO_SKIP_IMPORT=true \
             -e KOITO_DISABLE_MUSICBRAINZ=true -e KOITO_DISABLE_DEEZER=true \
-            -e KOITO_DISABLE_COVER_ART_ARCHIVE=true koito-sum:ci
-          trap 'docker rm -f koito-ci >/dev/null' EXIT
+            -e KOITO_DISABLE_COVER_ART_ARCHIVE=true tunetrail:ci
+          trap 'docker rm -f tunetrail-ci >/dev/null' EXIT
           healthy=false
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:14110/apis/web/v1/health >/dev/null; then
@@ -73,10 +73,10 @@ jobs:
           curl --fail --silent http://127.0.0.1:14110/default >/dev/null
           curl --fail --silent http://127.0.0.1:14110/apis/web/v1/profiles | python3 -c 'import json,sys; p=json.load(sys.stdin); assert len(p)==1 and p[0]["slug"]=="default"'
           for attempt in {1..30}; do
-            test "$(docker inspect --format '{{.State.Health.Status}}' koito-ci)" = healthy && break
+            test "$(docker inspect --format '{{.State.Health.Status}}' tunetrail-ci)" = healthy && break
             sleep 2
           done
-          test "$(docker inspect --format '{{.State.Health.Status}}' koito-ci)" = healthy
-          docker exec koito-ci sh -c '! dpkg-query -W libvips42 >/dev/null 2>&1 && test -s /etc/ssl/certs/ca-certificates.crt && test -f /usr/share/zoneinfo/America/Sao_Paulo'
-          docker stop --time 20 koito-ci >/dev/null
-          test "$(docker inspect --format '{{.State.ExitCode}}' koito-ci)" = 0
+          test "$(docker inspect --format '{{.State.Health.Status}}' tunetrail-ci)" = healthy
+          docker exec tunetrail-ci sh -c '! dpkg-query -W libvips42 >/dev/null 2>&1 && test -s /etc/ssl/certs/ca-certificates.crt && test -f /usr/share/zoneinfo/America/Sao_Paulo'
+          docker stop --time 20 tunetrail-ci >/dev/null
+          test "$(docker inspect --format '{{.State.ExitCode}}' tunetrail-ci)" = 0

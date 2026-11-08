@@ -9,11 +9,11 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gabehf/koito/imagecache"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/memkv"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/imagecache"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/memkv"
+	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
 )
 

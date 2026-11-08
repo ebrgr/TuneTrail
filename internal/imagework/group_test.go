@@ -3,7 +3,7 @@ package imagework
 import (
 	"context"
 	"errors"
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 	"sync/atomic"
 	"testing"
 	"time"

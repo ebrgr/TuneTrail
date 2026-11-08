@@ -136,7 +136,7 @@ def run_fixture(binary,root,mode):
         server.request('GET',WEB+'/profiles/alpha/stats',expected=404)
         assert checked_json(server,'alpha-new','/stats')['listen_count']==4
         assert server.request('GET',LBZ+'/validate-token',token='fixture-alpha-key')['user_name']=='alpha-new'
-        with sqlite3.connect(server.directory/'koito.db') as db:
+        with sqlite3.connect(server.directory/'tunetrail.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
             assert db.execute('PRAGMA foreign_key_check').fetchall()==[]
             assert db.execute('SELECT profile_id,count(*) FROM listens GROUP BY profile_id ORDER BY profile_id').fetchall()==[(1,4),(2,2)]
@@ -211,7 +211,7 @@ def run_import_relay_and_cache(binary,root):
         server.request('DELETE',WEB+'/profiles/alpha/user/apikeys/1',admin=True,expected=204)
         server.request('GET',LBZ+'/validate-token',token='fixture-alpha-key',expected=401)
         assert server.request('GET',LBZ+'/validate-token',token='fixture-beta-key')['valid']
-        with sqlite3.connect(server.directory/'koito.db') as db:
+        with sqlite3.connect(server.directory/'tunetrail.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
             assert db.execute('PRAGMA foreign_key_check').fetchall()==[]
         return {'two_tabs':'ok','import_to_empty':3,'isolated_relays':2,'cache_delete':'ok','key_revocation':'ok'}
@@ -251,7 +251,7 @@ def run_legacy_and_merge(binary,root):
         server.request('DELETE',WEB+'/profiles/alpha',{'display_name':'Alpha','listen_count':3},admin=True,expected=204)
         server.request('GET',WEB+'/stats',expected=409)
         assert server.request('GET',WEB+'/profiles')==[]
-        with sqlite3.connect(server.directory/'koito.db') as db:
+        with sqlite3.connect(server.directory/'tunetrail.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
             assert db.execute('PRAGMA foreign_key_check').fetchall()==[]
         return {'legacy_profile_counts':'many/one/zero','merge_cache':'ok','profile_deletion':'ok','reserved_slug':'rejected'}

@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	mbz "github.com/gabehf/koito/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/catalog"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	mbz "github.com/ebrgr/TuneTrail/internal/mbz"
 )
 
 type SpotifyExportItem struct {

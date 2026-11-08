@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/webquery"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/webquery"
 	"net/http"
 	"time"
 )

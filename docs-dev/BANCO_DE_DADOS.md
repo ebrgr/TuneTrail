@@ -23,3 +23,19 @@ as migrações já aplicadas.
 
 Para detalhes da implementação e validação, consulte a seção “Consolidação
 autorizada — migração única v2 → v3” de [MULTIUSER_DESIGN.md](MULTIUSER_DESIGN.md).
+
+## Nome e migração do arquivo
+
+O TuneTrail usa `tunetrail.db` no diretório configurado. Ao encontrar apenas
+`koito.db` v2 ou v3 consolidado, cria `koito.db.pre-tunetrail-*.bak` por
+snapshot SQLite, prepara o novo banco e mantém o legado. Pare todos os processos
+antigos antes da migração: um snapshot não impede escritas posteriores no legado.
+
+Quando os dois arquivos existem, a aplicação verifica um marcador no banco novo
+e uma impressão digital dos arquivos legados. Se o legado mudar, inclusive por
+um checkpoint externo do WAL, a inicialização é recusada conservadoramente;
+pare todas as instâncias e reconcilie os arquivos a partir de cópias e backups.
+A publicação usa hard link sem sobrescrita e requer um diretório confiável e
+sistema de arquivos local com suporte correto a lock e hard link; volumes de rede
+não foram validados. Falhas não devem ser resolvidas apagando arquivos sem antes fazer
+backup. O comando `reset-password` não cria banco vazio.

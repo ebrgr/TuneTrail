@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"github.com/gabehf/koito/internal/listening"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/listening"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 	"net/http"
 )
 

@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 // GetListenActivity counts original seconds in each requested local civil day.

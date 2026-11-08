@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 func TestListensPropagatesCountCancellationForEveryFilter(t *testing.T) {

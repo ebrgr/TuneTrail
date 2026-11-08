@@ -1,8 +1,8 @@
 package webquery
 
 import (
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"net/http/httptest"
 	"testing"
 	"time"

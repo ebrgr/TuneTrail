@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 type RewindSelection struct {

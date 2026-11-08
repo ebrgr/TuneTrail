@@ -91,3 +91,15 @@ localmente, sem publicação e ainda não implementadas; etapa em espera.
 | Issue | Assunto | Status |
 | --- | --- | --- |
 | [045](045-links-diretorio-tunetrail.md) | Links e diretório do TuneTrail | Aberta |
+
+## Migração do banco TuneTrail
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [046](046-migracao-banco-tunetrail-solved.md) | Backup e migração de koito.db para tunetrail.db | Fechada e aprovada |
+
+## Gráfico de escutas
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [047](047-correcao-curva-grafico-solved.md) | Corrigir interpolação do gráfico de interesse | Fechada e aprovada |

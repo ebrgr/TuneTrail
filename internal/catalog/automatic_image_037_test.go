@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/imagecache"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/imagecache"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/google/uuid"
 )
 

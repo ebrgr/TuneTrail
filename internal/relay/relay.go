@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 var ErrUpstream = errors.New("relay request failed")

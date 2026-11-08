@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/admin"
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 	"github.com/stretchr/testify/require"
 )
 

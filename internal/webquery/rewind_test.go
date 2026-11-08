@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 )
 
 func TestRewindSelectionAndTimezone(t *testing.T) {

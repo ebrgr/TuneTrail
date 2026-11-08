@@ -1,5 +1,5 @@
 package main
-import("context";"fmt";"time";"github.com/gabehf/koito/internal/db";"github.com/gabehf/koito/internal/db/sqlite")
+import("context";"fmt";"time";"github.com/ebrgr/TuneTrail/internal/db";"github.com/ebrgr/TuneTrail/internal/db/sqlite")
 func must(e error){if e!=nil {panic(e)}}
 func main(){ctx:=db.WithProfile(context.Background(),1); s,e:=sqlite.NewInMemory();must(e);defer s.Close(ctx)
 for _,q:=range []string{`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'a','A',1)`,`INSERT INTO releases(id) VALUES(1)`,`INSERT INTO tracks(id,release_id,duration) VALUES(1,1,180)`}{must(s.Exec(q))}

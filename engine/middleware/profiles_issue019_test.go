@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 )

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 func assertInterestMembership(t *testing.T, stamps []int64, buckets []db.InterestBucket, now int64) {

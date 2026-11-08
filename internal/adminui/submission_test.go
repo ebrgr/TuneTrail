@@ -1,7 +1,7 @@
 package adminui
 
 import (
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"

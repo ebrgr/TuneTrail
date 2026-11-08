@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 type firstListenReader interface {

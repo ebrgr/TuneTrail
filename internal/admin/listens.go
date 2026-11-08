@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 )
 
 // LocalListenTime rejects nonexistent local times and requires an explicit UTC offset for ambiguous times.

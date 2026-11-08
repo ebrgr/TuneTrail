@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,16 +15,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/db/sqlite"
-	"github.com/gabehf/koito/internal/images"
-	"github.com/gabehf/koito/internal/logger"
-	mbz "github.com/gabehf/koito/internal/mbz"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/engine/middleware"
+	"github.com/ebrgr/TuneTrail/internal/catalog"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/images"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	mbz "github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
@@ -55,17 +56,30 @@ func initLogger(getenv func(string) string, version string, w io.Writer) (*zerol
 	return l, ctx, nil
 }
 
-func connectDB(l *zerolog.Logger) db.DB {
+// connectDB reports database failures without creating an empty replacement.
+func connectDB(l *zerolog.Logger) (db.DB, error) {
 	l.Debug().Msg("Engine: Initializing database connection")
-	l.Info().Msg("Engine: Using SQLite database driver")
-	s, err := sqlite.New()
-	for err != nil {
-		l.Error().Err(err).Msg("Engine: Failed to connect to database; retrying in 5 seconds")
-		time.Sleep(5 * time.Second)
-		s, err = sqlite.New()
+	var store *sqlite.Sqlite
+	var err error
+	// Retry only transient SQLite busy or locked errors; fail closed otherwise.
+	for attempt := 0; attempt < 3; attempt++ {
+		store, err = sqlite.New()
+		if err == nil {
+			break
+		}
+		var sqliteErr interface{ Code() int }
+		if !errors.As(err, &sqliteErr) || (sqliteErr.Code()&255 != 5 && sqliteErr.Code()&255 != 6) {
+			break
+		}
+		if attempt < 2 {
+			time.Sleep(time.Second)
+		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("database initialization: %w", err)
 	}
 	l.Info().Msg("Engine: Database connection established")
-	return s
+	return store, nil
 }
 
 func Run(
@@ -114,7 +128,10 @@ func Run(
 		l.Info().Msg("Engine: The environment variable " + cfg.SQLITE_ENABLED + " is no longer needed and can be removed.")
 	}
 
-	store := connectDB(l)
+	store, err := connectDB(l)
+	if err != nil {
+		return err
+	}
 	defer store.Close(ctx)
 
 	l.Debug().Msg("Engine: Checking for default user")

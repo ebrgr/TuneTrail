@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	webp "github.com/SeriousBug/webp-go-pure/std"
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 	"golang.org/x/image/font/gofont/goregular"
 )
 

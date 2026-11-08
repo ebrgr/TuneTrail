@@ -10,7 +10,7 @@ This quickstart assumes you are using Docker compose. Below is an example file, 
 ```yaml title="compose.yaml"
 services:
   koito:
-    image: gabehf/koito:latest
+    image: ghcr.io/ebrgr/tunetrail:latest
     container_name: koito
     environment:
       - KOITO_SUBSONIC_URL=https://navidrome.mydomain.com # the url to your navidrome instance

@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/db/sqlite"
-	"github.com/gabehf/koito/internal/importer"
-	"github.com/gabehf/koito/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/importer"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/require"
 )
 

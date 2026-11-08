@@ -10,10 +10,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
-	"github.com/gabehf/koito/queue"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/utils"
+	"github.com/ebrgr/TuneTrail/queue"
 )
 
 type DeezerClient struct {

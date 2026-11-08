@@ -2,8 +2,8 @@ package webui
 
 import (
 	"context"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/listening"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/listening"
 	"log"
 )
 

@@ -2,8 +2,8 @@ package admin
 
 import (
 	"context"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 )
 
 // ValidateMerge rejects malformed identities before the transactional existence checks.

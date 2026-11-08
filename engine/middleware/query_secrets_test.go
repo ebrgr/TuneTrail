@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gabehf/koito/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/rs/zerolog"
 )
 

@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine/handlers"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/engine/handlers"
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 // TestHistoryHTMLAndJSONShareCivilMonthBounds checks an independent Kathmandu fixture.

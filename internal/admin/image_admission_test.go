@@ -3,7 +3,7 @@ package admin
 import (
 	"context"
 	"errors"
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 	"testing"
 	"time"
 )

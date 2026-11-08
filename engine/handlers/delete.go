@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/admin"
-	"github.com/gabehf/koito/internal/adminweb"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/engine/middleware"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 func DeleteListenHandler(store db.ListenStore) http.HandlerFunc {

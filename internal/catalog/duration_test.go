@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/catalog"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

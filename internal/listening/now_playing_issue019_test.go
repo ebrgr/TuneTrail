@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/memkv"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/memkv"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/stretchr/testify/require"
 )
 

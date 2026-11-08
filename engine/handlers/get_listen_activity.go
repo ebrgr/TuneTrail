@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"github.com/gabehf/koito/internal/listening"
+	"github.com/ebrgr/TuneTrail/internal/listening"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 // GetListenActivityHandler uses one clock for reading and filling the activity response.

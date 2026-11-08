@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/gabehf/koito/imagecache"
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/imagepipeline"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/imagecache"
+	"github.com/ebrgr/TuneTrail/internal/catalog"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 )
 

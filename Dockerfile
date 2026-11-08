@@ -10,8 +10,8 @@ COPY imagecache/ ./imagecache/
 COPY internal/ ./internal/
 COPY queue/ ./queue/
 COPY db/ ./db/
-ARG KOITO_VERSION=0.5
-RUN go build -trimpath -ldflags "-s -w -X main.Version=$KOITO_VERSION" -o /koito ./cmd/api
+ARG KOITO_VERSION=0.6
+RUN go build -trimpath -ldflags "-s -w -X main.Version=$KOITO_VERSION" -o /tunetrail ./cmd/api
 
 FROM debian:bookworm-slim AS final
 
@@ -19,9 +19,9 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates tzdata && \
     rm -rf /var/lib/apt/lists/*
-COPY --from=backend /koito ./app
+COPY --from=backend /tunetrail ./tunetrail
 COPY assets/ ./assets/
-ARG KOITO_VERSION=0.5
+ARG KOITO_VERSION=0.6
 LABEL org.opencontainers.image.title="TuneTrail" \
       org.opencontainers.image.description="ListenBrainz-compatible scrobbling with simple public listening profiles" \
       org.opencontainers.image.source="https://github.com/ebrgr/TuneTrail" \
@@ -32,4 +32,4 @@ ENV KOITO_CONFIG_DIR=/etc/koito \
 EXPOSE 4110
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD curl --fail --silent http://127.0.0.1:4110/apis/web/v1/health || exit 1
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["./tunetrail"]

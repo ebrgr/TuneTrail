@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db/sqlite"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/engine"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 var store *sqlite.Sqlite

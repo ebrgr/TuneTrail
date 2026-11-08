@@ -25,7 +25,7 @@ def main():
         api = migrate(binary, root, 'api-wal', 'go', stack, wal=True)
         validate_journey(api)
         for server in (web, admin, api):
-            with contextlib.closing(sqlite3.connect(server.directory / 'koito.db')) as conn:
+            with contextlib.closing(sqlite3.connect(server.directory / 'tunetrail.db')) as conn:
                 assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
                 assert not conn.execute('PRAGMA foreign_key_check').fetchall()
         print(json.dumps({'migrations':3, 'wal': 'ok', 'backup_restore': 'ok', 'route_checks':len(matrix), 'admin_forms':'ok', 'api':'ok', 'integrity':'ok'}))

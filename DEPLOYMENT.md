@@ -1,10 +1,10 @@
 # Deploying TuneTrail
 
 TuneTrail adds public listening profiles and administrator-only management to
-[Koito](https://github.com/gabehf/Koito). The current source version is
-**TuneTrail 0.5**, a prerelease intended for testing with a backup of your data.
+Koito. The current source version is
+**TuneTrail 0.6**, a prerelease intended for testing with a backup of your data.
 
-The target image is `ghcr.io/ebrgr/tunetrail:0.5`, built for Linux amd64
+The target image is `ghcr.io/ebrgr/tunetrail:0.6`, built for Linux amd64
 and arm64. Publish the matching image before pulling this tag, or build it locally. The image serves both the API and compiled interface on port 4110;
 Node.js, Go, and Vite are not required on the deployment host.
 
@@ -41,7 +41,7 @@ interfaces, independently of this host setting.
 
 **Stop the old Koito process/container and back up its complete data directory
 before testing this release.** Do not run two versions against the same database.
-Preserve the image cache and other files alongside `koito.db`.
+Preserve the image cache and all files alongside the legacy `koito.db`, including any WAL files. Stop every old instance before migration; a backup snapshot cannot prevent subsequent writes to the old database.
 
 Set `KOITO_DATA_DIR` in `deploy/.env` to the absolute path of that existing data
 directory, rather than a new empty directory. Set the intended host port, and run
@@ -51,11 +51,18 @@ changing bootstrap environment variables does not reset an existing password.
 On first startup, the application:
 
 1. Creates a consistent SQLite backup, including committed WAL, named
-   `koito.db.pre-profiles-*.bak` in the data directory (permissions 0600).
-2. Applies the single `003_listening_profiles.sql` migration, taking v2 to v3.
+   `koito.db.pre-tunetrail-*.bak` in the data directory (permissions 0600).
+2. Creates `tunetrail.db` from that backup and, for v2, applies the single
+   `003_listening_profiles.sql` migration to reach v3.
 3. Preserves administrator credentials, existing tokens, listens, and catalog.
 4. Assigns a single legacy user's history/keys to `/default`; multiple legacy
    users receive separate profiles.
+
+The legacy file and backup are retained. If both databases exist, the server
+checks migration provenance; a changed legacy file, including an external WAL
+checkpoint, causes a conservative refusal. Stop all instances and reconcile
+the files manually rather than deleting or overwriting them. New installations
+create `tunetrail.db` directly.
 
 The migration includes profiles, associations, indexes, per-profile relays, and
 protection against transferring a key. If backup or migration fails, startup
@@ -95,13 +102,15 @@ created as private requires a GitHub login with package-read access until the
 owner makes it public. See [GitHub's Container registry documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
 Version tags identify releases; `sha-...` tags identify their source commit.
-Prereleases do not update a `latest` tag. Set `KOITO_IMAGE_TAG` in `deploy/.env`
-when you intentionally choose a different version.
+Each image publication also updates `ghcr.io/ebrgr/tunetrail:latest`, including
+prerelease versions and manual workflow runs. Set `KOITO_IMAGE_TAG=latest` in
+`deploy/.env` to follow it, or choose a version tag for a fixed release. Pulling
+the image and recreating the container are still necessary to apply updates.
 
 ## Build locally
 
 ```sh
-docker build --build-arg KOITO_VERSION=0.5 -t tunetrail:local .
+docker build --build-arg KOITO_VERSION=0.6 -t tunetrail:local .
 ```
 
 .dockerignore excludes local databases, credentials, caches, and development
@@ -111,4 +120,4 @@ timezone data and curl for the healthcheck.
 
 For local development and validation, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-Current source: **TuneTrail 0.5**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per commit using `make version.bump` (0.9 becomes 0.10); 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
+Current source: **TuneTrail 0.6**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per commit using `make version.bump` (0.9 becomes 0.10); 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.

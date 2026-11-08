@@ -3,10 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/summary"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/summary"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 type summaryHandlerStore interface {

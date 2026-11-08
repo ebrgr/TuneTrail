@@ -1,3 +1,4 @@
+Observação: caminho do módulo histórico redigido; demais resultados preservados.
 Roadmap 05 — temporal reproductions, 2026-11-05
 
 Runtime: go version go1.26.3 darwin/arm64.
@@ -62,11 +63,11 @@ Additional existing tests run during this Advisor review:
 
 GOCACHE=/private/tmp/koito-advisor-go-cache GOPROXY=off GOSUMDB=off go test ./internal/admin ./internal/adminweb ./internal/db ./internal/webquery ./internal/relay
 
-ok  github.com/gabehf/koito/internal/admin       1.000s
-ok  github.com/gabehf/koito/internal/adminweb    (cached)
-ok  github.com/gabehf/koito/internal/db          0.350s
-ok  github.com/gabehf/koito/internal/webquery    0.527s
-ok  github.com/gabehf/koito/internal/relay       0.697s
+ok  [modulo-historico-removido]/internal/admin       1.000s
+ok  [modulo-historico-removido]/internal/adminweb    (cached)
+ok  [modulo-historico-removido]/internal/db          0.350s
+ok  [modulo-historico-removido]/internal/webquery    0.527s
+ok  [modulo-historico-removido]/internal/relay       0.697s
 
 An initial attempt using the default Go build cache was blocked by filesystem
 permissions before running tests; redirecting only GOCACHE to the disposable

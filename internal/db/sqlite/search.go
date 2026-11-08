@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/catalog"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/lithammer/fuzzysearch/fuzzy"
 )
 

@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine/handlers"
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/engine/handlers"
+	"github.com/ebrgr/TuneTrail/engine/middleware"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )

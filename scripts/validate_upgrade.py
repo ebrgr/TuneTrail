@@ -47,9 +47,10 @@ def validate(binary, source, work):
     server = Server(binary, work)
     try:
         server.start()  # Run normal bootstrap: no migration calls from the test.
+        database = work / "tunetrail.db"
         after_digest = snapshot(database)
         assert all(after_digest[table] == digest for table, digest in source_digest.items()), "Legacy data changed"
-        backups = list(work.glob("koito.db.pre-profiles-*.bak"))
+        backups = list(work.glob("koito.db.pre-tunetrail-*.bak"))
         assert len(backups) == 1, "Expected exactly one automatic pre-migration backup"
         assert backups[0].stat().st_mode & 0o777 == 0o600, "Backup permissions differ from 0600"
         assert snapshot(backups[0]) == source_digest, "Backup differs from original data"
@@ -98,7 +99,7 @@ def validate(binary, source, work):
             assert server.request("GET", WEB + f'/profiles/{profile["slug"]}/stats')["listen_count"] == profile["listens"]
         server.stop()
         assert snapshot(database) == stable_digest, "Restart changed persisted data"
-        assert list(work.glob("koito.db.pre-profiles-*.bak")) == backups
+        assert list(work.glob("koito.db.pre-tunetrail-*.bak")) == backups
         assert snapshot(source) == source_digest, "Source database changed"
         assert physical_hashes(source) == source_files, "Source database/WAL bytes changed"
     finally:

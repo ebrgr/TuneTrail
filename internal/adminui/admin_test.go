@@ -13,11 +13,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gabehf/koito/internal/adminui"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/db/sqlite"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/relay"
+	"github.com/ebrgr/TuneTrail/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/stretchr/testify/require"
 )
 

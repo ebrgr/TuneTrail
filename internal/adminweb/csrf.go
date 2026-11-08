@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/google/uuid"
 )
 

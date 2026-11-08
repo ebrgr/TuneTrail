@@ -10,7 +10,7 @@ By far the easiest way to get up and running with Koito is using docker. Here is
 ```yaml title="compose.yaml"
 services:
   koito:
-    image: gabehf/koito:latest
+    image: ghcr.io/ebrgr/tunetrail:latest
     container_name: koito
     ports:
       - "4110:4110"
@@ -39,14 +39,14 @@ detector needs a C compiler.
 Then, clone the repository and execute the build command using the included Makefile:
 
 ```sh
-git clone https://github.com/gabehf/koito && cd koito
+git clone https://github.com/ebrgr/TuneTrail.git && cd TuneTrail
 make build
 ```
 
 When the build is finished, you can run the executable at the root of the directory.
 
 ```sh
-./koito
+./tunetrail
 ```
 
 Then, navigate your browser to `localhost:4110` to enter your Koito instance.

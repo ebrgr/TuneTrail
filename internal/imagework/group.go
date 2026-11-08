@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 )
 
 type call struct {

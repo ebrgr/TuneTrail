@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabehf/koito/internal/summary"
-	"github.com/gabehf/koito/internal/webquery"
+	"github.com/ebrgr/TuneTrail/internal/summary"
+	"github.com/ebrgr/TuneTrail/internal/webquery"
 )
 
 func (h *Pages) serveRewind(w http.ResponseWriter, r *http.Request, p LivePage) {

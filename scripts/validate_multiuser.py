@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Exercise the real API with disposable fresh and migrated SQLite databases.
 
-Build first: CGO_ENABLED=0 go build -o /tmp/koito-validation ./cmd/api
-Run: python3 scripts/validate_multiuser.py --binary /tmp/koito-validation
+Build first: CGO_ENABLED=0 go build -o /tmp/tunetrail-validation ./cmd/api
+Run: python3 scripts/validate_multiuser.py --binary /tmp/tunetrail-validation
 An optional --example-db is opened read-only and copied before any mutations.
 No player or external music service is contacted. Credentials are never printed.
 """
@@ -140,7 +140,7 @@ def scrobble(timestamp, kind="single"):
 
 
 def validate_journey(server):
-    with sqlite3.connect(server.directory / "koito.db") as conn:
+    with sqlite3.connect(server.directory / "tunetrail.db") as conn:
         assert conn.execute("SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1").fetchone()[0] == LATEST_SCHEMA_VERSION
     server.login()
     before = server.request("GET", WEB + "/profiles")
@@ -233,7 +233,7 @@ def validate_journey(server):
     assert server.request("GET", alpha + "/stats")["listen_count"] == 3
     assert server.request("GET", LBZ + "/validate-token", token=second_key["key"])["valid"] is True
     assert server.request("GET", alpha + "/now-playing")["currently_playing"] is False
-    with sqlite3.connect(server.directory / "koito.db") as conn:
+    with sqlite3.connect(server.directory / "tunetrail.db") as conn:
         assert conn.execute("PRAGMA integrity_check").fetchall() == [("ok",)]
         assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
         assert conn.execute("SELECT COUNT(*) FROM listens l LEFT JOIN listening_profiles p ON p.id=l.profile_id WHERE p.id IS NULL").fetchone()[0] == 0
@@ -266,7 +266,7 @@ def run(binary, root, example=None):
     with contextlib.ExitStack() as stack:
         stack.callback(fresh.stop)
         fresh.start()
-        with sqlite3.connect(fresh.directory / "koito.db") as conn:
+        with sqlite3.connect(fresh.directory / "tunetrail.db") as conn:
             password_hash = conn.execute("SELECT password FROM users WHERE role='admin'").fetchone()[0]
         validate_journey(fresh)
         fresh.stop()
@@ -277,9 +277,9 @@ def run(binary, root, example=None):
         migrated = Server(binary, legacy_dir)
         stack.callback(migrated.stop)
         migrated.start()
-        after = snapshot(legacy_dir / "koito.db")
+        after = snapshot(legacy_dir / "tunetrail.db")
         assert all(after[table] == digest for table, digest in legacy_before.items())
-        assert list(legacy_dir.glob("koito.db.pre-profiles-*.bak"))
+        assert list(legacy_dir.glob("koito.db.pre-tunetrail-*.bak"))
         assert migrated.request("GET", WEB + "/profiles/default/stats")["listen_count"] == 1
         assert migrated.request("GET", LBZ + "/validate-token", token="legacy-validation-token")["valid"] is True
         validate_journey(migrated)
@@ -294,9 +294,9 @@ def run(binary, root, example=None):
             sample = Server(binary, sample_dir)
             stack.callback(sample.stop)
             sample.start()
-            current = snapshot(sample_db)
+            current = snapshot(sample_dir / "tunetrail.db")
             assert all(current[table] == digest for table, digest in original.items())
-            with sqlite3.connect(sample_db) as conn:
+            with sqlite3.connect(sample_dir / "tunetrail.db") as conn:
                 assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
                 assert not conn.execute("PRAGMA foreign_key_check").fetchall()
             sample.stop()
@@ -306,7 +306,7 @@ def run(binary, root, example=None):
                                    capture_output=True, text=True, check=True)
             password = re.search(r"New password: ([A-Za-z0-9]+)", reset.stdout)
             assert password, "No temporary password returned for example copy"
-            with sqlite3.connect(sample_db) as conn:
+            with sqlite3.connect(sample_dir / "tunetrail.db") as conn:
                 username = conn.execute("SELECT username FROM users WHERE role='admin' LIMIT 1").fetchone()[0]
             sample.start()
             sample.login(username, password.group(1))

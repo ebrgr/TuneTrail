@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 type ServerConfig struct {

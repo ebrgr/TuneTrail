@@ -10,8 +10,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/logger"
 )
 
 // ErrInvalidFile marks input rejected before or during parsing.

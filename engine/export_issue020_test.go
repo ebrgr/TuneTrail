@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/export"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/stretchr/testify/require"
 )
 

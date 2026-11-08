@@ -5,15 +5,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/gabehf/koito/internal/export"
+	"github.com/ebrgr/TuneTrail/internal/export"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/importer"
-	"github.com/gabehf/koito/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/importer"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/require"
 )
 

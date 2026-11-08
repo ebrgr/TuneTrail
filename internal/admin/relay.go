@@ -2,9 +2,9 @@ package admin
 
 import (
 	"context"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/relay"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 )
 
 // Relay returns sensitive values only to an authenticated administrator.

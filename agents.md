@@ -2,8 +2,7 @@
 
 Koito registra o histórico de músicas (scrobbles), recebe eventos pela API
 compatível com ListenBrainz e apresenta estatísticas em uma interface web.
-Original: <https://github.com/gabehf/Koito>. O remoto `origin` aponta para o fork;
-`upstream`, para o original. Não é necessário Docker nem PostgreSQL para desenvolver.
+O remoto `origin` aponta para o repositório TuneTrail. Não é necessário Docker nem PostgreSQL para desenvolver.
 
 Este arquivo serve como um guia de *como trabalhar neste repositório*. Para evitar que o conteúdo fique defasado, ele propositalmente **não** repete informações documentadas em outros lugares — consulte esses documentos e, em seguida, siga as convenções abaixo.
 

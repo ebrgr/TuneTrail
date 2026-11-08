@@ -51,7 +51,7 @@ api.race:
 	CGO_ENABLED=1 go test -race ./... -timeout 120s
 
 api.build:
-	CGO_ENABLED=0 go build -ldflags='-s -w' -o koito ./cmd/api/main.go
+	CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
 
 docs.dev:
 	cd docs && $(YARN) dev
@@ -77,7 +77,7 @@ build: api.build
 
 # Starts isolated loopback APIs; never uses the database configured in .env.
 multiuser.check: api.build
-	python3 scripts/validate_multiuser.py --binary ./koito
+	python3 scripts/validate_multiuser.py --binary ./tunetrail
 
 # Increment the TuneTrail 0.x version once per new commit.
 .PHONY: version.check version.bump

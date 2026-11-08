@@ -45,7 +45,7 @@ jobs:
           tags: |
             type=raw,value=${{ steps.image.outputs.version }}
             type=sha,prefix=sha-
-          flavor: latest=false
+          flavor: latest=true
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -62,12 +62,12 @@ jobs:
           IMAGE: ${{ steps.image.outputs.name }}:${{ steps.image.outputs.version }}
         shell: bash
         run: |
-          docker run -d --name koito-release-smoke -p 127.0.0.1:14110:4110 \
+          docker run -d --name tunetrail-release-smoke -p 127.0.0.1:14110:4110 \
             -e KOITO_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
             -e KOITO_LOG_LEVEL=warn -e KOITO_SKIP_IMPORT=true \
             -e KOITO_DISABLE_MUSICBRAINZ=true -e KOITO_DISABLE_DEEZER=true \
             -e KOITO_DISABLE_COVER_ART_ARCHIVE=true "$IMAGE"
-          trap 'docker rm -f koito-release-smoke >/dev/null' EXIT
+          trap 'docker rm -f tunetrail-release-smoke >/dev/null' EXIT
           healthy=false
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:14110/apis/web/v1/health >/dev/null; then

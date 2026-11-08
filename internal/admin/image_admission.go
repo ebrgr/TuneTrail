@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 )
 
 type admissionKey struct{}

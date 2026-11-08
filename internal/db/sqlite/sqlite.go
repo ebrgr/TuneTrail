@@ -4,14 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
-	"path"
 	"time"
 
-	migrations_sqlite "github.com/gabehf/koito/db/migrations_sqlite"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	migrations_sqlite "github.com/ebrgr/TuneTrail/db/migrations_sqlite"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 	_ "modernc.org/sqlite"
 
@@ -25,8 +23,21 @@ type Sqlite struct {
 }
 
 func New() (*Sqlite, error) {
-	databasePath := path.Join(cfg.ConfigDir(), "koito.db")
-	dsn := databasePath + "?_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)"
+	return newDatabase(true)
+}
+
+// NewExisting refuses to create a database when resetting credentials.
+func NewExisting() (*Sqlite, error) {
+	return newDatabase(false)
+}
+
+// newDatabase selects and validates the persistent database before use.
+func newDatabase(allowCreate bool) (*Sqlite, error) {
+	databasePath, err := bootstrap(cfg.ConfigDir(), allowCreate)
+	if err != nil {
+		return nil, fmt.Errorf("sqlite.New: bootstrap: %w", err)
+	}
+	dsn := sqliteURI(databasePath) + "?mode=rw&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("sqlite.New: open: %w", err)
@@ -35,21 +46,6 @@ func New() (*Sqlite, error) {
 	if err := db.Ping(); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("sqlite.New: ping: %w", err)
-	}
-
-	backup, err := backupBeforeProfiles(context.Background(), db, databasePath)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("sqlite.New: backup before profiles migration: %w", err)
-	}
-	if backup != "" {
-		log.Printf("SQLite: pre-profiles migration backup: %s", backup)
-	}
-	goose.SetBaseFS(migrations_sqlite.Files)
-	goose.SetDialect("sqlite3")
-	if err := goose.Up(db, "."); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("sqlite.New: goose: %w", err)
 	}
 
 	return &Sqlite{db: db}, nil

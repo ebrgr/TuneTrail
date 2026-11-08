@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gabehf/koito/engine"
-	"github.com/gabehf/koito/internal/version"
+	"github.com/ebrgr/TuneTrail/engine"
+	"github.com/ebrgr/TuneTrail/internal/version"
 )
 
 var Version = version.Current

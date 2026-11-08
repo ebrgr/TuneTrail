@@ -15,7 +15,7 @@
 {{else if .Media}}{{template "live-media-page" .}}
 {{else if .Rewind}}{{template "live-rewind" .}}
 {{else if eq .Section "search"}}<main class="listing"><h1>Search</h1><form method="get" class="listing-filters"><label>Search your listening history<input type="search" name="q" value="{{.Search}}" maxlength="200" required></label><button class="large-button">Search</button></form>{{template "live-ranking" .Items}}</main>{{else}}{{template "live-listing" .}}{{end}}
-<footer><div>TuneTrail {{.Version}} · Your music. Your journey.<br><small>A self-hosted listening history, based on <img src="/public/koito-original.svg" alt="" width="16" height="16" style="vertical-align:middle"> Koito 0.3.2</small></div><a href="https://github.com/ebrgr/TuneTrail" target="_blank" rel="noopener">View the source on GitHub {{icon "ExternalLink"}}</a></footer>
+<footer><div>TuneTrail {{.Version}} · Your music. Your journey.<br><small>A self-hosted listening history, based on <img src="/public/koito-original.svg" alt="" width="16" height="16" style="display:inline-block;vertical-align:middle"> Koito 0.3.2</small></div><a href="https://github.com/ebrgr/TuneTrail" target="_blank" rel="noopener">View the source on GitHub {{icon "ExternalLink"}}</a></footer>
 <noscript><p class="noscript">Appearance settings require JavaScript.</p></noscript>
 </div></div>{{template "dialogs" .}}
 </body></html>{{end}}

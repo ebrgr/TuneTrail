@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/adminui"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/memkv"
+	"github.com/ebrgr/TuneTrail/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/memkv"
 	"github.com/stretchr/testify/require"
 )
 

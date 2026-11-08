@@ -3,7 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/adminui"
 	"github.com/stretchr/testify/require"
 )
 

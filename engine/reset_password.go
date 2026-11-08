@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 func ResetPassword(getenv func(string) string, w io.Writer, version string) error {
@@ -15,7 +16,11 @@ func ResetPassword(getenv func(string) string, w io.Writer, version string) erro
 		return fmt.Errorf("ResetPassword: %w", err)
 	}
 
-	store := connectDB(l)
+	// Reset only a previously existing, safely selected database.
+	store, err := sqlite.NewExisting()
+	if err != nil {
+		return fmt.Errorf("ResetPassword: %w", err)
+	}
 	defer store.Close(ctx)
 
 	user, err := store.GetAdminUser(ctx)

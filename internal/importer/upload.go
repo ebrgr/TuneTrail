@@ -3,13 +3,13 @@ package importer
 import (
 	"context"
 	"fmt"
-	"github.com/gabehf/koito/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"io"
 	"os"
 	"path"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
 )
 

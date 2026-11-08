@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 func writeMediaReadError(w http.ResponseWriter, err error, kind string) {

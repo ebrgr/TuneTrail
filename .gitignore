@@ -19,3 +19,5 @@ __pycache__/
 *.sqlite3
 *.bak
 deploy/data/
+
+/tunetrail

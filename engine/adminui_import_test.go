@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/gabehf/koito/internal/adminui"
-	"github.com/gabehf/koito/internal/export"
-	"github.com/gabehf/koito/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/export"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/require"
 )
 

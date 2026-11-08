@@ -1,6 +1,6 @@
 package importer
 
-import "github.com/gabehf/koito/internal/db"
+import "github.com/ebrgr/TuneTrail/internal/db"
 
 // importStore is the minimal interface required by all importer functions.
 type Store interface {

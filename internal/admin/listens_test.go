@@ -1,8 +1,8 @@
 package admin_test
 
 import (
-	"github.com/gabehf/koito/internal/admin"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"

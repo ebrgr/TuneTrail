@@ -3,9 +3,9 @@ package adminweb
 
 import (
 	"errors"
-	"github.com/gabehf/koito/internal/admin"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 	"net/http"
 )
 

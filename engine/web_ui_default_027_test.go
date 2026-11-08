@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gabehf/koito/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/stretchr/testify/require"
 )
 

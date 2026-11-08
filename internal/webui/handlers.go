@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/listening"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/version"
-	"github.com/gabehf/koito/internal/webquery"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/listening"
+	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/version"
+	"github.com/ebrgr/TuneTrail/internal/webquery"
 )
 
 // ReadStore is deliberately independent of the SQLite implementation.

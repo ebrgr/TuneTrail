@@ -37,7 +37,7 @@ def main():
                 start=time.monotonic();server.process.send_signal(signal.SIGINT)
                 returncode=server.process.wait(timeout=11);duration=time.monotonic()-start
                 assert returncode==0,'server did not exit cleanly'
-                with sqlite3.connect(server.directory/'koito.db') as db:
+                with sqlite3.connect(server.directory/'tunetrail.db') as db:
                     assert db.execute('SELECT count(*) FROM listens').fetchone()[0]==1
                     assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
                     assert db.execute('PRAGMA foreign_key_check').fetchall()==[]

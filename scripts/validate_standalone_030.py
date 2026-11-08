@@ -73,7 +73,7 @@ def run(binary, root, mode):
                     assert request(origin, icon['src'])[0] == 200, icon['src']
                 status, headers, body = request(origin, "/favicon.svg", "HEAD")
                 assert status == 200 and not body and "image/svg+xml" in headers.get("Content-Type", "")
-            with sqlite3.connect(directory / "koito.db") as conn:
+            with sqlite3.connect(directory / "tunetrail.db") as conn:
                 assert conn.execute("PRAGMA integrity_check").fetchall() == [("ok",)]
                 assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
                 assert conn.execute("SELECT max(version_id) FROM goose_db_version WHERE is_applied=1").fetchone() == (3,)

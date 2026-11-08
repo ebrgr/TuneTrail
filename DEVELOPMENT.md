@@ -11,7 +11,7 @@ make setup       # módulos Go, Delve local e .env se ainda não existir
 make api.dev     # API e interface em http://127.0.0.1:4110
 make check       # Go sem CGO, vet e testes dos scripts da interface
 make api.race    # opcional: detector de corridas, requer compilador C
-make build       # binário ./koito com templates e assets incorporados
+make build       # binário ./tunetrail com templates e assets incorporados
 make multiuser.check  # jornadas com bancos SQLite descartáveis
 ```
 
@@ -27,4 +27,4 @@ No VS Code, instale a extensão Go e use **Koito: Desenvolvimento Go (localhost:
 
 `cmd/api` contém a entrada; `engine` concentra rotas e handlers; `internal/webui` e `internal/adminui` implementam as páginas públicas e administrativas; `internal/db/sqlite` e `db/migrations_sqlite` contêm persistência e migrações. `internal/importer`, `internal/relay`, `internal/catalog` e `queue` cuidam das demais operações. A documentação Astro fica em `docs`; `make docs.dev` exige suas dependências próprias.
 
-`make multiuser.check` cria bancos novos e migrados sem acessar o banco configurado em `.env`. Para validar uma cópia de banco de exemplo, use `python3 scripts/validate_multiuser.py --binary ./koito --example-db /caminho/koito.db`; o original é aberto somente para leitura. A prévia fictícia isolada é iniciada por `make ui.preview`.
+`make multiuser.check` cria bancos novos e migrados sem acessar o banco configurado em `.env`. Para validar uma cópia de banco de exemplo, use `python3 scripts/validate_multiuser.py --binary ./tunetrail --example-db /caminho/koito.db`; o original é aberto somente para leitura. A prévia fictícia isolada é iniciada por `make ui.preview`.

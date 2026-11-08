@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"context"
-	"github.com/gabehf/koito/internal/adminweb"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"net/http"
 )
 

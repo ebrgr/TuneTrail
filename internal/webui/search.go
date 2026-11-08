@@ -2,7 +2,7 @@ package webui
 
 import (
 	"context"
-	"github.com/gabehf/koito/internal/listening"
+	"github.com/ebrgr/TuneTrail/internal/listening"
 )
 
 func (h *Pages) search(ctx context.Context, slug, q string) ([]Item, error) {

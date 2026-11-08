@@ -24,6 +24,7 @@ ROADMAP.md
    - retire os links do ko-fi
    - retire o link para o demo
    - Enfaze do projeto é a simplificação mudança da arquiterura GO/BAckend-React/Front para monolitico simplificando e retirando dependencias externas, mantendo código puro em GO/HTML/CSS/Minimal JScript
+   - [Issue 046](issues/046-migracao-banco-tunetrail-solved.md): backup e migração de `koito.db` para `tunetrail.db`, preservando o esquema v3 — fechada e aprovada.
    - Links e diretório local alinhados ao novo repositório: [issue 045](issues/045-links-diretorio-tunetrail.md).
    - Versionamento próprio TuneTrail 0.x: [issue 044](issues/044-versionamento-tunetrail.md).
    - [Estudo e implementação](IDENTIDADE_TUNETRAIL.md) · [Issue 043](issues/043-identidade-tunetrail.md): identidade aplicada; SVG e novo PNG aceitos pelo usuário; comparação da interface pendente.

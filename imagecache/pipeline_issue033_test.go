@@ -14,8 +14,8 @@ import (
 	"time"
 
 	webp "github.com/SeriousBug/webp-go-pure/std"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/imagepipeline"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/imagepipeline"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )

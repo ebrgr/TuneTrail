@@ -47,7 +47,7 @@ def staged_files(directory):
     """Hash application file contents without comparing database WAL or access logs."""
     return sorted((str(p.relative_to(directory)), hashlib.sha256(p.read_bytes()).hexdigest())
                   for p in directory.rglob('*') if p.is_file()
-                  and p.name not in ('koito.db', 'koito.db-wal', 'koito.db-shm', 'server.log'))
+                  and p.name not in ('tunetrail.db', 'tunetrail.db-wal', 'tunetrail.db-shm', 'server.log'))
 
 
 def full_snapshot(path):
@@ -76,7 +76,7 @@ def run_mode(binary, root, mode):
         session = admin_cookie.split('=', 1)[1]
         assert 'HttpOnly' in headers['Set-Cookie'] and 'SameSite=Strict' in headers['Set-Cookie']
         assert 'Secure' not in headers['Set-Cookie']
-        with sqlite3.connect(server.directory/'koito.db') as db:
+        with sqlite3.connect(server.directory/'tunetrail.db') as db:
             db.execute("INSERT INTO users(username,role,password) VALUES('fictional-user','user',x'00')")
             nonadmin = db.execute("SELECT id FROM users WHERE username='fictional-user'").fetchone()[0]
             now = int(time.time())
@@ -127,7 +127,7 @@ def run_mode(binary, root, mode):
             for kind in ('artist', 'album', 'track'):
                 for action in ('alias-add','alias-primary','alias-delete','metadata','artist-add','artist-remove','primary-artist','listen-add','listen-delete','artwork','confirm'):
                     routes.append(('POST','/default/manage/'+kind+'/1/'+action))
-        baseline = full_snapshot(server.directory/'koito.db')
+        baseline = full_snapshot(server.directory/'tunetrail.db')
         file_baseline = staged_files(server.directory)
         for method,path in routes:
             for actor,cookie,token,want in actors:
@@ -136,7 +136,7 @@ def run_mode(binary, root, mode):
                 assert 'no-store' in headers.get('Cache-Control',''), (mode,method,path,actor)
                 assert PASSWORD.encode() not in body and key.encode() not in body
                 checks += 1
-        assert full_snapshot(server.directory/'koito.db') == baseline, 'negative request mutated SQLite'
+        assert full_snapshot(server.directory/'tunetrail.db') == baseline, 'negative request mutated SQLite'
         assert staged_files(server.directory) == file_baseline, 'negative request left files behind'
         # The valid session remains administrative even with a conflicting player key.
         status,headers,_=c.request('GET',WEB+'/user',cookie=admin_cookie,token='fixture-second-player')
@@ -175,16 +175,16 @@ def run_mode(binary, root, mode):
             expect(status,204,'second login')
             second_cookie=headers['Set-Cookie'].split(';',1)[0]
             form_headers={'Content-Type':'application/x-www-form-urlencoded'}
-            before_csrf=full_snapshot(server.directory/'koito.db')
+            before_csrf=full_snapshot(server.directory/'tunetrail.db')
             before_csrf_files=staged_files(server.directory)
             expect(c.request('POST','/admin/profile/create',cookie=second_cookie,data=form_payload,headers=form_headers)[0],403,'cross-session CSRF')
             expect(c.request('POST','/admin/profile/create',cookie=admin_cookie,data=form_payload+b'&csrf_token='+csrf.encode(),headers=form_headers)[0],400,'duplicate CSRF')
-            assert full_snapshot(server.directory/'koito.db') == before_csrf
+            assert full_snapshot(server.directory/'tunetrail.db') == before_csrf
             assert staged_files(server.directory) == before_csrf_files
             expect(c.request('POST',WEB+'/logout',cookie=second_cookie)[0],204,'second logout')
             checks += 2
         # Login/logout deliberately mutate sessions; reset the baseline afterwards.
-        baseline = full_snapshot(server.directory/'koito.db')
+        baseline = full_snapshot(server.directory/'tunetrail.db')
         # Existing user credentials in any query parameter must not enter the debug/access log.
         for route in (WEB+'/profiles/default/search',):
             status,_,_ = c.request('GET',route+'?q=test&token=log-fixture-secret&next=%2F%3Fsecret%3Dnested-fixture-secret')
@@ -201,9 +201,9 @@ def run_mode(binary, root, mode):
                 status,_,_=c.request('POST','/admin/profile/create',cookie=admin_cookie,data=payload,
                     headers={'Origin':origin,'Content-Type':'application/x-www-form-urlencoded'})
                 expect(status,403,'CSRF/origin');checks+=1
-        assert full_snapshot(server.directory/'koito.db') == baseline, 'checks changed SQLite'
+        assert full_snapshot(server.directory/'tunetrail.db') == baseline, 'checks changed SQLite'
         assert staged_files(server.directory) == file_baseline, 'checks left files behind'
-        with sqlite3.connect(server.directory/'koito.db') as db:
+        with sqlite3.connect(server.directory/'tunetrail.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
             assert db.execute('PRAGMA foreign_key_check').fetchall()==[]
         server.log.flush()
@@ -217,7 +217,7 @@ def run_mode(binary, root, mode):
             status,_,_=c.request('POST','/admin/profile/create',cookie=admin_cookie,data=form_payload,
                                   headers={'Content-Type':'application/x-www-form-urlencoded'})
             expect(status,403,'CSRF after restart')
-            assert full_snapshot(server.directory/'koito.db') == baseline
+            assert full_snapshot(server.directory/'tunetrail.db') == baseline
             assert staged_files(server.directory) == file_baseline
             checks += 1
         return {'mode': mode, 'negative_checks': checks, 'integrity':'ok', 'log_secrets':'absent'}

@@ -171,7 +171,7 @@ def validate(server):
     token=csrf(body);f.request('POST','/admin/account/password',{'csrf_token':token,'password':'replacement-fictional-password','confirm_password':'replacement-fictional-password'},expected=303)
     f.request('POST','/admin/logout',{'csrf_token':token},expected=401)
     f.login(password='replacement-fictional-password')
-    with sqlite3.connect(server.directory/'koito.db') as conn:
+    with sqlite3.connect(server.directory/'tunetrail.db') as conn:
         assert conn.execute('PRAGMA integrity_check').fetchone()[0]=='ok';assert not conn.execute('PRAGMA foreign_key_check').fetchall()
     return {'schema':3,'formats':list(fixtures),'checks':['HTML login/return','HEAD','CSRF/origin','profiles','keys/revocation','local relay','five import formats','export/round-trip','metadata/form state','DST','personal deletion','stale merge/repetition','zero profiles','password revocation','SQLite integrity']}
 
