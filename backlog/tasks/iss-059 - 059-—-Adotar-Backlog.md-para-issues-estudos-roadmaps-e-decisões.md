@@ -1,10 +1,10 @@
 ---
 id: ISS-059
 title: 059 — Adotar Backlog.md para issues, estudos, roadmaps e decisões
-status: Aguardando aceite
+status: Done
 assignee: []
 created_date: '2026-11-12T23:42:00Z'
-updated_date: '2026-11-12T23:57:00Z'
+updated_date: '2026-11-12T23:59:00Z'
 labels:
   - processo
   - docs
@@ -62,6 +62,15 @@ Refinamento solicitado pelo usuário:
 - `docs-dev/` removido após verificar que as 88 páginas tinham cópia integral no Backlog.md; 550 arquivos de evidência movidos com `git mv` para `backlog/evidencias/`.
 
 Verificação: 872 links relativos válidos; `go test ./...` sem falhas (27 pacotes); `backlog doctor` limpo; 59 tarefas, 30 documentos, 7 decisões.
+
+---
+
+author: claude
+created: 2026-11-12T23:59:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 12/11/2026. Removido também o arquivo obsoleto `agents - cópia.md`.
 
 ---
 <!-- COMMENTS:END -->
