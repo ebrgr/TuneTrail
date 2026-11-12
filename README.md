@@ -31,7 +31,7 @@ TuneTrail simplifies Koito's architecture into a single Go application with serv
 
 ## Installation
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for setup and upgrades. The target image is `ghcr.io/ebrgr/tunetrail:0.6`, for Linux amd64 and arm64. Earlier SUM images retain their original tags. A matching image must be published before it can be pulled; use the local build instructions if it is unavailable.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for setup and upgrades. The target image is `ghcr.io/ebrgr/tunetrail:0.7`, for Linux amd64 and arm64. Earlier SUM images retain their original tags. A matching image must be published before it can be pulled; use the local build instructions if it is unavailable.
 
 ```sh
 cp deploy/.env.example deploy/.env
@@ -44,7 +44,7 @@ Back up your data before upgrading. Existing configuration names, the data direc
 
 ## Development
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) and the [development roadmap](docs-dev/ROADMAP.md). The current source version is **TuneTrail 0.6**; run `make version.bump` before each new commit to advance 0.x (for example, 0.9 to 0.10), and `make version.check` to check synchronized versions. Version 1.0 is reserved for a later decision.
+See [DEVELOPMENT.md](DEVELOPMENT.md) and the [development roadmap](docs-dev/ROADMAP.md). The current source version is **TuneTrail 0.7**; run `make version.bump` before each new commit to advance 0.x (for example, 0.9 to 0.10), and `make version.check` to check synchronized versions. Version 1.0 is reserved for a later decision.
 
 ## Credits
 
