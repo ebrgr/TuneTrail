@@ -1,5 +1,7 @@
 ROADMAP.md
 
+> **Congelado em 12/11/2026.** Issues, roadmaps, estudos e decisões passaram para o [Backlog.md](../backlog/) (`backlog task list --plain`). Este arquivo é mantido apenas como histórico; não registre novas issues aqui.
+
 ## TAREFAS
 
 1. Listar todas as variavies de ambiente que são passadas e podem ser usadas. Após começar a estudar a migração de todos estes valores para um arquivo `conf.toml` por examplo que mora no mesmo diretório do banco de dados.

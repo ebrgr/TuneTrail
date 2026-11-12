@@ -26,7 +26,9 @@ Este arquivo serve como um guia de *como trabalhar neste repositório*. Para evi
 
 - **Documentação do usuário** — `docs/ contém informações sobre o aplicativo e como configurar o seu uso. O histórico de versões deve constar em `CHANGELOG.md`.
 
-- **`docs-dev/`** — Informações sobre o desenvolvimento do aplicativo e estudo de como ele funciona e das próximas alteações que vamos fazer. `docs-dev/Koito_SUM_Analise_1a_análise.md` das alterações que vamos desenolver. `docs-dev/ROADMAP.md` contém o plano geral de execução. Sempre que alterar algo por exemplo passo 1. Após as alterações e testes faça um resumo do que foi alterado.
+- **`backlog/`** — Registro oficial de issues, roadmaps, estudos e decisões, gerenciado pelo [Backlog.md](https://github.com/MrLesk/Backlog.md). Veja a seção **Registro do projeto — Backlog.md** abaixo. Após as alterações e testes, faça um resumo do que foi alterado e registre-o na tarefa correspondente.
+
+- **`docs-dev/`** — Histórico do desenvolvimento até a adoção do Backlog.md, mais as evidências (`docs-dev/comparisons/`) e as skills dos agentes (`docs-dev/agents/`). Os arquivos `docs-dev/issues/*.md` e `docs-dev/*.md` foram importados para `backlog/` e estão **congelados**: não crie nem edite issues ou estudos ali.
 
 
 ## Convenções de trabalho
@@ -36,6 +38,34 @@ A única exceção permanente: uma vez que um *branch* de um *Pull Request* (PR)
 - **Prioridade para *Issues* (*Issue-first*):** demandas substanciais ou funcionais (correções de *bugs*, novas funcionalidades, mudanças de comportamento, refatorações não triviais) devem ser registradas como uma *issue* no GitHub *antes* de escrever o código, e encerradas por meio do *commit* (usando `Fixes #N`). Apenas alterações que não alteram o comportamento em tempo de execução (*runtime*) — como formatação, *linting*, comentários ou testes — estão isentas disso; consulte a *skill* `issue-first` para entender o critério de distinção.
 - **Registro de alterações (*Changelog*):** quando uma mudança for visível ao usuário, adicione uma linha ao arquivo `CHANGELOG.md`, sob a seção `[Unreleased]`, no mesmo *commit* — consulte a *skill* `changelog` para saber o que deve ser incluído e como redigir o texto.
 - **Comente o código em inglês:** sempre que fazer uma mudança em alguma função deixe um comentário no código para posterior validação.
+
+## Registro do projeto — Backlog.md
+
+Ferramenta instalada no sistema (`brew install backlog-md`); a configuração fica em `backlog/config.yml`. Em agentes, use sempre `--plain` (ou `--json`) para obter saída não interativa. Recomenda-se `git config core.quotepath false`, pois os nomes dos arquivos contêm acentos.
+
+| Conteúdo | Onde | Comando |
+| --- | --- | --- |
+| Issues | `backlog/tasks/` — IDs `ISS-NNN` continuam a numeração local (001–058 importadas) | `backlog task create "NNN — Título" -d "..." -s Aberta -l <área> --type <tipo> -m "<milestone>" --plain` |
+| Roadmaps | `backlog/docs/roadmaps/` e milestones | `backlog doc create "Título" -p roadmaps -t specification` · `backlog milestone add "Nome"` |
+| Estudos | `backlog/docs/estudos/` | `backlog doc create "Título" -p estudos -t other`, depois `backlog doc update doc-NNN --content "..." --tags estudo` |
+| Design e contratos | `backlog/docs/design/` | idem, com `-p design` |
+| Descrições de PR | `backlog/docs/prs/` | idem, com `-p prs` |
+| Decisões de arquitetura | `backlog/decisions/` | `backlog decision create "Título" -s proposed` (`accepted` somente com aprovação do usuário) |
+| **Estudos privados** | `backlog/docs/estudos-locais/` | idem, com `-p estudos-locais` |
+
+**Ciclo de uma issue:** `Aberta → Planejada → Em andamento → Aguardando aceite → Done`.
+
+- Toda mudança de status leva um comentário que explique o motivo: `backlog task edit ISS-NNN -s "Aguardando aceite" --comment "Verificação: ..." --comment-author <agente>`. Use comentários para verificação, refinamento, parecer do Advisor e aceite; não reescreva o histórico anterior.
+- `Done` somente após aceite explícito do usuário, registrado em comentário. O nome `Done` é necessário para que milestones e estatísticas do Backlog.md contem a tarefa como concluída.
+- Critérios de aceite com `--ac "..."`; marque com `--check-ac N` somente o que foi de fato verificado.
+- Ligue a tarefa às evidências com `--add-ref <caminho ou URL>` e ao estudo com `--add-doc doc-NNN`; dependências com `--depends-on ISS-NNN`.
+- Labels permitidas estão em `backlog/config.yml`; o Backlog.md não as valida, então não invente labels novas sem atualizar a configuração.
+
+**Consultas úteis:** `backlog task list --exclude-status Done --sort priority --plain` · `backlog task list --ready --plain` · `backlog search <termo> --plain` · `backlog task view ISS-NNN --plain` · `backlog milestone list --plain` · quadro: `backlog board` (terminal) ou `backlog browser` (web em 127.0.0.1).
+
+**Estudos privados:** `backlog/docs/estudos-locais/` está em `.git/info/exclude`. Nunca adicione esses arquivos ao Git (nem com `git add -f`), e nunca copie seu conteúdo para issues, PRs, commits ou qualquer serviço externo. Os originais continuam em `docs-dev/estudos-locais/`, também excluído.
+
+**GitHub:** a regra *issue-first* continua valendo para issues publicadas. Ao publicar uma tarefa, registre o link com `--add-ref https://github.com/.../issues/N`. Criar issues no GitHub, fazer *push* e abrir PRs dependem de autorização explícita do usuário.
 
 ## graphify
 

@@ -1,5 +1,7 @@
 # Issues locais
 
+> **Congelado em 12/11/2026.** Issues, roadmaps, estudos e decisões passaram para o [Backlog.md](../../backlog/) (`backlog task list --plain`). Este arquivo é mantido apenas como histórico; não registre novas issues aqui.
+
 As issues são registradas em Markdown, sem publicação no GitHub nesta etapa.
 Os arquivos das issues fechadas e resolvidas usam o sufixo `-solved.md`.
 
