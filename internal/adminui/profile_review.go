@@ -7,10 +7,12 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
 )
 
 type profileReviewView struct {
+	Locale     *i18n.View
 	Submission string
 	Profile    *models.ListeningProfile
 	Count      int64
@@ -26,7 +28,7 @@ func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(parts) != 4 || parts[0] != "admin" || parts[1] != "profile" {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	id, err := parseID(parts[2])
@@ -59,7 +61,12 @@ func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var out strings.Builder
-	if err = h.tmpl.ExecuteTemplate(&out, "profile-review.html", profileReviewView{Profile: p, Count: count, CSRF: token, Submission: ticket}); err != nil {
+	view := profileReviewView{Locale: i18n.ViewOf(w), Profile: p, Count: count, CSRF: token, Submission: ticket}
+	tmpl, err := h.adminTemplate(view.Locale)
+	if err == nil {
+		err = tmpl.ExecuteTemplate(&out, "profile-review.html", view)
+	}
+	if err != nil {
 		h.fail(w, err)
 		return
 	}

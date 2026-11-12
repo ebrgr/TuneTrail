@@ -27,6 +27,9 @@
     if (body.dataset.section !== 'home') return;
     try {localStorage.setItem(`period_selection_${body.dataset.profileId}:home`,new URL(link.href).searchParams.get('period'));} catch {}
   }));
+  // Apply the selected display option using the existing GET form.
+  const rewindForm = document.querySelector('[data-rewind-time-form]');
+  rewindForm?.querySelector('input[name=show_time]')?.addEventListener('change', () => rewindForm.requestSubmit());
   // Admin availability is resolved using the existing session-only endpoint.
   const slug = body.dataset.profileSlug;
   if (!slug) return;
@@ -39,21 +42,21 @@
     document.querySelectorAll('tr[data-track-id][data-unix]').forEach(row => {
       const cell = document.createElement('td');
       const button = document.createElement('button');
-      button.type='button';button.textContent='×';button.className='delete-listen';button.setAttribute('aria-label','Delete listening record');
+      button.type='button';button.textContent='×';button.className='delete-listen';button.setAttribute('aria-label',body.dataset.i18nDeleteLabel);
       button.addEventListener('click',async () => {
-        if (!confirm('Delete this listening record?')) return;
+        if (!confirm(body.dataset.i18nDeleteConfirm)) return;
         button.disabled=true;
         const target = new URL(`/apis/web/v1/profiles/${encodeURIComponent(slug)}/listens`,location.origin);
         target.searchParams.set('track_id',row.dataset.trackId);target.searchParams.set('unix',row.dataset.unix);
         try {
           const result=await fetch(target,{method:'DELETE',signal:controller.signal});
-          if (!result.ok) throw Error('Unable to delete this listening record. Please retry.');
+          if (!result.ok) throw Error(body.dataset.i18nDeleteError);
           location.reload();
         } catch(error) {
           if (error.name==='AbortError') return;
           let message=document.getElementById('listen-status');
           if (!message) {message=document.createElement('p');message.id='listen-status';message.setAttribute('role','status');row.closest('table').after(message);}
-          message.textContent=error.message;button.disabled=false;
+          message.textContent=body.dataset.i18nDeleteError;button.disabled=false;
         }
       });cell.append(button);row.append(cell);
     });

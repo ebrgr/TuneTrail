@@ -341,7 +341,11 @@ func TestInterestAPIValidationAndHTMLParity(t *testing.T) {
 			for _, item := range items {
 				sum += item.ListenCount
 			}
-			if !strings.Contains(body, strconv.FormatInt(sum, 10)+" plays in 16 intervals") {
+			unit := " plays in 16 intervals"
+			if sum == 1 {
+				unit = " play in 16 intervals"
+			}
+			if !strings.Contains(body, strconv.FormatInt(sum, 10)+unit) {
 				t.Fatal("HTML/API interest counts differ")
 			}
 		}

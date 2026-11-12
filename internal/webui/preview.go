@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/version"
 )
 
@@ -55,6 +56,7 @@ type ThemeOption struct {
 	Colors Palette
 }
 type Page struct {
+	Locale                        *i18n.View
 	ForcedTimezone                bool
 	Live                          bool
 	SwitchLinks                   map[string]string
@@ -189,7 +191,11 @@ func NewPreview() (http.Handler, error) {
 		}
 		p := makePage(r)
 		var b bytes.Buffer
-		if err := tmpl.ExecuteTemplate(&b, "page.html", p); err != nil {
+		localized, err := localizedTemplates(tmpl, nil)
+		if err == nil {
+			err = localized.ExecuteTemplate(&b, "page.html", p)
+		}
+		if err != nil {
 			http.Error(w, "Unable to render preview", 500)
 			return
 		}

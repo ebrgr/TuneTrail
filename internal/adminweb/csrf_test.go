@@ -206,10 +206,10 @@ func TestFormSourcesLimitsAndMethods(t *testing.T) {
 
 // TestSafeReturnAllowsOnlyKnownReadPages rejects external, encoded, and action destinations.
 func TestSafeReturnAllowsOnlyKnownReadPages(t *testing.T) {
-	for _, v := range []string{"/", "/admin", "/admin?profile=1&section=keys", "/alpha", "/alpha/manage/track/1", "/manage/manage/artist/2", "/alpha/listens?page=2&period=all_time", "/alpha/rewind?year=2026&month=1", "/alpha/listens?year=2026&week=45&page=2&limit=25", "/alpha/manage/track/1?listen_at=1730611800&history_return=%2Falpha%2Flistens%3Fweek%3D45%26year%3D2026"} {
+	for _, v := range []string{"/", "/admin", "/admin/settings", "/admin?profile=1&section=keys", "/alpha", "/alpha/manage/track/1", "/manage/manage/artist/2", "/alpha/listens?page=2&period=all_time", "/alpha/rewind?year=2026&month=1", "/alpha/listens?year=2026&week=45&page=2&limit=25", "/alpha/manage/track/1?listen_at=1730611800&history_return=%2Falpha%2Flistens%3Fweek%3D45%26year%3D2026"} {
 		require.Equal(t, v, SafeReturn(v), v)
 	}
-	for _, v := range []string{"https://evil.test/", "//evil.test/", "/admin/logout", "/admin?next=//evil.test", "/alpha/manage/track/1/delete", "/alpha/track/0", "/alpha/track/2147483648", "/alpha/%2e%2e/admin", "/alpha%2ftrack%2f1", "/alpha\\evil", "/admin?profile=1&profile=2", "/alpha?token=secret", "/alpha#fragment", "/admin?profile=-1", "/alpha/listens?week=54", "/alpha/manage/track/1?history_return=%2Fbeta%2Flistens", "/alpha/manage/track/1?history_return=%2Falpha%2Fmanage%2Ftrack%2F1"} {
+	for _, v := range []string{"https://evil.test/", "//evil.test/", "/admin/settings?next=x", "/admin/settings/save", "/admin/logout", "/admin?next=//evil.test", "/alpha/manage/track/1/delete", "/alpha/track/0", "/alpha/track/2147483648", "/alpha/%2e%2e/admin", "/alpha%2ftrack%2f1", "/alpha\\evil", "/admin?profile=1&profile=2", "/alpha?token=secret", "/alpha#fragment", "/admin?profile=-1", "/alpha/listens?week=54", "/alpha/manage/track/1?history_return=%2Fbeta%2Flistens", "/alpha/manage/track/1?history_return=%2Falpha%2Fmanage%2Ftrack%2F1"} {
 		require.Empty(t, SafeReturn(v), v)
 	}
 }

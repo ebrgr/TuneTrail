@@ -137,7 +137,7 @@ func (h *Pages) loadMedia(ctx context.Context, p *LivePage, kind string, id int3
 	}
 	recent, err := h.store.GetListensPaginated(ctx, o)
 	if !fail("listens", err) {
-		p.Listens = h.listens(slug, recent.Items, p.Options.Timeframe.Timezone)
+		p.Listens = h.listens(slug, recent.Items, p.Options.Timeframe.Timezone, p.Locale)
 		p.HistoryMore = recent.HasNextPage
 	}
 	playing, err := listening.ReadNowPlaying(ctx, h.store)

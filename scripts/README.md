@@ -10,3 +10,8 @@ Os scripts de comparação visual das issues 022–028 que iniciam React permane
 como registro histórico dos métodos usados antes da remoção. Eles exigem uma
 versão histórica do cliente e não são a suíte executável da versão atual; suas
 capturas e relatórios continuam em `docs-dev/comparisons/`.
+
+A captura `capture_settings_041.cjs` compara administração e configuração em
+desktop/celular e testa salvamento sem JavaScript. **Use somente uma instância
+com banco descartável:** o teste grava um valor fictício no campo Last.fm.
+Instruções e evidências estão em `docs-dev/comparisons/configuracao/ISSUE_041.md`.

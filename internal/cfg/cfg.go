@@ -94,19 +94,46 @@ type config struct {
 }
 
 var (
-	globalConfig *config
-	once         sync.Once
-	lock         sync.RWMutex
+	globalConfig    *config
+	startupDocument Document
+	loadErr         error
+	once            sync.Once
+	lock            sync.RWMutex
 )
 
-// Initialize initializes the global configuration using the provided getenv function.
+// Load initializes configuration once and preserves failures for subsequent calls.
 func Load(getenv func(string) string, version string) error {
-	var err error
 	once.Do(func() {
-		globalConfig, err = loadConfig(getenv, version)
+		reader := &envReader{getenv: getenv}
+		document, effective, err := prepareTOML(reader)
+		if err != nil {
+			loadErr = err
+			return
+		}
+		get := func(key string) string {
+			if value, ok := effective[key]; ok {
+				return value
+			}
+			value, _ := reader.get(key)
+			return value
+		}
+		loaded, err := loadConfig(get, version)
+		if reader.err != nil {
+			loadErr = reader.err
+			return
+		}
+		if err != nil {
+			loadErr = err
+			return
+		}
+		// Publish the startup snapshot under the same lock used by getters.
+		lock.Lock()
+		globalConfig = loaded
+		startupDocument = *document
+		lock.Unlock()
 	})
-	if err != nil {
-		return fmt.Errorf("cfg.Load: %w", err)
+	if loadErr != nil {
+		return fmt.Errorf("cfg.Load: %w", loadErr)
 	}
 	return nil
 }

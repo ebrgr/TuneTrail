@@ -1,0 +1,39 @@
+[
+  {
+    "name": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "geometry": {
+      "document": 1440,
+      "viewport": 1440
+    },
+    "firstFocus": "skip-link"
+  },
+  {
+    "name": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "geometry": {
+      "document": 390,
+      "viewport": 390
+    },
+    "firstFocus": "skip-link"
+  },
+  {
+    "name": "nojs",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "geometry": {
+      "document": 390,
+      "viewport": 390
+    },
+    "firstFocus": "skip-link",
+    "noJavaScriptSave": "passed"
+  }
+]

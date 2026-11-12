@@ -2,6 +2,7 @@
   let opener;
   const theme = window.KoitoTheme;
   const status = document.getElementById('theme-status');
+  const text = document.body.dataset;
   const customInput = document.getElementById('custom-theme-input');
   const updateThemeButtons = () => document.querySelectorAll('[data-theme-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === document.documentElement.dataset.theme)));
   updateThemeButtons();
@@ -10,7 +11,7 @@
   const assets = document.body.dataset.assets || '/preview-assets';
   fetch(assets + '/themes.json').then(response => { if (!response.ok) throw Error(); return response.json(); }).then(palettes => {
     customInput.value = JSON.stringify(theme.getCustom() || palettes.yuu, null, 2);
-  }).catch(() => { status.textContent = 'Unable to load theme examples. Built-in themes still work.'; });
+  }).catch(() => { status.textContent = text.i18nThemeLoadError; });
   function openDialog(id, button) {
     const dialog = document.getElementById(id);
     if (!dialog || document.querySelector('dialog[open]')) return;
@@ -24,7 +25,7 @@
     const close = event.target.closest('[data-close]');
     if (close) closeDialog(close.closest('dialog'));
     const choice = event.target.closest('[data-theme-choice]');
-    if (choice) {theme.apply(choice.dataset.themeChoice);status.textContent = 'Theme applied on this browser.';}
+    if (choice) {theme.apply(choice.dataset.themeChoice);status.textContent = text.i18nThemeApplied;}
   });
   document.querySelectorAll('dialog').forEach(dialog => {
     dialog.addEventListener('close', () => { if (opener?.isConnected) opener.focus(); });
@@ -60,16 +61,16 @@
       if (next !== undefined) {event.preventDefault();selectTab(tabs[next],true);}
     });
   });
-  document.getElementById('reset-theme').addEventListener('click', () => {theme.reset();status.textContent = 'Default theme restored.';});
+  document.getElementById('reset-theme').addEventListener('click', () => {theme.reset();status.textContent = text.i18nThemeReset;});
   document.getElementById('custom-theme-form').addEventListener('submit', event => {
     event.preventDefault();
     try {
       const palette = JSON.parse(customInput.value);
-      if (!theme.valid(palette)) throw Error('Use exactly the 14 expected hexadecimal color properties.');
+      if (!theme.valid(palette)) throw Error(text.i18nThemeInvalidPalette);
       theme.apply('custom', palette);
       customInput.value = JSON.stringify(palette, null, 2);
-      status.textContent = 'Custom theme applied on this browser.';
-    } catch (error) {status.textContent = error instanceof SyntaxError ? 'Invalid JSON. No appearance changes were made.' : error.message;}
+      status.textContent = text.i18nThemeCustomApplied;
+    } catch (error) {status.textContent = error instanceof SyntaxError ? text.i18nThemeInvalidJson : error.message;}
   });
   const failImage = image => {
     if (image.matches('[data-avatar-image]')) {

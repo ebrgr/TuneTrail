@@ -2,13 +2,13 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Koito: setup",
+      "label": "TuneTrail: setup",
       "type": "shell",
       "command": "make setup",
       "problemMatcher": []
     },
     {
-      "label": "Koito: check",
+      "label": "TuneTrail: check",
       "type": "shell",
       "command": "make check",
       "group": "test",
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "label": "Koito: build",
+      "label": "TuneTrail: build",
       "type": "shell",
       "command": "make build",
       "group": "build",

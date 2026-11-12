@@ -31,11 +31,11 @@ func (h *Pages) loadHome(ctx context.Context, p *LivePage) {
 		items, _, err := h.ranking(ctx, p.Profile.Slug, kind, o)
 		bad := fail(kind, err)
 		q := "?period=" + p.Period
-		p.Cards = append(p.Cards, Card{Title: "Top " + kind, URL: "/" + p.Profile.Slug + "/chart/top/" + kind + q, Items: items, Error: bad})
+		p.Cards = append(p.Cards, Card{Kind: kind, Title: translated(p.Locale, "card."+kind, "Top "+kind), URL: "/" + p.Profile.Slug + "/chart/top/" + kind + q, Items: items, Error: bad})
 	}
 	recent, err := h.store.GetListensPaginated(ctx, db.GetItemsOpts{Page: 1, Limit: 28, Timeframe: all})
 	if !fail("listens", err) {
-		p.Listens = h.listens(p.Profile.Slug, recent.Items, loc)
+		p.Listens = h.listens(p.Profile.Slug, recent.Items, loc, p.Locale)
 		p.HistoryMore = recent.HasNextPage
 	}
 	playing, err := listening.ReadNowPlaying(ctx, h.store)

@@ -20,3 +20,17 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 #admin-settings p{margin-top:20px}#admin-settings a{color:var(--color-primary)}
 @media(min-width:40rem){.admin-shell{margin-left:58px;padding-left:44px} }
 @media(max-width:calc(40rem - 1px)){.admin-shell{padding:32px 18px 30px}.skip-link{left:16px}}
+/* Server configuration reuses the administrative shell and stacks field state clearly. */
+.admin-main .server-settings-form{display:block}.admin-main .server-setting{margin:14px 0;padding:20px}.admin-main .server-setting label{font-weight:600;display:block}.admin-main .server-setting input,.admin-main .server-setting select{max-width:42rem;margin-top:8px}.server-setting-state{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:10px;margin-top:12px}.server-setting-state div{min-width:0}.server-setting-state dt{font-size:.8rem;color:var(--color-fg-secondary)}.server-setting-state dd{margin:3px 0;overflow-wrap:anywhere}.server-setting-override{font-weight:600}.server-settings-actions{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}
+
+/* Administrative backgrounds also need the shared inset arrow. */
+:is(.admin-main, #admin-settings) select:not([multiple]):not([size]) {
+  background-image: var(--select-arrow);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+@media (forced-colors: active) {
+  :is(.admin-main, #admin-settings) select:not([multiple]):not([size]) { background-image: none; }
+}

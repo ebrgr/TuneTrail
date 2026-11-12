@@ -3,34 +3,44 @@
 {{define "live-rewind"}}
 {{$rewind:=.Rewind}}
 <main class="rewind-layout">
-  <aside class="rewind-controls" aria-label="Rewind period">
-    <nav class="rewind-modes" aria-label="Rewind mode">{{template "rewind-choice" $rewind.Monthly}}{{template "rewind-choice" $rewind.Yearly}}</nav>
-    <h2>{{if $rewind.Month}}{{$rewind.Year}}{{else}}Years{{end}}</h2>
-    <nav class="rewind-options" aria-label="Years">{{range $rewind.Years}}{{template "rewind-choice" .}}{{else}}<p>No completed years available.</p>{{end}}</nav>
-    {{if $rewind.Month}}<nav class="rewind-options" aria-label="Months">{{range $rewind.Months}}{{template "rewind-choice" .}}{{end}}</nav>{{end}}
-    <form method="get" action="/{{.Profile.Slug}}/rewind" class="rewind-time-form">
+  <aside class="rewind-controls" aria-label="{{tr "ui.rewind_period" "Rewind period"}}">
+    {{if $rewind.Month}}
+    <nav class="rewind-year-nav" aria-label="{{tr "ui.years" "Years"}}">
+      {{if $rewind.PreviousYear.URL}}<a href="{{$rewind.PreviousYear.URL}}" aria-label="{{tr "rewind.previous_year" "Previous year"}}">‹</a>{{else}}<span aria-hidden="true"></span>{{end}}
+      <h2>{{$rewind.Year}}</h2>
+      {{if $rewind.NextYear.URL}}<a href="{{$rewind.NextYear.URL}}" aria-label="{{tr "rewind.next_year" "Next year"}}">›</a>{{else}}<span aria-hidden="true"></span>{{end}}
+    </nav>
+    <nav class="rewind-options rewind-months" aria-label="{{tr "ui.months" "Months"}}">{{range $rewind.Months}}{{template "rewind-choice" .}}{{end}}</nav>
+    {{else}}
+    <h2>{{tr "ui.years" "Years"}}</h2>
+    <nav class="rewind-options" aria-label="{{tr "ui.years" "Years"}}">{{range $rewind.Years}}{{template "rewind-choice" .}}{{else}}<p>{{tr "ui.no_completed_years_available" "No completed years available."}}</p>{{end}}</nav>
+    {{end}}
+    <form method="get" action="/{{.Profile.Slug}}/rewind" class="rewind-time-form" data-rewind-time-form>
       <input type="hidden" name="year" value="{{$rewind.Year}}">
       {{if $rewind.Month}}<input type="hidden" name="month" value="{{$rewind.Month}}">{{end}}
       {{with .Params.Get "tz"}}<input type="hidden" name="tz" value="{{.}}">{{end}}
-      <label><input type="checkbox" name="show_time" value="1" {{if $rewind.ShowTime}}checked{{end}}> Show time listened?</label>
-      <button type="submit" class="large-button">Apply</button>
+      <label><input type="checkbox" name="show_time" value="1" {{if $rewind.ShowTime}}checked{{end}}>{{tr "ui.show_time_listened_question" " Show time listened?"}}</label>
+      <noscript><button type="submit" class="large-button">{{tr "ui.apply" "Apply"}}</button></noscript>
     </form>
   </aside>
   <section class="rewind-content" aria-labelledby="rewind-title" data-plays="{{$rewind.Stats.Plays}}" data-minutes="{{$rewind.Stats.MinutesListened}}" data-average-plays="{{printf "%.6f" $rewind.Stats.AvgPlaysPerDay}}">
-    <h1 id="rewind-title">{{$rewind.Title}}</h1>
-    <p class="date-range">{{$rewind.RangeLabel}} · {{$rewind.Timezone}}{{if $rewind.InProgress}} · In progress{{end}}</p>
-    {{if $rewind.Empty}}<p class="rewind-empty">Not enough data exists to create a Rewind for this period.</p>{{else}}
+    <nav class="rewind-modes" aria-label="{{tr "ui.rewind_mode" "Rewind mode"}}">{{template "rewind-choice" $rewind.Monthly}}{{template "rewind-choice" $rewind.Yearly}}</nav>
     <div class="card rewind-card">
-      {{range $rewind.Groups}}<section class="rewind-group"><h2>{{.Title}}</h2><div class="rewind-group-content">
-        {{range $i,$item:=.Items}}{{if eq $i 0}}<img src="{{$item.Image.Medium}}" srcset="{{$item.Image.Small}} 128w, {{$item.Image.Medium}} 300w" sizes="210px" alt="{{$item.Title}}" width="210" height="210" data-cover><div class="rewind-group-items"><div class="rewind-top"><h3>{{$item.Title}}</h3><span>{{$item.Count}} plays{{if $rewind.ShowTime}} ({{$item.Minutes}} minutes){{end}}</span></div>
-        {{else}}<p>{{$item.Title}} <span>— {{$item.Count}} plays{{if $rewind.ShowTime}} ({{$item.Minutes}} minutes){{end}}</span></p>{{end}}{{end}}</div>
+      <header class="rewind-header"><h1 id="rewind-title">{{$rewind.Title}}</h1>
+        <p class="date-range">{{$rewind.RangeLabel}} · {{$rewind.Timezone}}{{if $rewind.InProgress}} · {{tr "ui.in_progress" "In progress"}}{{end}}</p>
+      </header>
+      {{if $rewind.Empty}}<p class="rewind-empty">{{tr "ui.not_enough_data_exists_to_create_a_rewind_for_this_period" "Not enough data exists to create a Rewind for this period."}}</p>{{else}}
+      {{range $rewind.Groups}}{{$group := .}}<section class="rewind-group"><div class="rewind-group-content">
+        {{range $i,$item:=.Items}}{{if eq $i 0}}<img src="{{$item.Image.Medium}}" srcset="{{$item.Image.Small}} 128w, {{$item.Image.Medium}} 300w" sizes="210px" alt="{{$item.Title}}" width="210" height="210" data-cover><div class="rewind-group-items"><h2>{{$group.Title}}</h2><div class="rewind-top"><h3>{{$item.Title}}</h3><span>{{quantity "quantity.plays" $item.Count}}{{if $rewind.ShowTime}} ({{quantity "quantity.minutes" $item.Minutes}}){{end}}</span></div>
+        {{else}}<p>{{$item.Title}} <span>— {{quantity "quantity.plays" $item.Count}}{{if $rewind.ShowTime}} ({{quantity "quantity.minutes" $item.Minutes}}){{end}}</span></p>{{end}}{{end}}</div>
       </div></section>{{end}}
-      <div class="rewind-stats" aria-label="Period statistics">
-        <div><b>{{$rewind.Stats.MinutesListened}}</b> Minutes</div><div><b>{{$rewind.Stats.UniqueTracks}}</b> Tracks</div><div><b>{{$rewind.Stats.NewTracks}}</b> New tracks</div>
-        <div><b>{{$rewind.Stats.Plays}}</b> Plays</div><div><b>{{$rewind.Stats.UniqueAlbums}}</b> Albums</div><div><b>{{$rewind.Stats.NewAlbums}}</b> New albums</div>
-        <div><b>{{printf "%.1f" $rewind.Stats.AvgPlaysPerDay}}</b> Plays / day</div><div><b>{{$rewind.Stats.UniqueArtists}}</b> Artists</div><div><b>{{$rewind.Stats.NewArtists}}</b> New artists</div>
+      <div class="rewind-stats" aria-label="{{tr "ui.period_statistics" "Period statistics"}}">
+        <div><b>{{number $rewind.Stats.MinutesListened}}</b> {{unit "unit.minutes" $rewind.Stats.MinutesListened}}</div><div><b>{{number $rewind.Stats.UniqueTracks}}</b> {{unit "unit.tracks" $rewind.Stats.UniqueTracks}}</div><div><b>{{number $rewind.Stats.NewTracks}}</b> {{unit "unit.new_tracks" $rewind.Stats.NewTracks}}</div>
+        <div><b>{{number $rewind.Stats.Plays}}</b> {{unit "unit.plays" $rewind.Stats.Plays}}</div><div><b>{{number $rewind.Stats.UniqueAlbums}}</b> {{unit "unit.albums" $rewind.Stats.UniqueAlbums}}</div><div><b>{{number $rewind.Stats.NewAlbums}}</b> {{unit "unit.new_albums" $rewind.Stats.NewAlbums}}</div>
+        <div><b>{{decimal $rewind.Stats.AvgPlaysPerDay}}</b> {{tr "ui.plays_day" "Plays / day"}}</div><div><b>{{number $rewind.Stats.UniqueArtists}}</b> {{unit "unit.artists" $rewind.Stats.UniqueArtists}}</div><div><b>{{number $rewind.Stats.NewArtists}}</b> {{unit "unit.new_artists" $rewind.Stats.NewArtists}}</div>
       </div>
-    </div>{{end}}
+      {{end}}
+    </div>
   </section>
 </main>
 {{end}}

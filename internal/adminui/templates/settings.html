@@ -1,0 +1,23 @@
+{{define "settings.html"}}<!doctype html>
+<html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}"><head>{{template "admin-head" .}}</head>
+<body data-admin-ui="go" data-i18n-copy="{{tr "admin.js.copy" "Copy"}}" data-i18n-copied="{{tr "admin.js.copied" "Copied"}}" data-i18n-copy-manual="{{tr "admin.js.copy_manual" "Select and copy manually"}}"><a class="skip-link" href="#admin-main">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>{{template "admin-nav" .}}
+<div class="admin-shell"><main id="admin-main" class="admin-main">
+<h1>{{tr "admin.text.server_configuration" "Server configuration"}}</h1>
+<p>{{tr "admin.text.these_settings_apply_to_the_whole_server_effective_changes_require_a_restart_environment_overrides_retain_priority" "These settings apply to the whole server. Effective changes require a restart; environment overrides retain priority."}}</p>
+{{if .Notice}}<p role="status">{{.Notice}}</p>{{end}}{{if .Error}}<p role="alert">{{.Error}}</p>{{end}}
+{{if .RestartRequired}}<p role="status">{{tr "admin.text.the_effective_configuration_differs_from_the_running_server_restart_to_apply_it" "The effective configuration differs from the running server. Restart to apply it."}}</p>{{end}}
+<p>{{trn "admin.process_zone" "Process time zone: {{.Zone}}. An empty application time zone uses the request or process time zone." "Zone" .LocalTimezone}}</p>
+<p>{{tr "admin.text.listenbrainz_relay_is_configured_for_each_listening_profile" "ListenBrainz relay is configured for each listening profile."}} <a href="/admin">{{tr "admin.text.manage_profiles_and_relay" "Manage profiles and relay"}}</a>.</p>
+<form method="post" action="/admin/settings/save" class="server-settings-form">
+<input type="hidden" name="csrf_token" value="{{.CSRF}}"><input type="hidden" name="submission_token" value="{{.Submission}}"><input type="hidden" name="revision" value="{{.Revision}}">
+{{range .Fields}}<section class="server-setting"><label for="setting-{{.Name}}">{{.Label}}</label>
+{{if .Options}}<select id="setting-{{.Name}}" name="{{.Name}}"{{if .Overridden}} disabled{{end}} aria-describedby="hint-{{.Name}}{{if .Overridden}} override-{{.Name}}{{end}}">{{range .Options}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+{{else}}<input id="setting-{{.Name}}" name="{{.Name}}" value="{{.Value}}"{{if .Overridden}} disabled{{end}}{{if eq .Kind "number"}} inputmode="numeric"{{end}} maxlength="4096" aria-describedby="hint-{{.Name}}{{if .Overridden}} override-{{.Name}}{{end}}">{{end}}
+<p id="hint-{{.Name}}">{{.Description}}</p>
+{{if .Overridden}}<p id="override-{{.Name}}" class="server-setting-override">{{tr "admin.env_source" "Set by environment variable"}} <code>{{.OverrideVariable}}</code>. {{tr "admin.env_locked" "To edit this field, remove the environment override and restart TuneTrail."}}</p>{{end}}
+{{if $.StateAvailable}}<dl class="server-setting-state"><div><dt>{{tr "admin.text.saved" "Saved"}}</dt><dd>{{.Saved}} <small>({{.SavedSource}})</small></dd></div><div><dt>{{tr "admin.text.effective_after_restart" "Effective after restart"}}</dt><dd>{{.Effective}} <small>({{.Source}})</small></dd></div><div><dt>{{tr "admin.text.running" "Running"}}</dt><dd>{{.Active}}</dd></div></dl>
+{{end}}</section>{{end}}
+<p>{{tr "admin.text.the_subsonic_test_uses_the_displayed_values_without_saving_including_values_supplied_by_environment_variables" "The Subsonic test uses the displayed values without saving, including values supplied by environment variables."}}</p>
+<div class="server-settings-actions"><button type="submit">{{tr "admin.text.save_configuration" "Save configuration"}}</button><button type="submit" formaction="/admin/settings/subsonic/test">{{tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button></div>
+</form><p><a href="/admin/settings">{{tr "admin.text.reload_saved_configuration" "Reload saved configuration"}}</a> · <a href="/admin">{{tr "admin.text.back_to_administration" "Back to administration"}}</a></p>
+</main><footer class="admin-footer">TuneTrail · <a href="/">{{tr "admin.text.listening_profiles" "Listening profiles"}}</a></footer></div></body></html>{{end}}

@@ -30,6 +30,8 @@ jobs:
         run: python3 -m unittest scripts.test_version
       - name: Check synchronized and incrementing version
         run: python3 scripts/version.py --check-parent
+      - name: Validate language catalogs and localization
+        run: go test ./internal/i18n ./internal/webui -run 'Test(Catalog|PresentationLocale|LocalizedRelativeTime)'
       - run: make check
       - run: make multiuser.check
       - name: Verify static Linux builds

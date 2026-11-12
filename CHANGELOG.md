@@ -4,6 +4,22 @@
 
 ### Added
 
+- Localize displayed dates, numbers, relative times and plural quantities in English and Brazilian Portuguese.
+
+- Translate administrative pages, notices and accessibility labels using the external language catalogs.
+
+- Translate public navigation, listening pages and rewind into Brazilian Portuguese using external language catalogs.
+
+- Add browser language selection in settings and external English and Brazilian Portuguese catalogs for the profile-selection screen.
+
+- Provide a sample TOML configuration and offline recovery and upgrade instructions.
+
+- Add an authenticated server configuration page with saved, active and override states, plus a non-saving Subsonic connection test.
+
+- Persist `conf.toml` changes atomically with revision tracking and comment preservation.
+
+- Read optional `conf.toml` settings with environment and `_FILE` precedence, validation and bounded Subsonic startup checks.
+
 - Go administration includes login/account, profiles, avatars, keys,
   relay, import/export, catalog editing and reviewed deletion/merging. Forms work
   without JavaScript, preserve profile context and reject duplicate submissions.
@@ -16,6 +32,20 @@
   history from real scoped data, with search, appearance and existing admin actions.
 
 ### Changed
+
+- Improve rewind ranking spacing and keep all items visible at every screen size.
+
+- Refine rewind accent lines and constrain ranking details to the image height.
+
+- Align the rewind card, year navigation and theme-colored accents with the original layout.
+
+- Keep all rewind months visible, move period modes above the summary and apply the listening-time option immediately.
+
+- Use “reproduções” for listening records in the Brazilian Portuguese interface.
+
+- Disable configuration fields controlled by environment variables and show the controlling variable name.
+
+- Show profile relay tokens as ordinary editable text and require both relay fields when saving or testing.
 
 - Migrate legacy `koito.db` databases to `tunetrail.db` with a consistent backup, schema v2-to-v3 upgrade, and conflict protection.
 
@@ -42,6 +72,8 @@
   are bundled with the server. Existing `KOITO_WEB_UI=react` must be removed.
 
 ### Fixed
+
+- Add breathing room between dropdown arrows and the edge of selection fields.
 
 - Prevent the listening-interest curve from overshooting its values and disappearing at the graph boundaries.
 

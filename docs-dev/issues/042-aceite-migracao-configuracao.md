@@ -1,14 +1,34 @@
 # 042 — Integração e aceite da configuração
 
-**Status:** Aberta · **Depende de:** 038–041
+**Status:** Implementada e validada — aguardando aceite · **Depende de:** 038–041
 
 ## Objetivo
 
-Validar a experiência completa de configuração e documentar implantação, atualização e reversão.
+Validar os dez campos e a experiência administrativa definidos no
+[contrato da 038](../CONTRATO_CONFIGURACAO_038.md), incluindo documentação de
+implantação, atualização e recuperação offline.
 
 ## Aceite
 
-- Exercitar instalação existente sem TOML e instalação nova; salvar, reiniciar e confirmar valores efetivos e precedência, incluindo `_FILE` e substituições pelo ambiente.
-- Validar conta master, negação de acesso, CSRF, segredos, relay por perfil, fusos, importação, porta, erros de arquivo e alterações concorrentes.
-- Verificar Compose, Docker, VS Code e execução local; preservar dados existentes e SQLite v3. Executar testes pertinentes e registrar limitações.
-- Atualizar documentação do usuário, exemplo seguro, changelog e roadmap; registrar capturas desktop/celular e resultados, sem credenciais. Descrever backup e reversão sem divulgar segredos.
+- Executar a matriz do contrato: arquivo ausente/presente/inválido, defaults,
+  ambiente e `_FILE` (inclusive vazio/falha), duas composições e overrides.
+- Salvar, reiniciar e conferir valores ativos e persistidos dos dez campos,
+  campos visíveis no admin e ausência de nova configuração nas respostas públicas.
+- Cobrir sessão admin, negativas para visitante/chave, CSRF/origem, conflitos,
+  readonly e falhas de escrita, sem confirmação adicional de senha por save.
+- Validar fuso forçado/automático versus TZ, Subsonic em servidor simulado,
+  teste de rascunho sem salvar e recuperação offline após configuração inválida.
+- Conferir relay por perfil já existente, reinício sem reassociação do legado,
+  importação e integridade; preservar SQLite v3, dados e arquivos de migração.
+- Verificar execução local, Docker/Compose, VS Code e reset-password; registrar
+  limites, captura desktop/celular e testes pertinentes ao código final.
+- Atualizar docs de uso, exemplo TOML fictício, changelog e roadmap; não apresentar
+  planejamento como funcionalidade disponível nem publicar automaticamente.
+
+## Resultado — 09/11/2026
+
+Matriz de configuração, reinícios, recuperação offline, permissões, migração/importação e execução real via Compose foram validadas. Exemplo TOML e documentação de implantação/recuperação adicionados. Revisão do Advisor aprovada. O lançamento equivalente pelo Delve passou; o F5 da interface gráfica do VS Code não foi exercitado. [Evidências e limites](../comparisons/configuracao/ISSUE_042.md).
+
+## Ajuste solicitado — bloqueio por ambiente
+
+Os campos controlados por ambiente ou `_FILE` ficam desabilitados e informam o nome da variável. A gravação não altera o valor existente no TOML e rejeita tentativas forjadas; o teste Subsonic usa o valor efetivo dos campos bloqueados. A precedência permanece inalterada.

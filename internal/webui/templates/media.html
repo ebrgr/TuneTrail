@@ -4,38 +4,38 @@
   <header class="media-heading" data-entity="{{$media.Kind}}" data-entity-id="{{$media.ID}}" data-listen-count="{{$media.Count}}" data-time-listened="{{$media.TimeListened}}" data-rank="{{$media.Rank}}">
     <img class="media-cover" src="{{$media.Image.Large}}" srcset="{{$media.Image.Large}} 640w, {{$media.Image.XL}} 1000w" sizes="(max-width:767px) 280px, 385px" width="385" height="385" alt="{{$media.Title}}" fetchpriority="high" data-cover>
     <div class="media-heading-text">
-      <p class="media-type">{{$media.Type}}</p>
+      <p class="media-type">{{tr (printf "media.%s" $media.Kind) $media.Type}}</p>
       <h1>{{$media.Title}}{{if $media.Rank}} <span class="media-overall-rank">#{{$media.Rank}}</span>{{end}}</h1>
-      {{if or $media.Various $media.Artists}}<p>By {{template "live-artists" $media.Item}}</p>{{end}}
-      {{with $media.Album}}<p>Appears on <a class="text-link" href="{{.URL}}">{{.Label}}</a></p>{{end}}
-      <p>{{$media.Count}} {{if eq $media.Count 1}}play{{else}}plays{{end}}</p>
-      {{if $media.TimeListened}}<p>{{$media.MinutesListened}} minutes listened</p>{{end}}
-      {{with $media.FirstListen}}<p>Listening since <time datetime="{{.Format "2006-01-02T15:04:05Z07:00"}}" title="{{.Format "02 Jan 2006 15:04:05 MST"}}">{{.Format "02/01/2006"}}</time></p>{{end}}
-      <a class="text-link" href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}">Manage this item</a>
-      {{if $media.MusicBrainzURL}}<a class="text-link media-mbz" href="{{$media.MusicBrainzURL}}" target="_blank" rel="noopener noreferrer">View on MusicBrainz {{icon "ExternalLink"}}</a>{{end}}
+      {{if or $media.Various $media.Artists}}<p>{{tr "media.by" "By"}} {{template "live-artists" $media.Item}}</p>{{end}}
+      {{with $media.Album}}<p>{{tr "media.appears_on" "Appears on"}} <a class="text-link" href="{{.URL}}">{{.Label}}</a></p>{{end}}
+      <p>{{quantity "quantity.plays" $media.Count}}</p>
+      {{if $media.TimeListened}}<p>{{quantity "quantity.minutes" $media.MinutesListened}}</p>{{end}}
+      {{with $media.FirstListen}}<p>{{tr "media.listening_since" "Listening since"}} <time datetime="{{.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .}}">{{date .}}</time></p>{{end}}
+      <a class="text-link" href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}">{{tr "ui.manage_this_item" "Manage this item"}}</a>
+      {{if $media.MusicBrainzURL}}<a class="text-link media-mbz" href="{{$media.MusicBrainzURL}}" target="_blank" rel="noopener noreferrer">{{tr "ui.view_musicbrainz" "View on MusicBrainz"}} {{icon "ExternalLink"}}</a>{{end}}
     </div>
   </header>
   <div class="media-reading-blocks">
-    {{if ne $media.Kind "track"}}<section class="media-top-tracks" aria-label="Top tracks">
-      <h3 class="section-title"><a href="{{$media.TopTracks.URL}}">Top tracks →</a></h3>
-      {{if $media.TopTracks.Error}}<p class="error">Ranking unavailable. Please retry.</p>{{else}}{{template "live-ranking" $media.TopTracks.Items}}{{end}}
+    {{if ne $media.Kind "track"}}<section class="media-top-tracks" aria-label="{{tr "ui.top_tracks" "Top tracks"}}">
+      <h3 class="section-title"><a href="{{$media.TopTracks.URL}}">{{tr "ui.top_tracks_arrow" "Top tracks →"}}</a></h3>
+      {{if $media.TopTracks.Error}}<p class="error">{{tr "ui.ranking_unavailable_please_retry" "Ranking unavailable. Please retry."}}</p>{{else}}{{template "live-ranking" $media.TopTracks.Items}}{{end}}
     </section>{{end}}
-    <section class="media-history" aria-label="Last played">
-      <h3 class="section-title"><a href="{{$media.HistoryURL}}">Last played →</a></h3>
-      {{if index .Errors "playing"}}<p class="error">Now playing unavailable. Please retry.</p>{{end}}
-      {{if index .Errors "listens"}}<p class="error">Listening history unavailable. Please retry.</p>{{else}}{{template "live-listens" .}}{{end}}
-      {{if .HistoryMore}}<a class="see-more" href="{{$media.HistoryURL}}">SEE MORE →</a>{{end}}
+    <section class="media-history" aria-label="{{tr "ui.last_played" "Last played"}}">
+      <h3 class="section-title"><a href="{{$media.HistoryURL}}">{{tr "ui.last_played_arrow" "Last played →"}}</a></h3>
+      {{if index .Errors "playing"}}<p class="error">{{tr "ui.now_playing_unavailable_please_retry" "Now playing unavailable. Please retry."}}</p>{{end}}
+      {{if index .Errors "listens"}}<p class="error">{{tr "ui.listening_history_unavailable_please_retry" "Listening history unavailable. Please retry."}}</p>{{else}}{{template "live-listens" .}}{{end}}
+      {{if .HistoryMore}}<a class="see-more" href="{{$media.HistoryURL}}">{{tr "ui.see_more_arrow" "SEE MORE →"}}</a>{{end}}
     </section>
   </div>
   <div class="media-graphs">
-    <section class="media-interest" aria-label="Interest over time"><h3 class="section-title">Interest over time</h3>{{if index .Errors "interest"}}<p class="error">Interest unavailable. Please retry.</p>{{else}}{{template "interest-graph" $media.Interest}}{{end}}</section>
-    <section class="activity" aria-label="Activity"><h3 class="section-title">Activity</h3>{{if index .Errors "activity"}}<p class="error">Activity unavailable. Please retry.</p>{{else}}{{template "activity-grid" .Activity}}{{end}}</section>
+    <section class="media-interest" aria-label="{{tr "ui.interest_over_time" "Interest over time"}}"><h3 class="section-title">{{tr "ui.interest_over_time" "Interest over time"}}</h3>{{if index .Errors "interest"}}<p class="error">{{tr "ui.interest_unavailable_please_retry" "Interest unavailable. Please retry."}}</p>{{else}}{{template "interest-graph" $media.Interest}}{{end}}</section>
+    <section class="activity" aria-label="{{tr "ui.activity" "Activity"}}"><h3 class="section-title">{{tr "ui.activity" "Activity"}}</h3>{{if index .Errors "activity"}}<p class="error">{{tr "ui.activity_unavailable_please_retry" "Activity unavailable. Please retry."}}</p>{{else}}{{template "activity-grid" .Activity}}{{end}}</section>
   </div>
-  {{if eq $media.Kind "artist"}}<section class="media-albums" aria-label="Albums featuring this artist">
-    <h3 class="section-title">Albums featuring {{$media.Title}}</h3>
-    {{if index .Errors "albums"}}<p class="error">Albums unavailable. Please retry.</p>{{else}}
-    <div class="media-album-grid">{{range $media.Albums}}<div class="media large">{{template "live-media" .}}</div>{{else}}<p>Nothing to show for this profile.</p>{{end}}</div>
-    {{if $media.AlbumsMore}}<a class="see-more" href="{{$media.AlbumsURL}}">SEE ALL ALBUMS →</a>{{end}}{{end}}
+  {{if eq $media.Kind "artist"}}<section class="media-albums" aria-label="{{tr "ui.albums_featuring_this_artist" "Albums featuring this artist"}}">
+    <h3 class="section-title">{{tr1 "media.albums_featuring" "Albums featuring {{.Artist}}" "Artist" $media.Title}}</h3>
+    {{if index .Errors "albums"}}<p class="error">{{tr "ui.albums_unavailable_please_retry" "Albums unavailable. Please retry."}}</p>{{else}}
+    <div class="media-album-grid">{{range $media.Albums}}<div class="media large">{{template "live-media" .}}</div>{{else}}<p>{{tr "ui.nothing_to_show_for_this_profile" "Nothing to show for this profile."}}</p>{{end}}</div>
+    {{if $media.AlbumsMore}}<a class="see-more" href="{{$media.AlbumsURL}}">{{tr "ui.see_all_albums_arrow" "SEE ALL ALBUMS →"}}</a>{{end}}{{end}}
   </section>{{end}}
 </main>
 {{end}}

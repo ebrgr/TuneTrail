@@ -13,6 +13,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/webquery"
 )
@@ -22,6 +23,7 @@ type mergeCandidate struct {
 	Name string
 }
 type mediaView struct {
+	Locale                          *i18n.View
 	Submission                      string
 	Profile                         *models.ListeningProfile
 	Kind                            string
@@ -47,10 +49,16 @@ type mediaView struct {
 
 // renderMedia buffers the administrative editor before writing the response.
 func (h *Handler) renderMedia(w http.ResponseWriter, status int, v mediaView) {
+	v.Locale = i18n.ViewOf(w)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var output strings.Builder
-	if err := h.tmpl.ExecuteTemplate(&output, "manage.html", v); err != nil {
-		http.Error(w, "operation failed", 500)
+	v.Error = localMessage(v.Locale, v.Error)
+	tmpl, err := h.adminTemplate(v.Locale)
+	if err == nil {
+		err = tmpl.ExecuteTemplate(&output, "manage.html", v)
+	}
+	if err != nil {
+		textError(w, "operation failed", 500)
 		return
 	}
 	w.WriteHeader(status)
@@ -60,7 +68,7 @@ func (h *Handler) renderMedia(w http.ResponseWriter, status int, v mediaView) {
 // media routes are isolated until the administration dispatcher is activated.
 func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) {
 	if len(parts) < 4 || len(parts) > 5 || parts[1] != "manage" {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	slug, kind := parts[0], parts[2]
@@ -105,14 +113,14 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 	}
 	if r.Method == "POST" {
 		if len(parts) != 5 {
-			http.NotFound(w, r)
+			textError(w, "item not found", http.StatusNotFound)
 			return
 		}
 		h.mediaAction(w, r, identity, profile, kind, id, parts[4])
 		return
 	}
 	if r.Method != "GET" || len(parts) != 4 {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	h.mediaPage(w, r, identity, profile, kind, id, nil, "", nil)
@@ -134,7 +142,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	}
 	ctx := db.WithoutProfile(r.Context())
 	effectiveZone := webquery.Timezone(r)
-	v := mediaView{Submission: ticket, Profile: profile, Kind: kind, ID: id, CSRF: token, Notice: h.takeNotice(identity.SessionID, profile.ID), Timezone: effectiveZone.String(), Location: effectiveZone}
+	v := mediaView{Submission: ticket, Profile: profile, Kind: kind, ID: id, CSRF: token, Notice: h.takeNotice(identity.SessionID, profile.ID, i18n.ViewOf(w)), Timezone: effectiveZone.String(), Location: effectiveZone}
 	query := r.URL.Query()
 	if r.Method == "POST" && form != nil {
 		if saved := adminweb.SafeReturn(form.SingleValue("return_to")); saved != "" {
@@ -476,7 +484,7 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 		}
 		_, err = admin.ReplaceArtwork(r.Context(), h.store, identity.User, kind, id, f.SingleValue("image_url"), reader, admin.ArtworkClient{})
 	default:
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/summary"
@@ -25,7 +26,13 @@ func (h *Pages) serveRewind(w http.ResponseWriter, r *http.Request, p LivePage) 
 	now = now.In(loc)
 	title := fmt.Sprintf("Your %d Rewind", selection.Year)
 	if selection.Month > 0 {
-		title = fmt.Sprintf("Your %s %d Rewind", time.Month(selection.Month), selection.Year)
+		title = fmt.Sprintf("Your %s %d Rewind", p.Locale.Month(time.Month(selection.Month), false), selection.Year)
+	}
+	if p.Locale != nil {
+		localized := p.Locale.Format("rewind.title", map[string]any{"Period": strings.TrimPrefix(strings.TrimSuffix(title, " Rewind"), "Your ")}, nil)
+		if localized != "rewind.title" {
+			title = localized
+		}
 	}
 	stats, err := summary.GenerateSummary(r.Context(), h.store, int32(p.Profile.ID), selection.Timeframe, title)
 	if err != nil {
@@ -49,10 +56,10 @@ func (h *Pages) serveRewind(w http.ResponseWriter, r *http.Request, p LivePage) 
 	page := &RewindPage{
 		Title: title, Year: selection.Year, Month: selection.Month, ShowTime: selection.ShowTime,
 		InProgress: selection.InProgress, Timezone: loc.String(), Stats: stats,
-		RangeLabel: stats.IntervalFrom.In(loc).Format("02 Jan 2006 15:04") + " – " + stats.IntervalTo.In(loc).Format("02 Jan 2006 15:04"),
+		RangeLabel: p.Locale.DateTime(stats.IntervalFrom.In(loc)) + " – " + p.Locale.DateTime(stats.IntervalTo.In(loc)),
 		Empty:      len(stats.TopArtists) == 0 || len(stats.TopAlbums) == 0 || len(stats.TopTracks) == 0,
 	}
-	artistGroup, albumGroup, trackGroup := RewindGroup{Title: "Top Artist"}, RewindGroup{Title: "Top Album"}, RewindGroup{Title: "Top Track"}
+	artistGroup, albumGroup, trackGroup := RewindGroup{Title: translated(p.Locale, "rewind.top_artist", "Top Artist")}, RewindGroup{Title: translated(p.Locale, "rewind.top_album", "Top Album")}, RewindGroup{Title: translated(p.Locale, "rewind.top_track", "Top Track")}
 	for _, entry := range stats.TopArtists {
 		artistGroup.Items = append(artistGroup.Items, RewindItem{artistItem(p.Profile.Slug, entry.Item, entry.Rank), entry.Item.TimeListened / 60})
 	}
@@ -64,6 +71,11 @@ func (h *Pages) serveRewind(w http.ResponseWriter, r *http.Request, p LivePage) 
 	}
 	page.Groups = []RewindGroup{artistGroup, albumGroup, trackGroup}
 	buildRewindChoices(page, selection.Query, "/"+p.Profile.Slug+"/rewind", now, first)
+	for i := range page.Months {
+		page.Months[i].Label = p.Locale.Month(time.Month(i+1), true)
+	}
+	page.Monthly.Label = translated(p.Locale, "rewind.monthly", page.Monthly.Label)
+	page.Yearly.Label = translated(p.Locale, "rewind.yearly", page.Yearly.Label)
 	p.Rewind, p.Title, p.Timezone, p.Params = page, title, loc.String(), selection.Query
 	h.render(w, p)
 }
@@ -138,7 +150,19 @@ func buildRewindChoices(p *RewindPage, base url.Values, path string, now time.Ti
 			p.Yearly.URL, p.Yearly.Disabled = periodURL(p.Year, 0), false
 		}
 	}
+	// Adjacent year links retain the selected month and presentation settings.
 	if p.Month > 0 {
+		for i, year := range p.Years {
+			if year.Current {
+				if i+1 < len(p.Years) {
+					p.PreviousYear = p.Years[i+1]
+				}
+				if i > 0 {
+					p.NextYear = p.Years[i-1]
+				}
+				break
+			}
+		}
 		minMonth, maxMonth := validMonths(p.Year)
 		for month := 1; month <= 12; month++ {
 			enabled := p.Year >= startYear && p.Year <= now.Year() && month >= minMonth && month <= maxMonth

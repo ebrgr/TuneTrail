@@ -2,11 +2,9 @@ package engine
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -89,7 +87,7 @@ func Run(
 ) error {
 	l, ctx, err := initLogger(getenv, version, w)
 	if err != nil {
-		log.Fatalf("Engine: %v", err)
+		return fmt.Errorf("Engine: %w", err)
 	}
 
 	l.Debug().Msg("Engine: Starting application initialization")
@@ -184,29 +182,11 @@ func Run(
 	}
 
 	if cfg.SubsonicEnabled() {
-		l.Debug().Msg("Engine: Checking Subsonic configuration")
-		pingURL := cfg.SubsonicUrl() + "/rest/ping.view?" + cfg.SubsonicParams() + "&f=json&v=1&c=koito"
-
-		resp, err := http.Get(pingURL)
-		if err != nil {
-			l.Fatal().Err(err).Msg("Engine: Failed to contact Subsonic server! Ensure the provided URL is correct")
-		} else {
-			defer resp.Body.Close()
-
-			var result struct {
-				Response struct {
-					Status string `json:"status"`
-				} `json:"subsonic-response"`
-			}
-
-			if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-				l.Fatal().Err(err).Msg("Engine: Failed to parse Subsonic response")
-			} else if result.Response.Status != "ok" {
-				l.Fatal().Msg("Engine: Provided Subsonic credentials are invalid")
-			} else {
-				l.Info().Msg("Engine: Subsonic credentials validated successfully")
-			}
+		// Bound the startup probe and use the same policy as the administrative test.
+		if err := images.TestSubsonic(ctx, cfg.SubsonicUrl(), cfg.SubsonicParams()); err != nil {
+			return fmt.Errorf("Subsonic configuration check failed; correct settings offline and restart: %w", err)
 		}
+		l.Info().Msg("Engine: Subsonic connection validated successfully")
 	}
 
 	l.Debug().Msg("Engine: Initializing image sources")

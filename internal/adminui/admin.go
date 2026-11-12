@@ -2,6 +2,7 @@
 package adminui
 
 import (
+	"context"
 	"embed"
 	"errors"
 	"fmt"
@@ -17,8 +18,11 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/export"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
+	"github.com/ebrgr/TuneTrail/internal/images"
 	"github.com/ebrgr/TuneTrail/internal/importer"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
@@ -39,7 +43,16 @@ type Store interface {
 	db.ExportStore
 	importer.UploadStore
 }
+
+// SettingsStore provides configuration without coupling it to the SQLite store.
+type SettingsStore interface {
+	Read(context.Context) (cfg.SettingsSnapshot, error)
+	Save(context.Context, string, map[string]string) (cfg.SettingsSnapshot, error)
+}
 type Options struct {
+	Languages              *i18n.Catalog
+	Settings               SettingsStore
+	SubsonicTest           func(context.Context, string, string) error
 	RequireSubmissionToken bool
 	DefaultTheme           string
 	CSRF                   *adminweb.CSRF
@@ -60,13 +73,17 @@ type pendingCatalogPlan struct {
 }
 
 type notice struct {
-	profile int32
-	text    string
-	expires time.Time
+	profile   int32
+	key, text string
+	values    map[string]any
+	expires   time.Time
 }
 
 // Handler serves administration in Go mode with session and form protection.
 type Handler struct {
+	languages         *i18n.Catalog
+	settings          SettingsStore
+	subsonicTest      func(context.Context, string, string) error
 	requireSubmission bool
 	submissions       map[uuid.UUID]submissionTicket
 	store             Store
@@ -82,6 +99,7 @@ type Handler struct {
 	catalogPlans      map[uuid.UUID]pendingCatalogPlan
 }
 type view struct {
+	Locale                                          *i18n.View
 	User                                            *models.User
 	Profiles                                        []models.ListeningProfile
 	Profile                                         *models.ListeningProfile
@@ -126,27 +144,59 @@ func New(store Store, opts Options) (*Handler, error) {
 		}
 		return map[string]string{"music": "music", "headphones": "headphones", "disc": "disc", "radio": "radio", "user": "user"}[*icon]
 	}
-	tmpl, err := template.New("admin").Funcs(template.FuncMap{"defaultTheme": func() string { return opts.DefaultTheme }, "initials": initials, "avatarIcon": avatarIcon}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"defaultTheme": func() string { return opts.DefaultTheme }, "initials": initials, "avatarIcon": avatarIcon}).ParseFS(templates, "templates/*.html")
 	if err != nil {
 		return nil, err
 	}
-	h := &Handler{requireSubmission: opts.RequireSubmissionToken, submissions: map[uuid.UUID]submissionTicket{}, store: store, csrf: csrf, tempDir: opts.TempDir, relayClient: opts.RelayClient, musicBrainz: opts.MusicBrainz, tmpl: tmpl, notices: map[uuid.UUID]notice{}, catalogPlans: map[uuid.UUID]pendingCatalogPlan{}}
+	if opts.SubsonicTest == nil {
+		opts.SubsonicTest = images.TestSubsonic
+	}
+	h := &Handler{languages: opts.Languages, settings: opts.Settings, subsonicTest: opts.SubsonicTest, requireSubmission: opts.RequireSubmissionToken, submissions: map[uuid.UUID]submissionTicket{}, store: store, csrf: csrf, tempDir: opts.TempDir, relayClient: opts.RelayClient, musicBrainz: opts.MusicBrainz, tmpl: tmpl, notices: map[uuid.UUID]notice{}, catalogPlans: map[uuid.UUID]pendingCatalogPlan{}}
 	h.login = http.HandlerFunc(h.postLogin)
 	if opts.LoginMiddleware != nil {
 		h.login = opts.LoginMiddleware(h.login)
 	} else if !opts.DisableRateLimit {
 		h.login = httprate.Limit(10, time.Minute)(h.login)
 	}
-	h.entry = adminweb.NoStore(adminweb.SameOrigin(http.HandlerFunc(h.dispatch)))
+	limitedLogin := h.login
+	h.login = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		limitedLogin.ServeHTTP(&loginResponse{ResponseWriter: w, handler: h}, r)
+	})
+	h.entry = adminweb.NoStore(adminweb.SameOriginWithReject(http.HandlerFunc(h.dispatch), func(w http.ResponseWriter, _ *http.Request) { h.fail(w, adminweb.ErrCSRF) }))
 	return h, nil
 }
+
+// loginResponse localizes only HTML rate-limit responses; the shared JSON endpoint is unchanged.
+type loginResponse struct {
+	http.ResponseWriter
+	handler  *Handler
+	rejected bool
+}
+
+func (w *loginResponse) WriteHeader(status int) {
+	if status == http.StatusTooManyRequests {
+		w.rejected = true
+		w.handler.render(w.ResponseWriter, status, view{Error: "too many requests"})
+		return
+	}
+	w.ResponseWriter.WriteHeader(status)
+}
+func (w *loginResponse) Write(b []byte) (int, error) {
+	if w.rejected {
+		return len(b), nil
+	}
+	return w.ResponseWriter.Write(b)
+}
+func (w *loginResponse) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 
 // ServeHTTP applies common no-store and origin protection before dispatch.
 // headWriter preserves response headers while suppressing the document body.
 type headWriter struct{ http.ResponseWriter }
 
 func (w headWriter) Write(b []byte) (int, error) { return len(b), nil }
+func (w headWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w = h.languages.Wrap(w, r)
 	if r.Method == http.MethodHead {
 		copy := r.Clone(r.Context())
 		copy.Method = http.MethodGet
@@ -159,7 +209,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // dispatch distinguishes login from session-only reads and actions on every request.
 func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	if !IsRoute(r.Method, r.URL.Path) {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -170,6 +220,20 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "/admin/login" && r.Method == "POST" {
 		h.login.ServeHTTP(w, r)
+		return
+	}
+	if r.URL.Path == "/admin/settings" && r.Method == "GET" {
+		// Resolve an administrative session before reading any configuration.
+		identity, err := adminweb.SessionIdentity(r, h.store)
+		if errors.Is(err, admin.ErrUnauthorized) && r.Header.Get("Authorization") == "" {
+			h.loginPage(w, r, "")
+			return
+		}
+		if err != nil {
+			h.fail(w, err)
+			return
+		}
+		h.settingsPage(w, r, identity)
 		return
 	}
 	if r.URL.Path == "/admin" && (r.Method == "GET" || r.Method == "HEAD") {
@@ -197,7 +261,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		}
 		parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 		if len(parts) != 4 {
-			http.NotFound(w, r)
+			textError(w, "item not found", http.StatusNotFound)
 			return
 		}
 		id, err := parseID(parts[2])
@@ -222,7 +286,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method != "POST" {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	identity, err := adminweb.SessionIdentity(r, h.store)
@@ -235,10 +299,16 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 
 // render buffers the complete template so errors do not leak secrets or partial HTML.
 func (h *Handler) render(w http.ResponseWriter, status int, data view) {
+	data.Locale = i18n.ViewOf(w)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder
-	if err := h.tmpl.ExecuteTemplate(&out, "admin.html", data); err != nil {
-		http.Error(w, "operation failed", 500)
+	data.Error = localMessage(data.Locale, data.Error)
+	tmpl, err := h.adminTemplate(data.Locale)
+	if err == nil {
+		err = tmpl.ExecuteTemplate(&out, "admin.html", data)
+	}
+	if err != nil {
+		textError(w, "operation failed", 500)
 		return
 	}
 	w.WriteHeader(status)
@@ -380,9 +450,9 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 			h.fail(w, err)
 			return
 		}
-		v.Notice = h.takeNotice(id.SessionID, n)
+		v.Notice = h.takeNotice(id.SessionID, n, i18n.ViewOf(w))
 	} else {
-		v.Notice = h.takeNotice(id.SessionID, 0)
+		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
 	}
 	h.render(w, 200, v)
 }
@@ -420,6 +490,11 @@ func profilePath(id int32) string { return "/admin?profile=" + strconv.FormatInt
 
 // putNotice stores only fixed, non-secret feedback bound to the authenticated session.
 func (h *Handler) putNotice(id uuid.UUID, profile int32, text string) {
+	h.putNoticeData(id, profile, messageID(text), text, nil)
+}
+
+// putNoticeData keeps message identity and arguments until the redirected request.
+func (h *Handler) putNoticeData(id uuid.UUID, profile int32, key, text string, values map[string]any) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	now := time.Now()
@@ -434,11 +509,11 @@ func (h *Handler) putNotice(id uuid.UUID, profile int32, text string) {
 			break
 		}
 	}
-	h.notices[id] = notice{profile, text, now.Add(time.Minute)}
+	h.notices[id] = notice{profile: profile, key: key, text: text, values: values, expires: now.Add(time.Minute)}
 }
 
 // takeNotice consumes a short-lived message only for its original session and profile.
-func (h *Handler) takeNotice(id uuid.UUID, profile int32) string {
+func (h *Handler) takeNotice(id uuid.UUID, profile int32, locale *i18n.View) string {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	n, ok := h.notices[id]
@@ -446,7 +521,7 @@ func (h *Handler) takeNotice(id uuid.UUID, profile int32) string {
 		return ""
 	}
 	delete(h.notices, id)
-	return n.text
+	return adminFormat(locale, n.key, n.text, n.values)
 }
 
 // openImage opens only the server-generated staging path returned by the verified parser.

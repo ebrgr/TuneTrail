@@ -1,24 +1,24 @@
 {{define "activity-grid"}}
 <div class="card activity-card">
   <div class="activity-calendar" aria-hidden="true">
-    <div class="day-labels">{{range .DayLabels}}<span>{{.}}</span>{{end}}</div>
-    <div class="activity-cells">{{range .Cells}}<span class="activity-slot {{if lt .Week 10}}old-week{{end}}" title="{{.Date.Format "02/01/2006"}} {{.Count}} plays">{{if not .Future}}<span class="activity-cell {{if .Count}}filled{{end}}" {{if .Count}}style="opacity:{{.Opacity}}"{{end}}></span>{{end}}</span>{{end}}</div>
+    <div class="day-labels">{{range .DayLabels}}<span>{{weekday .}}</span>{{end}}</div>
+    <div class="activity-cells">{{range .Cells}}<span class="activity-slot {{if lt .Week 10}}old-week{{end}}" title="{{date .Date}} · {{quantity "quantity.plays" .Count}}">{{if not .Future}}<span class="activity-cell {{if .Count}}filled{{end}}" {{if .Count}}style="opacity:{{.Opacity}}"{{end}}></span>{{end}}</span>{{end}}</div>
   </div>
-  <div class="activity-footer"><span>Streak · <span class="primary">{{.Streak}}</span></span><span class="legend" aria-hidden="true">Less <i style="opacity:.28"></i><i style="opacity:.46"></i><i style="opacity:.64"></i><i style="opacity:.82"></i><i></i> More</span></div>
+  <div class="activity-footer"><span>{{tr "ui.streak" "Streak"}} · <span class="primary">{{.Streak}}</span></span><span class="legend" aria-hidden="true">{{tr "ui.less" "Less"}} <i style="opacity:.28"></i><i style="opacity:.46"></i><i style="opacity:.64"></i><i style="opacity:.82"></i><i></i> {{tr "ui.more" "More"}}</span></div>
 </div>
-<details class="graph-values"><summary>Activity values</summary><div class="graph-table-scroll"><table><caption>Daily listening activity · {{.Timezone}}</caption><thead><tr><th scope="col">Date</th><th scope="col">Plays</th></tr></thead><tbody>{{range .Cells}}{{if not .Future}}<tr><td><time datetime="{{.Date.Format "2006-01-02"}}">{{.Date.Format "02/01/2006"}}</time></td><td>{{.Count}}</td></tr>{{end}}{{end}}</tbody></table></div></details>
+<details class="graph-values"><summary>{{tr "ui.activity_values" "Activity values"}}</summary><div class="graph-table-scroll"><table><caption>{{tr1 "graph.daily_activity" "Daily listening activity · {{.Timezone}}" "Timezone" .Timezone}}</caption><thead><tr><th scope="col">{{tr "ui.date" "Date"}}</th><th scope="col">{{tr "ui.plays" "Plays"}}</th></tr></thead><tbody>{{range .Cells}}{{if not .Future}}<tr><td><time datetime="{{.Date.Format "2006-01-02"}}">{{date .Date}}</time></td><td>{{number .Count}}</td></tr>{{end}}{{end}}</tbody></table></div></details>
 {{end}}
 
 {{define "interest-graph"}}
 {{$graph:=.}}
-{{if .Empty}}<p>No listens in this interval.</p>{{else}}
+{{if .Empty}}<p>{{tr "ui.no_listens_in_this_interval" "No listens in this interval."}}</p>{{else}}
 <div class="card interest-card">
 <svg viewBox="0 0 450 120" class="interest-svg" role="img" aria-labelledby="{{.ID}}-title {{.ID}}-description">
-  <title id="{{.ID}}-title">Interest over time</title>
-  <desc id="{{.ID}}-description">{{.Total}} plays in {{len .Rows}} intervals. Exact dates and counts are available in the Interest values table.</desc>
+  <title id="{{.ID}}-title">{{tr "ui.interest_over_time" "Interest over time"}}</title>
+  <desc id="{{.ID}}-description">{{tr2 "graph.interest_desc" "{{.Count}} in {{.Intervals}}. Exact dates and counts are available in the Interest values table." "Count" (quantity "quantity.plays" .Total) "Intervals" (quantity "quantity.intervals" (len .Rows))}}</desc>
   <defs><linearGradient id="{{.ID}}-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stop-color="var(--color-primary)" stop-opacity="0.5"/><stop offset="95%" stop-color="var(--color-primary)" stop-opacity="0"/></linearGradient><clipPath id="{{.ID}}-clip"><rect x="8" y="4" width="434" height="108"/></clipPath></defs>
   <g clip-path="url(#{{.ID}}-clip)"><path d="{{.Area}}" fill="url(#{{.ID}}-gradient)"/><path d="{{.Line}}" fill="none" stroke="var(--color-primary)" stroke-width="2" vector-effect="non-scaling-stroke"/>{{if .SingleX}}<circle cx="{{.SingleX}}" cy="{{.SingleY}}" r="3" fill="var(--color-primary)"/>{{end}}</g>
 </svg>
 </div>{{end}}
-<details class="graph-values"><summary>Interest values</summary><p>Each interval includes its start and excludes its end. The final interval also includes its end.</p><div class="graph-table-scroll"><table><caption>Listening interest by interval</caption><thead><tr><th scope="col">From</th><th scope="col">To</th><th scope="col">Plays</th></tr></thead><tbody>{{range .Rows}}<tr><td><time datetime="{{.From.Format "2006-01-02T15:04:05Z07:00"}}">{{.From.Format "02 Jan 2006 15:04:05 MST"}}</time></td><td><time datetime="{{.To.Format "2006-01-02T15:04:05Z07:00"}}">{{.To.Format "02 Jan 2006 15:04:05 MST"}}</time>{{if .Last}} (inclusive){{else if .Empty}} (empty interval){{end}}</td><td>{{.Count}}</td></tr>{{else}}<tr><td colspan="3">No interval data.</td></tr>{{end}}</tbody></table></div></details>
+<details class="graph-values"><summary>{{tr "ui.interest_values" "Interest values"}}</summary><p>{{tr "ui.each_interval_includes_its_start_and_excludes_its_end_the_final_interval_also_includes_its_end" "Each interval includes its start and excludes its end. The final interval also includes its end."}}</p><div class="graph-table-scroll"><table><caption>{{tr "ui.listening_interest_by_interval" "Listening interest by interval"}}</caption><thead><tr><th scope="col">{{tr "ui.from" "From"}}</th><th scope="col">{{tr "ui.to" "To"}}</th><th scope="col">{{tr "ui.plays" "Plays"}}</th></tr></thead><tbody>{{range .Rows}}<tr><td><time datetime="{{.From.Format "2006-01-02T15:04:05Z07:00"}}">{{datetime .From}}</time></td><td><time datetime="{{.To.Format "2006-01-02T15:04:05Z07:00"}}">{{datetime .To}}</time>{{if .Last}} {{tr "ui.inclusive" "(inclusive)"}}{{else if .Empty}} {{tr "ui.empty_interval" "(empty interval)"}}{{end}}</td><td>{{number .Count}}</td></tr>{{else}}<tr><td colspan="3">{{tr "ui.no_interval_data" "No interval data."}}</td></tr>{{end}}</tbody></table></div></details>
 {{end}}

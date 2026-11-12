@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -135,5 +136,32 @@ func TestRewindLimitsRankingsToFive(t *testing.T) {
 		if entry.Item.ListenCount != 1 || entry.Item.TimeListened != 60 {
 			t.Fatalf("tie stats: %+v", entry)
 		}
+	}
+}
+
+// TestRewindAdjacentYears preserves presentation and clamps unavailable months.
+func TestRewindAdjacentYears(t *testing.T) {
+	now := time.Date(2026, 11, 5, 0, 0, 0, 0, time.UTC)
+	first := time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC)
+	p := &RewindPage{Year: 2025, Month: 12}
+	buildRewindChoices(p, url.Values{"tz": {"UTC"}, "show_time": {"1"}}, "/alpha/rewind", now, &first)
+	if p.PreviousYear.URL != "" {
+		t.Fatal("previous year before first listen")
+	}
+	u, err := url.Parse(p.NextYear.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Query().Get("year") != "2026" || u.Query().Get("month") != "10" || u.Query().Get("tz") != "UTC" || u.Query().Get("show_time") != "1" {
+		t.Fatalf("invalid next year URL: %s", u)
+	}
+	p = &RewindPage{Year: 2026, Month: 10}
+	buildRewindChoices(p, url.Values{"tz": {"UTC"}}, "/alpha/rewind", now, &first)
+	u, err = url.Parse(p.PreviousYear.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Query().Get("year") != "2025" || u.Query().Get("month") != "10" || p.NextYear.URL != "" {
+		t.Fatalf("invalid year boundary: %+v", p)
 	}
 }

@@ -3,6 +3,8 @@ package engine
 import (
 	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/webui"
 	"net/http"
 	"strings"
@@ -157,7 +159,16 @@ func bindRoutes(
 	var administration *adminui.Handler
 	{
 		var err error
-		pages, err = webui.NewHandler(db, webui.Options{DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil})
+		langDir, err := i18n.Directory()
+		if err != nil {
+			panic(fmt.Errorf("locate language catalogs: %w", err))
+		}
+		catalog, err := i18n.Load(langDir)
+		if err != nil {
+			panic(fmt.Errorf("load language catalogs: %w", err))
+		}
+		r.With(adminweb.SameOrigin).Post("/language", catalog.SetLanguage)
+		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil})
 		if err != nil {
 			panic(fmt.Errorf("initialize Go pages: %w", err))
 		}
@@ -165,7 +176,11 @@ func bindRoutes(
 		if !ok {
 			panic("Go administration requires result-aware SQLite store")
 		}
-		administration, err = adminui.New(adminStore, adminui.Options{RequireSubmissionToken: true, MusicBrainz: mbz, LoginMiddleware: loginLimit, DisableRateLimit: cfg.RateLimitDisabled(), DefaultTheme: cfg.DefaultTheme()})
+		settingsStore, err := cfg.NewSettingsStore(nil)
+		if err != nil {
+			panic(fmt.Errorf("initialize settings: %w", err))
+		}
+		administration, err = adminui.New(adminStore, adminui.Options{Languages: catalog, Settings: settingsStore, RequireSubmissionToken: true, MusicBrainz: mbz, LoginMiddleware: loginLimit, DisableRateLimit: cfg.RateLimitDisabled(), DefaultTheme: cfg.DefaultTheme()})
 		if err != nil {
 			panic(fmt.Errorf("initialize Go administration: %w", err))
 		}

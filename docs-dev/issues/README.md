@@ -68,29 +68,30 @@ sem publicação. As issues 031 a 037 foram concluídas.
 ## Roadmap atual — configuração TOML e administração
 
 [Estudo do item 2](../ROADMAP_02_CONFIGURACAO_TOML.md). Issues planejadas
-localmente, sem publicação e ainda não implementadas; etapa em espera.
+localmente, sem publicação. A 038 foi retomada para planejamento em 09/11/2026;
+a 039 foi aprovada e fechada; a 040 foi aprovada e fechada; a 041 foi aprovada e fechada; a 042 está em andamento. [Contrato atual](../CONTRATO_CONFIGURACAO_038.md).
 
 | Issue | Assunto | Status |
 | --- | --- | --- |
-| [038](038-contrato-configuracao.md) | Contrato e decisões da configuração | Aberta |
-| [039](039-leitura-configuracao-toml.md) | Leitura e validação de TOML | Aberta |
-| [040](040-persistencia-configuracao.md) | Persistência segura e concorrência | Aberta |
-| [041](041-administracao-configuracao.md) | Edição pelo master | Aberta |
-| [042](042-aceite-migracao-configuracao.md) | Integração e aceite | Aberta |
+| [038](038-contrato-configuracao.md) | Contrato e decisões da configuração | Em andamento — planejamento |
+| [039](039-leitura-configuracao-toml-solved.md) | Leitura e validação de TOML | Fechada e aprovada |
+| [040](040-persistencia-configuracao-solved.md) | Persistência segura e concorrência | Fechada e aprovada |
+| [041](041-administracao-configuracao-solved.md) | Edição pelo master | Fechada e aprovada |
+| [042](042-aceite-migracao-configuracao.md) | Integração e aceite | Implementada — aguardando aceite |
 
 ## Roadmap atual — identidade TuneTrail
 
 | Issue | Assunto | Status |
 | --- | --- | --- |
-| [043](043-identidade-tunetrail.md) | Identidade visual e nome TuneTrail | Aberta |
+| [043](043-identidade-tunetrail-solved.md) | Identidade visual e nome TuneTrail | Fechada e aprovada |
 
 | Issue | Assunto | Status |
 | --- | --- | --- |
-| [044](044-versionamento-tunetrail.md) | Versionamento próprio do TuneTrail | Aberta |
+| [044](044-versionamento-tunetrail-solved.md) | Versionamento próprio do TuneTrail | Fechada e aprovada |
 
 | Issue | Assunto | Status |
 | --- | --- | --- |
-| [045](045-links-diretorio-tunetrail.md) | Links e diretório do TuneTrail | Aberta |
+| [045](045-links-diretorio-tunetrail-solved.md) | Links e diretório do TuneTrail | Fechada e aprovada |
 
 ## Migração do banco TuneTrail
 
@@ -103,3 +104,55 @@ localmente, sem publicação e ainda não implementadas; etapa em espera.
 | Issue | Assunto | Status |
 | --- | --- | --- |
 | [047](047-correcao-curva-grafico-solved.md) | Corrigir interpolação do gráfico de interesse | Fechada e aprovada |
+
+## Documentação e site TuneTrail
+
+Issues 043–045 encerradas por solicitação explícita do usuário em 09/11/2026.
+As pendências de documentação e site passam à 048. A 038 foi retomada para
+planejamento; 039–041 foram fechadas; 042 está em andamento. Estado atual: **57 issues locais, 47 fechadas e 10 abertas**.
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [048](048-documentacao-site-tunetrail.md) | Documentação e site oficial do TuneTrail | Aberta |
+
+## Relações entre artistas e álbuns
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [049](049-associacao-residual-artista-album.md) | Associação residual de artista em álbum após edição de faixa | Aberta |
+
+## Interface multilíngue — roadmap atual, item 3
+
+[Estudo e comparação de ferramentas](../ROADMAP_03_UI_MULTILINGUE.md). As issues são locais; consulte o status de cada etapa na tabela.
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [050](050-i18n-fundacao-idioma-solved.md) | Fundação e escolha de idioma | Fechada e aprovada |
+| [051](051-i18n-interface-publica-solved.md) | Interface pública | Fechada e aprovada |
+| [052](052-i18n-administracao.md) | Administração | Implementada — aguardando aceite |
+| [053](053-i18n-datas-numeros.md) | Datas, quantidades e unidades | Implementada — aguardando teste e aceite |
+| [054](054-i18n-integracao-aceite.md) | Integração e aceite | Implementada — aguardando teste e aceite |
+
+## Metadados musicais
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [055](055-metadados-tags-lancamento.md) | Tags, gêneros e datas de lançamento pela API e MusicBrainz | Aberta — planejada |
+
+## Interações da interface
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [056](056-estudo-interacoes-ui-dinamica.md) | Estudo de interações dinâmicas e uso de JavaScript | Aberta — análise futura |
+
+## Ajustes da retrospectiva
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [057](057-ajustes-retrospectiva-controles.md) | Visibilidade dos meses e controles da retrospectiva | Implementada — aguardando avaliação |
+
+## Estilos da interface
+
+| Issue | Assunto | Status |
+| --- | --- | --- |
+| [058](058-estudo-tailwind-css.md) | Estudo de adoção do Tailwind CSS | Aberta — estudo |

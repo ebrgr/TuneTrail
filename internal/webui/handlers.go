@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/version"
@@ -27,6 +28,7 @@ type ReadStore interface {
 	db.ProfileStore
 }
 type Options struct {
+	Languages      *i18n.Catalog
 	ForcedTimezone bool
 	DefaultTheme   string
 	Now            func() time.Time
@@ -55,7 +57,8 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
-	p := LivePage{Page: Page{Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: r.URL.RequestURI(), Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}, Params: cloneQuery(r.URL.Query())}
+	w = h.options.Languages.Wrap(w, r)
+	p := LivePage{Page: Page{Locale: i18n.ViewOf(w), Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: r.URL.RequestURI(), Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}, Params: cloneQuery(r.URL.Query())}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if r.URL.Path != "/" {
 		profile, err := h.store.GetListeningProfile(r.Context(), parts[0])
@@ -160,7 +163,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		var result *db.PaginatedResponse[*models.Listen]
 		result, err = h.store.GetListensPaginated(ctx, p.Options)
 		if err == nil {
-			p.Listens = h.listens(slug, result.Items, p.Options.Timeframe.Timezone)
+			p.Listens = h.listens(slug, result.Items, p.Options.Timeframe.Timezone, p.Locale)
 			p.Pager = pageInfo(result.CurrentPage, result.TotalCount, result.HasNextPage)
 		}
 	default:
@@ -189,7 +192,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			q.Del(key)
 		}
 		q.Set("period", period)
-		p.Periods = append(p.Periods, Link{period, queryURL(path, q)})
+		p.Periods = append(p.Periods, PeriodLink{Key: period, Label: translated(p.Locale, "period."+period, period), URL: queryURL(path, q)})
 	}
 	p.DateRange = webquery.RangeLabel(p.Options.Timeframe)
 	first, firstErr := h.store.GetFirstListenUnix(ctx)
@@ -207,8 +210,25 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.render(w, p)
 }
 func (h *Pages) render(w http.ResponseWriter, p LivePage) {
+	// Page titles are presentation labels; media titles and slugs stay untouched.
+	if p.Error != "" {
+		key := map[int]string{400: "error.bad_request", 404: "error.not_found", 500: "error.internal"}[p.Status]
+		if key != "" {
+			p.Error = translated(p.Locale, key, p.Error)
+			p.Title = p.Error
+		}
+	} else {
+		key := map[string]string{"profiles": "page.profiles", "search": "page.search", "listens": "page.listens", "chart/top/artists": "page.top_artists", "chart/top/albums": "page.top_albums", "chart/top/tracks": "page.top_tracks"}[p.Section]
+		if key != "" {
+			p.Title = translated(p.Locale, key, p.Title)
+		}
+	}
 	var b bytes.Buffer
-	if err := h.templates.ExecuteTemplate(&b, "live.html", p); err != nil {
+	tmpl, err := localizedTemplates(h.templates, p.Locale)
+	if err == nil {
+		err = tmpl.ExecuteTemplate(&b, "live.html", p)
+	}
+	if err != nil {
 		log.Printf("HTML render failed: %v", err)
 		http.Error(w, "Unable to render page", 500)
 		return
@@ -264,10 +284,10 @@ func (h *Pages) ranking(ctx context.Context, slug, kind string, o db.GetItemsOpt
 	}
 	return nil, Pager{}, fmt.Errorf("unsupported ranking")
 }
-func (h *Pages) listens(slug string, items []*models.Listen, loc *time.Location) []ListenView {
+func (h *Pages) listens(slug string, items []*models.Listen, loc *time.Location, locale *i18n.View) []ListenView {
 	out := make([]ListenView, 0, len(items))
 	for _, v := range items {
-		out = append(out, ListenView{Item: Item{ID: v.Track.ID, Title: v.Track.Title, URL: mediaURL(slug, "track", v.Track.ID), Image: v.Track.Image, Artists: itemLinks(slug, v.Track.Artists)}, Time: v.Time.In(loc), Unix: v.Time.Unix(), Relative: relativeTime(h.options.Now(), v.Time.In(loc))})
+		out = append(out, ListenView{Item: Item{ID: v.Track.ID, Title: v.Track.Title, URL: mediaURL(slug, "track", v.Track.ID), Image: v.Track.Image, Artists: itemLinks(slug, v.Track.Artists)}, Time: v.Time.In(loc), Unix: v.Time.Unix(), Relative: localizedRelativeTime(locale, h.options.Now(), v.Time.In(loc))})
 	}
 	return out
 }
@@ -289,6 +309,24 @@ func relativeTime(now, t time.Time) string {
 		unit += "s"
 	}
 	return fmt.Sprintf("%d %s ago", n, unit)
+}
+
+// localizedRelativeTime preserves the original elapsed-time thresholds.
+func localizedRelativeTime(locale *i18n.View, now, t time.Time) string {
+	if locale == nil {
+		return relativeTime(now, t)
+	}
+	d := now.Sub(t)
+	if d < time.Minute {
+		return locale.T("time.just_now")
+	}
+	if d >= 24*time.Hour {
+		return locale.Date(t) + t.Format(" 15:04")
+	}
+	if d >= time.Hour {
+		return locale.Quantity("quantity.ago_hours", int64(d/time.Hour))
+	}
+	return locale.Quantity("quantity.ago_minutes", int64(d/time.Minute))
 }
 func safeNext(raw string) string {
 	u, e := url.Parse(raw)

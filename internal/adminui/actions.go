@@ -2,10 +2,10 @@ package adminui
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/importer"
 	"io"
 	"net/http"
@@ -17,7 +17,7 @@ import (
 func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.Identity) {
 	path := strings.TrimPrefix(r.URL.Path, "/admin/")
 	if path == r.URL.Path || path == "" {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	// Bound image admission before multipart parsing can buffer a request.
@@ -37,6 +37,9 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 	if strings.HasSuffix(path, "/import") {
 		max = 100 << 20
 	}
+	if path == "settings/save" || path == "settings/subsonic/test" {
+		max = 64 << 10
+	}
 	f, err := h.csrf.ParseSessionForm(w, r, identity, adminweb.FormLimits{MaxBytes: max, TempDir: h.tempDir})
 	if err != nil {
 		h.fail(w, err)
@@ -48,6 +51,9 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		return
 	}
 	switch path {
+	case "settings/save", "settings/subsonic/test":
+		h.settingsAction(w, r, identity, f, path)
+		return
 	case "logout":
 		if !fields(f) {
 			h.fail(w, db.ErrInvalidInput)
@@ -118,7 +124,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 	// All profile actions carry both a stable ID in the route and the slug from the form.
 	parts := strings.Split(path, "/")
 	if len(parts) < 3 || parts[0] != "profile" {
-		http.NotFound(w, r)
+		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
 	id, err := parseID(parts[1])
@@ -154,16 +160,17 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			break
 		}
 		result, e := importer.Upload(r.Context(), h.store, h.musicBrainz, id, f.SingleValue("format"), upload.Path)
-		message := fmt.Sprintf("Processed: %d. Imported: %d. Duplicates: %d. Ignored: %d. Errors: %d.", result.Processed, result.Imported, result.Duplicates, result.Ignored, result.Errors)
+		const importSummary = "Processed: {{.Processed}}. Imported: {{.Imported}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}."
+		values := map[string]any{"Processed": result.Processed, "Imported": result.Imported, "Duplicates": result.Duplicates, "Ignored": result.Ignored, "Errors": result.Errors}
 		if e != nil {
 			status := http.StatusInternalServerError
 			if errors.Is(e, importer.ErrInvalidFile) || errors.Is(e, db.ErrInvalidInput) {
 				status = http.StatusBadRequest
 			}
-			h.render(w, status, view{Error: "Import failed; some records may already be saved. " + message, Profile: current})
+			h.render(w, status, view{Error: adminText(i18n.ViewOf(w), "admin.import.failed", "Import failed; some records may already be saved.") + " " + adminFormat(i18n.ViewOf(w), "admin.import.summary", importSummary, values), Profile: current})
 			return
 		}
-		h.putNotice(identity.SessionID, id, message)
+		h.putNoticeData(identity.SessionID, id, "admin.import.summary", importSummary, values)
 		http.Redirect(w, r, target, http.StatusSeeOther)
 		return
 	case "delete":
@@ -227,12 +234,6 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			break
 		}
 		raw, token := f.SingleValue("url"), f.SingleValue("token")
-		if operation != "relay/remove" && token == "" {
-			_, token, err = admin.Relay(r.Context(), h.store, identity.User, id, slug)
-			if err != nil {
-				break
-			}
-		}
 		if operation == "relay/save" {
 			err = admin.SaveRelay(r.Context(), h.store, identity.User, id, slug, raw, token)
 		} else if operation == "relay/remove" {
@@ -246,7 +247,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 	default:
 		kp := strings.Split(operation, "/")
 		if len(kp) != 3 || kp[0] != "keys" {
-			http.NotFound(w, r)
+			textError(w, "item not found", http.StatusNotFound)
 			return
 		}
 		var key int32

@@ -9,6 +9,7 @@ import (
 )
 
 type Link struct{ Label, URL string }
+type PeriodLink struct{ Key, Label, URL string }
 type Item struct {
 	ID          int32
 	Rank, Count int64
@@ -24,6 +25,7 @@ type ListenView struct {
 	Relative string
 }
 type Card struct {
+	Kind       string
 	Title, URL string
 	Items      []Item
 	Error      bool
@@ -48,7 +50,7 @@ type LivePage struct {
 	Pager                                      Pager
 	Options                                    db.GetItemsOpts
 	Params                                     url.Values
-	Periods                                    []Link
+	Periods                                    []PeriodLink
 	Years                                      []int
 	Next                                       string
 	HistoryMore                                bool

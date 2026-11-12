@@ -13,11 +13,13 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 )
 
 type catalogReviewView struct {
+	Locale                        *i18n.View
 	Profile                       *models.ListeningProfile
 	RouteID                       int32
 	Kind, CSRF, Token, ReturnPath string
@@ -96,10 +98,14 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 	}
 	h.catalogPlans[token] = pendingCatalogPlan{Session: identity.SessionID, ProfileID: p.ID, ProfileSlug: p.Slug, RouteID: id, Kind: kind, Plan: plan, Expires: now.Add(10 * time.Minute)}
 	h.mu.Unlock()
-	view := catalogReviewView{Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id)}
+	view := catalogReviewView{Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id)}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder
-	if err = h.tmpl.ExecuteTemplate(&out, "catalog-review.html", view); err != nil {
+	tmpl, err := h.adminTemplate(view.Locale)
+	if err == nil {
+		err = tmpl.ExecuteTemplate(&out, "catalog-review.html", view)
+	}
+	if err != nil {
 		h.fail(w, err)
 		return
 	}

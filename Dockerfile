@@ -21,12 +21,14 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=backend /tunetrail ./tunetrail
 COPY assets/ ./assets/
+COPY langs/ ./langs/
 ARG KOITO_VERSION=0.6
 LABEL org.opencontainers.image.title="TuneTrail" \
       org.opencontainers.image.description="ListenBrainz-compatible scrobbling with simple public listening profiles" \
       org.opencontainers.image.source="https://github.com/ebrgr/TuneTrail" \
       org.opencontainers.image.version=$KOITO_VERSION
-ENV KOITO_CONFIG_DIR=/etc/koito \
+ENV TUNETRAIL_LANGS_DIR=/app/langs \
+    KOITO_CONFIG_DIR=/etc/koito \
     KOITO_BIND_ADDR=0.0.0.0 \
     KOITO_LISTEN_PORT=4110
 EXPOSE 4110

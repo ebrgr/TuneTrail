@@ -12,7 +12,7 @@ func IsPage(path string) bool {
 	if !strings.HasPrefix(path, "/") || strings.HasPrefix(path, "//") {
 		return false
 	}
-	if path == "/admin" {
+	if path == "/admin" || path == "/admin/settings" {
 		return true
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
@@ -35,7 +35,7 @@ func IsAction(path string) bool {
 		return false
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
-	if path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" {
+	if path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" {
 		return true
 	}
 	if len(p) >= 4 && p[0] == "admin" && p[1] == "profile" {

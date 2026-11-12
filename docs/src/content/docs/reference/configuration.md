@@ -1,9 +1,95 @@
 ---
 title: Configuration
-description: The available configuration options when setting up Koito.
+description: Configuration options for TuneTrail.
 ---
 
-Koito is configured using **environment variables**. This is the full list of configuration options supported by Koito.
+TuneTrail supports environment variables and an optional `conf.toml` for the settings listed below. The other options continue to use environment variables.
+
+## Optional `conf.toml`
+
+Place `conf.toml` in the configured data directory, next to `tunetrail.db`. The
+directory is selected by `KOITO_CONFIG_DIR` or `KOITO_CONFIG_DIR_FILE` before the
+file is read; its default is `/etc/koito`. An absent file preserves the existing
+environment-based configuration. Neither the file nor values are created automatically.
+
+The supported schema is version 1. The repository also provides a fictional `deploy/conf.example.toml`; copy it to `conf.toml` in the data directory before adapting it. Use a subset of these settings as needed:
+
+```toml
+schema_version = 1
+
+[logging]
+level = "info"
+
+[musicbrainz]
+url = "https://musicbrainz.org"
+rate_limit = 1
+disabled = false
+
+[images]
+disable_deezer = false
+disable_cover_art_archive = false
+lastfm_api_key = ""
+
+[subsonic]
+url = ""
+params = ""
+
+[time]
+force_tz = ""
+```
+
+A nonempty direct environment variable takes priority over its `_FILE` value,
+then the TOML value, then the built-in default. An explicitly selected empty
+`_FILE` does not fall back to TOML. Invalid TOML, unknown keys or versions, and
+invalid combinations prevent startup; correct the file offline and restart.
+The stored values are also validated before environment overrides are applied.
+
+`time.force_tz` is the application-wide forced timezone. Leave it empty to use
+the request/browser preference and then the process timezone (`TZ`). Subsonic
+URL and params must both be set or both be empty. Subsonic is used to fetch
+artwork and metadata, while ListenBrainz relay remains configured per profile
+in SQLite. Sign in as administrator and open **Server configuration** at
+`/admin/settings` to edit these ten global settings. The page shows saved,
+effective and running values. Fields controlled by environment variables are disabled and identify the controlling variable, including the `_FILE` suffix where applicable. Remove the override and restart to edit the field. Restart TuneTrail to
+apply effective changes. The Subsonic test uses the entered draft without saving;
+relay settings remain on each profile's administration page.
+
+### Deployment, upgrades and offline recovery
+
+With the supplied Docker Compose file, `KOITO_DATA_DIR` is mounted at
+`/etc/koito`. Place `conf.toml` inside that host directory; it persists across
+container replacement along with `tunetrail.db`. Compose supplies `TZ` through
+`KOITO_TIMEZONE`; it does not set `KOITO_FORCE_TZ`. The application setting
+`time.force_tz` overrides the browser preference where a forced timezone is used.
+An empty setting keeps the browser/request preference and falls back to process `TZ`.
+
+Before upgrading, back up the data directory, including the SQLite database and
+configuration, with the service stopped or using a SQLite-consistent backup.
+Changing `KOITO_CONFIG_DIR` selects a different data directory; it does not move
+existing data. Global changes take effect after a service or container restart.
+Variables supplied by the host, Compose or VS Code keep their precedence after
+restart. `reset-password` uses the same data directory and configuration, so an
+invalid configuration must be corrected before running that command too.
+
+If TuneTrail cannot start after a configuration change, stop the service, edit
+or temporarily move `<data-directory>/conf.toml`, and restart it. Moving the file
+restores environment/default behavior; it does not reset or delete the database.
+Fix invalid environment or `_FILE` values as well. Preserve the original file for
+inspection and verify the active values in Administration after recovery.
+
+### Interface language files
+
+TuneTrail loads the English and Brazilian Portuguese catalogs from the external
+`langs` directory at startup. Set `TUNETRAIL_LANGS_DIR` to an absolute directory
+to choose another location. If unset, TuneTrail looks next to the executable,
+then in the Go checkout root. Docker ships the files in `/app/langs`. Keep the
+files with the executable when distributing a build; missing or invalid catalogs
+prevent startup. Restart after editing them. A missing Portuguese message falls
+back to English. Adding another supported language currently also requires a
+code change; copying an extra JSON file alone will not enable it.
+
+Choose a language under **Settings → Appearance**; the choice is stored in a
+browser cookie. Without JavaScript, open the **Settings** disclosure on the page. “Use browser language” follows `Accept-Language`. The public and administrative interfaces, displayed dates, numbers and relative times support English and Brazilian Portuguese. The preference does not change profiles or time zones.
 
 ##### KOITO_WEB_UI
 
@@ -18,7 +104,7 @@ Koito is configured using **environment variables**. This is the full list of co
   supported and must be removed from existing configurations. SQLite schema v3
   and its existing data remain unchanged.
 
-The suffix `_FILE` is also supported for every environment variable. This allows the use of Docker secrets, for example: `KOITO_SUBSONIC_PARAMS_FILE=/run/secrets/subsonic-params` will load the content of the file at `/run/secrets/subsonic-params` for the environment variable `KOITO_SUBSONIC_PARAMS`.
+The suffix `_FILE` is also supported for every environment variable. For example, `KOITO_SUBSONIC_PARAMS_FILE=/etc/koito/subsonic-params` loads the value of `KOITO_SUBSONIC_PARAMS` from that file.
 
 :::caution
 If the environment variable is defined without **and** with the suffix at the same time, the content of the environment variable without the `_FILE` suffix will have the higher priority.
@@ -195,3 +281,17 @@ Environment variables below this notice are deprecated, and will not work with c
 - Deprecated because: PostgreSQL is no longer a supported database as of `v0.2.1`.
 - Required: `true` if you have not yet migrated to SQLite (PostgreSQL support will be deprecated in `v0.2.0` onwards)
 - Description: A Postgres connection URI. See https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING-URIS for more information. Having this set will cause automatic migration to SQLite on versions `v0.2.X`. On `v0.3.X` or higher, having this set will cause the application to fail to start.
+
+
+### Contributing translations
+
+Edit `langs/en.json` and `langs/pt-BR.json` together and restart TuneTrail. Message keys must match. Preserve every named placeholder such as `{{.Count}}`; do not translate placeholder names. Messages that depend on a quantity use JSON objects with `one` and `other` forms, for example:
+
+```json
+"quantity.plays": {
+  "one": "{{.Count}} play",
+  "other": "{{.Count}} plays"
+}
+```
+
+Plural forms are selected using CLDR, with zero displayed in the plural. Keep user data, environment variable names, URLs, machine-readable timestamps and form values unchanged. Run `go test ./internal/i18n ./internal/webui` to validate the catalogs and presentation. Adding a third supported language also requires a code change.

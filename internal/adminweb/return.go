@@ -24,6 +24,13 @@ func SafeReturn(raw string) string {
 	if err != nil {
 		return ""
 	}
+	// Permit the exact authenticated configuration page as a login return target.
+	if u.Path == "/admin/settings" {
+		if len(q) != 0 {
+			return ""
+		}
+		return u.String()
+	}
 	positive := func(v string, max int64) bool {
 		n, e := strconv.ParseInt(v, 10, 32)
 		return e == nil && n > 0 && n <= max

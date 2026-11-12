@@ -308,5 +308,55 @@
     "POST",
     "/admin/profile/2/unknown",
     false
+  ],
+  [
+    "GET",
+    "/admin/settings",
+    true
+  ],
+  [
+    "HEAD",
+    "/admin/settings",
+    true
+  ],
+  [
+    "POST",
+    "/admin/settings",
+    false
+  ],
+  [
+    "DELETE",
+    "/admin/settings",
+    false
+  ],
+  [
+    "POST",
+    "/admin/settings/save",
+    true
+  ],
+  [
+    "GET",
+    "/admin/settings/save",
+    false
+  ],
+  [
+    "POST",
+    "/admin/settings/subsonic/test",
+    true
+  ],
+  [
+    "GET",
+    "/admin/settings/subsonic/test",
+    false
+  ],
+  [
+    "GET",
+    "/admin/settings/extra",
+    false
+  ],
+  [
+    "POST",
+    "/admin/settings/save/extra",
+    false
   ]
 ]

@@ -21,5 +21,6 @@ type RewindPage struct {
 	Stats                       *summary.Summary
 	Groups                      []RewindGroup
 	Monthly, Yearly             RewindChoice
+	PreviousYear, NextYear      RewindChoice
 	Years, Months               []RewindChoice
 }
