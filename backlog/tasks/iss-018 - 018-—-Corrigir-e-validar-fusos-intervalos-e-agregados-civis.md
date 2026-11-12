@@ -8,8 +8,7 @@ labels:
   - validacao
 milestone: m-1
 dependencies: []
-references:
-  - docs-dev/issues/018-fusos-intervalos-agregados-solved.md
+references: []
 type: task
 ordinal: 18000
 ---
@@ -17,10 +16,10 @@ ordinal: 18000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/018-fusos-intervalos-agregados-solved.md](../../docs-dev/issues/018-fusos-intervalos-agregados-solved.md) — numeração local 018.
+> Importada de `docs-dev/issues/018-fusos-intervalos-agregados-solved.md` — numeração local 018. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 5](../../docs-dev/ROADMAP_05_VALIDACAO.md). Dependências: 016; matriz de permissões da 017 disponível para integração final.
+Plano: [roadmap 5](<../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>). Dependências: 016; matriz de permissões da 017 disponível para integração final.
 
 ## Trabalho
 
@@ -38,14 +37,14 @@ Escuta2024-05-01T00:05+05:45 pertence a01/05; último segundo31/05 entra no mês
 
 ## Evidências
 
-Registrar procedimentos e resultados em [roadmap 5](../../docs-dev/comparisons/roadmap-05/README.md).
+Registrar procedimentos e resultados em [roadmap 5](../evidencias/roadmap-05/README.md).
 Usar apenas bases SQLite v3 descartáveis e credenciais fictícias. O estudo e o
 fechamento de 001–015 não significam que esta issue já foi executada.
 
 ## Entrega — 05/11/2026
 
 Correções, regressões, jornadas Go/React, revisão Advisor e contratos preservados
-estão no [relatório da 018](../../docs-dev/comparisons/roadmap-05/ISSUE_018.md). Aceite explícito do usuário recebido em 05/11/2026.
+estão no [relatório da 018](../evidencias/roadmap-05/ISSUE_018.md). Aceite explícito do usuário recebido em 05/11/2026.
 
 ## Encerramento — 05/11/2026
 

@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/008-retrospectiva-go-solved.md
+references: []
 type: feature
 ordinal: 8000
 ---
@@ -17,10 +16,10 @@ ordinal: 8000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/008-retrospectiva-go-solved.md](../../docs-dev/issues/008-retrospectiva-go-solved.md) — numeração local 008.
+> Importada de `docs-dev/issues/008-retrospectiva-go-solved.md` — numeração local 008. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida — aceite confirmado pelo usuário em 05/11/2026**. Issue local, sem publicação.
-Plano: [roadmap 3](../../docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md). Terceira fatia, após
+Plano: [roadmap 3](<../docs/roadmaps/doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>). Terceira fatia, após
 006/007; integração de produção e aceite visual na 009.
 
 ## Trabalho
@@ -56,7 +55,7 @@ sem JavaScript e pares de capturas com minutos ligados/desligados.
 
 ## Evidência inicial
 
-[analysis-checks.json](../../docs-dev/comparisons/roadmap-03/analysis-checks.json) usa o helper
+[analysis-checks.json](../evidencias/roadmap-03/analysis-checks.json) usa o helper
 Go real de intervalo e a fórmula atual do summary: janeiro/2026 retorna denominador
 30 e fevereiro/2026 retorna 27. Não é validação HTTP do summary nem resultado de
 correção; é reprodução isolada que orienta as regressões.
@@ -73,7 +72,7 @@ visual durante sua execução.
 O serviço e a página foram implementados, com testes numéricos e integração em
 SQLite v3 descartável. O dispatcher de produção ainda não entrega a página Go;
 a integração, a revisão de layout e as capturas ficam para a 009. A issue
-permanece aberta até esse aceite. Detalhes em [ISSUE_008.md](../../docs-dev/comparisons/roadmap-03/ISSUE_008.md).
+permanece aberta até esse aceite. Detalhes em [ISSUE_008.md](../evidencias/roadmap-03/ISSUE_008.md).
 
 ## Encerramento
 

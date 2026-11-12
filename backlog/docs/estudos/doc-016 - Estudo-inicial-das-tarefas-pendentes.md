@@ -7,18 +7,18 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - estudo
 ---
-> Importado de [docs-dev/ESTUDO_TAREFAS_PENDENTES.md](../../../docs-dev/ESTUDO_TAREFAS_PENDENTES.md).
+> Importado de `docs-dev/ESTUDO_TAREFAS_PENDENTES.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Estudo inicial das tarefas pendentes
 
-Data: 06/11/2026. Fonte: [roadmap atualizado](../../../docs-dev/ROADMAP.md), lido após o usuário
+Data: 06/11/2026. Fonte: [roadmap atualizado](<../roadmaps/doc-001 - ROADMAP.md>), lido após o usuário
 salvar sua nova versão. Este documento é um estudo inicial, não autoriza nem
 antecipa mudanças de comportamento. As issues locais 001–030 estão fechadas;
 a 026 foi aceita e a 030 retirou React. Trechos da sequência inicial no roadmap
 que descrevem React opcional, 026 planejada e 028 aberta são históricos e não
 correspondem mais à aplicação. Não editar o roadmap recém-salvo para preservá-lo.
 
-O esquema atual é SQLite **v3 consolidado**, conforme [BANCO_DE_DADOS](../../../docs-dev/BANCO_DE_DADOS.md).
+O esquema atual é SQLite **v3 consolidado**, conforme [BANCO_DE_DADOS](<../design/doc-018 - Banco-de-dados-—-esquema-SQLite-consolidado-v3.md>).
 Mudanças futuras de esquema devem partir de v3, com nova migração e testes de
 upgrade/backup; não alterar migrações já aplicadas. Continuar usando HTML Go,
 CSS e apenas o JavaScript necessário, com serviços compartilhados pela API e
@@ -28,7 +28,7 @@ pelas páginas, preservando a ingestão ListenBrainz.
 
 | Item | Estado observado | Estudo / dependências antes de implementar |
 | --- | --- | --- |
-| 1. Retirar CGO/libvips | `bimg` é usado no cache e validação de imagens; build da API com `CGO_ENABLED=0` falha. SQLite usa `modernc.org/sqlite`. | [Estudo técnico inicial](../../../docs-dev/ESTUDO_01_GO_SEM_CGO.md): formatos, WebP, cache existente, limites, desempenho e distribuição. Sem escolha de biblioteca. |
+| 1. Retirar CGO/libvips | `bimg` é usado no cache e validação de imagens; build da API com `CGO_ENABLED=0` falha. SQLite usa `modernc.org/sqlite`. | [Estudo técnico inicial](<doc-012 - Estudo-1-—-execução-Go-sem-CGO-libvips.md>): formatos, WebP, cache existente, limites, desempenho e distribuição. Sem escolha de biblioteca. |
 | 2. Administração e privacidade | Layout Go administrativo existe; login e ações são de administrador. Perfis públicos não têm proprietário/visibilidade no modelo atual. | Separar identidade, perfil e chave de ingestão; política central para HTML, API e serviços, migração e matriz de permissões. Badge administrativo é subentrega visual independente, baseada na sessão validada. |
 | 3. Nome e identidade | Roadmap propõe TuneTrail, MuseTrail e Songtrail. `assets/icon.png` não estava presente no diretório consultado em 06/11/2026. | Confirmar nome/arquivo, autoria, licença e uso. Avaliar conflitos de marca, nomes e domínios antes de escolher; não afirmar disponibilidade. Planejar nomes de binário, imagens, docs, env, API e créditos ao upstream. |
 | 4. TOML | Configuração vem de variáveis em `internal/cfg`; `cmd/api` oferece sufixo `_FILE`; `reset-password` usa o mesmo leitor. | Inventariar chaves e segredos, definir precedência TOML/ambiente/`_FILE`/padrões, localização, permissões, erros e migração compatível; validar execução, Docker e reset de senha. |
@@ -63,7 +63,7 @@ pelas páginas, preservando a ingestão ListenBrainz.
   Tidal ainda exigem verificação de documentação, acesso e políticas aplicáveis.
   Não atribuir escuta a um perfil sem vínculo explícito.
 - **Ressalvas existentes:** manter visíveis os limites registrados em
-  [021](../../../docs-dev/comparisons/roadmap-05/ISSUE_021.md) e [026](../../../docs-dev/comparisons/roadmap-06/ISSUE_026.md):
+  [021](../../evidencias/roadmap-05/ISSUE_021.md) e [026](../../evidencias/roadmap-06/ISSUE_026.md):
   datas civis excepcionais, falhas de disco/interleavings, acessibilidade e fontes.
   As issues fechadas não equivalem a testes exaustivos.
 
@@ -83,7 +83,7 @@ Nenhuma integração, nome, mudança de banco ou dependência foi escolhida nest
 
 ## Revisão Advisor
 
-[Advisor](../../../docs-dev/agents/advisor.md), Sol esforço médio: **reprovado com ressalvas**
+[Advisor](../../../.agents/advisor.md), Sol esforço médio: **reprovado com ressalvas**
 para implementar diretamente o roadmap. Por leitura, apontou riscos de
 autorização compartilhada HTML/API, sessões apenas admin, imagens públicas,
 relay best-effort e configuração; não executou testes. Recomenda separar o

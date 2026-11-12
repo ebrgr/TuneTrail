@@ -9,8 +9,7 @@ labels:
   - operacao
 milestone: m-5
 dependencies: []
-references:
-  - docs-dev/issues/044-versionamento-tunetrail-solved.md
+references: []
 type: feature
 ordinal: 44000
 ---
@@ -18,7 +17,7 @@ ordinal: 44000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/044-versionamento-tunetrail-solved.md](../../docs-dev/issues/044-versionamento-tunetrail-solved.md) — numeração local 044.
+> Importada de `docs-dev/issues/044-versionamento-tunetrail-solved.md` — numeração local 044. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 09/11/2026
 

@@ -12,8 +12,7 @@ dependencies:
   - ISS-051
   - ISS-052
   - ISS-053
-references:
-  - docs-dev/issues/054-i18n-integracao-aceite.md
+references: []
 type: feature
 ordinal: 54000
 ---
@@ -21,9 +20,9 @@ ordinal: 54000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/054-i18n-integracao-aceite.md](../../docs-dev/issues/054-i18n-integracao-aceite.md) — numeração local 054.
+> Importada de `docs-dev/issues/054-i18n-integracao-aceite.md` — numeração local 054. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Implementada — aguardando teste funcional e aceite do usuário · **Depende de:** 050–053 · [Estudo](../../docs-dev/ROADMAP_03_UI_MULTILINGUE.md)
+**Status:** Implementada — aguardando teste funcional e aceite do usuário · **Depende de:** 050–053 · [Estudo](<../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>)
 
 ## Objetivo
 
@@ -39,5 +38,5 @@ Validar a interface multilíngue completa, as traduções e a distribuição ant
 
 ## Resultado
 
-Implementação e verificações registradas em [comparação e validação](../../docs-dev/comparisons/i18n/ISSUE_053_054.md). Os itens de aceite permanecem abertos até o teste funcional e a aprovação do usuário.
+Implementação e verificações registradas em [comparação e validação](../evidencias/i18n/ISSUE_053_054.md). Os itens de aceite permanecem abertos até o teste funcional e a aprovação do usuário.
 <!-- SECTION:DESCRIPTION:END -->

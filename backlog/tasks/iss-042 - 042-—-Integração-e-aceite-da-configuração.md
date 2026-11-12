@@ -12,8 +12,7 @@ dependencies:
   - ISS-039
   - ISS-040
   - ISS-041
-references:
-  - docs-dev/issues/042-aceite-migracao-configuracao.md
+references: []
 priority: high
 type: feature
 ordinal: 42000
@@ -22,14 +21,14 @@ ordinal: 42000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/042-aceite-migracao-configuracao.md](../../docs-dev/issues/042-aceite-migracao-configuracao.md) — numeração local 042.
+> Importada de `docs-dev/issues/042-aceite-migracao-configuracao.md` — numeração local 042. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Implementada e validada — aguardando aceite · **Depende de:** 038–041
 
 ## Objetivo
 
 Validar os dez campos e a experiência administrativa definidos no
-[contrato da 038](../../docs-dev/CONTRATO_CONFIGURACAO_038.md), incluindo documentação de
+[contrato da 038](<../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>), incluindo documentação de
 implantação, atualização e recuperação offline.
 
 ## Aceite
@@ -51,7 +50,7 @@ implantação, atualização e recuperação offline.
 
 ## Resultado — 09/11/2026
 
-Matriz de configuração, reinícios, recuperação offline, permissões, migração/importação e execução real via Compose foram validadas. Exemplo TOML e documentação de implantação/recuperação adicionados. Revisão do Advisor aprovada. O lançamento equivalente pelo Delve passou; o F5 da interface gráfica do VS Code não foi exercitado. [Evidências e limites](../../docs-dev/comparisons/configuracao/ISSUE_042.md).
+Matriz de configuração, reinícios, recuperação offline, permissões, migração/importação e execução real via Compose foram validadas. Exemplo TOML e documentação de implantação/recuperação adicionados. Revisão do Advisor aprovada. O lançamento equivalente pelo Delve passou; o F5 da interface gráfica do VS Code não foi exercitado. [Evidências e limites](../evidencias/configuracao/ISSUE_042.md).
 
 ## Ajuste solicitado — bloqueio por ambiente
 

@@ -8,8 +8,7 @@ labels:
   - config
 milestone: m-4
 dependencies: []
-references:
-  - docs-dev/issues/038-contrato-configuracao.md
+references: []
 priority: high
 type: feature
 ordinal: 38000
@@ -18,7 +17,7 @@ ordinal: 38000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/038-contrato-configuracao.md](../../docs-dev/issues/038-contrato-configuracao.md) — numeração local 038.
+> Importada de `docs-dev/issues/038-contrato-configuracao.md` — numeração local 038. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Em andamento — planejamento registrado em 09/11/2026 · **Bloqueia:** 039–042
 
@@ -29,7 +28,7 @@ de implementar TOML, persistência e interface. O contrato orientou as issues 03
 
 ## Plano da primeira entrega
 
-[Contrato, inventário dirigido, decisões e matriz de testes](../../docs-dev/CONTRATO_CONFIGURACAO_038.md).
+[Contrato, inventário dirigido, decisões e matriz de testes](<../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>).
 
 - Dez campos globais: log level; URL, limite e desativação de MusicBrainz;
   desativação de Deezer/CAA; chave Last.fm; URL/params Subsonic; fuso forçado.

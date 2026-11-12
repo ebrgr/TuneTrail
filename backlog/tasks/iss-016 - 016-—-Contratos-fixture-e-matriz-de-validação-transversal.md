@@ -8,8 +8,7 @@ labels:
   - validacao
 milestone: m-1
 dependencies: []
-references:
-  - docs-dev/issues/016-matriz-validacao-transversal-solved.md
+references: []
 type: task
 ordinal: 16000
 ---
@@ -17,10 +16,10 @@ ordinal: 16000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/016-matriz-validacao-transversal-solved.md](../../docs-dev/issues/016-matriz-validacao-transversal-solved.md) — numeração local 016.
+> Importada de `docs-dev/issues/016-matriz-validacao-transversal-solved.md` — numeração local 016. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 5](../../docs-dev/ROADMAP_05_VALIDACAO.md). Dependências: Nenhuma; abre a etapa 5.
+Plano: [roadmap 5](<../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>). Dependências: Nenhuma; abre a etapa 5.
 
 ## Trabalho
 
@@ -37,13 +36,13 @@ Matriz cobre todas as famílias e aponta teste existente ou lacuna por caso. Fix
 
 ## Evidências
 
-Registrar procedimentos e resultados em [roadmap 5](../../docs-dev/comparisons/roadmap-05/README.md).
+Registrar procedimentos e resultados em [roadmap 5](../evidencias/roadmap-05/README.md).
 Usar apenas bases SQLite v3 descartáveis e credenciais fictícias. O estudo e o
 fechamento de 001–015 não significam que esta issue já foi executada.
 
 ## Entrega — 05/11/2026
 
-[Inventário, matriz e oráculos](../../docs-dev/comparisons/roadmap-05/ISSUE_016_MATRIZ.md):
+[Inventário, matriz e oráculos](../evidencias/roadmap-05/ISSUE_016_MATRIZ.md):
 contratos por família, ator, método, perfil e modo; evidências existentes, lacunas
 e decisões pendentes identificadas para 017–021. O Advisor revisou a precedência
 de autenticação, os erros do store e os limites da fixture e aprovou o resultado após os ajustes.

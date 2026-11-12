@@ -9,8 +9,7 @@ labels:
 milestone: m-4
 dependencies:
   - ISS-038
-references:
-  - docs-dev/issues/039-leitura-configuracao-toml-solved.md
+references: []
 type: feature
 ordinal: 39000
 ---
@@ -18,13 +17,13 @@ ordinal: 39000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/039-leitura-configuracao-toml-solved.md](../../docs-dev/issues/039-leitura-configuracao-toml-solved.md) — numeração local 039.
+> Importada de `docs-dev/issues/039-leitura-configuracao-toml-solved.md` — numeração local 039. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 09/11/2026 · **Depende de:** contrato da 038
 
 ## Objetivo
 
-Implementar o [contrato da 038](../../docs-dev/CONTRATO_CONFIGURACAO_038.md) para os dez campos
+Implementar o [contrato da 038](<../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) para os dez campos
 globais prioritários, mantendo execução sem arquivo e SQLite consolidado v3.
 
 ## Aceite

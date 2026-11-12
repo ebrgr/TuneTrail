@@ -7,14 +7,14 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_05_VALIDACAO.md](../../../docs-dev/ROADMAP_05_VALIDACAO.md).
+> Importado de `docs-dev/ROADMAP_05_VALIDACAO.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Roadmap 5 — comportamento, permissões, fusos e isolamento entre perfis
 
 Estudo de 05/11/2026 sobre a árvore de trabalho local, incluindo entregas ainda
 não publicadas. Issues **001–015 fechadas e resolvidas por aceite explícito do
 usuário** nesta data. Este documento planeja a próxima etapa; não afirma que sua
-matriz já foi executada. Revisão com [Advisor](../../../docs-dev/agents/advisor.md), Sol, esforço alto.
+matriz já foi executada. Revisão com [Advisor](../../../.agents/advisor.md), Sol, esforço alto.
 
 Base vigente: **SQLite com esquema consolidado v3**. Não alterar migrações 001–003
 nem usar o banco operacional nos experimentos. React continua padrão; Go é
@@ -47,7 +47,7 @@ de confirmação em memória. Eles não implicam, por si só, falha de seguranç
 | Integração | `scripts/validate_multiuser.py`, `validate_webui.py`, `validate_admin_webui.py` | Relatório único com casos, observáveis, cobertura negativa e limitações |
 | I/O | `internal/importer`, `internal/export`, `internal/relay`, testes de imagens/avatars | Cancelamento, interrupção de stream, transporte lento, compensação e reinício controlados |
 
-Os [resultados da 015](../../../docs-dev/comparisons/roadmap-04/ISSUE_015.md) permanecem evidência
+Os [resultados da 015](../../evidencias/roadmap-04/ISSUE_015.md) permanecem evidência
 histórica, com 55 capturas e testes aprovados. Não substituem a matriz desta etapa.
 
 ## Contratos a preservar e decisões a tornar explícitas
@@ -100,7 +100,7 @@ serão tratados nas novas issues, preservando o encerramento aceito de 001–015
 | Week53 sem ano, agora2021-01-01 | Início2020-12-28 | Início2022-01-03 |
 
 A execução chamou o store real em `sqlite.NewInMemory()` e o helper de intervalo,
-sem rede ou banco operacional. Fonte/procedimento nas [evidências](../../../docs-dev/comparisons/roadmap-05/README.md).
+sem rede ou banco operacional. Fonte/procedimento nas [evidências](../../evidencias/roadmap-05/README.md).
 O Advisor aprovou o plano **com ressalvas**, exigindo que esses defeitos entrem
 como regressões/correções novas na 018. São defeitos de comportamento existentes,
 sem comprovação de falha de autenticação ou isolamento.
@@ -143,12 +143,12 @@ atual; não criar scheduler ou framework de teste genérico.
 
 ## Sequência de issues locais
 
-1. [016 — contratos, fixture e matriz](../../../docs-dev/issues/016-matriz-validacao-transversal-solved.md).
-2. [017 — permissões, sessões e origem](../../../docs-dev/issues/017-permissoes-sessoes-origem-solved.md).
-3. [018 — fusos, intervalos e agregados](../../../docs-dev/issues/018-fusos-intervalos-agregados-solved.md).
-4. [019 — isolamento, ingestão e cache](../../../docs-dev/issues/019-isolamento-perfis-ingestao-cache-solved.md).
-5. [020 — concorrência, falhas e I/O](../../../docs-dev/issues/020-concorrencia-falhas-io-solved.md).
-6. [021 — integração e aceite transversal](../../../docs-dev/issues/021-integracao-aceite-validacao-solved.md).
+1. [016 — contratos, fixture e matriz](<../../tasks/iss-016 - 016-—-Contratos-fixture-e-matriz-de-validação-transversal.md>).
+2. [017 — permissões, sessões e origem](<../../tasks/iss-017 - 017-—-Validar-permissões-sessões-origem-e-formulários.md>).
+3. [018 — fusos, intervalos e agregados](<../../tasks/iss-018 - 018-—-Corrigir-e-validar-fusos-intervalos-e-agregados-civis.md>).
+4. [019 — isolamento, ingestão e cache](<../../tasks/iss-019 - 019-—-Validar-isolamento-entre-perfis-ingestão-e-cache.md>).
+5. [020 — concorrência, falhas e I/O](<../../tasks/iss-020 - 020-—-Validar-concorrência-falhas-importação-exportação-e-I-O.md>).
+6. [021 — integração e aceite transversal](<../../tasks/iss-021 - 021-—-Integrar-evidências-e-concluir-aceite-transversal-da-etapa-5.md>).
 
 A 016 fixa critérios e compartilhamento de fixtures. As 017–020 podem reaproveitar
 testes existentes, acrescentando somente casos necessários. A 021 reúne resultados
@@ -158,7 +158,7 @@ CHANGELOG. Não abrir migration ou alterar runtime somente para organizar o estu
 
 ## Evidências e porta de saída
 
-Guardar procedimentos e resultados em [comparisons/roadmap-05](../../../docs-dev/comparisons/roadmap-05/README.md).
+Guardar procedimentos e resultados em [comparisons/roadmap-05](../../evidencias/roadmap-05/README.md).
 Cada caso deve identificar cenário, modo, ator, perfil, fuso, relógio, operação,
 status, observação no banco/cache, esperado independente e resultado. Registrar
 seed, comando, versão de Go/Node quando executado, configuração sem segredos e
@@ -186,38 +186,38 @@ Resultados de execução e revisão estão no registro de evidências desta etap
 
 ## Atualização — issue 016
 
-Fechada e resolvida por aceite do usuário em 05/11/2026. A [matriz](../../../docs-dev/comparisons/roadmap-05/ISSUE_016_MATRIZ.md)
+Fechada e resolvida por aceite do usuário em 05/11/2026. A [matriz](../../evidencias/roadmap-05/ISSUE_016_MATRIZ.md)
 inventaria os contratos e aponta cobertura/lacunas de 017–021. A fixture pequena e
 ampliada foi verificada em SQLite v3 descartável; não controla relógio do servidor.
 Os defeitos temporais reproduzidos continuam para correção na 018.
 
 ## Atualização — issue 017
 
-Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados e limites](../../../docs-dev/comparisons/roadmap-05/ISSUE_017.md).
+Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados e limites](../../evidencias/roadmap-05/ISSUE_017.md).
 A matriz usa bancos e servidores descartáveis; o Advisor aprovou as correções.
 As issues 018–021 continuam abertas.
 
 ## Atualização — issue 018
 
 Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados, contratos preservados e
-limites](../../../docs-dev/comparisons/roadmap-05/ISSUE_018.md). As cinco reproduções foram corrigidas;
+limites](../../evidencias/roadmap-05/ISSUE_018.md). As cinco reproduções foram corrigidas;
 as issues 019–021 continuam abertas.
 
 ## Atualização — issue 019
 
-Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados e limites](../../../docs-dev/comparisons/roadmap-05/ISSUE_019.md).
+Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados e limites](../../evidencias/roadmap-05/ISSUE_019.md).
 Isolamento foi exercitado com dados fictícios nos modos Go e React/API; limites
 de contexto interno e de gráficos permanecem registrados. Issues 020–021 abertas.
 
 ## Atualização — issue 020
 
-Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados, correções e limitações](../../../docs-dev/comparisons/roadmap-05/ISSUE_020.md).
+Fechada e resolvida por aceite do usuário em 05/11/2026. [Resultados, correções e limitações](../../evidencias/roadmap-05/ISSUE_020.md).
 O limite de ingestão e os fluxos de fila e imagem foram endurecidos; os cenários
 concorrentes e de falha ainda não cobrem toda a matriz prevista na issue.
 
 ## Atualização — issue 021
 
 Fechada e resolvida por aceite do usuário em 05/11/2026, com revisão final do Advisor aprovada com ressalvas. [Matriz transversal,
-resultados e checklist da parte 6](../../../docs-dev/comparisons/roadmap-05/ISSUE_021.md). A
+resultados e checklist da parte 6](../../evidencias/roadmap-05/ISSUE_021.md). A
 issue 020 foi aceita com limitações registradas; as verificações não executadas
 continuam identificadas no relatório. React permanece padrão e SQLite v3 é a base.

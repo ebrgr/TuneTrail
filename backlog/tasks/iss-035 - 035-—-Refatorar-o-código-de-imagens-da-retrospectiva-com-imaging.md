@@ -8,8 +8,7 @@ labels:
   - imagens
 milestone: m-3
 dependencies: []
-references:
-  - docs-dev/issues/035-refatoracao-summary-imaging-solved.md
+references: []
 type: feature
 ordinal: 35000
 ---
@@ -17,11 +16,11 @@ ordinal: 35000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/035-refatoracao-summary-imaging-solved.md](../../docs-dev/issues/035-refatoracao-summary-imaging-solved.md) — numeração local 035.
+> Importada de `docs-dev/issues/035-refatoracao-summary-imaging-solved.md` — numeração local 035. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida em 06/11/2026**. Issue local, sem publicação.
-Depende da conclusão da [034](../../docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md).
-Fase 2 do [plano](../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md).
+Depende da conclusão da [034](<iss-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>).
+Fase 2 do [plano](<../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>).
 
 ## Trabalho
 
@@ -49,7 +48,7 @@ do que permanece para a futura funcionalidade de imagens sociais.
 
 ## Entrega
 
-[Relatório, testes e imagens fictícias](../../docs-dev/comparisons/transicao-imagens/ISSUE_035.md).
+[Relatório, testes e imagens fictícias](../evidencias/transicao-imagens/ISSUE_035.md).
 Escala e composição refatoradas, fontes e readers explícitos e decoder/limites
 compartilhados; testes Go 1.25, race e corpus passaram. O gerador social continua
 desativado e requer especificação própria.

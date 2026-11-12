@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/005-convivencia-go-react-solved.md
+references: []
 type: feature
 ordinal: 5000
 ---
@@ -17,11 +16,11 @@ ordinal: 5000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/005-convivencia-go-react-solved.md](../../docs-dev/issues/005-convivencia-go-react-solved.md) — numeração local 005.
+> Importada de `docs-dev/issues/005-convivencia-go-react-solved.md` — numeração local 005. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida em 04/11/2026**, após os testes da 004.
 Issue local, sem publicação.
-Plano: [roadmap 2](../../docs-dev/ROADMAP_02_PAGINAS.md).
+Plano: [roadmap 2](<../docs/roadmaps/doc-003 - Roadmap-2-—-seleção-de-perfis-home-rankings-e-histórico.md>).
 
 ## Trabalho
 
@@ -50,7 +49,7 @@ Navegador confirmou React → Go, voltar/avançar, perfis em abas independentes 
 login administrativo. HTTP confirmou recusa de chave de player/origem externa
 e aceitação da sessão, com restauração do registro de teste.
 
-Validação e capturas: [relatório do roadmap 2](../../docs-dev/comparisons/roadmap-02/README.md).
+Validação e capturas: [relatório do roadmap 2](../evidencias/roadmap-02/README.md).
 `make check ui.check`, build React/Go, testes de corrida focados e validações
 HTTP/multiusuário passaram. Sem commit ou publicação.
 <!-- SECTION:DESCRIPTION:END -->

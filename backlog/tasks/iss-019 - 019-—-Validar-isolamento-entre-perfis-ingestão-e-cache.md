@@ -8,8 +8,7 @@ labels:
   - validacao
 milestone: m-1
 dependencies: []
-references:
-  - docs-dev/issues/019-isolamento-perfis-ingestao-cache-solved.md
+references: []
 type: task
 ordinal: 19000
 ---
@@ -17,10 +16,10 @@ ordinal: 19000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/019-isolamento-perfis-ingestao-cache-solved.md](../../docs-dev/issues/019-isolamento-perfis-ingestao-cache-solved.md) — numeração local 019.
+> Importada de `docs-dev/issues/019-isolamento-perfis-ingestao-cache-solved.md` — numeração local 019. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 5](../../docs-dev/ROADMAP_05_VALIDACAO.md). Dependências: 016; integrar correções temporais da 018.
+Plano: [roadmap 5](<../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>). Dependências: 016; integrar correções temporais da 018.
 
 ## Trabalho
 
@@ -39,14 +38,14 @@ Nenhuma escuta pessoal atravessa contexto; mesmo segundo entre pessoas permanece
 
 ## Evidências
 
-Registrar procedimentos e resultados em [roadmap 5](../../docs-dev/comparisons/roadmap-05/README.md).
+Registrar procedimentos e resultados em [roadmap 5](../evidencias/roadmap-05/README.md).
 Usar apenas bases SQLite v3 descartáveis e credenciais fictícias. O estudo e o
 fechamento de 001–015 não significam que esta issue já foi executada.
 
 ## Entrega — 05/11/2026
 
 A matriz de perfis, correções de erros, cache e importação, resultados e limites
-estão no [relatório da 019](../../docs-dev/comparisons/roadmap-05/ISSUE_019.md). Testes Go,
+estão no [relatório da 019](../evidencias/roadmap-05/ISSUE_019.md). Testes Go,
 race, jornadas reais e revisão Advisor passaram. Aceite explícito do usuário recebido em 05/11/2026.
 
 ## Encerramento — 05/11/2026

@@ -23,7 +23,8 @@ func TestCorpus031(t *testing.T) {
 	if work == "" {
 		t.Skip("set KOITO_IMAGE031_WORK to the generated 031 work directory")
 	}
-	report, err := os.ReadFile("../../docs-dev/comparisons/transicao-imagens/results-031.json")
+	// Evidence moved from docs-dev/comparisons to backlog/evidencias with the Backlog.md adoption (ISS-059).
+	report, err := os.ReadFile("../../backlog/evidencias/transicao-imagens/results-031.json")
 	if err != nil {
 		t.Fatal(err)
 	}

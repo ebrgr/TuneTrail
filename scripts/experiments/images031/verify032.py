@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--report', type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[3]
-    data = json.loads((root / 'docs-dev/comparisons/transicao-imagens/results-031.json').read_text())
+    data = json.loads((root / 'backlog/evidencias/transicao-imagens/results-031.json').read_text())
     results = []
     for i, row in enumerate(data['rows']):
         if row['mode'] != 'pure' or row['effort'] != -1 or 'quality' not in row or row.get('error'):

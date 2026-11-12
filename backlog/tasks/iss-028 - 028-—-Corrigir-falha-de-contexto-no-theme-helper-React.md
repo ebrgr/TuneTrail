@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/028-theme-helper-react-sem-perfil-solved.md
+references: []
 type: bug
 ordinal: 28000
 ---
@@ -17,10 +16,10 @@ ordinal: 28000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/028-theme-helper-react-sem-perfil-solved.md](../../docs-dev/issues/028-theme-helper-react-sem-perfil-solved.md) — numeração local 028.
+> Importada de `docs-dev/issues/028-theme-helper-react-sem-perfil-solved.md` — numeração local 028. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida** em 05/11/2026. Issue local, sem publicação.
-Origem: [validação da issue 025](../../docs-dev/comparisons/roadmap-06/ISSUE_025.md).
+Origem: [validação da issue 025](../evidencias/roadmap-06/ISSUE_025.md).
 
 ## Problema
 
@@ -44,5 +43,5 @@ v2 migrada; não foi atribuída à migração.
 
 A prévia usa dados fictícios independentes de perfil. Aplicação, validação e
 restauração do tema foram corrigidas. Testes com 0/1/N perfis e base migrada
-passaram; detalhes e limites em [ISSUE_028](../../docs-dev/comparisons/roadmap-06/ISSUE_028.md).
+passaram; detalhes e limites em [ISSUE_028](../evidencias/roadmap-06/ISSUE_028.md).
 <!-- SECTION:DESCRIPTION:END -->

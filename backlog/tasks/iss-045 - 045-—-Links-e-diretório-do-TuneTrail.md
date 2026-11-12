@@ -9,8 +9,7 @@ labels:
   - operacao
 milestone: m-5
 dependencies: []
-references:
-  - docs-dev/issues/045-links-diretorio-tunetrail-solved.md
+references: []
 type: feature
 ordinal: 45000
 ---
@@ -18,7 +17,7 @@ ordinal: 45000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/045-links-diretorio-tunetrail-solved.md](../../docs-dev/issues/045-links-diretorio-tunetrail-solved.md) — numeração local 045.
+> Importada de `docs-dev/issues/045-links-diretorio-tunetrail-solved.md` — numeração local 045. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 09/11/2026
 
@@ -44,6 +43,6 @@ Fechada e aprovada por solicitação explícita do usuário. A mudança de diret
 e os links próprios já foram aplicados. A definição do endereço oficial da
 documentação, a substituição de `site: https://koito.io`, a revisão de links do
 site e a preparação de sua publicação passam à
-[issue 048](../../docs-dev/issues/048-documentacao-site-tunetrail.md). Nenhum domínio, implantação ou
+[issue 048](<iss-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>). Nenhum domínio, implantação ou
 acesso remoto foi confirmado por este encerramento.
 <!-- SECTION:DESCRIPTION:END -->

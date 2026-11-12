@@ -7,15 +7,15 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - estudo
 ---
-> Importado de [docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md](../../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md).
+> Importado de `docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Plano de transição — imaging + webp-go-pure
 
 Preparado em 06/11/2026, por solicitação do usuário. Este plano registra a escolha
 de direção tecnológica e as issues locais. As duas fases foram concluídas; a
 funcionalidade de geração de imagens sociais permanece para planejamento próprio.
-Base: [investigação do codec](../../../docs-dev/ESTUDO_WEBP_GO_PURE.md) e
-[estudo sem CGO](../../../docs-dev/ESTUDO_01_GO_SEM_CGO.md). Preservar SQLite consolidado v3.
+Base: [investigação do codec](<doc-013 - Substituição-de-libvips-por-webp-go-pure.md>) e
+[estudo sem CGO](<doc-012 - Estudo-1-—-execução-Go-sem-CGO-libvips.md>). Preservar SQLite consolidado v3.
 
 ## Objetivo e divisão
 
@@ -43,14 +43,14 @@ Fixar versões e registrar licenças durante a prova; não usar atualização fl
 
 | Ordem | Issue | Entrega |
 | --- | --- | --- |
-| 1 | [031 — contrato, corpus e parâmetros](../../../docs-dev/issues/031-contrato-corpus-imagens-go-solved.md) | Contrato observado da bimg, política de entrada/recursos, corpus e medições reproduzíveis da combinação escolhida. |
-| 2 | [032 — pipeline Go](../../../docs-dev/issues/032-pipeline-imaging-webp-go-pure-solved.md) | Componente compartilhado com inspeção, limites, orientação, corte/escala e encode, sem registro WebP duplicado. |
-| 3 | [033 — cache e administração](../../../docs-dev/issues/033-integracao-cache-capas-avatares-go-solved.md) | Download, capas e avatares usando o componente e preservando contratos de persistência e HTTP. |
-| 4 | [034 — distribuição sem CGO](../../../docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md) | Retirada da bimg/libvips, build/debug/CI/Docker/documentação e evidências finais da fase 1. |
-| 5 | [035 — preparação da retrospectiva](../../../docs-dev/issues/035-refatoracao-summary-imaging-solved.md) | Refatoração das transformações/composição antigas, fontes preservadas e testes locais, após a conclusão da fase 1. |
+| 1 | [031 — contrato, corpus e parâmetros](<../../tasks/iss-031 - 031-—-Contrato-corpus-e-parâmetros-da-transição-de-imagens.md>) | Contrato observado da bimg, política de entrada/recursos, corpus e medições reproduzíveis da combinação escolhida. |
+| 2 | [032 — pipeline Go](<../../tasks/iss-032 - 032-—-Implementar-pipeline-Go-com-imaging-e-webp-go-pure.md>) | Componente compartilhado com inspeção, limites, orientação, corte/escala e encode, sem registro WebP duplicado. |
+| 3 | [033 — cache e administração](<../../tasks/iss-033 - 033-—-Integrar-pipeline-Go-ao-cache-capas-e-avatares.md>) | Download, capas e avatares usando o componente e preservando contratos de persistência e HTTP. |
+| 4 | [034 — distribuição sem CGO](<../../tasks/iss-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>) | Retirada da bimg/libvips, build/debug/CI/Docker/documentação e evidências finais da fase 1. |
+| 5 | [035 — preparação da retrospectiva](<../../tasks/iss-035 - 035-—-Refatorar-o-código-de-imagens-da-retrospectiva-com-imaging.md>) | Refatoração das transformações/composição antigas, fontes preservadas e testes locais, após a conclusão da fase 1. |
 
 Dependências: **031 → 032 → 033 → 034 → 035**. Cada issue exige registro dos
-resultados e limitações em `docs-dev/comparisons/transicao-imagens/`, criado
+resultados e limitações em `backlog/evidencias/transicao-imagens/`, criado
 quando houver execução. Os benchmarks anteriores avaliaram um protótipo com
 `x/image/draw`, não `imaging`; não reaproveitar seus números como aprovação da
 nova combinação.
@@ -58,21 +58,21 @@ nova combinação.
 ## Progresso
 
 031 concluída e aprovada pelo Advisor como estudo em 06/11/2026.
-[Contrato, medições e limitações](../../../docs-dev/comparisons/transicao-imagens/ISSUE_031.md):
+[Contrato, medições e limitações](../../evidencias/transicao-imagens/ISSUE_031.md):
 parâmetros iniciais Lanczos/EffortFastest, Q100/Q85 lossy; um processamento global
 e quatro esperas canceláveis propostos para a 032. A política de JPEG/PNG/WebP
 estático restringe formatos adicionais e exige documentação na implementação.
 Os critérios de qualidade calibrados após a prova foram revalidados na 032 para
 o corpus documentado, sem aprovação geral de fotografias ou perfis de cor.
 032 concluiu o componente Go isolado, com validação no Go 1.25 e análise de
-segurança. [Resultados e limitações](../../../docs-dev/comparisons/transicao-imagens/ISSUE_032.md).
+segurança. [Resultados e limitações](../../evidencias/transicao-imagens/ISSUE_032.md).
 033 integrou cache, capas e avatares ao pipeline Go, com testes e
-[capturas](../../../docs-dev/comparisons/transicao-imagens/ISSUE_033.md). A 034 retirou bimg do
-go.mod e atualizou o build. A [validação da distribuição](../../../docs-dev/comparisons/transicao-imagens/ISSUE_034.md)
-concluiu a fase 1. A [035](../../../docs-dev/comparisons/transicao-imagens/ISSUE_035.md) preparou
-os auxiliares da retrospectiva. A [037](../../../docs-dev/comparisons/transicao-imagens/ISSUE_037.md)
+[capturas](../../evidencias/transicao-imagens/ISSUE_033.md). A 034 retirou bimg do
+go.mod e atualizou o build. A [validação da distribuição](../../evidencias/transicao-imagens/ISSUE_034.md)
+concluiu a fase 1. A [035](../../evidencias/transicao-imagens/ISSUE_035.md) preparou
+os auxiliares da retrospectiva. A [037](../../evidencias/transicao-imagens/ISSUE_037.md)
 corrigiu a corrida de coleta e publicação automática.
-[Revisão Advisor das 032/033](../../../docs-dev/comparisons/transicao-imagens/ADVISOR_032_033.md):
+[Revisão Advisor das 032/033](../../evidencias/transicao-imagens/ADVISOR_032_033.md):
 reprovado com ressalvas de admissão e cancelamento compartilhado, sem bloqueador
 comprovado para iniciar a 034.
 
@@ -152,20 +152,20 @@ permanecem locais em Markdown, conforme a orientação do usuário para esta eta
 
 ## Correção após revisão
 
-[036 concluída](../../../docs-dev/comparisons/transicao-imagens/ISSUE_036.md): admissão administrativa,
+[036 concluída](../../evidencias/transicao-imagens/ISSUE_036.md): admissão administrativa,
 contextos independentes e respostas HTTP corrigidos e testados. A 034 concluiu a
 distribuição; o risco histórico de publicação automática e coleta foi separado na
-[037](../../../docs-dev/issues/037-publicacao-automatica-coleta-imagens-solved.md).
+[037](<../../tasks/iss-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>).
 
 ## Retrospectiva preparada
 
-[035 concluída](../../../docs-dev/comparisons/transicao-imagens/ISSUE_035.md): escala com imaging,
+[035 concluída](../../evidencias/transicao-imagens/ISSUE_035.md): escala com imaging,
 composição com coordenadas explicitadas, fontes/leitores injetados e testes sem
 CGO. A geração social continua desativada e requer planejamento próprio.
 
 ## Publicação automática protegida
 
-[037 concluída](../../../docs-dev/comparisons/transicao-imagens/ISSUE_037.md): reservas por UUID
+[037 concluída](../../evidencias/transicao-imagens/ISSUE_037.md): reservas por UUID
 coordenam produtores e coletor dentro do processo, sem reter a trava durante
 rede ou banco. O caso de múltiplos processos compartilhando cache requer
 coordenação separada.

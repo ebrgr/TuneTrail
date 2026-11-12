@@ -8,8 +8,7 @@ labels:
   - imagens
 milestone: m-3
 dependencies: []
-references:
-  - docs-dev/issues/031-contrato-corpus-imagens-go-solved.md
+references: []
 type: feature
 ordinal: 31000
 ---
@@ -17,10 +16,10 @@ ordinal: 31000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/031-contrato-corpus-imagens-go-solved.md](../../docs-dev/issues/031-contrato-corpus-imagens-go-solved.md) — numeração local 031.
+> Importada de `docs-dev/issues/031-contrato-corpus-imagens-go-solved.md` — numeração local 031. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida em 06/11/2026**. Issue local, sem publicação.
-Plano: [transição de imagens](../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md). Fase 1; sem dependências novas.
+Plano: [transição de imagens](<../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>). Fase 1; sem dependências novas.
 
 ## Trabalho
 
@@ -43,12 +42,12 @@ Plano: [transição de imagens](../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md). F
 
 Contrato e parâmetros reproduzíveis registrados, diferenças classificadas e
 critérios verificáveis para a 032. Corpus sanitizado e relatório em
-`docs-dev/comparisons/transicao-imagens/ISSUE_031.md`; nenhuma leitura do banco
+`backlog/evidencias/transicao-imagens/ISSUE_031.md`; nenhuma leitura do banco
 operacional, limpeza do cache do usuário ou migração de esquema.
 
 ## Entrega e validação
 
-[Relatório e parecer do Advisor](../../docs-dev/comparisons/transicao-imagens/ISSUE_031.md):
+[Relatório e parecer do Advisor](../evidencias/transicao-imagens/ISSUE_031.md):
 contrato observado, corpus fictício de 38 fixtures, 184 casos, 61 pares de
 transformação e 138 saídas com qualidade medida. Módulo experimental isolado,
 compilado sem CGO para o candidato; testes de bounds/alpha/EXIF1–8, race e vet

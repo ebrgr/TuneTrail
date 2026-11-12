@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:40:00Z'
 tags:
   - design
 ---
-> Importado de [docs-dev/BANCO_DE_DADOS.md](../../../docs-dev/BANCO_DE_DADOS.md).
+> Importado de `docs-dev/BANCO_DE_DADOS.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Banco de dados — esquema SQLite consolidado v3
 
@@ -33,7 +33,7 @@ consolidada. Migrações futuras devem partir do esquema consolidado v3 e preser
 as migrações já aplicadas.
 
 Para detalhes da implementação e validação, consulte a seção “Consolidação
-autorizada — migração única v2 → v3” de [MULTIUSER_DESIGN.md](../../../docs-dev/MULTIUSER_DESIGN.md).
+autorizada — migração única v2 → v3” de [MULTIUSER_DESIGN.md](<doc-021 - Estudo-perfis-de-escuta-com-administração-única.md>).
 
 ## Nome e migração do arquivo
 

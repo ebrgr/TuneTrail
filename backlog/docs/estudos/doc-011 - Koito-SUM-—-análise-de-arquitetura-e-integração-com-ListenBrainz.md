@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - estudo
 ---
-> Importado de [docs-dev/Koito_SUM_Analise_1a_análise.md](../../../docs-dev/Koito_SUM_Analise_1a_análise.md).
+> Importado de `docs-dev/Koito_SUM_Analise_1a_análise.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Koito-SUM — análise de arquitetura e integração com ListenBrainz
 

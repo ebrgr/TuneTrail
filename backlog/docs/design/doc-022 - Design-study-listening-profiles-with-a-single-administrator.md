@@ -7,13 +7,13 @@ updated_date: '2026-11-12T23:40:00Z'
 tags:
   - design
 ---
-> Importado de [docs-dev/MULTIUSER_DESIGN.en.md](../../../docs-dev/MULTIUSER_DESIGN.en.md).
+> Importado de `docs-dev/MULTIUSER_DESIGN.en.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Design study: listening profiles with a single administrator
 
 Historical document version: **Koito 0.3.2-SUM-RC3**. The current TuneTrail version is controlled by `internal/version/VERSION`.
 
-[Portuguese version](../../../docs-dev/MULTIUSER_DESIGN.md)
+[Portuguese version](<doc-021 - Estudo-perfis-de-escuta-com-administração-única.md>)
 
 Status: implementation steps 1–5 have been completed and validated for the local
 MVP. The complete workflow has been exercised on a fresh installation, a
@@ -1051,7 +1051,7 @@ Historical SUM validation confirmed RC2 in compiled assets and exercised RC2 →
 Updated the user-facing documentation site for profiles, migration, API keys,
 imports and forwarding. Replaced the experimental Node API in frontend tests
 with the existing TypeScript compiler, fixed a pre-existing malformed JSON test
-tag, and added Go vet to `make check`. See [PR validation](../../../docs-dev/PR_VALIDATION.md) for
+tag, and added Go vet to `make check`. See [PR validation](<../prs/doc-024 - Multiuser-PR-validation.md>) for
 commands, results and existing dependency/tooling warnings.
 
 Documentation build passed (9 pages), compared with base `a079fa6` (8 pages):

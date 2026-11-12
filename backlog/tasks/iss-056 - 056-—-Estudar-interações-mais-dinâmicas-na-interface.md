@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-8
 dependencies: []
-references:
-  - docs-dev/issues/056-estudo-interacoes-ui-dinamica.md
+references: []
 type: spike
 ordinal: 56000
 ---
@@ -17,9 +16,9 @@ ordinal: 56000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/056-estudo-interacoes-ui-dinamica.md](../../docs-dev/issues/056-estudo-interacoes-ui-dinamica.md) — numeração local 056.
+> Importada de `docs-dev/issues/056-estudo-interacoes-ui-dinamica.md` — numeração local 056. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Aberta — análise futura · **Criada:** 10/11/2026 · **Roadmap:** [interações da interface](../../docs-dev/ROADMAP.md)
+**Status:** Aberta — análise futura · **Criada:** 10/11/2026 · **Roadmap:** [interações da interface](<../docs/roadmaps/doc-001 - ROADMAP.md>)
 
 ## Objetivo
 
@@ -44,7 +43,7 @@ As prioridades e complexidades abaixo são estimativas iniciais, sujeitas à an�
 | --- | --- | --- | --- |
 | Atualização de “tocando agora” e escutas recentes | Exibir novidades sem recarregar a página inteira. | Média | Frequência, pausa quando a página não estiver visível, falhas, tráfego, isolamento de perfil e uso da API existente. Comparar polling com alternativas antes de decidir. |
 | Busca com sugestões | Encontrar artistas, álbuns e faixas enquanto se digita, inclusive em edição e mesclagem. | Média | Reutilizar buscas existentes, limitar e cancelar requisições, resultados vazios, teclado, leitor de tela e dados por perfil. |
-| Edição de tags e gêneros | Adicionar e remover tags com retorno imediato. | Média, após a persistência | Depende do modelo e das regras de origem da [issue 055](../../docs-dev/issues/055-metadados-tags-lancamento.md); distinguir gênero de tag livre e preservar alterações manuais. |
+| Edição de tags e gêneros | Adicionar e remover tags com retorno imediato. | Média, após a persistência | Depende do modelo e das regras de origem da [issue 055](<iss-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>); distinguir gênero de tag livre e preservar alterações manuais. |
 | Progresso de importação | Mostrar processamento, resultados parciais e erros de arquivos grandes. | Alta | Exige estudo de trabalho em segundo plano e acompanhamento no servidor; definir reinício, falha, duplicação, permissões e retenção de estado. |
 | Filtros e paginação dinâmicos | Atualizar rankings e histórico com menos recarregamentos. | Média a alta | URLs compartilháveis, histórico do navegador, foco, indicadores de carregamento e equivalência com os filtros atuais. |
 | Gráficos interativos | Consultar detalhes de pontos e intervalos diretamente no gráfico. | Média | Preservar tabelas acessíveis, limites corretos, uso por teclado e comportamento em telas pequenas. |

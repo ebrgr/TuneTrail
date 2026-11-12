@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - estudo
 ---
-> Importado de [docs-dev/LIMPEZA_LIBVIPS.md](../../../docs-dev/LIMPEZA_LIBVIPS.md).
+> Importado de `docs-dev/LIMPEZA_LIBVIPS.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Limpeza de artefatos antigos de libvips
 

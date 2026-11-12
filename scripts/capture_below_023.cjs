@@ -3,8 +3,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const fs=require('node:fs');
 const [go,react]=process.argv.slice(2);
 if(![go,react].every(o=>/^http:\/\/127\.0\.0\.1:\d+$/.test(o)))throw Error('loopback only');
-const dir='docs-dev/comparisons/roadmap-06/screenshots-023';
-const manifest='docs-dev/comparisons/roadmap-06/screenshots-023.json';
+const dir='backlog/evidencias/roadmap-06/screenshots-023';
+const manifest='backlog/evidencias/roadmap-06/screenshots-023.json';
 (async()=>{
  const b=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
  const data=JSON.parse(fs.readFileSync(manifest));data.entries=data.entries.filter(x=>x.region!=='meio');

@@ -8,8 +8,7 @@ labels:
   - i18n
 milestone: m-7
 dependencies: []
-references:
-  - docs-dev/issues/050-i18n-fundacao-idioma-solved.md
+references: []
 type: feature
 ordinal: 50000
 ---
@@ -17,9 +16,9 @@ ordinal: 50000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/050-i18n-fundacao-idioma-solved.md](../../docs-dev/issues/050-i18n-fundacao-idioma-solved.md) — numeração local 050.
+> Importada de `docs-dev/issues/050-i18n-fundacao-idioma-solved.md` — numeração local 050. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Fechada e aprovada pelo usuário em 10/11/2026 · [Estudo](../../docs-dev/ROADMAP_03_UI_MULTILINGUE.md)
+**Status:** Fechada e aprovada pelo usuário em 10/11/2026 · [Estudo](<../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>)
 
 ## Objetivo
 
@@ -36,11 +35,11 @@ Provar a escolha da biblioteca e preparar idioma por navegador, compartilhado po
 
 ## Implementação — 10/11/2026
 
-Catálogos JSON externos em `langs`, carregados no início com `go-i18n/v2` 2.5.1 e `x/text/language`; não são embutidos no binário. A seleção vale por navegador, com fallback inglês, e funciona sem JavaScript nas páginas públicas e administrativas. A primeira fatia traduz a seleção de perfis e o seletor; as demais telas e plurais de catálogo permanecem nas issues 051–053. A preferência não altera SQLite, perfil, fuso ou API. [Capturas e validações](../../docs-dev/comparisons/i18n/ISSUE_050.md).
+Catálogos JSON externos em `langs`, carregados no início com `go-i18n/v2` 2.5.1 e `x/text/language`; não são embutidos no binário. A seleção vale por navegador, com fallback inglês, e funciona sem JavaScript nas páginas públicas e administrativas. A primeira fatia traduz a seleção de perfis e o seletor; as demais telas e plurais de catálogo permanecem nas issues 051–053. A preferência não altera SQLite, perfil, fuso ou API. [Capturas e validações](../evidencias/i18n/ISSUE_050.md).
 
 ## Ajuste de localização — 10/11/2026
 
-O seletor foi movido para os diálogos de configurações da interface pública e da administração. Sem JavaScript, uma seção recolhida de configurações oferece o mesmo formulário. O idioma continua automático pelo navegador, com escolha manual armazenada em cookie; não é salvo no TOML. [Capturas atualizadas](../../docs-dev/comparisons/i18n/ISSUE_050.md).
+O seletor foi movido para os diálogos de configurações da interface pública e da administração. Sem JavaScript, uma seção recolhida de configurações oferece o mesmo formulário. O idioma continua automático pelo navegador, com escolha manual armazenada em cookie; não é salvo no TOML. [Capturas atualizadas](../evidencias/i18n/ISSUE_050.md).
 
 ## Encerramento
 

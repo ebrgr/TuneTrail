@@ -8,8 +8,7 @@ labels:
   - admin
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/013-edicao-midia-escutas-go-solved.md
+references: []
 type: feature
 ordinal: 13000
 ---
@@ -17,10 +16,10 @@ ordinal: 13000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/013-edicao-midia-escutas-go-solved.md](../../docs-dev/issues/013-edicao-midia-escutas-go-solved.md) — numeração local 013.
+> Importada de `docs-dev/issues/013-edicao-midia-escutas-go-solved.md` — numeração local 013. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Depende de 010.
+Plano: [roadmap 4](<../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>). Depende de 010.
 
 ## Trabalho
 
@@ -70,14 +69,14 @@ paginação/retorno e demais jornadas adversariais. O editor mantém campos em e
 inclui busca autenticada de artistas, sugestão CAA e confirmação de exclusão das
 25 escutas recentes, com seleção de fuso e retorno à consulta da gestão.
 A integração, arraste em navegador e comparação visual ficam para a 015.
-Detalhes e evidências: [relatório](../../docs-dev/comparisons/roadmap-04/ISSUE_013.md).
+Detalhes e evidências: [relatório](../evidencias/roadmap-04/ISSUE_013.md).
 
 ## Integração na 015 — 05/11/2026
 
 A administração foi ligada ao modo Go; os contratos e jornadas são verificados
 pelo servidor real e pelas capturas comparativas. As pendências de integração
 descritas no andamento anterior são históricas. Consulte
-[entrega e limites da 015](../../docs-dev/comparisons/roadmap-04/ISSUE_015.md).
+[entrega e limites da 015](../evidencias/roadmap-04/ISSUE_015.md).
 
 ## Encerramento — 05/11/2026
 

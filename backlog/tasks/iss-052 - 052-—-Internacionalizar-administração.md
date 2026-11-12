@@ -9,8 +9,7 @@ labels:
 milestone: m-7
 dependencies:
   - ISS-050
-references:
-  - docs-dev/issues/052-i18n-administracao.md
+references: []
 type: feature
 ordinal: 52000
 ---
@@ -18,9 +17,9 @@ ordinal: 52000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/052-i18n-administracao.md](../../docs-dev/issues/052-i18n-administracao.md) — numeração local 052.
+> Importada de `docs-dev/issues/052-i18n-administracao.md` — numeração local 052. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Implementada — aguardando aceite · **Depende de:** 050 · [Estudo](../../docs-dev/ROADMAP_03_UI_MULTILINGUE.md)
+**Status:** Implementada — aguardando aceite · **Depende de:** 050 · [Estudo](<../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>)
 
 ## Objetivo
 
@@ -35,5 +34,5 @@ Traduzir o fluxo administrativo Go com os mesmos catálogos e escolha de idioma 
 
 ## Resultado
 
-Administração, mensagens e rótulos acessíveis usam os catálogos externos em `langs`. O idioma segue a preferência do navegador e a escolha nas configurações. [Validação e comparações](../../docs-dev/comparisons/i18n/ISSUE_052.md). Datas e plurais permanecem na issue 053; a revisão visual ampla permanece na 054.
+Administração, mensagens e rótulos acessíveis usam os catálogos externos em `langs`. O idioma segue a preferência do navegador e a escolha nas configurações. [Validação e comparações](../evidencias/i18n/ISSUE_052.md). Datas e plurais permanecem na issue 053; a revisão visual ampla permanece na 054.
 <!-- SECTION:DESCRIPTION:END -->

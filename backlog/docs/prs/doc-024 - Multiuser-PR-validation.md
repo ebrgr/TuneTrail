@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:40:00Z'
 tags:
   - pr
 ---
-> Importado de [docs-dev/PR_VALIDATION.md](../../../docs-dev/PR_VALIDATION.md).
+> Importado de `docs-dev/PR_VALIDATION.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Multiuser PR validation
 

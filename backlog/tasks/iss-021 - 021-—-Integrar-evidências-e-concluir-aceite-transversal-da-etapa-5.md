@@ -8,8 +8,7 @@ labels:
   - validacao
 milestone: m-1
 dependencies: []
-references:
-  - docs-dev/issues/021-integracao-aceite-validacao-solved.md
+references: []
 type: task
 ordinal: 21000
 ---
@@ -17,10 +16,10 @@ ordinal: 21000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/021-integracao-aceite-validacao-solved.md](../../docs-dev/issues/021-integracao-aceite-validacao-solved.md) — numeração local 021.
+> Importada de `docs-dev/issues/021-integracao-aceite-validacao-solved.md` — numeração local 021. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida por aceite do usuário em 05/11/2026**. Issue local, sem publicação.
-Plano: [roadmap 5](../../docs-dev/ROADMAP_05_VALIDACAO.md). Dependências: 016–020 concluídas.
+Plano: [roadmap 5](<../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>). Dependências: 016–020 concluídas.
 
 ## Trabalho
 
@@ -37,13 +36,13 @@ Nenhum caso crítico pendente de autorização/isolamento/integridade. Defeitos 
 
 ## Evidências
 
-Registrar procedimentos e resultados em [roadmap 5](../../docs-dev/comparisons/roadmap-05/README.md).
+Registrar procedimentos e resultados em [roadmap 5](../evidencias/roadmap-05/README.md).
 Usar apenas bases SQLite v3 descartáveis e credenciais fictícias. O estudo e o
 fechamento de 001–015 não significam que esta issue já foi executada.
 
 ## Execução — 05/11/2026
 
-[Resultado consolidado e checklist da parte 6](../../docs-dev/comparisons/roadmap-05/ISSUE_021.md).
+[Resultado consolidado e checklist da parte 6](../evidencias/roadmap-05/ISSUE_021.md).
 Foi corrigido o cabeçalho JSON de envio ListenBrainz após regressão. A issue foi fechada por aceite do usuário, após revisão final do Advisor aprovada
 com ressalvas; pendências não executadas não são classificadas como aprovadas.
 <!-- SECTION:DESCRIPTION:END -->

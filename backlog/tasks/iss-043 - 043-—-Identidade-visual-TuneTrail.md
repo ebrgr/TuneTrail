@@ -9,8 +9,7 @@ labels:
   - operacao
 milestone: m-5
 dependencies: []
-references:
-  - docs-dev/issues/043-identidade-tunetrail-solved.md
+references: []
 type: feature
 ordinal: 43000
 ---
@@ -18,7 +17,7 @@ ordinal: 43000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/043-identidade-tunetrail-solved.md](../../docs-dev/issues/043-identidade-tunetrail-solved.md) — numeração local 043.
+> Importada de `docs-dev/issues/043-identidade-tunetrail-solved.md` — numeração local 043. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 09/11/2026 · **Roadmap:** item 4
 
@@ -37,11 +36,11 @@ Aplicar o nome TuneTrail e a identidade fornecida em `assets`, mantendo crédito
 
 Fechada e aprovada por solicitação explícita do usuário. A identidade TuneTrail
 foi aplicada; o SVG e o PNG já haviam sido aceitos. A entrega e as verificações
-anteriores estão no [estudo de identidade](../../docs-dev/IDENTIDADE_TUNETRAIL.md).
+anteriores estão no [estudo de identidade](<../docs/design/doc-020 - Identidade-TuneTrail-—-estudo-e-aplicação.md>).
 
 Este fechamento não apresenta como executadas as comparações visuais e a
 compilação da documentação que estavam sem verificação. A revisão da identidade
 no site, as capturas para documentação e o aceite do site passam à
-[issue 048](../../docs-dev/issues/048-documentacao-site-tunetrail.md). As limitações gerais de
+[issue 048](<iss-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>). As limitações gerais de
 acessibilidade da interface continuam registradas na revisão de pendências.
 <!-- SECTION:DESCRIPTION:END -->

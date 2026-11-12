@@ -7,12 +7,12 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - estudo
 ---
-> Importado de [docs-dev/ESTUDO_01_GO_SEM_CGO.md](../../../docs-dev/ESTUDO_01_GO_SEM_CGO.md).
+> Importado de `docs-dev/ESTUDO_01_GO_SEM_CGO.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Estudo 1 — execução Go sem CGO/libvips
 
-Data: 06/11/2026. Estudo inicial do primeiro item do [roadmap](../../../docs-dev/ROADMAP.md).
-Investigação específica posterior: [webp-go-pure, mudanças e prova isolada](../../../docs-dev/ESTUDO_WEBP_GO_PURE.md).
+Data: 06/11/2026. Estudo inicial do primeiro item do [roadmap](<../roadmaps/doc-001 - ROADMAP.md>).
+Investigação específica posterior: [webp-go-pure, mudanças e prova isolada](<doc-013 - Substituição-de-libvips-por-webp-go-pure.md>).
 Objetivo proposto: compilar e executar a aplicação sem CGO e sem bibliotecas
 nativas de imagem instaladas, preservando o comportamento essencial. Isso não
 significa eliminar módulos Go, fontes, certificados TLS, dados de fuso ou outras

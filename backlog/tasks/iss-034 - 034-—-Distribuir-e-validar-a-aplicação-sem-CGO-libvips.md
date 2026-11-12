@@ -8,8 +8,7 @@ labels:
   - imagens
 milestone: m-3
 dependencies: []
-references:
-  - docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md
+references: []
 type: feature
 ordinal: 34000
 ---
@@ -17,12 +16,12 @@ ordinal: 34000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md](../../docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md) — numeração local 034.
+> Importada de `docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md` — numeração local 034. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida em 06/11/2026**. Issue local, sem publicação.
-Depende da [033](../../docs-dev/issues/033-integracao-cache-capas-avatares-go-solved.md) e da
-[036](../../docs-dev/issues/036-admissao-cancelamento-imagens-solved.md).
-Encerra a fase 1 do [plano](../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md).
+Depende da [033](<iss-033 - 033-—-Integrar-pipeline-Go-ao-cache-capas-e-avatares.md>) e da
+[036](<iss-036 - 036-—-Admissão-e-cancelamento-de-imagens.md>).
+Encerra a fase 1 do [plano](<../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>).
 
 ## Trabalho
 
@@ -49,7 +48,7 @@ qualidade e custos reais; fase 2 segue na 035 após essa conclusão técnica.
 
 ## Entrega
 
-[Resultados, Advisor e reprodução](../../docs-dev/comparisons/transicao-imagens/ISSUE_034.md):
+[Resultados, Advisor e reprodução](../evidencias/transicao-imagens/ISSUE_034.md):
 dependência bimg removida, build/debug/CI/Docker atualizados, binários Go 1.25
 sem CGO e contêineres arm64 e amd64 validados. Testes Go, migração, UI, race,
 TLS, fuso, persistência, healthcheck, sinais e rollback documentados. Nenhuma

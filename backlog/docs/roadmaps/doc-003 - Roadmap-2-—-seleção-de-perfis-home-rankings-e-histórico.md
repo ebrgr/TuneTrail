@@ -7,14 +7,14 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_02_PAGINAS.md](../../../docs-dev/ROADMAP_02_PAGINAS.md).
+> Importado de `docs-dev/ROADMAP_02_PAGINAS.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Roadmap 2 — seleção de perfis, home, rankings e histórico
 
 Análise de 4 de novembro de 2026, sobre os arquivos locais, com HEAD de referência
 `72e4be2` e a prévia Go do passo 1 ainda no diretório de trabalho.
 **Status atual: implementado e validado em 04/11/2026. Issues 003, 004 e 005
-fechadas e resolvidas.** [Entrega, testes e screenshots](../../../docs-dev/comparisons/roadmap-02/README.md).
+fechadas e resolvidas.** [Entrega, testes e screenshots](../../evidencias/roadmap-02/README.md).
 `KOITO_WEB_UI=go` habilita a migração; React continua padrão.
 
 O texto abaixo preserva a análise inicial e suas propostas, anteriores à
@@ -247,7 +247,7 @@ internal/webui/
 internal/listening/                   # composição de leituras sem HTTP
 internal/webquery/                    # parâmetros/fuso compartilháveis
 engine/routes.go                     # integração pequena com o servidor atual
-docs-dev/comparisons/roadmap-02/       # evidências após implementação
+backlog/evidencias/roadmap-02/       # evidências após implementação
 ```
 
 Os nomes são uma proposta de organização. Preferir interfaces pequenas de leitura
@@ -259,11 +259,11 @@ Não criar um cache global de página. Para HTML com estado administrativo usar
 
 ## Sequência e issues locais
 
-1. [003 — páginas com dados reais](../../../docs-dev/issues/003-paginas-go-dados-reais-solved.md): separar
+1. [003 — páginas com dados reais](<../../tasks/iss-003 - 003-—-Migrar-seleção-home-rankings-e-histórico-para-HTML-Go.md>): separar
    apresentação/fixtures, resolver perfil e integrar as seis páginas com leituras.
-2. [004 — contratos de navegação e datas](../../../docs-dev/issues/004-contratos-paginas-solved.md): confirmar
+2. [004 — contratos de navegação e datas](<../../tasks/iss-004 - 004-—-Confirmar-contratos-de-paginação-filtros-e-datas.md>): confirmar
    pontos encontrados, normalizar paginação/filtros e testar limites temporais.
-3. [005 — convivência Go/React](../../../docs-dev/issues/005-convivencia-go-react-solved.md): roteamento,
+3. [005 — convivência Go/React](<../../tasks/iss-005 - 005-—-Preservar-navegação-e-ações-na-convivência-Go-React.md>): roteamento,
    ponte, links legados, Settings/busca e ações existentes.
 4. Validar o conjunto com banco descartável e registrar screenshots/limites antes
    de ativar a opção Go numa instalação em uso.
@@ -292,7 +292,7 @@ para ativação quando 004 e 005 estiverem atendidas.
 - Capturas React/Go sobre cópias equivalentes do mesmo SQLite v3, com tema,
   viewport e fuso iguais. A comparação com fixtures do passo 1 continua útil para
   CSS, mas não comprova os números das páginas reais.
-- Registrar em `docs-dev/comparisons/roadmap-02/` os pares de seleção, home,
+- Registrar em `backlog/evidencias/roadmap-02/` os pares de seleção, home,
   rankings e histórico; incluir página 2, filtros, perfil vazio, desktop e celular.
 
 Esta análise entrega o mapa de integração e as issues propostas. Não há novas

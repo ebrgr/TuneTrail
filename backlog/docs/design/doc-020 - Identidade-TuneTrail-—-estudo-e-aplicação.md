@@ -7,11 +7,11 @@ updated_date: '2026-11-12T23:40:00Z'
 tags:
   - design
 ---
-> Importado de [docs-dev/IDENTIDADE_TUNETRAIL.md](../../../docs-dev/IDENTIDADE_TUNETRAIL.md).
+> Importado de `docs-dev/IDENTIDADE_TUNETRAIL.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Identidade TuneTrail — estudo e aplicação
 
-Em 07/11/2026 o item 2 do roadmap foi colocado em espera e o item 4 passou a ser priorizado. A issue local [043](../../../docs-dev/issues/043-identidade-tunetrail-solved.md) registra o trabalho.
+Em 07/11/2026 o item 2 do roadmap foi colocado em espera e o item 4 passou a ser priorizado. A issue local [043](<../../tasks/iss-043 - 043-—-Identidade-visual-TuneTrail.md>) registra o trabalho.
 
 O SVG e o novo PNG foram aceitos pelo usuário em 07/11/2026. O PNG atualizado foi usado no README, na documentação e nos ícones derivados do navegador e de instalação. O ícone original do Koito é preservado para crédito. A base original documentada é Koito v0.3.2; a versão do fork continua separada.
 
@@ -26,4 +26,4 @@ Validação: `make version.check`, análise XML dos SVGs, manifesto JSON e teste
 O usuário aprovou o fechamento das issues 043–045. Os resultados e limitações
 anteriores são preservados como histórico, sem afirmar novas verificações.
 A documentação e o site, incluindo endereço próprio, identidade e capturas,
-passam à [issue 048](../../../docs-dev/issues/048-documentacao-site-tunetrail.md).
+passam à [issue 048](<../../tasks/iss-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>).

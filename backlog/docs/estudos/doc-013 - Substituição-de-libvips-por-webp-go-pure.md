@@ -7,15 +7,15 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - estudo
 ---
-> Importado de [docs-dev/ESTUDO_WEBP_GO_PURE.md](../../../docs-dev/ESTUDO_WEBP_GO_PURE.md).
+> Importado de `docs-dev/ESTUDO_WEBP_GO_PURE.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Substituição de libvips por webp-go-pure
 
 Atualização de direção em 06/11/2026: o usuário escolheu planejar a combinação
-imaging + webp-go-pure. [Plano e issues 031–035](../../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md).
+imaging + webp-go-pure. [Plano e issues 031–035](<doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>).
 As medições exploratórias abaixo continuam sendo do protótipo com draw.
 
-Investigação de 06/11/2026. Relacionada ao [estudo de Go sem CGO](../../../docs-dev/ESTUDO_01_GO_SEM_CGO.md).
+Investigação de 06/11/2026. Relacionada ao [estudo de Go sem CGO](<doc-012 - Estudo-1-—-execução-Go-sem-CGO-libvips.md>).
 Conclusão: **candidato viável para o codec WebP, com trabalho adicional no pipeline
 de imagens**. A prova isolada compilou sem CGO; a aplicação ainda não foi migrada.
 Não foi feita escolha definitiva nem alteração em `go.mod` do Koito.

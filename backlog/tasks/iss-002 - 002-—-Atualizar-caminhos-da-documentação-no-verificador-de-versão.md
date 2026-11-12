@@ -9,8 +9,7 @@ labels:
   - processo
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/002-versionamento-caminhos-docs-solved.md
+references: []
 type: docs
 ordinal: 2000
 ---
@@ -18,7 +17,7 @@ ordinal: 2000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/002-versionamento-caminhos-docs-solved.md](../../docs-dev/issues/002-versionamento-caminhos-docs-solved.md) — numeração local 002.
+> Importada de `docs-dev/issues/002-versionamento-caminhos-docs-solved.md` — numeração local 002. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status: fechada e resolvida em 4 de novembro de 2026.** Sem publicação.
 

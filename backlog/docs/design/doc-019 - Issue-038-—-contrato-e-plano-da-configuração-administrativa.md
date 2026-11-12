@@ -7,13 +7,13 @@ updated_date: '2026-11-12T23:40:00Z'
 tags:
   - design
 ---
-> Importado de [docs-dev/CONTRATO_CONFIGURACAO_038.md](../../../docs-dev/CONTRATO_CONFIGURACAO_038.md).
+> Importado de `docs-dev/CONTRATO_CONFIGURACAO_038.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Issue 038 — contrato e plano da configuração administrativa
 
 Data: 09/11/2026. Planejamento retomado por solicitação do usuário.
-[Issue 038](../../../docs-dev/issues/038-contrato-configuracao.md) ·
-[Inventário completo](../../../docs-dev/ROADMAP_02_CONFIGURACAO_TOML.md) · [Roadmap](../../../docs-dev/ROADMAP.md).
+[Issue 038](<../../tasks/iss-038 - 038-—-Contrato-e-decisões-da-configuração.md>) ·
+[Inventário completo](<../roadmaps/doc-004 - Estudo-—-configuração-em-TOML-e-administração-pelo-usuário-master.md>) · [Roadmap](<../roadmaps/doc-001 - ROADMAP.md>).
 
 Este documento define a primeira entrega das issues 039–042. A leitura TOML da
 039–040 foram aprovadas e fechadas; a tela da 041 foi implementada, aprovada e fechada. A 038 permanece
@@ -224,9 +224,9 @@ rascunho estruturalmente válido. O teste remoto também não sincroniza escutas
 | --- | --- |
 | 038 | Este contrato: inventário real, dez campos, fuso, relay, compatibilidade e critérios. Sem mudança runtime. |
 | 039 | Leitor tipado/origem dos valores, validações, mesma descoberta no reset-password, carregamento com erro estável e helper limitado do ping Subsonic. Preservar execução sem TOML. |
-| 040 | Persistência dos dez campos implementada e aprovada. [Evidências](../../../docs-dev/comparisons/configuracao/ISSUE_040.md). |
-| 041 | Tela Go autenticada implementada, aprovada e fechada. [Evidências e capturas](../../../docs-dev/comparisons/configuracao/ISSUE_041.md). |
-| 042 | Matriz, reinício, recuperação, Docker/Compose, Delve, capturas e docs validados; aguardando aceite. [Evidências e limites](../../../docs-dev/comparisons/configuracao/ISSUE_042.md). |
+| 040 | Persistência dos dez campos implementada e aprovada. [Evidências](../../evidencias/configuracao/ISSUE_040.md). |
+| 041 | Tela Go autenticada implementada, aprovada e fechada. [Evidências e capturas](../../evidencias/configuracao/ISSUE_041.md). |
+| 042 | Matriz, reinício, recuperação, Docker/Compose, Delve, capturas e docs validados; aguardando aceite. [Evidências e limites](../../evidencias/configuracao/ISSUE_042.md). |
 
 O uso atual de `sync.Once` em `cfg.Load` guarda a inicialização, mas não persiste
 seu erro em variável global. A 039 passou a preservar esse erro em chamadas

@@ -9,8 +9,7 @@ labels:
   - validacao
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/023-comparacao-publica-midia-retrospectiva-solved.md
+references: []
 type: task
 ordinal: 23000
 ---
@@ -18,10 +17,10 @@ ordinal: 23000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/023-comparacao-publica-midia-retrospectiva-solved.md](../../docs-dev/issues/023-comparacao-publica-midia-retrospectiva-solved.md) — numeração local 023.
+> Importada de `docs-dev/issues/023-comparacao-publica-midia-retrospectiva-solved.md` — numeração local 023. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida em 05/11/2026, com limitações registradas**. Issue local, sem publicação.
-Plano: [roadmap 6](../../docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md). Depende da 022.
+Plano: [roadmap 6](<../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>). Depende da 022.
 
 ## Trabalho
 
@@ -43,6 +42,6 @@ classificadas; screenshots rastreáveis e limitações não executadas explícit
 
 ## Resultado
 
-[Jornadas, correção, capturas e limitações](../../docs-dev/comparisons/roadmap-06/ISSUE_023.md).
+[Jornadas, correção, capturas e limitações](../evidencias/roadmap-06/ISSUE_023.md).
 A aceitação das diferenças visuais integra a 026.
 <!-- SECTION:DESCRIPTION:END -->

@@ -9,8 +9,7 @@ labels:
   - validacao
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/025-migracao-compatibilidade-react-solved.md
+references: []
 type: task
 ordinal: 25000
 ---
@@ -18,10 +17,10 @@ ordinal: 25000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/025-migracao-compatibilidade-react-solved.md](../../docs-dev/issues/025-migracao-compatibilidade-react-solved.md) — numeração local 025.
+> Importada de `docs-dev/issues/025-migracao-compatibilidade-react-solved.md` — numeração local 025. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida em 05/11/2026, com limitações registradas**. Issue local, sem publicação.
-Plano: [roadmap 6](../../docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md). Usa a fixture da 022.
+Plano: [roadmap 6](<../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>). Usa a fixture da 022.
 
 ## Trabalho
 
@@ -45,6 +44,6 @@ executada nesta issue.
 
 ## Resultado
 
-[Migração, rotas, inventário e limites](../../docs-dev/comparisons/roadmap-06/ISSUE_025.md).
+[Migração, rotas, inventário e limites](../evidencias/roadmap-06/ISSUE_025.md).
 A falha reproduzida no helper React permanece aberta na issue 028.
 <!-- SECTION:DESCRIPTION:END -->

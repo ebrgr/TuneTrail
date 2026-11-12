@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/029-sidebar-administracao-go-solved.md
+references: []
 type: feature
 ordinal: 29000
 ---
@@ -17,7 +16,7 @@ ordinal: 29000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/029-sidebar-administracao-go-solved.md](../../docs-dev/issues/029-sidebar-administracao-go-solved.md) — numeração local 029.
+> Importada de `docs-dev/issues/029-sidebar-administracao-go-solved.md` — numeração local 029. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida** em 05/11/2026. Issue local, sem publicação.
 
@@ -27,5 +26,5 @@ perfil e acesso ao tema, sem impedir navegação essencial sem JavaScript.
 Comparar as rotas de conta e perfil com a interface Go em desktop e celular,
 usando somente dados fictícios; verificar navegação e administração.
 
-Resultado, capturas e validações: [comparação da issue 029](../../docs-dev/comparisons/issue-029/README.md).
+Resultado, capturas e validações: [comparação da issue 029](../evidencias/issue-029/README.md).
 <!-- SECTION:DESCRIPTION:END -->

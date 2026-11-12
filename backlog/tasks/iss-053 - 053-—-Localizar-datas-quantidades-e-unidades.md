@@ -9,8 +9,7 @@ labels:
 milestone: m-7
 dependencies:
   - ISS-050
-references:
-  - docs-dev/issues/053-i18n-datas-numeros.md
+references: []
 type: feature
 ordinal: 53000
 ---
@@ -18,9 +17,9 @@ ordinal: 53000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/053-i18n-datas-numeros.md](../../docs-dev/issues/053-i18n-datas-numeros.md) — numeração local 053.
+> Importada de `docs-dev/issues/053-i18n-datas-numeros.md` — numeração local 053. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Implementada — aguardando teste funcional e aceite do usuário · **Depende de:** 050 · [Estudo](../../docs-dev/ROADMAP_03_UI_MULTILINGUE.md)
+**Status:** Implementada — aguardando teste funcional e aceite do usuário · **Depende de:** 050 · [Estudo](<../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>)
 
 ## Objetivo
 
@@ -35,5 +34,5 @@ Formatar quantidades, datas, meses, tempo relativo e descrições de gráficos d
 
 ## Resultado
 
-Implementação e verificações registradas em [comparação e validação](../../docs-dev/comparisons/i18n/ISSUE_053_054.md). Os itens de aceite permanecem abertos até o teste funcional e a aprovação do usuário.
+Implementação e verificações registradas em [comparação e validação](../evidencias/i18n/ISSUE_053_054.md). Os itens de aceite permanecem abertos até o teste funcional e a aprovação do usuário.
 <!-- SECTION:DESCRIPTION:END -->

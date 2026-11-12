@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-6
 dependencies: []
-references:
-  - docs-dev/issues/047-correcao-curva-grafico-solved.md
+references: []
 type: bug
 ordinal: 47000
 ---
@@ -17,7 +16,7 @@ ordinal: 47000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/047-correcao-curva-grafico-solved.md](../../docs-dev/issues/047-correcao-curva-grafico-solved.md) — numeração local 047.
+> Importada de `docs-dev/issues/047-correcao-curva-grafico-solved.md` — numeração local 047. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 08/11/2026
 

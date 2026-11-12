@@ -7,11 +7,11 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_03_UI_MULTILINGUE.md](../../../docs-dev/ROADMAP_03_UI_MULTILINGUE.md).
+> Importado de `docs-dev/ROADMAP_03_UI_MULTILINGUE.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Estudo — interface multilíngue (item 3 do roadmap)
 
-Data: 10/11/2026. Estado: **issue 050 fechada e aprovada; 051 fechada e aprovada; 052–054 implementadas e aguardando teste funcional e aceite**. Não confundir com a etapa histórica 3 de migração de mídia. [Roadmap](../../../docs-dev/ROADMAP.md) · [Issues locais](../../../docs-dev/issues/README.md).
+Data: 10/11/2026. Estado: **issue 050 fechada e aprovada; 051 fechada e aprovada; 052–054 implementadas e aguardando teste funcional e aceite**. Não confundir com a etapa histórica 3 de migração de mídia. [Roadmap](<doc-001 - ROADMAP.md>) · [Issues locais](<../historico/doc-025 - Índice-histórico-das-issues-locais-001–058.md>).
 
 ## Recomendação
 
@@ -48,11 +48,11 @@ Recomenda-se testar **[go-i18n/v2](https://github.com/nicksnyder/go-i18n)** com 
 
 ## Plano proposto
 
-1. [050 — fundação e escolha de idioma](../../../docs-dev/issues/050-i18n-fundacao-idioma-solved.md): prova de conceito, catálogos, negociação, seletor sem JS e identificadores estáveis.
-2. [051 — interface pública](../../../docs-dev/issues/051-i18n-interface-publica-solved.md): perfis, navegação, busca, rankings, mídia e retrospectiva.
-3. [052 — administração](../../../docs-dev/issues/052-i18n-administracao.md): login, formulários, mensagens, erros e scripts essenciais.
-4. [053 — datas e números](../../../docs-dev/issues/053-i18n-datas-numeros.md): plurais, tempo relativo, unidades e acessibilidade de gráficos.
-5. [054 — integração e aceite](../../../docs-dev/issues/054-i18n-integracao-aceite.md): tradução revisada, CI, concorrência, builds e comparação visual.
+1. [050 — fundação e escolha de idioma](<../../tasks/iss-050 - 050-—-Fundação-e-escolha-de-idioma.md>): prova de conceito, catálogos, negociação, seletor sem JS e identificadores estáveis.
+2. [051 — interface pública](<../../tasks/iss-051 - 051-—-Internacionalizar-interface-pública.md>): perfis, navegação, busca, rankings, mídia e retrospectiva.
+3. [052 — administração](<../../tasks/iss-052 - 052-—-Internacionalizar-administração.md>): login, formulários, mensagens, erros e scripts essenciais.
+4. [053 — datas e números](<../../tasks/iss-053 - 053-—-Localizar-datas-quantidades-e-unidades.md>): plurais, tempo relativo, unidades e acessibilidade de gráficos.
+5. [054 — integração e aceite](<../../tasks/iss-054 - 054-—-Integração-e-aceite-multilíngue.md>): tradução revisada, CI, concorrência, builds e comparação visual.
 
 As issues são locais; a 050 está fechada e aprovada, a 051 está fechada e aprovada, e 052–054 estão implementadas e aguardam teste funcional e aceite, sem publicação automática. A ordem pode ser revista após a POC; a 042 mantém seu próprio aceite de configuração. Não assumir que toda a interface foi traduzida antes do aceite.
 

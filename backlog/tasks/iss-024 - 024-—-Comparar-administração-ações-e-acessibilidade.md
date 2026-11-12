@@ -9,8 +9,7 @@ labels:
   - validacao
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/024-comparacao-admin-acessibilidade-solved.md
+references: []
 type: task
 ordinal: 24000
 ---
@@ -18,10 +17,10 @@ ordinal: 24000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/024-comparacao-admin-acessibilidade-solved.md](../../docs-dev/issues/024-comparacao-admin-acessibilidade-solved.md) — numeração local 024.
+> Importada de `docs-dev/issues/024-comparacao-admin-acessibilidade-solved.md` — numeração local 024. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida em 05/11/2026, com limitações registradas**. Issue local, sem publicação.
-Plano: [roadmap 6](../../docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md). Depende da 022.
+Plano: [roadmap 6](<../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>). Depende da 022.
 
 ## Trabalho
 
@@ -43,6 +42,6 @@ capturas, sem controle essencial inacessível e com evidências e exceções cla
 
 ## Resultado
 
-[Correções, jornadas, capturas e limitações](../../docs-dev/comparisons/roadmap-06/ISSUE_024.md).
+[Correções, jornadas, capturas e limitações](../evidencias/roadmap-06/ISSUE_024.md).
 O aceite visual final e a auditoria ampla seguem para a 026.
 <!-- SECTION:DESCRIPTION:END -->

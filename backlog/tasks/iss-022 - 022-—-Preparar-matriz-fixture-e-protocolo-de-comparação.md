@@ -9,8 +9,7 @@ labels:
   - validacao
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/022-matriz-fixture-comparacao-visual-solved.md
+references: []
 type: task
 ordinal: 22000
 ---
@@ -18,10 +17,10 @@ ordinal: 22000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/022-matriz-fixture-comparacao-visual-solved.md](../../docs-dev/issues/022-matriz-fixture-comparacao-visual-solved.md) — numeração local 022.
+> Importada de `docs-dev/issues/022-matriz-fixture-comparacao-visual-solved.md` — numeração local 022. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida em 05/11/2026**. Issue local; não publicar.
-Plano: [roadmap 6](../../docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md).
+Plano: [roadmap 6](<../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>).
 
 ## Trabalho
 
@@ -45,6 +44,6 @@ confundir fixture criada com comparação executada.
 
 ## Resultado
 
-[Fixture, matriz, protocolo e validações](../../docs-dev/comparisons/roadmap-06/ISSUE_022.md).
+[Fixture, matriz, protocolo e validações](../evidencias/roadmap-06/ISSUE_022.md).
 Comparações visuais e jornadas completas permanecem nas issues 023–025.
 <!-- SECTION:DESCRIPTION:END -->

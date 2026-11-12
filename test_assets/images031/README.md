@@ -5,7 +5,7 @@ O corpus é procedural e reproduzível pelo gerador
 arquivos artificiais de 10 MiB e imagens de 40 MP no Git, ele é materializado
 somente no --work-dir temporário do experimento. O manifesto com todos os hashes,
 proveniência e tamanhos e as imagens menores de comparação ficam em
-[comparisons/transicao-imagens](../../docs-dev/comparisons/transicao-imagens).
+[comparisons/transicao-imagens](../../backlog/evidencias/transicao-imagens).
 
 Inclui texturas de cores/gradientes e um campo procedural de tons naturais (não
 é fotografia), marcadores de canto, alpha, EXIF1–8, ICC RGB criado pelo próprio

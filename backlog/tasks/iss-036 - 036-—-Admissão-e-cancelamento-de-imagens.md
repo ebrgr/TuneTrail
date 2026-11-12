@@ -8,8 +8,7 @@ labels:
   - imagens
 milestone: m-3
 dependencies: []
-references:
-  - docs-dev/issues/036-admissao-cancelamento-imagens-solved.md
+references: []
 type: feature
 ordinal: 36000
 ---
@@ -17,11 +16,11 @@ ordinal: 36000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/036-admissao-cancelamento-imagens-solved.md](../../docs-dev/issues/036-admissao-cancelamento-imagens-solved.md) — numeração local 036.
+> Importada de `docs-dev/issues/036-admissao-cancelamento-imagens-solved.md` — numeração local 036. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida em 06/11/2026**. Issue local, sem publicação.
-Origem: [parecer Advisor das 032/033](../../docs-dev/comparisons/transicao-imagens/ADVISOR_032_033.md).
-Prioridade: corrigir antes da [034](../../docs-dev/issues/034-build-distribuicao-sem-cgo-solved.md).
+Origem: [parecer Advisor das 032/033](../evidencias/transicao-imagens/ADVISOR_032_033.md).
+Prioridade: corrigir antes da [034](<iss-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>).
 
 ## Trabalho e aceite
 
@@ -41,7 +40,7 @@ Prioridade: corrigir antes da [034](../../docs-dev/issues/034-build-distribuicao
 
 ## Entrega
 
-[Implementação, testes e limitações](../../docs-dev/comparisons/transicao-imagens/ISSUE_036.md).
+[Implementação, testes e limitações](../evidencias/transicao-imagens/ISSUE_036.md).
 Admissão antes da leitura HTTP, cancelamento independente por participante e
 padronização de erros foram implementados; suíte Go, race e Go 1.25 sem CGO
 passaram no escopo documentado. Risco histórico segue na issue 037.

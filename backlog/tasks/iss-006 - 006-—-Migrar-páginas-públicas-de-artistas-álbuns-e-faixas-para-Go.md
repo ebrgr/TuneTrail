@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/006-paginas-midia-go-solved.md
+references: []
 type: feature
 ordinal: 6000
 ---
@@ -17,11 +16,11 @@ ordinal: 6000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/006-paginas-midia-go-solved.md](../../docs-dev/issues/006-paginas-midia-go-solved.md) — numeração local 006.
+> Importada de `docs-dev/issues/006-paginas-midia-go-solved.md` — numeração local 006. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida — aceite confirmado pelo usuário em 05/11/2026**. Issue local, sem publicação.
 Issue local, sem publicação.
-Plano: [roadmap 3](../../docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md).
+Plano: [roadmap 3](<../docs/roadmaps/doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>).
 
 ## Objetivo
 
@@ -61,7 +60,7 @@ continuam acessíveis na entrega integrada da 009.
 ## Evidências futuras
 
 Pares desktop/celular de cabeçalhos e regiões abaixo da dobra, registrados em
-[comparisons/roadmap-03](../../docs-dev/comparisons/roadmap-03/README.md). Nenhuma implementação
+[comparisons/roadmap-03](../evidencias/roadmap-03/README.md). Nenhuma implementação
 ou screenshot nova de página Go de mídia foi feita na abertura desta issue.
 
 ## Marco de implementação — 04/11/2026
@@ -75,7 +74,7 @@ Conforme orientação posterior do usuário, a conferência de layout e screensh
 fica para o **final da issue 009**. Sem aceite visual nesta etapa; a issue permanece
 aberta. Ativação das rotas e gestão React seguem na 009, como planejado.
 
-[Resumo da implementação e evidências](../../docs-dev/comparisons/roadmap-03/ISSUE_006.md).
+[Resumo da implementação e evidências](../evidencias/roadmap-03/ISSUE_006.md).
 
 ## Encerramento
 

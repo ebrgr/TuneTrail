@@ -7,11 +7,15 @@ O remoto `origin` aponta para o repositório TuneTrail. Não é necessário Dock
 Este arquivo serve como um guia de *como trabalhar neste repositório*. Para evitar que o conteúdo fique defasado, ele propositalmente **não** repete informações documentadas em outros lugares — consulte esses documentos e, em seguida, siga as convenções abaixo.
 
 # Subagentes Disponíveis
-**`/docs-dev/agents/advisor.md`** - Quando o Codex Terra identificar problemas de lógica, concorrência ou algoritmos de alta densidade, ele deve sugerir ao usuário a delegação para o subagente @Sol com a persona do Advisor.
+Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do Git (`.git/info/exclude`). Não adicione esses arquivos a commits.
 
-**`/docs-dev/agents/deslop/SKILL.md`** - Ler a Skill para gerar código melhor quando possível
+**`/.agents/advisor.md`** - Persona do Advisor. Quando o Codex Terra identificar problemas de lógica, concorrência ou algoritmos de alta densidade, ele deve sugerir ao usuário a delegação para o subagente @Sol com essa persona.
 
-**`/docs-dev/agents/deslop/ui-craft/SKILL.md`** - Orientações para formulação de UI.
+**`/.agents/golang-master/SKILL.md`** - Escrever ou revisar Go de produção: erros, concorrência, `context`, tipos, genéricos, testes, benchmarks e estrutura de módulos.
+
+**`/.agents/deslop/SKILL.md`** - Revisar um diff em busca de complexidade acidental ou ruído de código gerado; ler a skill para gerar código melhor quando possível.
+
+**`/.agents/ui-craft/SKILL.md`** - Orientações para projetar, construir e revisar UI: páginas, componentes, formulários e estados de carregamento e erro.
 
 **graphify** - Use para manutenção do código
 
@@ -28,7 +32,7 @@ Este arquivo serve como um guia de *como trabalhar neste repositório*. Para evi
 
 - **`backlog/`** — Registro oficial de issues, roadmaps, estudos e decisões, gerenciado pelo [Backlog.md](https://github.com/MrLesk/Backlog.md). Veja a seção **Registro do projeto — Backlog.md** abaixo. Após as alterações e testes, faça um resumo do que foi alterado e registre-o na tarefa correspondente.
 
-- **`docs-dev/`** — Histórico do desenvolvimento até a adoção do Backlog.md, mais as evidências (`docs-dev/comparisons/`) e as skills dos agentes (`docs-dev/agents/`). Os arquivos `docs-dev/issues/*.md` e `docs-dev/*.md` foram importados para `backlog/` e estão **congelados**: não crie nem edite issues ou estudos ali.
+- **`docs-dev/`** — Removido em 12/11/2026. Issues, roadmaps, estudos e PRs estão em `backlog/`; as evidências (capturas e relatórios) em `backlog/evidencias/`; os agentes em `/.agents/`. O conteúdo original permanece no histórico do Git.
 
 
 ## Convenções de trabalho
@@ -50,6 +54,7 @@ Ferramenta instalada no sistema (`brew install backlog-md`); a configuração fi
 | Estudos | `backlog/docs/estudos/` | `backlog doc create "Título" -p estudos -t other`, depois `backlog doc update doc-NNN --content "..." --tags estudo` |
 | Design e contratos | `backlog/docs/design/` | idem, com `-p design` |
 | Descrições de PR | `backlog/docs/prs/` | idem, com `-p prs` |
+| Evidências (capturas, relatórios, fixtures de comparação) | `backlog/evidencias/<issue ou roadmap>/` | arquivos comuns; não são lidos pelo Backlog.md — ligue-os à tarefa com `--add-ref backlog/evidencias/...` |
 | Decisões de arquitetura | `backlog/decisions/` | `backlog decision create "Título" -s proposed` (`accepted` somente com aprovação do usuário) |
 | **Estudos privados** | `backlog/docs/estudos-locais/` | idem, com `-p estudos-locais` |
 
@@ -63,7 +68,7 @@ Ferramenta instalada no sistema (`brew install backlog-md`); a configuração fi
 
 **Consultas úteis:** `backlog task list --exclude-status Done --sort priority --plain` · `backlog task list --ready --plain` · `backlog search <termo> --plain` · `backlog task view ISS-NNN --plain` · `backlog milestone list --plain` · quadro: `backlog board` (terminal) ou `backlog browser` (web em 127.0.0.1).
 
-**Estudos privados:** `backlog/docs/estudos-locais/` está em `.git/info/exclude`. Nunca adicione esses arquivos ao Git (nem com `git add -f`), e nunca copie seu conteúdo para issues, PRs, commits ou qualquer serviço externo. Os originais continuam em `docs-dev/estudos-locais/`, também excluído.
+**Estudos privados:** `backlog/docs/estudos-locais/` está em `.git/info/exclude`. Nunca adicione esses arquivos ao Git (nem com `git add -f`), e nunca copie seu conteúdo para issues, PRs, commits ou qualquer serviço externo. Eles não existem no histórico do Git: faça backup local deles.
 
 **GitHub:** a regra *issue-first* continua valendo para issues publicadas. Ao publicar uma tarefa, registre o link com `--add-ref https://github.com/.../issues/N`. Criar issues no GitHub, fazer *push* e abrir PRs dependem de autorização explícita do usuário.
 

@@ -47,9 +47,9 @@ CGO_ENABLED=0 go build -o .local/ui-preview ./cmd/ui-preview
 Node é necessário somente para os testes JavaScript; a prévia Go compilada não depende de Node, libvips ou CGO em execução.
 Templates/JS/CSS são incorporados: reinicie `go run` após editar os arquivos.
 
-[Plano](../../docs-dev/ROADMAP_01_INTERFACE.md) ·
-[Capturas e resultados](../../docs-dev/comparisons/roadmap-01/README.md) ·
-[Issue local resolvida](../../docs-dev/issues/001-preview-interface-go-solved.md)
+[Plano](<../../backlog/docs/roadmaps/doc-002 - Roadmap-1-—-layout-fontes-temas-barra-lateral-e-cards.md>) ·
+[Capturas e resultados](../../backlog/evidencias/roadmap-01/README.md) ·
+[Issue local resolvida](<../../backlog/tasks/iss-001 - 001-—-Prévia-visual-da-interface-em-Go-roadmap-1.md>)
 
 ## Administration integration (roadmap 4)
 

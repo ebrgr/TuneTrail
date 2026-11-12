@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/009-integracao-midia-retrospectiva-solved.md
+references: []
 type: feature
 ordinal: 9000
 ---
@@ -17,10 +16,10 @@ ordinal: 9000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/009-integracao-midia-retrospectiva-solved.md](../../docs-dev/issues/009-integracao-midia-retrospectiva-solved.md) — numeração local 009.
+> Importada de `docs-dev/issues/009-integracao-midia-retrospectiva-solved.md` — numeração local 009. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida — aceite confirmado pelo usuário em 05/11/2026**. Issue local, sem publicação.
-Plano: [roadmap 3](../../docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md). Depende de 006, 007 e 008.
+Plano: [roadmap 3](<../docs/roadmaps/doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>). Depende de 006, 007 e 008.
 
 ## Trabalho
 
@@ -42,7 +41,7 @@ Plano: [roadmap 3](../../docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md). Depende de
 - Manter exclusão/adição de escuta por perfil e catálogo compartilhado. Após ação,
   revalidar dados e preservar destino correto, inclusive merge reverso/exclusão.
 - Ampliar validação descartável de `scripts/validate_webui.py` e produzir manifesto,
-  pares React/Go e relatório em `docs-dev/comparisons/roadmap-03/`.
+  pares React/Go e relatório em `backlog/evidencias/roadmap-03/`.
 - Atualizar documentação de configuração/edição e resumo do roadmap após testes.
   Não remover a SPA nem publicar nesta issue.
 
@@ -69,7 +68,7 @@ funcional/testes, sem antecipar o aceite visual.
 ## Implementação e evidências
 
 A integração e os aliases foram implementados. Testes, comparações, revisão do
-Advisor e diferenças observadas estão em [ISSUE_009.md](../../docs-dev/comparisons/roadmap-03/ISSUE_009.md).
+Advisor e diferenças observadas estão em [ISSUE_009.md](../evidencias/roadmap-03/ISSUE_009.md).
 A rota Go está habilitada no código para `KOITO_WEB_UI=go`, sem alterar ou reiniciar
 a instância em uso. Permanecem pendentes a reprodução manual de arrastar imagem
 e a validação completa de navegação por teclado e dos fluxos de edição de todos os

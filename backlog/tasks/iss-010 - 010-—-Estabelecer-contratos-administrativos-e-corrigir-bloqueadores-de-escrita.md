@@ -8,8 +8,7 @@ labels:
   - admin
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/010-contratos-escrita-admin-solved.md
+references: []
 type: feature
 ordinal: 10000
 ---
@@ -17,10 +16,10 @@ ordinal: 10000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/010-contratos-escrita-admin-solved.md](../../docs-dev/issues/010-contratos-escrita-admin-solved.md) — numeração local 010.
+> Importada de `docs-dev/issues/010-contratos-escrita-admin-solved.md` — numeração local 010. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Precede 011–015.
+Plano: [roadmap 4](<../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>). Precede 011–015.
 
 ## Trabalho
 
@@ -44,7 +43,7 @@ Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Precede 011–01
 
 ## Aceite
 
-Reproduções atuais em [analysis-checks.json](../../docs-dev/comparisons/roadmap-04/analysis-checks.json).
+Reproduções atuais em [analysis-checks.json](../evidencias/roadmap-04/analysis-checks.json).
 Testes devem provar que self merge falha sem alterar nenhuma tabela/escuta,
 MergeAlbums funciona com uma conexão e leituras no tx, e IDs inexistentes/falha
 injetada produzem rollback. Cobrir dois perfis compartilhando catálogo.
@@ -59,7 +58,7 @@ ativada antes desses contratos. Usar somente bases descartáveis.
 Os serviços, contratos HTTP/CSRF, sessão e correções de persistência estão
 implementados. APIs JSON usam os serviços e mantêm seus payloads. Nenhuma nova
 rota/tela administrativa foi ativada. Evidências em
-[ISSUE_010.md](../../docs-dev/comparisons/roadmap-04/ISSUE_010.md).
+[ISSUE_010.md](../evidencias/roadmap-04/ISSUE_010.md).
 
 Por orientação do usuário, **layout, screenshots e comparações visuais de toda a
 etapa 4 serão conferidos somente ao final da issue 015**. Até lá, executar apenas
@@ -70,7 +69,7 @@ as validações funcionais necessárias às entregas. Não houve revisão visual
 A administração foi ligada ao modo Go; os contratos e jornadas são verificados
 pelo servidor real e pelas capturas comparativas. As pendências de integração
 descritas no andamento anterior são históricas. Consulte
-[entrega e limites da 015](../../docs-dev/comparisons/roadmap-04/ISSUE_015.md).
+[entrega e limites da 015](../evidencias/roadmap-04/ISSUE_015.md).
 
 ## Encerramento — 05/11/2026
 

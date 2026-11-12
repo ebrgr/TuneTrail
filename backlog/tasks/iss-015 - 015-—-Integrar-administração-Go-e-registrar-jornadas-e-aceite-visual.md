@@ -8,8 +8,7 @@ labels:
   - admin
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/015-integracao-aceite-admin-go-solved.md
+references: []
 type: feature
 ordinal: 15000
 ---
@@ -17,10 +16,10 @@ ordinal: 15000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/015-integracao-aceite-admin-go-solved.md](../../docs-dev/issues/015-integracao-aceite-admin-go-solved.md) — numeração local 015.
+> Importada de `docs-dev/issues/015-integracao-aceite-admin-go-solved.md` — numeração local 015. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Depende de 010–014.
+Plano: [roadmap 4](<../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>). Depende de 010–014.
 
 ## Trabalho
 
@@ -70,7 +69,7 @@ passaram. O Advisor aprovou a integração. Foram registradas **55 imagens**:
 Nenhuma publicação ou mutação do banco operacional. Os servidores de teste são
 encerrados ao concluir o trabalho.
 
-[Relatório, comparações e limitações](../../docs-dev/comparisons/roadmap-04/ISSUE_015.md).
+[Relatório, comparações e limitações](../evidencias/roadmap-04/ISSUE_015.md).
 
 ## Encerramento — 05/11/2026
 

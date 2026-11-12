@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/007-atividade-interesse-go-solved.md
+references: []
 type: feature
 ordinal: 7000
 ---
@@ -17,10 +16,10 @@ ordinal: 7000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/007-atividade-interesse-go-solved.md](../../docs-dev/issues/007-atividade-interesse-go-solved.md) — numeração local 007.
+> Importada de `docs-dev/issues/007-atividade-interesse-go-solved.md` — numeração local 007. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida — aceite confirmado pelo usuário em 05/11/2026**. Issue local, sem publicação.
-Plano: [roadmap 3](../../docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md). Após o núcleo da 006;
+Plano: [roadmap 3](<../docs/roadmaps/doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>). Após o núcleo da 006;
 necessária antes da ativação na 009.
 
 ## Trabalho
@@ -53,7 +52,7 @@ tema escuro/claro e teclado/acessibilidade.
 
 ## Evidência inicial
 
-[analysis-checks.json](../../docs-dev/comparisons/roadmap-03/analysis-checks.json) reproduz as
+[analysis-checks.json](../evidencias/roadmap-03/analysis-checks.json) reproduz as
 fórmulas: com início 100, fim 110 e três divisões, o instante 110 é contado na
 última divisão, mas seu fim publicado é 109. É análise isolada, sem banco/HTTP;
 correção funcional e reprodução com store real ainda pendentes.
@@ -69,7 +68,7 @@ Por orientação mais recente do usuário, **layout e screenshots ficam para o f
 da issue 009**, substituindo o agendamento anterior na 008. A issue permanece
 aberta para esse aceite. Não houve ativação pública das páginas de mídia.
 
-[Implementação, contratos e evidências](../../docs-dev/comparisons/roadmap-03/ISSUE_007.md).
+[Implementação, contratos e evidências](../evidencias/roadmap-03/ISSUE_007.md).
 
 ## Encerramento
 

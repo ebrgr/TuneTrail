@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_02_CONFIGURACAO_TOML.md](../../../docs-dev/ROADMAP_02_CONFIGURACAO_TOML.md).
+> Importado de `docs-dev/ROADMAP_02_CONFIGURACAO_TOML.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Estudo — configuração em TOML e administração pelo usuário master
 
@@ -20,7 +20,7 @@ fontes Deezer/CAA/Last.fm, Subsonic URL/params e fuso. Todos os valores citados
 serão visíveis/editáveis pelo administrador autenticado, sem tratamento especial
 de segredo, conforme orientação explícita. A senha da conta de login é separada.
 
-O [contrato da issue 038](../../../docs-dev/CONTRATO_CONFIGURACAO_038.md) é a referência para schema,
+O [contrato da issue 038](<../design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) é a referência para schema,
 precedência, compatibilidade, persistência, tela e matriz de validação das 039–042.
 A interface usará FORCE_TZ; TZ permanece externo. Relay já é armazenado por perfil
 no SQLite v3 e não será duplicado no TOML. Subsonic fornece fetch de dados/imagens,
@@ -89,7 +89,7 @@ Outras variáveis do sistema ou de bibliotecas podem influenciar a execução, p
 ## Plano atual e sequência de execução
 
 O inventário acima preserva todas as opções externas conhecidas, mas a primeira
-entrega será limitada ao [contrato da 038](../../../docs-dev/CONTRATO_CONFIGURACAO_038.md).
+entrega será limitada ao [contrato da 038](<../design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>).
 
 1. **038 — contrato:** dez campos, fuso, relay existente e regras; planejamento
    registrado e revisado, issue em andamento.
@@ -98,7 +98,7 @@ entrega será limitada ao [contrato da 038](../../../docs-dev/CONTRATO_CONFIGURA
 3. **040 — gravação implementada e aprovada:** revisão, comentários, publicação atômica, conflitos e falhas.
 4. **041 — UI implementada e aprovada:** valores comuns visíveis no admin autenticado, estado ativo/salvo,
    override, reinício e teste explícito Subsonic; relay continua na tela do perfil.
-5. **042 — implementada, aguardando aceite:** matriz, integração local e Docker/Compose, Delve, capturas e documentação; [evidências e limites](../../../docs-dev/comparisons/configuracao/ISSUE_042.md).
+5. **042 — implementada, aguardando aceite:** matriz, integração local e Docker/Compose, Delve, capturas e documentação; [evidências e limites](../../evidencias/configuracao/ISSUE_042.md).
 
 Diretório de dados, credenciais de bootstrap, rede/Compose e opções não priorizadas
 continuam externos. Não há realocação de banco ou novo modelo de usuários.

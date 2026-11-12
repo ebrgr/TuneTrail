@@ -9,8 +9,7 @@ labels:
   - ingestao
 milestone: m-8
 dependencies: []
-references:
-  - docs-dev/issues/055-metadados-tags-lancamento.md
+references: []
 type: feature
 ordinal: 55000
 ---
@@ -18,9 +17,9 @@ ordinal: 55000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/055-metadados-tags-lancamento.md](../../docs-dev/issues/055-metadados-tags-lancamento.md) — numeração local 055.
+> Importada de `docs-dev/issues/055-metadados-tags-lancamento.md` — numeração local 055. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Aberta · **Criada:** 10/11/2026 · **Roadmap:** [metadados musicais](../../docs-dev/ROADMAP.md)
+**Status:** Aberta · **Criada:** 10/11/2026 · **Roadmap:** [metadados musicais](<../docs/roadmaps/doc-001 - ROADMAP.md>)
 
 ## Objetivo
 

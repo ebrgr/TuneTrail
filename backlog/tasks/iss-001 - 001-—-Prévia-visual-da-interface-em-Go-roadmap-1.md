@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/001-preview-interface-go-solved.md
+references: []
 type: feature
 ordinal: 1000
 ---
@@ -17,7 +16,7 @@ ordinal: 1000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/001-preview-interface-go-solved.md](../../docs-dev/issues/001-preview-interface-go-solved.md) — numeração local 001.
+> Importada de `docs-dev/issues/001-preview-interface-go-solved.md` — numeração local 001. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status: fechada e resolvida em 4 de novembro de 2026.**
 
@@ -30,7 +29,7 @@ no GitHub nesta etapa.
 
 Reproduzir layout, fontes, 12 temas, barra lateral, avatares e famílias de cards
 com templates Go, CSS e JavaScript mínimo. Preservar a SPA e o SQLite de esquema
-consolidado v3. Plano: [roadmap 1](../../docs-dev/ROADMAP_01_INTERFACE.md).
+consolidado v3. Plano: [roadmap 1](<../docs/roadmaps/doc-002 - Roadmap-1-—-layout-fontes-temas-barra-lateral-e-cards.md>).
 
 ## Escopo
 
@@ -59,7 +58,7 @@ consolidado v3. Plano: [roadmap 1](../../docs-dev/ROADMAP_01_INTERFACE.md).
   avatares e componentes de apresentação. Execução por `make ui.preview`.
 - Testes da prévia/JavaScript, detector de corridas, build sem CGO, suíte Go completa
   e build React passaram. Nenhuma rota ou migração da aplicação foi substituída.
-- [Relatório e screenshots](../../docs-dev/comparisons/roadmap-01/README.md) registram as
+- [Relatório e screenshots](../evidencias/roadmap-01/README.md) registram as
   comparações e os limites, incluindo a matriz de breakpoints ainda incompleta.
 - Próxima etapa: revisar diferenças visuais restantes e integrar as páginas reais
   conforme o passo 2, preservando perfil explícito e permissões.

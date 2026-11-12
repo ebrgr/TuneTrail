@@ -8,8 +8,7 @@ labels:
   - admin
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/012-importacao-exportacao-go-solved.md
+references: []
 type: feature
 ordinal: 12000
 ---
@@ -17,10 +16,10 @@ ordinal: 12000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/012-importacao-exportacao-go-solved.md](../../docs-dev/issues/012-importacao-exportacao-go-solved.md) — numeração local 012.
+> Importada de `docs-dev/issues/012-importacao-exportacao-go-solved.md` — numeração local 012. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Depende de 010 e da seleção da 011.
+Plano: [roadmap 4](<../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>). Depende de 010 e da seleção da 011.
 
 ## Trabalho
 
@@ -70,7 +69,7 @@ resposta chegar ao cliente.
 Exportação percorre páginas em leitura dinâmica, sem snapshot transacional:
 escutas retroativas podem ficar fora do cursor, exclusões e alterações de
 metadados podem ocorrer entre páginas, e ingestão contínua pode prolongá-la.
-Consulte [relatório e validações](../../docs-dev/comparisons/roadmap-04/ISSUE_012.md).
+Consulte [relatório e validações](../evidencias/roadmap-04/ISSUE_012.md).
 
 Ainda são necessárias regressões específicas de desconexão em trabalho remoto,
 falha de quarentena, reinício após encerramento abrupto e round-trip concorrente
@@ -81,7 +80,7 @@ em outro perfil; o aceite geral foi concedido pelo usuário no encerramento de 0
 A administração foi ligada ao modo Go; os contratos e jornadas são verificados
 pelo servidor real e pelas capturas comparativas. As pendências de integração
 descritas no andamento anterior são históricas. Consulte
-[entrega e limites da 015](../../docs-dev/comparisons/roadmap-04/ISSUE_015.md).
+[entrega e limites da 015](../evidencias/roadmap-04/ISSUE_015.md).
 
 ## Encerramento — 05/11/2026
 

@@ -8,8 +8,7 @@ labels:
   - admin
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/014-delecao-mesclagem-go-solved.md
+references: []
 type: feature
 ordinal: 14000
 ---
@@ -17,10 +16,10 @@ ordinal: 14000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/014-delecao-mesclagem-go-solved.md](../../docs-dev/issues/014-delecao-mesclagem-go-solved.md) — numeração local 014.
+> Importada de `docs-dev/issues/014-delecao-mesclagem-go-solved.md` — numeração local 014. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Depende de 010 e composição 011/013.
+Plano: [roadmap 4](<../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>). Depende de 010 e composição 011/013.
 
 ## Trabalho
 
@@ -70,14 +69,14 @@ não relacionada pode exigir revisão nova, e o custo cresce com a base.
 
 A interface ainda não está ligada ao dispatcher; integração, busca de destino
 mais rica, aceite completo e comparação visual continuam na 015.
-Detalhes e resultados: [relatório](../../docs-dev/comparisons/roadmap-04/ISSUE_014.md).
+Detalhes e resultados: [relatório](../evidencias/roadmap-04/ISSUE_014.md).
 
 ## Integração na 015 — 05/11/2026
 
 A administração foi ligada ao modo Go; os contratos e jornadas são verificados
 pelo servidor real e pelas capturas comparativas. As pendências de integração
 descritas no andamento anterior são históricas. Consulte
-[entrega e limites da 015](../../docs-dev/comparisons/roadmap-04/ISSUE_015.md).
+[entrega e limites da 015](../evidencias/roadmap-04/ISSUE_015.md).
 
 ## Encerramento — 05/11/2026
 

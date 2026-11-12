@@ -8,8 +8,7 @@ labels:
   - imagens
 milestone: m-3
 dependencies: []
-references:
-  - docs-dev/issues/032-pipeline-imaging-webp-go-pure-solved.md
+references: []
 type: feature
 ordinal: 32000
 ---
@@ -17,11 +16,11 @@ ordinal: 32000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/032-pipeline-imaging-webp-go-pure-solved.md](../../docs-dev/issues/032-pipeline-imaging-webp-go-pure-solved.md) — numeração local 032.
+> Importada de `docs-dev/issues/032-pipeline-imaging-webp-go-pure-solved.md` — numeração local 032. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida em 06/11/2026**. Issue local, sem publicação.
-Depende da [031](../../docs-dev/issues/031-contrato-corpus-imagens-go-solved.md).
-Plano: [transição de imagens](../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md).
+Depende da [031](<iss-031 - 031-—-Contrato-corpus-e-parâmetros-da-transição-de-imagens.md>).
+Plano: [transição de imagens](<../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>).
 
 ## Trabalho
 
@@ -47,7 +46,7 @@ não remover bimg enquanto houver consumidores.
 
 ## Entrega
 
-[Implementação, testes, segurança e limites](../../docs-dev/comparisons/transicao-imagens/ISSUE_032.md).
+[Implementação, testes, segurança e limites](../evidencias/transicao-imagens/ISSUE_032.md).
 Componente isolado sem CGO, testado no Go 1.25, com admissão limitada, EXIF,
 alpha, corte e encode WebP; 61 saídas passaram nos critérios de qualidade
 calibrados. Decoder antigo substituído; cache e administração aguardam a 033.

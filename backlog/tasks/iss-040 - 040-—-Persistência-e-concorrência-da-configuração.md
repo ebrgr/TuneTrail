@@ -10,8 +10,7 @@ milestone: m-4
 dependencies:
   - ISS-038
   - ISS-039
-references:
-  - docs-dev/issues/040-persistencia-configuracao-solved.md
+references: []
 type: feature
 ordinal: 40000
 ---
@@ -19,13 +18,13 @@ ordinal: 40000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/040-persistencia-configuracao-solved.md](../../docs-dev/issues/040-persistencia-configuracao-solved.md) — numeração local 040.
+> Importada de `docs-dev/issues/040-persistencia-configuracao-solved.md` — numeração local 040. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 09/11/2026 · **Depende de:** 038 e 039
 
 ## Objetivo
 
-Salvar os dez campos do [contrato da 038](../../docs-dev/CONTRATO_CONFIGURACAO_038.md) em
+Salvar os dez campos do [contrato da 038](<../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) em
 `conf.toml`, com validação, revisão e preservação do documento anterior em falhas
 anteriores à publicação. Nenhum campo listado recebe tratamento de segredo.
 
@@ -57,7 +56,7 @@ origem salva/efetiva, fotografia ativa, detecção de reinício, bloqueio cooper
 preservação de comentários, validação e publicação atômica. Retorna erros tipados
 para a integração HTTP da 041. Não foi criada interface administrativa.
 
-[Relatório completo, limitações e testes](../../docs-dev/comparisons/configuracao/ISSUE_040.md).
+[Relatório completo, limitações e testes](../evidencias/configuracao/ISSUE_040.md).
 A suíte Go, o detector de corridas do pacote, builds Linux e jornadas multiusuário
 passaram. Advisor aprovou após correções e regressões dirigidas. A issue foi fechada por aceite do usuário.
 

@@ -9,8 +9,7 @@ labels:
   - operacao
 milestone: m-5
 dependencies: []
-references:
-  - docs-dev/issues/046-migracao-banco-tunetrail-solved.md
+references: []
 type: feature
 ordinal: 46000
 ---
@@ -18,7 +17,7 @@ ordinal: 46000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/046-migracao-banco-tunetrail-solved.md](../../docs-dev/issues/046-migracao-banco-tunetrail-solved.md) — numeração local 046.
+> Importada de `docs-dev/issues/046-migracao-banco-tunetrail-solved.md` — numeração local 046. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 08/11/2026 · **Tipo:** compatibilidade e migração de dados · **Revisão:** Advisor
 
@@ -53,7 +52,7 @@ Definir e testar um mecanismo durável de reconhecimento da migração concluíd
 2. Usar mecanismo de backup SQLite consistente que inclua WAL confirmado; não copiar nem renomear apenas o arquivo principal com WAL ativo. O backup deve ter nome identificável, permissões restritas (como `0600`), não sobrescrever backups existentes e ser validado e restaurável. Preservar banco de origem, WAL e backup em falhas.
 3. Preparar o destino em arquivo temporário no mesmo diretório. Validar versão e formato reais, migrar a cópia quando necessário, verificar `integrity_check` e `foreign_key_check`, fechar conexões e tratar checkpoint e arquivos auxiliares antes de publicá-lo. Garantir publicação atômica sem sobrescrever um destino existente, incluindo sincronização e limpeza conforme o sistema suportado.
 4. Coordenar inicializações simultâneas e testar concorrência/TOCTOU. Verificar links simbólicos, arquivos inválidos, acesso negado, espaço insuficiente, erro de leitura/escrita e volume de rede; se a garantia necessária não puder ser obtida, falhar com orientação, sem criar banco vazio ou modificar o original.
-5. Nunca alterar manualmente `goose_db_version`. Recusar versões futuras ou layouts v3/v4 experimentais incompatíveis com a v3 consolidada, conforme [banco de dados](../../docs-dev/BANCO_DE_DADOS.md); orientar recuperação por backup v2. PostgreSQL não faz parte desta migração.
+5. Nunca alterar manualmente `goose_db_version`. Recusar versões futuras ou layouts v3/v4 experimentais incompatíveis com a v3 consolidada, conforme [banco de dados](<../docs/design/doc-018 - Banco-de-dados-—-esquema-SQLite-consolidado-v3.md>); orientar recuperação por backup v2. PostgreSQL não faz parte desta migração.
 6. Aplicar a mesma seleção de banco ao comando `reset-password`; não permitir que ele crie um novo banco ou altere o banco errado após falha ou conflito.
 
 ## Trabalho

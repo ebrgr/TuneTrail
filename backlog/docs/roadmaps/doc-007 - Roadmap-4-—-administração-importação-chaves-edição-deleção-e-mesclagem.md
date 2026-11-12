@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_04_ADMINISTRACAO.md](../../../docs-dev/ROADMAP_04_ADMINISTRACAO.md).
+> Importado de `docs-dev/ROADMAP_04_ADMINISTRACAO.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Roadmap 4 — administração, importação, chaves, edição, deleção e mesclagem
 
@@ -15,8 +15,8 @@ Estudo de 5 de novembro de 2026 sobre a árvore de trabalho atual, incluindo as
 alterações locais das etapas anteriores. **Issues 010–015 implementadas e integradas
 no modo Go opcional; testes, revisão Advisor e 55 capturas registrados. Aceite
 do usuário concedido em 05/11/2026; issues 010–015 fechadas e resolvidas.** Issues 001–009 permanecem encerradas pelo aceite do usuário.
-A revisão do [Advisor](../../../docs-dev/agents/advisor.md), no modelo Sol com esforço alto, integra
-este estudo. As [evidências](../../../docs-dev/comparisons/roadmap-04/README.md) distinguem leitura,
+A revisão do [Advisor](../../../.agents/advisor.md), no modelo Sol com esforço alto, integra
+este estudo. As [evidências](../../evidencias/roadmap-04/README.md) distinguem leitura,
 reprodução e verificações futuras.
 
 A base vigente é **SQLite com esquema consolidado v3**. A migração da apresentação
@@ -25,7 +25,7 @@ banco em operação para executar testes destrutivos. O serviço operacional per
 
 ## Estado após a integração da 015
 
-[Entrega e evidências](../../../docs-dev/comparisons/roadmap-04/ISSUE_015.md). Administração e
+[Entrega e evidências](../../evidencias/roadmap-04/ISSUE_015.md). Administração e
 gestão agora são documentos Go quando `KOITO_WEB_UI=go`, com actions POST
 protegidas. React continua padrão e fallback. O restante deste arquivo preserva
 o estudo e seus critérios; pendências descritas no futuro devem ser lidas junto
@@ -268,7 +268,7 @@ ou job transacional sem escopo e persistência próprios.
 | Paridade | Alguns formulários React encerram loading antes da Promise; exclusões de mídia têm confirmação simples | Leitura: `AliasManager`, `MergeModal`, `DeleteModal`; implementar estado coerente e confirmação global explícita |
 
 As reproduções não são testes HTTP, de UI ou de segurança. O programa, resultado
-e procedimento estão em [comparisons/roadmap-04](../../../docs-dev/comparisons/roadmap-04/README.md).
+e procedimento estão em [comparisons/roadmap-04](../../evidencias/roadmap-04/README.md).
 Os demais achados são leitura de código, sem exploração demonstrada.
 
 ## Organização e sequência
@@ -282,29 +282,29 @@ internal/webui/static/          # melhorias pequenas de formulário/upload
 engine/handlers/               # adaptadores JSON sobre os mesmos serviços
 internal/db/sqlite/             # operações transacionais e impacto
 scripts/validate_admin_webui.py # jornadas futuras sobre bases descartáveis
-docs-dev/comparisons/roadmap-04/ # evidências e pares visuais futuros
+backlog/evidencias/roadmap-04/ # evidências e pares visuais futuros
 ```
 
 Árvore proposta, sem criar abstrações vazias. Não introduzir dependência circular:
 `internal/admin` não importa `engine/handlers`; rever a dependência atual do parser
 ListenBrainz em tipos de `handlers` ao extrair serviços de importação.
 
-1. [010 — contratos e bloqueadores de escrita](../../../docs-dev/issues/010-contratos-escrita-admin-solved.md):
+1. [010 — contratos e bloqueadores de escrita](<../../tasks/iss-010 - 010-—-Estabelecer-contratos-administrativos-e-corrigir-bloqueadores-de-escrita.md>):
    identidade/sessão/CSRF, serviços compartilhados, erros e correções funcionais
    explícitas antes das novas telas.
-2. [011 — administração, perfis e chaves](../../../docs-dev/issues/011-administracao-perfis-chaves-go-solved.md):
+2. [011 — administração, perfis e chaves](<../../tasks/iss-011 - 011-—-Migrar-conta-perfis-avatares-chaves-e-relay-para-Go.md>):
    conta, CRUD de perfis, avatar, chaves e configuração/teste de relay.
-3. [012 — importação/exportação](../../../docs-dev/issues/012-importacao-exportacao-go-solved.md): formulários,
+3. [012 — importação/exportação](<../../tasks/iss-012 - 012-—-Migrar-importação-e-exportação-por-perfil-para-Go.md>): formulários,
    parsers reutilizados, cancelamento/limites, resultado parcial e download.
-4. [013 — edição, imagens e escutas](../../../docs-dev/issues/013-edicao-midia-escutas-go-solved.md): aliases,
+4. [013 — edição, imagens e escutas](<../../tasks/iss-013 - 013-—-Migrar-edição-de-mídia-imagens-e-ações-de-escutas-para-Go.md>): aliases,
    MBIDs, relações, capa/upload, escuta manual e exclusão pessoal.
-5. [014 — deleção e mesclagem globais](../../../docs-dev/issues/014-delecao-mesclagem-go-solved.md): plano de
+5. [014 — deleção e mesclagem globais](<../../tasks/iss-014 - 014-—-Migrar-confirmações-de-deleção-e-mesclagem-para-Go.md>): plano de
    impacto, confirmação/revalidação, transações, limpeza e retorno.
-6. [015 — integração e aceite](../../../docs-dev/issues/015-integracao-aceite-admin-go-solved.md): ponte,
+6. [015 — integração e aceite](<../../tasks/iss-015 - 015-—-Integrar-administração-Go-e-registrar-jornadas-e-aceite-visual.md>): ponte,
    jornadas, regressão e capturas; ativar famílias completas após aceite.
 
 As issues são arquivos Markdown locais, sem publicação. As entregas 010–014
-foram compostas na [015](../../../docs-dev/comparisons/roadmap-04/ISSUE_015.md), com jornadas e
+foram compostas na [015](../../evidencias/roadmap-04/ISSUE_015.md), com jornadas e
 comparação visual registradas. Todas foram encerradas por aceite do usuário em 05/11/2026; a administração
 está disponível no modo Go opcional. O checklist abaixo preserva os critérios
 do estudo e deve ser confrontado com a cobertura e limites do relatório final.

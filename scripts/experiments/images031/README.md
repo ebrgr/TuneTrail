@@ -17,8 +17,8 @@ final da versão deve passar por análise de segurança na 032.
 # --work-dir precisa ser um diretório NOVO, fora dos dados operacionais:
 python3 scripts/experiments/images031/run.py \
   --work-dir /private/tmp/koito031-nova-execucao \
-  --report-dir docs-dev/comparisons/transicao-imagens
-python3 scripts/experiments/images031/analyze.py docs-dev/comparisons/transicao-imagens
+  --report-dir backlog/evidencias/transicao-imagens
+python3 scripts/experiments/images031/analyze.py backlog/evidencias/transicao-imagens
 (cd scripts/experiments/images031 && CGO_ENABLED=0 go test ./cmd/pure)
 ```
 

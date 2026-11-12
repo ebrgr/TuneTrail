@@ -7,19 +7,19 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_01_INTERFACE.md](../../../docs-dev/ROADMAP_01_INTERFACE.md).
+> Importado de `docs-dev/ROADMAP_01_INTERFACE.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Roadmap 1 — layout, fontes, temas, barra lateral e cards
 
 Análise em 4 de novembro de 2026, sobre os arquivos locais; HEAD de referência:
 `72e4be2`. **Status atualizado: primeira prévia Go implementada e validada.**
-Veja [implementação, screenshots e limites](../../../docs-dev/comparisons/roadmap-01/README.md).
+Veja [implementação, screenshots e limites](../../evidencias/roadmap-01/README.md).
 O restante deste documento preserva a análise e a proposta originais. Na fase
 de análise não houve inicialização da aplicação, consulta ao banco nem validação
 no navegador; a prévia foi implementada posteriormente, com fixtures isoladas.
 
 O banco vigente é **SQLite com esquema consolidado v3**; veja
-[BANCO_DE_DADOS.md](../../../docs-dev/BANCO_DE_DADOS.md). Este passo trata da apresentação e não
+[BANCO_DE_DADOS.md](<../design/doc-018 - Banco-de-dados-—-esquema-SQLite-consolidado-v3.md>). Este passo trata da apresentação e não
 requer mudança de esquema.
 
 ## Objetivo e limite deste passo
@@ -291,4 +291,4 @@ Inspecionados os arquivos indicados, os breakpoints instalados e uma captura
 existente. Produzido este plano e vinculado ao roadmap. Foram alterados somente
 documentos; nenhuma issue foi criada, nenhum código funcional foi escrito e
 nenhum teste da aplicação foi executado nesta análise. A implementação posterior
-e suas validações constam no [registro de comparação](../../../docs-dev/comparisons/roadmap-01/README.md).
+e suas validações constam no [registro de comparação](../../evidencias/roadmap-01/README.md).

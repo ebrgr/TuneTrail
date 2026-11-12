@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-6
 dependencies: []
-references:
-  - docs-dev/issues/057-ajustes-retrospectiva-controles.md
+references: []
 type: feature
 ordinal: 57000
 ---
@@ -17,7 +16,7 @@ ordinal: 57000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/057-ajustes-retrospectiva-controles.md](../../docs-dev/issues/057-ajustes-retrospectiva-controles.md) — numeração local 057.
+> Importada de `docs-dev/issues/057-ajustes-retrospectiva-controles.md` — numeração local 057. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Implementada — aguardando avaliação do usuário · **Criada:** 10/11/2026
 
@@ -25,7 +24,7 @@ Ajustar a página de retrospectiva: manter os doze meses visíveis, posicionar M
 
 ## Verificação
 
-Testado com dados fictícios em desktop e celular: doze meses visíveis, mudança por mouse e teclado, preservação de ano/mês/fuso e formulário alternativo sem JavaScript. [Capturas e comparação](../../docs-dev/comparisons/rewind-057/README.md).
+Testado com dados fictícios em desktop e celular: doze meses visíveis, mudança por mouse e teclado, preservação de ano/mês/fuso e formulário alternativo sem JavaScript. [Capturas e comparação](../evidencias/rewind-057/README.md).
 
 ## Comparação adicional com o original
 

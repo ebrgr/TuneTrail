@@ -9,8 +9,7 @@ labels:
   - validacao
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/026-integracao-aceite-visual-solved.md
+references: []
 type: task
 ordinal: 26000
 ---
@@ -18,10 +17,10 @@ ordinal: 26000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/026-integracao-aceite-visual-solved.md](../../docs-dev/issues/026-integracao-aceite-visual-solved.md) — numeração local 026.
+> Importada de `docs-dev/issues/026-integracao-aceite-visual-solved.md` — numeração local 026. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — aceita pelo usuário** em 05/11/2026. Issue local, sem publicação.
-Plano: [roadmap 6](../../docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md). Depende de 022–025.
+Plano: [roadmap 6](<../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>). Depende de 022–025.
 
 ## Trabalho
 
@@ -40,5 +39,5 @@ O usuário aceitou os resultados e as ressalvas, e autorizou separadamente a
 remoção de React em 05/11/2026; o trabalho posterior está na issue 030.
 
 Resultado consolidado, evidências, ressalvas e proposta de decisão:
-[relatório da issue 026](../../docs-dev/comparisons/roadmap-06/ISSUE_026.md).
+[relatório da issue 026](../evidencias/roadmap-06/ISSUE_026.md).
 <!-- SECTION:DESCRIPTION:END -->

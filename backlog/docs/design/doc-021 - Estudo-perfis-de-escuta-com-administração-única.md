@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:40:00Z'
 tags:
   - design
 ---
-> Importado de [docs-dev/MULTIUSER_DESIGN.md](../../../docs-dev/MULTIUSER_DESIGN.md).
+> Importado de `docs-dev/MULTIUSER_DESIGN.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Estudo: perfis de escuta com administração única
 
@@ -1051,7 +1051,7 @@ A validação histórica de SUM confirmou os assets em RC2 e exercitou RC2 → R
 Atualizados os guias de uso do site para perfis, migração, chaves, importação e
 relay. A API experimental Node dos testes foi substituída pelo compilador
 TypeScript existente; corrigida uma tag JSON malformada de teste anterior e
-incluído Go vet em `make check`. O [registro de validação](../../../docs-dev/PR_VALIDATION.md)
+incluído Go vet em `make check`. O [registro de validação](<../prs/doc-024 - Multiuser-PR-validation.md>)
 contém comandos, resultados e avisos antigos das ferramentas/dependências.
 
 O site de documentação compilou (9 páginas), comparado com a base `a079fa6`

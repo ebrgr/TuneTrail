@@ -7,13 +7,13 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md](../../../docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md).
+> Importado de `docs-dev/ROADMAP_06_COMPARACAO_VISUAL.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Roadmap 6 — comparação visual e decisão sobre React
 
 Estudo de 05/11/2026 da árvore local, inclusive alterações ainda não publicadas.
-As issues 001–021 foram encerradas pelo usuário. O [checklist da 021](../../../docs-dev/comparisons/roadmap-05/ISSUE_021.md#checklist-preparado-para-a-parte-6)
-é entrada obrigatória desta etapa. Revisão solicitada ao [Advisor](../../../docs-dev/agents/advisor.md).
+As issues 001–021 foram encerradas pelo usuário. O [checklist da 021](../../evidencias/roadmap-05/ISSUE_021.md#checklist-preparado-para-a-parte-6)
+é entrada obrigatória desta etapa. Revisão solicitada ao [Advisor](../../../.agents/advisor.md).
 
 **Atualização:** o usuário aceitou a 026 e autorizou a retirada de React em 05/11/2026; a issue 030 registra esse trabalho. As referências a React abaixo são históricas.
 O usuário determinou posteriormente Go como padrão na issue 027; React exige
@@ -25,10 +25,10 @@ fictícias, nunca o banco em operação.
 
 | Evidência | O que demonstra | O que permanece para a etapa 6 |
 | --- | --- | --- |
-| [Roadmap 1](../../../docs-dev/comparisons/roadmap-01/README.md) e [2](../../../docs-dev/comparisons/roadmap-02/README.md) | Prévia e pares visuais de navegação, home, rankings e histórico; diferenças já registradas | Retestar a árvore atual e estados/temas/viewports faltantes; capturas antigas são referência histórica |
-| [Issue 009](../../../docs-dev/comparisons/roadmap-03/ISSUE_009.md) | Pares de mídia/retrospectiva e jornadas parciais; divergências de gradiente, controles e gráfico SVG documentadas | Verificar árvore atual e ações restantes; gestão Go substituiu a ponte React descrita historicamente na 009 |
-| [Issue 015](../../../docs-dev/comparisons/roadmap-04/ISSUE_015.md) | 26 pares e três imagens de interação; ações Go, teclado e no-JS selecionados | Ampliar estados de erro, navegação integral, temas e acessibilidade; pares não provam igualdade pixel a pixel |
-| [Issue 021](../../../docs-dev/comparisons/roadmap-05/ISSUE_021.md) | Permissões, isolamento, fusos e somas HTML foram testados em cenários concretos | Hidratação/cliques React, jornadas web/admin em banco migrado e cada intervalo de interesse ainda não foram comprovados |
+| [Roadmap 1](../../evidencias/roadmap-01/README.md) e [2](../../evidencias/roadmap-02/README.md) | Prévia e pares visuais de navegação, home, rankings e histórico; diferenças já registradas | Retestar a árvore atual e estados/temas/viewports faltantes; capturas antigas são referência histórica |
+| [Issue 009](../../evidencias/roadmap-03/ISSUE_009.md) | Pares de mídia/retrospectiva e jornadas parciais; divergências de gradiente, controles e gráfico SVG documentadas | Verificar árvore atual e ações restantes; gestão Go substituiu a ponte React descrita historicamente na 009 |
+| [Issue 015](../../evidencias/roadmap-04/ISSUE_015.md) | 26 pares e três imagens de interação; ações Go, teclado e no-JS selecionados | Ampliar estados de erro, navegação integral, temas e acessibilidade; pares não provam igualdade pixel a pixel |
+| [Issue 021](../../evidencias/roadmap-05/ISSUE_021.md) | Permissões, isolamento, fusos e somas HTML foram testados em cenários concretos | Hidratação/cliques React, jornadas web/admin em banco migrado e cada intervalo de interesse ainda não foram comprovados |
 
 `engine/routes.go` monta o dispatcher Go só no modo `go`; caminhos não assumidos
 caíam no servidor da SPA em `client/build/client` no momento do estudo. A issue
@@ -105,11 +105,11 @@ ser bloqueadas ou simuladas nos testes e registradas.
 
 ## Sequência de issues locais
 
-1. [022 — matriz, fixture e protocolo visual](../../../docs-dev/issues/022-matriz-fixture-comparacao-visual-solved.md).
-2. [023 — páginas públicas, mídias e retrospectiva](../../../docs-dev/issues/023-comparacao-publica-midia-retrospectiva-solved.md).
-3. [024 — administração, acessibilidade e ações](../../../docs-dev/issues/024-comparacao-admin-acessibilidade-solved.md).
-4. [025 — migração, compatibilidade e dependências](../../../docs-dev/issues/025-migracao-compatibilidade-react-solved.md).
-5. [026 — integração, revisão e decisão](../../../docs-dev/issues/026-integracao-aceite-visual-solved.md).
+1. [022 — matriz, fixture e protocolo visual](<../../tasks/iss-022 - 022-—-Preparar-matriz-fixture-e-protocolo-de-comparação.md>).
+2. [023 — páginas públicas, mídias e retrospectiva](<../../tasks/iss-023 - 023-—-Comparar-páginas-públicas-mídia-e-retrospectiva.md>).
+3. [024 — administração, acessibilidade e ações](<../../tasks/iss-024 - 024-—-Comparar-administração-ações-e-acessibilidade.md>).
+4. [025 — migração, compatibilidade e dependências](<../../tasks/iss-025 - 025-—-Validar-migração-compatibilidade-e-dependências-React.md>).
+5. [026 — integração, revisão e decisão](<../../tasks/iss-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>).
 
 As issues são locais; as issues 022–025 foram resolvidas e a 026 foi aceita; a correção do helper está registrada na 028. Resolver defeitos reproduzidos com regressão;
 não antecipar uma mudança de comportamento sem registrar o caso. As issues 023 e
@@ -149,14 +149,14 @@ a API atual usa CGO/libvips e o processo de release ainda inclui o frontend.
 
 Fechada e resolvida em 05/11/2026. Fixture v1, matriz, protocolo e manifesto
 foram preparados e verificados em
-servidores e SQLite descartáveis. [Resultados e limites](../../../docs-dev/comparisons/roadmap-06/ISSUE_022.md).
+servidores e SQLite descartáveis. [Resultados e limites](../../evidencias/roadmap-06/ISSUE_022.md).
 As comparações visuais e jornadas completas continuam nas issues 023–026.
 
 ## Atualização — issue 023
 
 Fechada e resolvida em 05/11/2026, com limitações registradas. Jornadas públicas
 e correção da navegação sem JavaScript implementadas;
-[comparação, evidências e limites](../../../docs-dev/comparisons/roadmap-06/ISSUE_023.md).
+[comparação, evidências e limites](../../evidencias/roadmap-06/ISSUE_023.md).
 A validação de fontes carregadas, acessibilidade ampla e o aceite das diferenças
 continuam para as próximas issues. Posteriormente, a 027 alterou o padrão para Go.
 
@@ -164,7 +164,7 @@ continuam para as próximas issues. Posteriormente, a 027 alterou o padrão para
 
 Fechada e resolvida em 05/11/2026, com limitações registradas. Administração e
 acessibilidade foram avaliadas com correções de contraste e
-nomes acessíveis. [Resultados, comparações e limites](../../../docs-dev/comparisons/roadmap-06/ISSUE_024.md).
+nomes acessíveis. [Resultados, comparações e limites](../../evidencias/roadmap-06/ISSUE_024.md).
 A avaliação visual final, fontes e auditoria mais ampla permanecem para a 026.
 
 ## Atualização — issue 027
@@ -176,20 +176,20 @@ Os aceites visuais e a decisão sobre remover React permanecem pendentes.
 ## Atualização — issue 025
 
 Quatro bases v2 fictícias foram migradas no startup; backup, restauração em
-cópia, caso com WAL, jornadas e rotas foram verificados. [Resultados e limites](../../../docs-dev/comparisons/roadmap-06/ISSUE_025.md).
+cópia, caso com WAL, jornadas e rotas foram verificados. [Resultados e limites](../../evidencias/roadmap-06/ISSUE_025.md).
 A falha React do `/theme-helper` foi reproduzida e registrada na
-[issue 028](../../../docs-dev/issues/028-theme-helper-react-sem-perfil-solved.md), posteriormente resolvida.
+[issue 028](<../../tasks/iss-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>), posteriormente resolvida.
 
 ## Atualização — issue 026
 
-Matriz, regressões e ressalvas consolidadas no [relatório de integração](../../../docs-dev/comparisons/roadmap-06/ISSUE_026.md).
+Matriz, regressões e ressalvas consolidadas no [relatório de integração](../../evidencias/roadmap-06/ISSUE_026.md).
 O usuário aceitou o resultado e suas ressalvas em 05/11/2026; a retirada React foi autorizada em seguida.
 
 ## Atualização — issue 028
 
 O helper React usa prévia fictícia e aplica/restaura temas sem depender de perfil.
-[Testes e limites](../../../docs-dev/comparisons/roadmap-06/ISSUE_028.md); a 026 foi posteriormente aceita.
+[Testes e limites](../../evidencias/roadmap-06/ISSUE_028.md); a 026 foi posteriormente aceita.
 
 ## Atualização — issue 030
 
-O usuário autorizou a retirada do React, concluída na [issue 030](../../../docs-dev/issues/030-remocao-react-solved.md). Os trechos anteriores preservam o contexto histórico.
+O usuário autorizou a retirada do React, concluída na [issue 030](<../../tasks/iss-030 - 030-—-Retirar-React-e-consolidar-interface-Go.md>). Os trechos anteriores preservam o contexto histórico.

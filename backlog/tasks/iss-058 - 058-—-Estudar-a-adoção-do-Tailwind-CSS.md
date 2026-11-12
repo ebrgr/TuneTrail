@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-8
 dependencies: []
-references:
-  - docs-dev/issues/058-estudo-tailwind-css.md
+references: []
 type: spike
 ordinal: 58000
 ---
@@ -17,9 +16,9 @@ ordinal: 58000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/058-estudo-tailwind-css.md](../../docs-dev/issues/058-estudo-tailwind-css.md) — numeração local 058.
+> Importada de `docs-dev/issues/058-estudo-tailwind-css.md` — numeração local 058. Original removido em 12/11/2026; consulte o histórico do Git.
 
-**Status:** Aberta — estudo · **Criada:** 12/11/2026 · **Roadmap:** [TuneTrail 2.0, pilar 2 — UI responsiva](../../docs-dev/ROADMAP_2.0.md#3-pilar-2--ui-20-responsiva)
+**Status:** Aberta — estudo · **Criada:** 12/11/2026 · **Roadmap:** [TuneTrail 1.0, pilar 2 — UI responsiva](<../docs/roadmaps/doc-010 - TuneTrail-1.0-—-avaliação-do-projeto-e-proposta-de-evolução.md#3-pilar-2--ui-20-responsiva>)
 
 ## Objetivo
 

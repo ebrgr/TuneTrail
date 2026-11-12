@@ -8,8 +8,7 @@ labels:
   - imagens
 milestone: m-3
 dependencies: []
-references:
-  - docs-dev/issues/033-integracao-cache-capas-avatares-go-solved.md
+references: []
 type: feature
 ordinal: 33000
 ---
@@ -17,11 +16,11 @@ ordinal: 33000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/033-integracao-cache-capas-avatares-go-solved.md](../../docs-dev/issues/033-integracao-cache-capas-avatares-go-solved.md) — numeração local 033.
+> Importada de `docs-dev/issues/033-integracao-cache-capas-avatares-go-solved.md` — numeração local 033. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada — resolvida em 06/11/2026**. Issue local, sem publicação.
-Depende da [032](../../docs-dev/issues/032-pipeline-imaging-webp-go-pure-solved.md).
-Plano: [transição de imagens](../../docs-dev/PLANO_TRANSICAO_IMAGENS_GO.md).
+Depende da [032](<iss-032 - 032-—-Implementar-pipeline-Go-com-imaging-e-webp-go-pure.md>).
+Plano: [transição de imagens](<../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>).
 
 ## Trabalho
 
@@ -46,7 +45,7 @@ Dependências nativas serão retiradas formalmente na 034.
 
 ## Entrega
 
-[Resultados, testes e comparação visual](../../docs-dev/comparisons/transicao-imagens/ISSUE_033.md):
+[Resultados, testes e comparação visual](../evidencias/transicao-imagens/ISSUE_033.md):
 cache, capas e avatares integrados ao pipeline Go, com formatos e limites
 registrados para o usuário. Testes de concorrência, HTTP, compatibilidade WebP,
 rollback e capturas em bases descartáveis passaram. A remoção formal da bimg,

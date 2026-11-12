@@ -8,8 +8,7 @@ labels:
   - ui
 milestone: m-2
 dependencies: []
-references:
-  - docs-dev/issues/027-go-padrao-react-desligado-solved.md
+references: []
 type: feature
 ordinal: 27000
 ---
@@ -17,7 +16,7 @@ ordinal: 27000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/027-go-padrao-react-desligado-solved.md](../../docs-dev/issues/027-go-padrao-react-desligado-solved.md) — numeração local 027.
+> Importada de `docs-dev/issues/027-go-padrao-react-desligado-solved.md` — numeração local 027. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida em 05/11/2026**. Issue local; não publicar.
 
@@ -37,5 +36,5 @@ para comparações futuras; ela só inicia com `KOITO_WEB_UI=react`.
 
 ## Resultado
 
-[Configuração F5, verificação e limites](../../docs-dev/comparisons/roadmap-06/ISSUE_027.md).
+[Configuração F5, verificação e limites](../evidencias/roadmap-06/ISSUE_027.md).
 <!-- SECTION:DESCRIPTION:END -->

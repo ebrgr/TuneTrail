@@ -7,7 +7,7 @@ updated_date: '2026-11-12T23:39:00Z'
 tags:
   - roadmap
 ---
-> Importado de [docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md](../../../docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md).
+> Importado de `docs-dev/ROADMAP_03_MIDIA_RETROSPECTIVA.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 # Roadmap 3 — artistas, álbuns, faixas e retrospectiva
 
@@ -15,10 +15,10 @@ Estudo de 4 de novembro de 2026, baseado nos arquivos locais sobre HEAD `72e4be2
 incluindo a implementação ainda não commitada do roadmap 2.
 **Status atual: núcleos 006–008 e integração 009 implementados; comparação visual e testes
 registrados na 009; issues 006–009 encerradas por aceite do usuário em 05/11/2026.**
-[Implementação da 006](../../../docs-dev/comparisons/roadmap-03/ISSUE_006.md) ·
-[Implementação da 007](../../../docs-dev/comparisons/roadmap-03/ISSUE_007.md) ·
-[Implementação da 008](../../../docs-dev/comparisons/roadmap-03/ISSUE_008.md) ·
-[Integração e comparações da 009](../../../docs-dev/comparisons/roadmap-03/ISSUE_009.md).
+[Implementação da 006](../../evidencias/roadmap-03/ISSUE_006.md) ·
+[Implementação da 007](../../evidencias/roadmap-03/ISSUE_007.md) ·
+[Implementação da 008](../../evidencias/roadmap-03/ISSUE_008.md) ·
+[Integração e comparações da 009](../../evidencias/roadmap-03/ISSUE_009.md).
 
 O restante deste documento preserva o estudo inicial. Suas referências a trabalho
 não implementado descrevem a situação do levantamento, anterior ao marco acima.
@@ -246,7 +246,7 @@ com testes comparando API e HTML. Não manter duas fórmulas para o mesmo summar
 | `TestGenerateSummary` tem corpo comentado | Leitura: esse nome de teste não valida os cálculos. Há testes de escopo no backend, mas é necessária cobertura de valores/datas na 008. |
 
 Os dois primeiros cálculos estão registrados em
-[analysis-checks.json](../../../docs-dev/comparisons/roadmap-03/analysis-checks.json). Executou-se um
+[analysis-checks.json](../../evidencias/roadmap-03/analysis-checks.json). Executou-se um
 programa isolado em `.local/roadmap-03-study/`: chamou `TimeframeToTimeRange`,
 reproduziu as fórmulas, sem abrir banco ou fazer HTTP. Os demais pontos acima
 são achados de leitura; não foram apresentados como falhas reproduzidas no navegador.
@@ -291,18 +291,18 @@ internal/webquery/rewind.go             # contrato de ano/mês da página
 internal/summary/                       # serviço existente + testes reais
 client/app/routes/                     # aliases React transitórios de gestão
 scripts/validate_webui.py               # ampliar cenários descartáveis
-docs-dev/comparisons/roadmap-03/        # evidências, manifesto e pares futuros
+backlog/evidencias/roadmap-03/        # evidências, manifesto e pares futuros
 ```
 
 Nomes propostos; não criar abstrações vazias nem duplicar SQL para atender à árvore.
 
-1. [006 — páginas de mídia](../../../docs-dev/issues/006-paginas-midia-go-solved.md): composição, dados,
+1. [006 — páginas de mídia](<../../tasks/iss-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>): composição, dados,
    cabeçalho, listas, links e erros. Não ativar as rotas de produção isoladamente.
-2. [007 — gráficos de mídia](../../../docs-dev/issues/007-atividade-interesse-go-solved.md): grade comum,
+2. [007 — gráficos de mídia](<../../tasks/iss-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>): grade comum,
    interesse SVG, contratos de divisões e casos degenerados.
-3. [008 — retrospectiva](../../../docs-dev/issues/008-retrospectiva-go-solved.md): normalização, serviço
+3. [008 — retrospectiva](<../../tasks/iss-008 - 008-—-Migrar-retrospectiva-mensal-anual-e-validar-seus-cálculos.md>): normalização, serviço
    compartilhado, médias, seletores e layout mensal/anual.
-4. [009 — convivência, gestão e aceite](../../../docs-dev/issues/009-integracao-midia-retrospectiva-solved.md):
+4. [009 — convivência, gestão e aceite](<../../tasks/iss-009 - 009-—-Integrar-mídia-rewind-Go-preservar-gestão-React-e-registrar-aceite.md>):
    aliases React, dispatcher, jornadas e capturas antes de ativar o conjunto.
 
 Issues são Markdown locais, conforme orientação do usuário, sem publicação.
@@ -343,7 +343,7 @@ fuso, viewport e região de rolagem registrados em manifesto. Incluir Yuu e um
 tema claro, regiões abaixo da dobra e teclado/foco. Não prometer ganho de
 performance ou paridade pixel a pixel sem medição/comparação.
 
-O [registro de evidências desta etapa](../../../docs-dev/comparisons/roadmap-03/README.md) contém
+O [registro de evidências desta etapa](../../evidencias/roadmap-03/README.md) contém
 apenas os cálculos do estudo e o plano de capturas. Ainda não há HTML Go de mídia
 ou rewind para gerar pares novos. A captura React de artista do passo 2 continua
 sendo referência histórica, não evidência de implementação da etapa 3.

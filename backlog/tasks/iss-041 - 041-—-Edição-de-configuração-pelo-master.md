@@ -11,8 +11,7 @@ dependencies:
   - ISS-038
   - ISS-039
   - ISS-040
-references:
-  - docs-dev/issues/041-administracao-configuracao-solved.md
+references: []
 type: feature
 ordinal: 41000
 ---
@@ -20,14 +19,14 @@ ordinal: 41000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/041-administracao-configuracao-solved.md](../../docs-dev/issues/041-administracao-configuracao-solved.md) — numeração local 041.
+> Importada de `docs-dev/issues/041-administracao-configuracao-solved.md` — numeração local 041. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Fechada e aprovada pelo usuário em 09/11/2026 · **Depende de:** 038–040
 
 ## Objetivo
 
 Criar administração Go para os dez campos globais do
-[contrato da 038](../../docs-dev/CONTRATO_CONFIGURACAO_038.md), com login/senha e sessão
+[contrato da 038](<../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>), com login/senha e sessão
 administrativa existentes. Valores são visíveis/editáveis, sem mascaramento.
 
 ## Aceite
@@ -58,7 +57,7 @@ estados salvo/efetivo/ativo, origem, override, reinício, preservação de rascu
 e teste Subsonic sem salvar. O relay permanece por perfil, com token visível.
 Login, sessão, CSRF, origem, limites e tickets existentes protegem as rotas.
 
-[Comparações desktop/celular, testes e limites](../../docs-dev/comparisons/configuracao/ISSUE_041.md).
+[Comparações desktop/celular, testes e limites](../evidencias/configuracao/ISSUE_041.md).
 A suíte Go, race dirigido e jornadas administrativas passaram; Advisor aprovou
 após correções. A 042 continua responsável pelo aceite integrado ampliado.
 

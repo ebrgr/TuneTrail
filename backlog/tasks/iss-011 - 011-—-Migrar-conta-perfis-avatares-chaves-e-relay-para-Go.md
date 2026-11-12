@@ -8,8 +8,7 @@ labels:
   - admin
 milestone: m-0
 dependencies: []
-references:
-  - docs-dev/issues/011-administracao-perfis-chaves-go-solved.md
+references: []
 type: feature
 ordinal: 11000
 ---
@@ -17,10 +16,10 @@ ordinal: 11000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/011-administracao-perfis-chaves-go-solved.md](../../docs-dev/issues/011-administracao-perfis-chaves-go-solved.md) — numeração local 011.
+> Importada de `docs-dev/issues/011-administracao-perfis-chaves-go-solved.md` — numeração local 011. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida**. Issue local, sem publicação.
-Plano: [roadmap 4](../../docs-dev/ROADMAP_04_ADMINISTRACAO.md). Depende de 010.
+Plano: [roadmap 4](<../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>). Depende de 010.
 
 ## Trabalho
 
@@ -63,14 +62,14 @@ JSON, layout e capturas ficam para a 015. Exclusão de perfil permanece na 014.
 Os serviços de perfil, avatar, chaves e relay são compartilhados com a API JSON.
 O relay usa a mesma política de rede no teste e envio. A publicação do avatar é
 coordenada com a coleta de órfãs no processo; fotos anteriores aguardam a coleta.
-Detalhes e testes: [relatório funcional](../../docs-dev/comparisons/roadmap-04/ISSUE_011.md).
+Detalhes e testes: [relatório funcional](../evidencias/roadmap-04/ISSUE_011.md).
 
 ## Integração na 015 — 05/11/2026
 
 A administração foi ligada ao modo Go; os contratos e jornadas são verificados
 pelo servidor real e pelas capturas comparativas. As pendências de integração
 descritas no andamento anterior são históricas. Consulte
-[entrega e limites da 015](../../docs-dev/comparisons/roadmap-04/ISSUE_015.md).
+[entrega e limites da 015](../evidencias/roadmap-04/ISSUE_015.md).
 
 ## Encerramento — 05/11/2026
 

@@ -8,8 +8,7 @@ labels:
   - validacao
 milestone: m-1
 dependencies: []
-references:
-  - docs-dev/issues/020-concorrencia-falhas-io-solved.md
+references: []
 type: task
 ordinal: 20000
 ---
@@ -17,10 +16,10 @@ ordinal: 20000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/020-concorrencia-falhas-io-solved.md](../../docs-dev/issues/020-concorrencia-falhas-io-solved.md) — numeração local 020.
+> Importada de `docs-dev/issues/020-concorrencia-falhas-io-solved.md` — numeração local 020. Original removido em 12/11/2026; consulte o histórico do Git.
 
 Status: **fechada e resolvida por aceite do usuário em 05/11/2026**. Issue local, sem publicação.
-Plano: [roadmap 5](../../docs-dev/ROADMAP_05_VALIDACAO.md). Dependências: 016–019 como base de contratos; execução integrada depende de 018/019.
+Plano: [roadmap 5](<../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>). Dependências: 016–019 como base de contratos; execução integrada depende de 018/019.
 
 ## Trabalho
 
@@ -40,12 +39,12 @@ Operações atômicas preservam invariantes sob falha; import parcial/relay/expo
 
 ## Evidências
 
-Registrar procedimentos e resultados em [roadmap 5](../../docs-dev/comparisons/roadmap-05/README.md).
+Registrar procedimentos e resultados em [roadmap 5](../evidencias/roadmap-05/README.md).
 Usar apenas bases SQLite v3 descartáveis e credenciais fictícias. O estudo e o
 fechamento de 001–015 não significam que esta issue já foi executada.
 
 ## Execução parcial — 05/11/2026
 
-Correções e regressões executadas estão em [ISSUE_020.md](../../docs-dev/comparisons/roadmap-05/ISSUE_020.md),
+Correções e regressões executadas estão em [ISSUE_020.md](../evidencias/roadmap-05/ISSUE_020.md),
 com os limites observados e os cenários ainda pendentes. A issue foi fechada por aceite do usuário; as limitações registradas permanecem visíveis para a integração.
 <!-- SECTION:DESCRIPTION:END -->

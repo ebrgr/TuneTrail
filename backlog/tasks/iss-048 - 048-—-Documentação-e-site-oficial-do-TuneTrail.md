@@ -8,8 +8,7 @@ labels:
   - docs
 milestone: m-5
 dependencies: []
-references:
-  - docs-dev/issues/048-documentacao-site-tunetrail.md
+references: []
 type: docs
 ordinal: 48000
 ---
@@ -17,13 +16,13 @@ ordinal: 48000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/048-documentacao-site-tunetrail.md](../../docs-dev/issues/048-documentacao-site-tunetrail.md) — numeração local 048.
+> Importada de `docs-dev/issues/048-documentacao-site-tunetrail.md` — numeração local 048. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Aberta · **Criada:** 09/11/2026 · **Tipo:** documentação e site
 
-Origem: encerramento aprovado das issues [043](../../docs-dev/issues/043-identidade-tunetrail-solved.md),
-[044](../../docs-dev/issues/044-versionamento-tunetrail-solved.md) e
-[045](../../docs-dev/issues/045-links-diretorio-tunetrail-solved.md). Issue local, sem publicação no GitHub.
+Origem: encerramento aprovado das issues [043](<iss-043 - 043-—-Identidade-visual-TuneTrail.md>),
+[044](<iss-044 - 044-—-Versionamento-próprio-do-TuneTrail.md>) e
+[045](<iss-045 - 045-—-Links-e-diretório-do-TuneTrail.md>). Issue local, sem publicação no GitHub.
 
 ## Objetivo
 
@@ -89,6 +88,6 @@ SQLite com esquema consolidado v3.
 ## Entrega esperada
 
 Documentação revisada, site pronto para aceite, evidências de build/preview e
-capturas em `docs-dev/comparisons/issue-048/` quando a execução começar.
+capturas em `backlog/evidencias/issue-048/` quando a execução começar.
 Este registro não inicia a implementação nem publica o site.
 <!-- SECTION:DESCRIPTION:END -->

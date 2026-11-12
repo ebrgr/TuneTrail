@@ -9,8 +9,7 @@ labels:
   - banco
 milestone: m-6
 dependencies: []
-references:
-  - docs-dev/issues/049-associacao-residual-artista-album.md
+references: []
 priority: high
 type: bug
 ordinal: 49000
@@ -19,7 +18,7 @@ ordinal: 49000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-> Importada de [docs-dev/issues/049-associacao-residual-artista-album.md](../../docs-dev/issues/049-associacao-residual-artista-album.md) — numeração local 049.
+> Importada de `docs-dev/issues/049-associacao-residual-artista-album.md` — numeração local 049. Original removido em 12/11/2026; consulte o histórico do Git.
 
 **Status:** Aberta · **Identificada:** 09/11/2026
 
