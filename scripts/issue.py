@@ -191,7 +191,11 @@ def cmd_review(args):
     run(*shlex.split(CHECK_CMD), capture=False)
     backlog("task", "edit", task_id(num), "-s", "Aguardando aceite",
             "--comment", args.message, "--comment-author", author())
+    # Agents must relay this notice: the acceptance step is optional but never silent.
     print(f"{task_id(num)} aguardando aceite do usuário")
+    print(f"AVISO ao usuário: {task_id(num)} — {plain_title(task['title'])} está em Aguardando aceite.")
+    print(f"  Verificação: {args.message}")
+    print(f"  Para publicar: registrar o aceite (Done) e rodar make issue.publish ISSUE={int(num)}")
 
 
 def roll_changelog(text, version, today, ref):
@@ -248,6 +252,9 @@ def cmd_publish(args):
         print(f"  registro da tarefa pendente será commitado como '{ref}: Registra aceite'")
     print(f"  {CHECK_CMD} · versão {current} → {version} · CHANGELOG [{version}] · tag {tag}")
     print(f"  merge --ff-only em {MAIN}" + (f" · push para {REMOTE}" if args.push else " · sem push"))
+    if args.push:
+        # A pushed v* tag triggers the Docker workflow, which publishes a public image.
+        print(f"  ATENÇÃO: o push da tag {tag} dispara .github/workflows/docker.yml e publica a imagem no GHCR (inclusive como latest)")
     if args.dry_run:
         print("DRY: nada foi alterado")
         return

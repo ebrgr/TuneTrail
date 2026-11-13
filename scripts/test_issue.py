@@ -126,6 +126,13 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(self.git("rev-parse", "HEAD"), head)
         self.assertEqual(self.git("tag"), "")
 
+    def test_dry_run_push_warns_about_image_publication(self):
+        # Dry runs never push; they only announce what PUSH=1 would trigger.
+        result = self.publish("--dry-run", "--push")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("publica a imagem no GHCR", result.stdout)
+        self.assertEqual(self.git("tag"), "")
+
     def assertRejected(self, needle):
         head = self.git("rev-parse", "HEAD")
         result = self.publish()

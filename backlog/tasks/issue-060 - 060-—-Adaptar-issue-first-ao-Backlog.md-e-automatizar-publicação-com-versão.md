@@ -4,7 +4,7 @@ title: 060 — Adaptar issue-first ao Backlog.md e automatizar publicação com 
 status: Done
 assignee: []
 created_date: '2026-11-13T23:14:00Z'
-updated_date: '2026-11-13T23:28:00Z'
+updated_date: '2026-11-13T23:36:00Z'
 labels:
   - processo
 milestone: m-6
@@ -67,6 +67,15 @@ created: 2026-11-13T23:28:00Z
 ---
 
 Aceite: aprovada pelo usuário em 13/11/2026, incluindo a migração ISS→ISSUE. Critério 2 (make issue.start no repositório real) segue sem marcar: coberto apenas pela geração do nome da branch nos testes.
+
+---
+
+author: claude
+created: 2026-11-13T23:36:00Z
+
+---
+
+Ajustes após teste de entendimento com o Codex (somente leitura, 7 de 8 situações corretas): agents.md renomeado para AGENTS.md (sistemas sensíveis a maiúsculas); referência à skill inexistente source-control trocada por issue-first; README e DEPLOYMENT alinhados a uma versão por tarefa aceita; skill e issue.publish avisam que PUSH=1 publica a imagem no GHCR (inclusive latest). Aguardando aceite segue opcional, mas o agente deve avisar o usuário sempre que colocar uma tarefa nesse status; issue.review imprime o aviso. make issue.test: 25 testes OK.
 
 ---
 <!-- COMMENTS:END -->

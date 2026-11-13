@@ -120,4 +120,4 @@ timezone data and curl for the healthcheck.
 
 For local development and validation, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-Current source: **TuneTrail 0.7**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per commit using `make version.bump` (0.9 becomes 0.10); 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
+Current source: **TuneTrail 0.7**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.9 becomes 0.10); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
