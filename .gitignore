@@ -21,3 +21,6 @@ __pycache__/
 deploy/data/
 
 /tunetrail
+
+# Local graphify query cache (the graph itself lives outside the repository)
+/graphify-out/
