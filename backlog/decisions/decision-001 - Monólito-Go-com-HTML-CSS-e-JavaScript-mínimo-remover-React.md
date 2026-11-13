@@ -9,9 +9,9 @@ O Koito separava backend Go e frontend React. A proposta do fork é simplificar 
 
 
 ## Decision
-Renderizar todas as páginas no servidor Go com templates incorporados, CSS e scripts pequenos; React retirado após comparação visual e aceite (ISS-022–ISS-030).
+Renderizar todas as páginas no servidor Go com templates incorporados, CSS e scripts pequenos; React retirado após comparação visual e aceite (ISSUE-022–ISSUE-030).
 
 
 ## Consequences
-Executável único sem Node em produção; fluxos principais funcionam sem JavaScript. Interações dinâmicas futuras devem justificar cada script (ISS-056).
+Executável único sem Node em produção; fluxos principais funcionam sem JavaScript. Interações dinâmicas futuras devem justificar cada script (ISSUE-056).
 

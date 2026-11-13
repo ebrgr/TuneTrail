@@ -1,6 +1,6 @@
 # Issue 019 — isolamento, ingestão e cache
 
-Implementada e aceita pelo usuário em 05/11/2026. [Issue](<../../tasks/iss-019 - 019-—-Validar-isolamento-entre-perfis-ingestão-e-cache.md>) · [Matriz inicial](ISSUE_016_MATRIZ.md).
+Implementada e aceita pelo usuário em 05/11/2026. [Issue](<../../tasks/issue-019 - 019-—-Validar-isolamento-entre-perfis-ingestão-e-cache.md>) · [Matriz inicial](ISSUE_016_MATRIZ.md).
 
 ## Correções
 

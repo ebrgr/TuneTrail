@@ -13,7 +13,7 @@ tags:
 
 **Data:** 12/11/2026 · **Base avaliada:** TuneTrail 0.6, HEAD `be07697` + 113 arquivos com alterações locais não commitadas.
 **Natureza:** proposta para decisão do usuário. Não autoriza implementação, não abre issues no GitHub e não altera o plano vigente em [ROADMAP.md](<doc-001 - ROADMAP.md>).
-**Fontes:** `agents.md`, README, CHANGELOG, roadmaps 01–06, issues locais 001–057, [revisão de pendências](<../estudos/doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>), [issue 056](<../../tasks/iss-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>), grafo Graphify, CSS/templates atuais, capturas em `comparisons/` e os estudos privados em `estudos-locais/` (Maloja, maloja-rs, multi-scrobbler, Scrobblet e síntese).
+**Fontes:** `agents.md`, README, CHANGELOG, roadmaps 01–06, issues locais 001–057, [revisão de pendências](<../estudos/doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>), [issue 056](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>), grafo Graphify, CSS/templates atuais, capturas em `comparisons/` e os estudos privados em `estudos-locais/` (Maloja, maloja-rs, multi-scrobbler, Scrobblet e síntese).
 
 > Os estudos locais estão em `.git/info/exclude`. Este documento cita apenas conclusões conceituais e nomes de projetos públicos; nenhum código externo é proposto para cópia. Se este arquivo for commitado, os links para `estudos-locais/` ficarão quebrados para outras pessoas — decisão do usuário.
 
@@ -267,7 +267,7 @@ Antes disso, decidir e documentar a semântica das médias (pendência da 018).
 
 ## 9. Plano de execução proposto
 
-Numeração indicativa: a 059 foi usada pela adoção do Backlog.md e a 058 pelo [estudo do Tailwind CSS](<../../tasks/iss-058 - 058-—-Estudar-a-adoção-do-Tailwind-CSS.md>), que antecede a 061. Os números abaixo serão renumerados quando as issues forem criadas. Esforço: **P** ≤ 2 dias, **M** 3–7 dias, **G** > 1 semana (estimativas iniciais).
+Numeração indicativa: a 059 foi usada pela adoção do Backlog.md e a 058 pelo [estudo do Tailwind CSS](<../../tasks/issue-058 - 058-—-Estudar-a-adoção-do-Tailwind-CSS.md>), que antecede a 061. Os números abaixo serão renumerados quando as issues forem criadas. Esforço: **P** ≤ 2 dias, **M** 3–7 dias, **G** > 1 semana (estimativas iniciais).
 
 | Fase | Issues | Entrega | Esforço |
 | --- | --- | --- | --- |

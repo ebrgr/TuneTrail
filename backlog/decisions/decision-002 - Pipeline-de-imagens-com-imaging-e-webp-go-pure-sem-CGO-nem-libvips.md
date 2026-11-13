@@ -9,7 +9,7 @@ libvips/bimg exigiam CGO e bibliotecas nativas na imagem Docker (doc-012, doc-01
 
 
 ## Decision
-Usar `imaging` + `webp-go-pure`: JPEG, PNG e WebP estático de entrada; WebP de saída; `x/image` para texto (ISS-031–ISS-037, doc-014).
+Usar `imaging` + `webp-go-pure`: JPEG, PNG e WebP estático de entrada; WebP de saída; `x/image` para texto (ISSUE-031–ISSUE-037, doc-014).
 
 
 ## Consequences

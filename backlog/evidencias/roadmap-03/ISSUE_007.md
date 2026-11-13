@@ -3,7 +3,7 @@
 **Situação atual: issue encerrada por aceite do usuário em 05/11/2026.**
 O restante preserva o histórico de implementação e verificação.
 
-Registro de 4 de novembro de 2026. [Issue](<../../tasks/iss-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>) ·
+Registro de 4 de novembro de 2026. [Issue](<../../tasks/issue-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>) ·
 [Plano](<../../docs/roadmaps/doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>).
 
 **Estado: núcleo implementado e testado; issue aberta para aceite visual ao final

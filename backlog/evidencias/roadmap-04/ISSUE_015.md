@@ -1,6 +1,6 @@
 # Issue 015 — integração e aceite técnico da administração Go
 
-Implementada e aceita pelo usuário em 05/11/2026; issues 010–015 fechadas e resolvidas. [Issue](<../../tasks/iss-015 - 015-—-Integrar-administração-Go-e-registrar-jornadas-e-aceite-visual.md>) · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
+Implementada e aceita pelo usuário em 05/11/2026; issues 010–015 fechadas e resolvidas. [Issue](<../../tasks/issue-015 - 015-—-Integrar-administração-Go-e-registrar-jornadas-e-aceite-visual.md>) · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
 
 `KOITO_WEB_UI=go` agora entrega `/admin`, gestão por perfil, login/conta, chaves,
 relay, importação/exportação, edição/capas/escutas e revisão de exclusão/merge.

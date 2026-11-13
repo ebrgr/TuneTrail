@@ -1,6 +1,6 @@
 # Issue 026 — integração e proposta de aceite
 
-Execução em 05/11/2026. [Issue](<../../tasks/iss-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>) ·
+Execução em 05/11/2026. [Issue](<../../tasks/issue-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>) ·
 [plano](<../../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>) · [matriz planejada](ISSUE_022_MATRIZ.md).
 Este relatório distingue testes executados, observações históricas e decisões
 propostas. **O usuário aceitou o resultado e as ressalvas em 05/11/2026.** Na execução da 026, Go era o padrão e React exigia seleção explícita; a retirada posterior é tratada na 030. Referências
@@ -91,4 +91,4 @@ bloqueio documental. O fechamento continua condicionado ao aceite do usuário.
 
 ## Aceite posterior
 
-O usuário aceitou a 026 com as ressalvas acima e autorizou separadamente a retirada do React em 05/11/2026. A [issue 030](<../../tasks/iss-030 - 030-—-Retirar-React-e-consolidar-interface-Go.md>) registra essa alteração posterior.
+O usuário aceitou a 026 com as ressalvas acima e autorizou separadamente a retirada do React em 05/11/2026. A [issue 030](<../../tasks/issue-030 - 030-—-Retirar-React-e-consolidar-interface-Go.md>) registra essa alteração posterior.

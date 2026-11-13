@@ -34,7 +34,7 @@ tema, fuso, viewport e região/rolagem. Não incluir abas do usuário ou credenc
 | Gestão | Entrada Go → React e retorno após ação em banco de teste |
 
 Cobrir desktop/celular e Yuu/tema claro, rolagem abaixo da dobra e foco/teclado.
-As issues [006](<../../tasks/iss-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>),
-[007](<../../tasks/iss-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>),
-[008](<../../tasks/iss-008 - 008-—-Migrar-retrospectiva-mensal-anual-e-validar-seus-cálculos.md>) e
-[009](<../../tasks/iss-009 - 009-—-Integrar-mídia-rewind-Go-preservar-gestão-React-e-registrar-aceite.md>) organizam a execução.
+As issues [006](<../../tasks/issue-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>),
+[007](<../../tasks/issue-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>),
+[008](<../../tasks/issue-008 - 008-—-Migrar-retrospectiva-mensal-anual-e-validar-seus-cálculos.md>) e
+[009](<../../tasks/issue-009 - 009-—-Integrar-mídia-rewind-Go-preservar-gestão-React-e-registrar-aceite.md>) organizam a execução.

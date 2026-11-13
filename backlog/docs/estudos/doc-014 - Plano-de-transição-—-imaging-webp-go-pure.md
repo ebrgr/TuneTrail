@@ -43,11 +43,11 @@ Fixar versões e registrar licenças durante a prova; não usar atualização fl
 
 | Ordem | Issue | Entrega |
 | --- | --- | --- |
-| 1 | [031 — contrato, corpus e parâmetros](<../../tasks/iss-031 - 031-—-Contrato-corpus-e-parâmetros-da-transição-de-imagens.md>) | Contrato observado da bimg, política de entrada/recursos, corpus e medições reproduzíveis da combinação escolhida. |
-| 2 | [032 — pipeline Go](<../../tasks/iss-032 - 032-—-Implementar-pipeline-Go-com-imaging-e-webp-go-pure.md>) | Componente compartilhado com inspeção, limites, orientação, corte/escala e encode, sem registro WebP duplicado. |
-| 3 | [033 — cache e administração](<../../tasks/iss-033 - 033-—-Integrar-pipeline-Go-ao-cache-capas-e-avatares.md>) | Download, capas e avatares usando o componente e preservando contratos de persistência e HTTP. |
-| 4 | [034 — distribuição sem CGO](<../../tasks/iss-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>) | Retirada da bimg/libvips, build/debug/CI/Docker/documentação e evidências finais da fase 1. |
-| 5 | [035 — preparação da retrospectiva](<../../tasks/iss-035 - 035-—-Refatorar-o-código-de-imagens-da-retrospectiva-com-imaging.md>) | Refatoração das transformações/composição antigas, fontes preservadas e testes locais, após a conclusão da fase 1. |
+| 1 | [031 — contrato, corpus e parâmetros](<../../tasks/issue-031 - 031-—-Contrato-corpus-e-parâmetros-da-transição-de-imagens.md>) | Contrato observado da bimg, política de entrada/recursos, corpus e medições reproduzíveis da combinação escolhida. |
+| 2 | [032 — pipeline Go](<../../tasks/issue-032 - 032-—-Implementar-pipeline-Go-com-imaging-e-webp-go-pure.md>) | Componente compartilhado com inspeção, limites, orientação, corte/escala e encode, sem registro WebP duplicado. |
+| 3 | [033 — cache e administração](<../../tasks/issue-033 - 033-—-Integrar-pipeline-Go-ao-cache-capas-e-avatares.md>) | Download, capas e avatares usando o componente e preservando contratos de persistência e HTTP. |
+| 4 | [034 — distribuição sem CGO](<../../tasks/issue-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>) | Retirada da bimg/libvips, build/debug/CI/Docker/documentação e evidências finais da fase 1. |
+| 5 | [035 — preparação da retrospectiva](<../../tasks/issue-035 - 035-—-Refatorar-o-código-de-imagens-da-retrospectiva-com-imaging.md>) | Refatoração das transformações/composição antigas, fontes preservadas e testes locais, após a conclusão da fase 1. |
 
 Dependências: **031 → 032 → 033 → 034 → 035**. Cada issue exige registro dos
 resultados e limitações em `backlog/evidencias/transicao-imagens/`, criado
@@ -155,7 +155,7 @@ permanecem locais em Markdown, conforme a orientação do usuário para esta eta
 [036 concluída](../../evidencias/transicao-imagens/ISSUE_036.md): admissão administrativa,
 contextos independentes e respostas HTTP corrigidos e testados. A 034 concluiu a
 distribuição; o risco histórico de publicação automática e coleta foi separado na
-[037](<../../tasks/iss-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>).
+[037](<../../tasks/issue-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>).
 
 ## Retrospectiva preparada
 

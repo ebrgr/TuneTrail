@@ -1,6 +1,6 @@
 # Issue 025 — migração, compatibilidade e dependências
 
-Execução em 05/11/2026. [Issue](<../../tasks/iss-025 - 025-—-Validar-migração-compatibilidade-e-dependências-React.md>) ·
+Execução em 05/11/2026. [Issue](<../../tasks/issue-025 - 025-—-Validar-migração-compatibilidade-e-dependências-React.md>) ·
 [Plano](<../../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>) ·
 [Resultados HTTP e digests fictícios](validation-025.json).
 Go é o padrão desde a 027; React só é executado com `KOITO_WEB_UI=react`.
@@ -54,7 +54,7 @@ visitante foi negado em ambos; status completo e tipos estão no JSON.
 | `/favicon.svg`, `/public/yuu.jpg` | 200 SVG/JPEG | 200 SVG/JPEG | Favicon Go incorporado; `/public` vem de arquivos externos ao binário |
 | `/apis/web/v1/profiles`, `/health` | 200 | 200 | JSON e health preservados; ListenBrainz com chave legada também validado |
 | `/web-assets/ui.css` | 200 CSS | 200 HTML | Em React, caminho desconhecido recebe shell, não arquivo CSS |
-| `/theme-helper` | 404 | 200 shell, **falha na hidratação** | Defeito reproduzido nesta execução histórica; [issue 028 resolvida](<../../tasks/iss-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>) |
+| `/theme-helper` | 404 | 200 shell, **falha na hidratação** | Defeito reproduzido nesta execução histórica; [issue 028 resolvida](<../../tasks/issue-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>) |
 | Asset ou página inexistente | 404 | 200 shell | O shell 200 não garante recurso existente; perfil React ausente apresentou erro hidratado |
 
 Na 025, `/theme-helper` React gerou `This screen requires a listening profile`
@@ -96,7 +96,7 @@ rollback de produção nem compatibilidade com binário antigo.
 | Compressão bimg, callbacks e tarefas que ignoram cancelamento | Limites da 020 continuam; sem alegar encerramento cooperativo universal |
 | Isolamento público e contexto interno global | Cobertura 019/021 e jornadas desta issue são finitas; não certificam todos os adaptadores |
 | Fonts, responsividade e acessibilidade | Evidências 023/024 e limitações pendentes de avaliação consolidada na 026 |
-| `/theme-helper` React | Falha reproduzida nesta issue; correção e testes posteriores em [028](<../../tasks/iss-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>) |
+| `/theme-helper` React | Falha reproduzida nesta issue; correção e testes posteriores em [028](<../../tasks/issue-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>) |
 
 ## Execução e revisão
 

@@ -4,7 +4,7 @@
 registradas em [ISSUE_015.md](ISSUE_015.md). As notas abaixo descrevem a entrega
 anterior à integração; o aceite final do usuário permanece pendente.
 
-Núcleo implementado em 05/11/2026. [Issue](<../../tasks/iss-012 - 012-—-Migrar-importação-e-exportação-por-perfil-para-Go.md>) · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
+Núcleo implementado em 05/11/2026. [Issue](<../../tasks/issue-012 - 012-—-Migrar-importação-e-exportação-por-perfil-para-Go.md>) · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
 
 O handler Go isolado oferece importação e exportação do perfil selecionado. O
 formulário identifica nome, slug e ID, exige confirmação e valida sessão, origem

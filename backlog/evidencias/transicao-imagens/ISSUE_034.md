@@ -1,6 +1,6 @@
 # Issue 034 — distribuição sem CGO e libvips
 
-Validação em 06/11/2026. [Issue](<../../tasks/iss-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>) ·
+Validação em 06/11/2026. [Issue](<../../tasks/issue-034 - 034-—-Distribuir-e-validar-a-aplicação-sem-CGO-libvips.md>) ·
 [Plano](<../../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>) ·
 [Contrato e medições](ISSUE_031.md) · [Pipeline](ISSUE_032.md) ·
 [Integração e imagens](ISSUE_033.md) · [Correções após revisão](ISSUE_036.md).
@@ -67,7 +67,7 @@ PR/workflow_call. O parecer é revisão do desenho e arquivos, não uma execuç�
 independente de todos os testes. O serviço ainda executa como root no contêiner,
 como antes; alterar permissões e ownership de volumes exigiria trabalho próprio.
 
-A issue histórica [037](<../../tasks/iss-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>)
+A issue histórica [037](<../../tasks/issue-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>)
 estava aberta ao concluir esta distribuição e foi resolvida depois. A refatoração da imagem de
 retrospectiva permanece na 035.
 

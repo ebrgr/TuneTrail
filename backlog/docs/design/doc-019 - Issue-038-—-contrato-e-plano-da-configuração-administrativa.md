@@ -12,7 +12,7 @@ tags:
 # Issue 038 — contrato e plano da configuração administrativa
 
 Data: 09/11/2026. Planejamento retomado por solicitação do usuário.
-[Issue 038](<../../tasks/iss-038 - 038-—-Contrato-e-decisões-da-configuração.md>) ·
+[Issue 038](<../../tasks/issue-038 - 038-—-Contrato-e-decisões-da-configuração.md>) ·
 [Inventário completo](<../roadmaps/doc-004 - Estudo-—-configuração-em-TOML-e-administração-pelo-usuário-master.md>) · [Roadmap](<../roadmaps/doc-001 - ROADMAP.md>).
 
 Este documento define a primeira entrega das issues 039–042. A leitura TOML da

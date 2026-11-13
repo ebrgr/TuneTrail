@@ -1,6 +1,6 @@
 # Issue 032 — componente Go para imagens
 
-Concluída em 06/11/2026. [Issue](<../../tasks/iss-032 - 032-—-Implementar-pipeline-Go-com-imaging-e-webp-go-pure.md>) ·
+Concluída em 06/11/2026. [Issue](<../../tasks/issue-032 - 032-—-Implementar-pipeline-Go-com-imaging-e-webp-go-pure.md>) ·
 [Contrato da 031](CONTRATO_031.md) · [Resultados da 031](ISSUE_031.md).
 
 ## Implementação

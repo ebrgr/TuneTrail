@@ -1,6 +1,6 @@
 # Issue 030 — retirada do React
 
-Em 05/11/2026, após o aceite explícito da [026](<../../tasks/iss-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>), o cliente React foi removido. O servidor fornece apenas a interface Go; `KOITO_WEB_UI` aceita ausência ou `go` e recusa `react` com mensagem explícita. A resposta `/apis/web/v1/config` mantém `web_ui: go`. SQLite v3, migrações e rotas da API permanecem; `/theme-helper`, exclusivo do React, retorna 404.
+Em 05/11/2026, após o aceite explícito da [026](<../../tasks/issue-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>), o cliente React foi removido. O servidor fornece apenas a interface Go; `KOITO_WEB_UI` aceita ausência ou `go` e recusa `react` com mensagem explícita. A resposta `/apis/web/v1/config` mantém `web_ui: go`. SQLite v3, migrações e rotas da API permanecem; `/theme-helper`, exclusivo do React, retorna 404.
 
 Os 11 assets antes em `client/public` foram incorporados ao binário e continuam disponíveis sob `/public/`; os caminhos dos ícones e o início do manifesto foram ajustados. A prévia Go continua disponível sem o servidor de referência React. Build, Docker, CI, VS Code e verificação de versão não dependem do cliente React. Os scripts antigos de comparação foram preservados como histórico e identificados em [scripts/README.md](../../../scripts/README.md).
 

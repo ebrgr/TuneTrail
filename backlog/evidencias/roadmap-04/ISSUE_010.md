@@ -4,7 +4,7 @@
 registradas em [ISSUE_015.md](ISSUE_015.md). As notas abaixo descrevem a entrega
 anterior à integração; o aceite final do usuário permanece pendente.
 
-Núcleo implementado e testado em 05/11/2026. [Issue](<../../tasks/iss-010 - 010-—-Estabelecer-contratos-administrativos-e-corrigir-bloqueadores-de-escrita.md>)
+Núcleo implementado e testado em 05/11/2026. [Issue](<../../tasks/issue-010 - 010-—-Estabelecer-contratos-administrativos-e-corrigir-bloqueadores-de-escrita.md>)
 · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
 
 ## Entrega

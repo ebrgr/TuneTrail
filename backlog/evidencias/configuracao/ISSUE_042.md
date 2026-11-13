@@ -1,6 +1,6 @@
 # Issue 042 — integração da configuração e evidências
 
-Validação realizada em 09/11/2026 com dados fictícios e bancos descartáveis. [Issue](<../../tasks/iss-042 - 042-—-Integração-e-aceite-da-configuração.md>) · [Contrato](<../../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) · [Capturas da interface](ISSUE_041.md).
+Validação realizada em 09/11/2026 com dados fictícios e bancos descartáveis. [Issue](<../../tasks/issue-042 - 042-—-Integração-e-aceite-da-configuração.md>) · [Contrato](<../../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) · [Capturas da interface](ISSUE_041.md).
 
 ## Matriz e jornadas
 

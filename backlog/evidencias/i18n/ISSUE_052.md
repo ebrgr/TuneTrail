@@ -1,6 +1,6 @@
 # Issue 052 — administração multilíngue
 
-Data: 10/11/2026. Implementada, aguardando aceite. [Issue](<../../tasks/iss-052 - 052-—-Internacionalizar-administração.md>).
+Data: 10/11/2026. Implementada, aguardando aceite. [Issue](<../../tasks/issue-052 - 052-—-Internacionalizar-administração.md>).
 
 A navegação administrativa, login, perfis, configuração, importação e exportação, chaves, relay, edição e confirmação de exclusão/mesclagem usam inglês ou português brasileiro conforme a preferência do visitante. As mensagens são carregadas dos arquivos externos `langs/`; textos de catálogo, nomes de variáveis, valores e formatos de API permanecem intactos. Avisos após redirecionamento são traduzidos no idioma da página de destino.
 

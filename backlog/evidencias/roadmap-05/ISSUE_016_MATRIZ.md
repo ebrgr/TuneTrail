@@ -1,6 +1,6 @@
 # Issue 016 — matriz de contratos e fixture
 
-Leitura e verificação da fixture em 05/11/2026. [Issue 016](<../../tasks/iss-016 - 016-—-Contratos-fixture-e-matriz-de-validação-transversal.md>) · [Roadmap 5](<../../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>).
+Leitura e verificação da fixture em 05/11/2026. [Issue 016](<../../tasks/issue-016 - 016-—-Contratos-fixture-e-matriz-de-validação-transversal.md>) · [Roadmap 5](<../../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>).
 
 ## Como ler a matriz
 

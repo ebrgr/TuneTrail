@@ -259,11 +259,11 @@ Não criar um cache global de página. Para HTML com estado administrativo usar
 
 ## Sequência e issues locais
 
-1. [003 — páginas com dados reais](<../../tasks/iss-003 - 003-—-Migrar-seleção-home-rankings-e-histórico-para-HTML-Go.md>): separar
+1. [003 — páginas com dados reais](<../../tasks/issue-003 - 003-—-Migrar-seleção-home-rankings-e-histórico-para-HTML-Go.md>): separar
    apresentação/fixtures, resolver perfil e integrar as seis páginas com leituras.
-2. [004 — contratos de navegação e datas](<../../tasks/iss-004 - 004-—-Confirmar-contratos-de-paginação-filtros-e-datas.md>): confirmar
+2. [004 — contratos de navegação e datas](<../../tasks/issue-004 - 004-—-Confirmar-contratos-de-paginação-filtros-e-datas.md>): confirmar
    pontos encontrados, normalizar paginação/filtros e testar limites temporais.
-3. [005 — convivência Go/React](<../../tasks/iss-005 - 005-—-Preservar-navegação-e-ações-na-convivência-Go-React.md>): roteamento,
+3. [005 — convivência Go/React](<../../tasks/issue-005 - 005-—-Preservar-navegação-e-ações-na-convivência-Go-React.md>): roteamento,
    ponte, links legados, Settings/busca e ações existentes.
 4. Validar o conjunto com banco descartável e registrar screenshots/limites antes
    de ativar a opção Go numa instalação em uso.

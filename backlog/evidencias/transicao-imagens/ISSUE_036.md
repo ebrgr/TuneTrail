@@ -1,6 +1,6 @@
 # Issue 036 — admissão e cancelamento de imagens
 
-Concluída em 06/11/2026. [Issue](<../../tasks/iss-036 - 036-—-Admissão-e-cancelamento-de-imagens.md>) ·
+Concluída em 06/11/2026. [Issue](<../../tasks/issue-036 - 036-—-Admissão-e-cancelamento-de-imagens.md>) ·
 [Revisão que motivou a correção](ADVISOR_032_033.md).
 
 ## Correções
@@ -47,7 +47,7 @@ prazo libera os participantes, mas o trabalho permanece contabilizado até
 terminar; uma nova solicitação para a mesma chave nesse intervalo recebe 503.
 O limite HTTP de avatar continua contando o envelope multipart. A janela
 histórica entre publicação automática do catálogo e coleta foi tratada depois na
-[issue 037](<../../tasks/iss-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>).
+[issue 037](<../../tasks/issue-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>).
 
 Não houve mudança de SQLite, limpeza do cache ou build de distribuição. A 034
 continua responsável por remover a dependência nativa e validar distribuição.

@@ -289,18 +289,18 @@ backlog/evidencias/roadmap-04/ # evidências e pares visuais futuros
 `internal/admin` não importa `engine/handlers`; rever a dependência atual do parser
 ListenBrainz em tipos de `handlers` ao extrair serviços de importação.
 
-1. [010 — contratos e bloqueadores de escrita](<../../tasks/iss-010 - 010-—-Estabelecer-contratos-administrativos-e-corrigir-bloqueadores-de-escrita.md>):
+1. [010 — contratos e bloqueadores de escrita](<../../tasks/issue-010 - 010-—-Estabelecer-contratos-administrativos-e-corrigir-bloqueadores-de-escrita.md>):
    identidade/sessão/CSRF, serviços compartilhados, erros e correções funcionais
    explícitas antes das novas telas.
-2. [011 — administração, perfis e chaves](<../../tasks/iss-011 - 011-—-Migrar-conta-perfis-avatares-chaves-e-relay-para-Go.md>):
+2. [011 — administração, perfis e chaves](<../../tasks/issue-011 - 011-—-Migrar-conta-perfis-avatares-chaves-e-relay-para-Go.md>):
    conta, CRUD de perfis, avatar, chaves e configuração/teste de relay.
-3. [012 — importação/exportação](<../../tasks/iss-012 - 012-—-Migrar-importação-e-exportação-por-perfil-para-Go.md>): formulários,
+3. [012 — importação/exportação](<../../tasks/issue-012 - 012-—-Migrar-importação-e-exportação-por-perfil-para-Go.md>): formulários,
    parsers reutilizados, cancelamento/limites, resultado parcial e download.
-4. [013 — edição, imagens e escutas](<../../tasks/iss-013 - 013-—-Migrar-edição-de-mídia-imagens-e-ações-de-escutas-para-Go.md>): aliases,
+4. [013 — edição, imagens e escutas](<../../tasks/issue-013 - 013-—-Migrar-edição-de-mídia-imagens-e-ações-de-escutas-para-Go.md>): aliases,
    MBIDs, relações, capa/upload, escuta manual e exclusão pessoal.
-5. [014 — deleção e mesclagem globais](<../../tasks/iss-014 - 014-—-Migrar-confirmações-de-deleção-e-mesclagem-para-Go.md>): plano de
+5. [014 — deleção e mesclagem globais](<../../tasks/issue-014 - 014-—-Migrar-confirmações-de-deleção-e-mesclagem-para-Go.md>): plano de
    impacto, confirmação/revalidação, transações, limpeza e retorno.
-6. [015 — integração e aceite](<../../tasks/iss-015 - 015-—-Integrar-administração-Go-e-registrar-jornadas-e-aceite-visual.md>): ponte,
+6. [015 — integração e aceite](<../../tasks/issue-015 - 015-—-Integrar-administração-Go-e-registrar-jornadas-e-aceite-visual.md>): ponte,
    jornadas, regressão e capturas; ativar famílias completas após aceite.
 
 As issues são arquivos Markdown locais, sem publicação. As entregas 010–014

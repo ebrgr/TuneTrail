@@ -143,12 +143,12 @@ atual; não criar scheduler ou framework de teste genérico.
 
 ## Sequência de issues locais
 
-1. [016 — contratos, fixture e matriz](<../../tasks/iss-016 - 016-—-Contratos-fixture-e-matriz-de-validação-transversal.md>).
-2. [017 — permissões, sessões e origem](<../../tasks/iss-017 - 017-—-Validar-permissões-sessões-origem-e-formulários.md>).
-3. [018 — fusos, intervalos e agregados](<../../tasks/iss-018 - 018-—-Corrigir-e-validar-fusos-intervalos-e-agregados-civis.md>).
-4. [019 — isolamento, ingestão e cache](<../../tasks/iss-019 - 019-—-Validar-isolamento-entre-perfis-ingestão-e-cache.md>).
-5. [020 — concorrência, falhas e I/O](<../../tasks/iss-020 - 020-—-Validar-concorrência-falhas-importação-exportação-e-I-O.md>).
-6. [021 — integração e aceite transversal](<../../tasks/iss-021 - 021-—-Integrar-evidências-e-concluir-aceite-transversal-da-etapa-5.md>).
+1. [016 — contratos, fixture e matriz](<../../tasks/issue-016 - 016-—-Contratos-fixture-e-matriz-de-validação-transversal.md>).
+2. [017 — permissões, sessões e origem](<../../tasks/issue-017 - 017-—-Validar-permissões-sessões-origem-e-formulários.md>).
+3. [018 — fusos, intervalos e agregados](<../../tasks/issue-018 - 018-—-Corrigir-e-validar-fusos-intervalos-e-agregados-civis.md>).
+4. [019 — isolamento, ingestão e cache](<../../tasks/issue-019 - 019-—-Validar-isolamento-entre-perfis-ingestão-e-cache.md>).
+5. [020 — concorrência, falhas e I/O](<../../tasks/issue-020 - 020-—-Validar-concorrência-falhas-importação-exportação-e-I-O.md>).
+6. [021 — integração e aceite transversal](<../../tasks/issue-021 - 021-—-Integrar-evidências-e-concluir-aceite-transversal-da-etapa-5.md>).
 
 A 016 fixa critérios e compartilhamento de fixtures. As 017–020 podem reaproveitar
 testes existentes, acrescentando somente casos necessários. A 021 reúne resultados

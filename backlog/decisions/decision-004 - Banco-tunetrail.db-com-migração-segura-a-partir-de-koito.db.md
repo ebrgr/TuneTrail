@@ -5,7 +5,7 @@ date: '2026-11-12T23:40:00Z'
 status: accepted
 ---
 ## Context
-A renomeação do projeto exigia trocar o nome do banco sem perder dados de instalações existentes (ISS-046).
+A renomeação do projeto exigia trocar o nome do banco sem perder dados de instalações existentes (ISSUE-046).
 
 
 ## Decision

@@ -4,7 +4,7 @@
 registradas em [ISSUE_015.md](ISSUE_015.md). As notas abaixo descrevem a entrega
 anterior à integração; o aceite final do usuário permanece pendente.
 
-Em andamento em 05/11/2026. [Issue](<../../tasks/iss-013 - 013-—-Migrar-edição-de-mídia-imagens-e-ações-de-escutas-para-Go.md>) · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
+Em andamento em 05/11/2026. [Issue](<../../tasks/issue-013 - 013-—-Migrar-edição-de-mídia-imagens-e-ações-de-escutas-para-Go.md>) · [Plano](<../../docs/roadmaps/doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>).
 
 O handler administrativo Go isolado prepara as rotas `/{slug}/manage/{kind}/{id}`
 para aliases, MBID, compilação, busca e relação de artistas, sugestão e troca de

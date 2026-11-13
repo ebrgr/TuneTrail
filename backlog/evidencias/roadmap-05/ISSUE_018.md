@@ -1,6 +1,6 @@
 # Issue 018 — fusos, intervalos e agregados civis
 
-Implementada e aceita pelo usuário em 05/11/2026. [Issue](<../../tasks/iss-018 - 018-—-Corrigir-e-validar-fusos-intervalos-e-agregados-civis.md>) · [Roadmap 5](<../../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>).
+Implementada e aceita pelo usuário em 05/11/2026. [Issue](<../../tasks/issue-018 - 018-—-Corrigir-e-validar-fusos-intervalos-e-agregados-civis.md>) · [Roadmap 5](<../../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>).
 
 ## Correções
 

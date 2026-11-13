@@ -3,7 +3,7 @@
 **Situação atual: issue encerrada por aceite do usuário em 05/11/2026.**
 O restante preserva o histórico de implementação e verificação.
 
-Registro de 4 de novembro de 2026. [Issue](<../../tasks/iss-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>) ·
+Registro de 4 de novembro de 2026. [Issue](<../../tasks/issue-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>) ·
 [Plano](<../../docs/roadmaps/doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>).
 
 **Estado: implementação funcional concluída; revisão visual adiada por orientação

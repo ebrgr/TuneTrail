@@ -1,6 +1,6 @@
 # Issue 051 — interface pública multilíngue
 
-Implementação em 10/11/2026 · [Issue](<../../tasks/iss-051 - 051-—-Internacionalizar-interface-pública.md>) · [Estudo](<../../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>).
+Implementação em 10/11/2026 · [Issue](<../../tasks/issue-051 - 051-—-Internacionalizar-interface-pública.md>) · [Estudo](<../../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>).
 
 A seleção de perfis, navegação, busca, home, rankings, histórico, artistas, álbuns, faixas e retrospectiva usam mensagens dos catálogos externos `langs/en.json` e `langs/pt-BR.json`. Mensagens dos scripts de aparência e exclusão usam atributos HTML escapados. Cada renderização usa clone próprio do template, com locale específico por requisição; nomes musicais, identificadores, rotas, parâmetros e respostas da API permanecem dados independentes da tradução.
 

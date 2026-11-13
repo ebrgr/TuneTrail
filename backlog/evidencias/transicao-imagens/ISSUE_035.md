@@ -1,6 +1,6 @@
 # Issue 035 — preparação das imagens da retrospectiva
 
-Concluída em 06/11/2026. [Issue](<../../tasks/iss-035 - 035-—-Refatorar-o-código-de-imagens-da-retrospectiva-com-imaging.md>) ·
+Concluída em 06/11/2026. [Issue](<../../tasks/issue-035 - 035-—-Refatorar-o-código-de-imagens-da-retrospectiva-com-imaging.md>) ·
 [Plano de transição](<../../docs/estudos/doc-014 - Plano-de-transição-—-imaging-webp-go-pure.md>).
 
 ## Resultado

@@ -49,7 +49,7 @@ Templates/JS/CSS são incorporados: reinicie `go run` após editar os arquivos.
 
 [Plano](<../../backlog/docs/roadmaps/doc-002 - Roadmap-1-—-layout-fontes-temas-barra-lateral-e-cards.md>) ·
 [Capturas e resultados](../../backlog/evidencias/roadmap-01/README.md) ·
-[Issue local resolvida](<../../backlog/tasks/iss-001 - 001-—-Prévia-visual-da-interface-em-Go-roadmap-1.md>)
+[Issue local resolvida](<../../backlog/tasks/issue-001 - 001-—-Prévia-visual-da-interface-em-Go-roadmap-1.md>)
 
 ## Administration integration (roadmap 4)
 

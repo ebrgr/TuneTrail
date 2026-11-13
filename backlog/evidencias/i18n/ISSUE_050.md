@@ -1,6 +1,6 @@
 # Issue 050 — fundação de idiomas
 
-10/11/2026 · [Issue](<../../tasks/iss-050 - 050-—-Fundação-e-escolha-de-idioma.md>) · [Estudo](<../../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>).
+10/11/2026 · [Issue](<../../tasks/issue-050 - 050-—-Fundação-e-escolha-de-idioma.md>) · [Estudo](<../../docs/roadmaps/doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>).
 
 Catálogos externos `langs/en.json` e `langs/pt-BR.json`, com `go-i18n/v2` 2.5.1 (MIT) e `x/text/language` já presente. O binário não incorpora os arquivos. São carregados no startup; caminho explícito `TUNETRAIL_LANGS_DIR` tem prioridade. A imagem Docker inclui `/app/langs`. Edição exige reiniciar.
 

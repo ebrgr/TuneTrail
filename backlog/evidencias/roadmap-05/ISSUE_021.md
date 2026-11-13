@@ -1,6 +1,6 @@
 # Issue 021 — integração e aceite transversal
 
-Execução em 05/11/2026; [issue](<../../tasks/iss-021 - 021-—-Integrar-evidências-e-concluir-aceite-transversal-da-etapa-5.md>) ·
+Execução em 05/11/2026; [issue](<../../tasks/issue-021 - 021-—-Integrar-evidências-e-concluir-aceite-transversal-da-etapa-5.md>) ·
 [matriz original](ISSUE_016_MATRIZ.md) · [roadmap](<../../docs/roadmaps/doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>).
 As issues 016–020 foram fechadas por aceite explícito do usuário; os resultados e
 limitações anteriores continuam registrados. A 021 foi fechada por aceite do usuário em 05/11/2026, com as ressalvas abaixo.

@@ -1,6 +1,6 @@
 # Issue 017 — permissões, sessões e origem
 
-Implementação e testes em 05/11/2026. [Issue](<../../tasks/iss-017 - 017-—-Validar-permissões-sessões-origem-e-formulários.md>) · [Matriz da 016](ISSUE_016_MATRIZ.md). Aceita pelo usuário em 05/11/2026.
+Implementação e testes em 05/11/2026. [Issue](<../../tasks/issue-017 - 017-—-Validar-permissões-sessões-origem-e-formulários.md>) · [Matriz da 016](ISSUE_016_MATRIZ.md). Aceita pelo usuário em 05/11/2026.
 
 ## Correções e regressões
 

@@ -48,11 +48,11 @@ Recomenda-se testar **[go-i18n/v2](https://github.com/nicksnyder/go-i18n)** com 
 
 ## Plano proposto
 
-1. [050 — fundação e escolha de idioma](<../../tasks/iss-050 - 050-—-Fundação-e-escolha-de-idioma.md>): prova de conceito, catálogos, negociação, seletor sem JS e identificadores estáveis.
-2. [051 — interface pública](<../../tasks/iss-051 - 051-—-Internacionalizar-interface-pública.md>): perfis, navegação, busca, rankings, mídia e retrospectiva.
-3. [052 — administração](<../../tasks/iss-052 - 052-—-Internacionalizar-administração.md>): login, formulários, mensagens, erros e scripts essenciais.
-4. [053 — datas e números](<../../tasks/iss-053 - 053-—-Localizar-datas-quantidades-e-unidades.md>): plurais, tempo relativo, unidades e acessibilidade de gráficos.
-5. [054 — integração e aceite](<../../tasks/iss-054 - 054-—-Integração-e-aceite-multilíngue.md>): tradução revisada, CI, concorrência, builds e comparação visual.
+1. [050 — fundação e escolha de idioma](<../../tasks/issue-050 - 050-—-Fundação-e-escolha-de-idioma.md>): prova de conceito, catálogos, negociação, seletor sem JS e identificadores estáveis.
+2. [051 — interface pública](<../../tasks/issue-051 - 051-—-Internacionalizar-interface-pública.md>): perfis, navegação, busca, rankings, mídia e retrospectiva.
+3. [052 — administração](<../../tasks/issue-052 - 052-—-Internacionalizar-administração.md>): login, formulários, mensagens, erros e scripts essenciais.
+4. [053 — datas e números](<../../tasks/issue-053 - 053-—-Localizar-datas-quantidades-e-unidades.md>): plurais, tempo relativo, unidades e acessibilidade de gráficos.
+5. [054 — integração e aceite](<../../tasks/issue-054 - 054-—-Integração-e-aceite-multilíngue.md>): tradução revisada, CI, concorrência, builds e comparação visual.
 
 As issues são locais; a 050 está fechada e aprovada, a 051 está fechada e aprovada, e 052–054 estão implementadas e aguardam teste funcional e aceite, sem publicação automática. A ordem pode ser revista após a POC; a 042 mantém seu próprio aceite de configuração. Não assumir que toda a interface foi traduzida antes do aceite.
 

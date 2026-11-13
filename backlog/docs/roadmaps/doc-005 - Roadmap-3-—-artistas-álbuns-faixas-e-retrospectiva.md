@@ -296,13 +296,13 @@ backlog/evidencias/roadmap-03/        # evidências, manifesto e pares futuros
 
 Nomes propostos; não criar abstrações vazias nem duplicar SQL para atender à árvore.
 
-1. [006 — páginas de mídia](<../../tasks/iss-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>): composição, dados,
+1. [006 — páginas de mídia](<../../tasks/issue-006 - 006-—-Migrar-páginas-públicas-de-artistas-álbuns-e-faixas-para-Go.md>): composição, dados,
    cabeçalho, listas, links e erros. Não ativar as rotas de produção isoladamente.
-2. [007 — gráficos de mídia](<../../tasks/iss-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>): grade comum,
+2. [007 — gráficos de mídia](<../../tasks/issue-007 - 007-—-Migrar-atividade-e-interesse-das-páginas-de-mídia-para-HTML-SVG.md>): grade comum,
    interesse SVG, contratos de divisões e casos degenerados.
-3. [008 — retrospectiva](<../../tasks/iss-008 - 008-—-Migrar-retrospectiva-mensal-anual-e-validar-seus-cálculos.md>): normalização, serviço
+3. [008 — retrospectiva](<../../tasks/issue-008 - 008-—-Migrar-retrospectiva-mensal-anual-e-validar-seus-cálculos.md>): normalização, serviço
    compartilhado, médias, seletores e layout mensal/anual.
-4. [009 — convivência, gestão e aceite](<../../tasks/iss-009 - 009-—-Integrar-mídia-rewind-Go-preservar-gestão-React-e-registrar-aceite.md>):
+4. [009 — convivência, gestão e aceite](<../../tasks/issue-009 - 009-—-Integrar-mídia-rewind-Go-preservar-gestão-React-e-registrar-aceite.md>):
    aliases React, dispatcher, jornadas e capturas antes de ativar o conjunto.
 
 Issues são Markdown locais, conforme orientação do usuário, sem publicação.

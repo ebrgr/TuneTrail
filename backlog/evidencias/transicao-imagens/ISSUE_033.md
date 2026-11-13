@@ -1,6 +1,6 @@
 # Issue 033 — cache, capas e avatares com pipeline Go
 
-Concluída em 06/11/2026. [Issue](<../../tasks/iss-033 - 033-—-Integrar-pipeline-Go-ao-cache-capas-e-avatares.md>) ·
+Concluída em 06/11/2026. [Issue](<../../tasks/issue-033 - 033-—-Integrar-pipeline-Go-ao-cache-capas-e-avatares.md>) ·
 [Contrato](CONTRATO_031.md) · [Componente](ISSUE_032.md).
 
 ## Alterações

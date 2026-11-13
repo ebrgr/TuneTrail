@@ -1,6 +1,6 @@
 # Issue 037 — publicação automática e coleta de imagens
 
-Concluída em 06/11/2026. [Issue](<../../tasks/iss-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>) ·
+Concluída em 06/11/2026. [Issue](<../../tasks/issue-037 - 037-—-Coordenar-publicação-automática-e-coleta-de-imagens.md>) ·
 [Revisão que identificou a corrida](ADVISOR_032_033.md).
 
 ## Correção

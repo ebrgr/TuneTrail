@@ -1,6 +1,6 @@
 # Issue 022 — matriz e fixture da comparação
 
-[Issue](<../../tasks/iss-022 - 022-—-Preparar-matriz-fixture-e-protocolo-de-comparação.md>) ·
+[Issue](<../../tasks/issue-022 - 022-—-Preparar-matriz-fixture-e-protocolo-de-comparação.md>) ·
 [Plano](<../../docs/roadmaps/doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>) ·
 [Procedimento](ISSUE_022_PROTOCOLO.md) · [Modelo de manifesto](manifesto-modelo.json).
 A matriz é um **plano**, não uma lista de casos aprovados. Todas as jornadas de

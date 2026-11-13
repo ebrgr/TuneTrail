@@ -1,6 +1,6 @@
 # Issue 041 — administração da configuração
 
-Implementação em 09/11/2026. [Issue](<../../tasks/iss-041 - 041-—-Edição-de-configuração-pelo-master.md>) ·
+Implementação em 09/11/2026. [Issue](<../../tasks/issue-041 - 041-—-Edição-de-configuração-pelo-master.md>) ·
 [Contrato](<../../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) ·
 [Persistência 040](ISSUE_040.md).
 

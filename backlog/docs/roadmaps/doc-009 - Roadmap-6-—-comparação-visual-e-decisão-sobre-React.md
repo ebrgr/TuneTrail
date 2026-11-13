@@ -105,11 +105,11 @@ ser bloqueadas ou simuladas nos testes e registradas.
 
 ## Sequência de issues locais
 
-1. [022 — matriz, fixture e protocolo visual](<../../tasks/iss-022 - 022-—-Preparar-matriz-fixture-e-protocolo-de-comparação.md>).
-2. [023 — páginas públicas, mídias e retrospectiva](<../../tasks/iss-023 - 023-—-Comparar-páginas-públicas-mídia-e-retrospectiva.md>).
-3. [024 — administração, acessibilidade e ações](<../../tasks/iss-024 - 024-—-Comparar-administração-ações-e-acessibilidade.md>).
-4. [025 — migração, compatibilidade e dependências](<../../tasks/iss-025 - 025-—-Validar-migração-compatibilidade-e-dependências-React.md>).
-5. [026 — integração, revisão e decisão](<../../tasks/iss-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>).
+1. [022 — matriz, fixture e protocolo visual](<../../tasks/issue-022 - 022-—-Preparar-matriz-fixture-e-protocolo-de-comparação.md>).
+2. [023 — páginas públicas, mídias e retrospectiva](<../../tasks/issue-023 - 023-—-Comparar-páginas-públicas-mídia-e-retrospectiva.md>).
+3. [024 — administração, acessibilidade e ações](<../../tasks/issue-024 - 024-—-Comparar-administração-ações-e-acessibilidade.md>).
+4. [025 — migração, compatibilidade e dependências](<../../tasks/issue-025 - 025-—-Validar-migração-compatibilidade-e-dependências-React.md>).
+5. [026 — integração, revisão e decisão](<../../tasks/issue-026 - 026-—-Integrar-evidências-e-preparar-decisão-visual.md>).
 
 As issues são locais; as issues 022–025 foram resolvidas e a 026 foi aceita; a correção do helper está registrada na 028. Resolver defeitos reproduzidos com regressão;
 não antecipar uma mudança de comportamento sem registrar o caso. As issues 023 e
@@ -178,7 +178,7 @@ Os aceites visuais e a decisão sobre remover React permanecem pendentes.
 Quatro bases v2 fictícias foram migradas no startup; backup, restauração em
 cópia, caso com WAL, jornadas e rotas foram verificados. [Resultados e limites](../../evidencias/roadmap-06/ISSUE_025.md).
 A falha React do `/theme-helper` foi reproduzida e registrada na
-[issue 028](<../../tasks/iss-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>), posteriormente resolvida.
+[issue 028](<../../tasks/issue-028 - 028-—-Corrigir-falha-de-contexto-no-theme-helper-React.md>), posteriormente resolvida.
 
 ## Atualização — issue 026
 
@@ -192,4 +192,4 @@ O helper React usa prévia fictícia e aplica/restaura temas sem depender de per
 
 ## Atualização — issue 030
 
-O usuário autorizou a retirada do React, concluída na [issue 030](<../../tasks/iss-030 - 030-—-Retirar-React-e-consolidar-interface-Go.md>). Os trechos anteriores preservam o contexto histórico.
+O usuário autorizou a retirada do React, concluída na [issue 030](<../../tasks/issue-030 - 030-—-Retirar-React-e-consolidar-interface-Go.md>). Os trechos anteriores preservam o contexto histórico.

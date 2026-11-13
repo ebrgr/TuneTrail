@@ -5,7 +5,7 @@ date: '2026-11-12T23:40:00Z'
 status: accepted
 ---
 ## Context
-O fork evolui em ritmo próprio, mas reconhece a versão do Koito usada como base (ISS-044).
+O fork evolui em ritmo próprio, mas reconhece a versão do Koito usada como base (ISSUE-044).
 
 
 ## Decision

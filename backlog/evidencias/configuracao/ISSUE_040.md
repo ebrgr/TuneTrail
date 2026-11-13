@@ -1,6 +1,6 @@
 # Issue 040 — persistência de configuração
 
-Implementação em 09/11/2026. [Issue](<../../tasks/iss-040 - 040-—-Persistência-e-concorrência-da-configuração.md>) ·
+Implementação em 09/11/2026. [Issue](<../../tasks/issue-040 - 040-—-Persistência-e-concorrência-da-configuração.md>) ·
 [Contrato](<../../docs/design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>). A 039 foi encerrada por
 solicitação do usuário; esta issue foi fechada por aceite do usuário em 09/11/2026.
 
@@ -25,7 +25,7 @@ O pacote `internal/cfg` oferece o serviço `SettingsStore` para a futura 041:
 
 O serviço é interno e não cria endpoint nem tela nesta issue. A edição
 administrativa autenticada, a apresentação dos campos e o mapeamento HTTP são
-trabalho da [041](<../../tasks/iss-041 - 041-—-Edição-de-configuração-pelo-master.md>).
+trabalho da [041](<../../tasks/issue-041 - 041-—-Edição-de-configuração-pelo-master.md>).
 
 ## Preservação e concorrência
 

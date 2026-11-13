@@ -24,15 +24,15 @@ ROADMAP.md
 3. Desenvolver a interface multilíngue — [estudo e plano](<doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>), com [issues locais 050–054](<../historico/doc-025 - Índice-histórico-das-issues-locais-001–058.md>). Issue 050 fechada e aprovada; 051 fechada e aprovada; 052–054 implementadas e aguardando teste funcional e aceite. Catálogos externos em `langs`.
 4. Integrar Escutas do spotify / deezer / tidal ou de outros serviços ao koito.
 5.  Gerar imagens que podem ser postadas em FEEDs de midias sociais como instagram
-6. Revisar a documentação e preparar o site oficial do TuneTrail: conteúdo, identidade, endereço, hospedagem, build e capturas. [Issue 048 — documentação e site](<../../tasks/iss-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>).
-7. Aproveitar tags, gêneros e datas de lançamento: priorizar informações recebidas na escuta e complementar pelo MusicBrainz quando necessário, com migração segura do SQLite. [Issue 055 — metadados musicais](<../../tasks/iss-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>).
-8. Estudar melhorias de interação e funções dinâmicas na interface. [Issue 056 — interações da UI](<../../tasks/iss-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>).
+6. Revisar a documentação e preparar o site oficial do TuneTrail: conteúdo, identidade, endereço, hospedagem, build e capturas. [Issue 048 — documentação e site](<../../tasks/issue-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>).
+7. Aproveitar tags, gêneros e datas de lançamento: priorizar informações recebidas na escuta e complementar pelo MusicBrainz quando necessário, com migração segura do SQLite. [Issue 055 — metadados musicais](<../../tasks/issue-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>).
+8. Estudar melhorias de interação e funções dinâmicas na interface. [Issue 056 — interações da UI](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>).
 
 ## PENDENCIAS
 
 [Revisão das issues e pendências remanescentes](<../estudos/doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>).
 Estado atual: **47 issues fechadas e 10 abertas** — 038 (planejamento retomado), 042 (implementada, aguardando aceite),
-048 (documentação e site), [049 (associação residual de artista e álbum)](<../../tasks/iss-049 - 049-—-Associação-residual-de-artista-em-álbum-após-edição-de-faixa.md>), 052–054 (interface multilíngue) [055 (metadados musicais)](<../../tasks/iss-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>) [056 (interações da UI)](<../../tasks/iss-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>) e [057 (controles da retrospectiva)](<../../tasks/iss-057 - 057-—-Ajustar-controles-da-retrospectiva.md>). As issues 043–045 foram fechadas por aprovação do usuário.
+048 (documentação e site), [049 (associação residual de artista e álbum)](<../../tasks/issue-049 - 049-—-Associação-residual-de-artista-em-álbum-após-edição-de-faixa.md>), 052–054 (interface multilíngue) [055 (metadados musicais)](<../../tasks/issue-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>) [056 (interações da UI)](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>) e [057 (controles da retrospectiva)](<../../tasks/issue-057 - 057-—-Ajustar-controles-da-retrospectiva.md>). As issues 043–045 foram fechadas por aprovação do usuário.
 
 Melhorias registradas nas issues encerradas:
 
@@ -56,10 +56,10 @@ documento de revisão. As melhorias acima ainda precisam de planejamento própri
    - retire os links do ko-fi
    - retire o link para o demo
    - Enfaze do projeto é a simplificação mudança da arquiterura GO/BAckend-React/Front para monolitico simplificando e retirando dependencias externas, mantendo código puro em GO/HTML/CSS/Minimal JScript
-   - [Issue 046](<../../tasks/iss-046 - 046-—-Migração-segura-de-koito.db-para-tunetrail.db.md>): backup e migração de `koito.db` para `tunetrail.db`, preservando o esquema v3 — fechada e aprovada.
-   - Links e diretório local alinhados ao novo repositório: [issue 045](<../../tasks/iss-045 - 045-—-Links-e-diretório-do-TuneTrail.md>) — fechada e aprovada em 09/11/2026.
-   - Versionamento próprio TuneTrail 0.x: [issue 044](<../../tasks/iss-044 - 044-—-Versionamento-próprio-do-TuneTrail.md>) — fechada e aprovada em 09/11/2026.
-   - [Estudo e implementação](<../design/doc-020 - Identidade-TuneTrail-—-estudo-e-aplicação.md>) · [Issue 043](<../../tasks/iss-043 - 043-—-Identidade-visual-TuneTrail.md>): identidade aplicada; issue fechada por aprovação do usuário em 09/11/2026, preservadas as limitações de verificação registradas.
+   - [Issue 046](<../../tasks/issue-046 - 046-—-Migração-segura-de-koito.db-para-tunetrail.db.md>): backup e migração de `koito.db` para `tunetrail.db`, preservando o esquema v3 — fechada e aprovada.
+   - Links e diretório local alinhados ao novo repositório: [issue 045](<../../tasks/issue-045 - 045-—-Links-e-diretório-do-TuneTrail.md>) — fechada e aprovada em 09/11/2026.
+   - Versionamento próprio TuneTrail 0.x: [issue 044](<../../tasks/issue-044 - 044-—-Versionamento-próprio-do-TuneTrail.md>) — fechada e aprovada em 09/11/2026.
+   - [Estudo e implementação](<../design/doc-020 - Identidade-TuneTrail-—-estudo-e-aplicação.md>) · [Issue 043](<../../tasks/issue-043 - 043-—-Identidade-visual-TuneTrail.md>): identidade aplicada; issue fechada por aprovação do usuário em 09/11/2026, preservadas as limitações de verificação registradas.
 
 ### Substituir libvips/bimg por `imaging + webp-go-pure` para executar a aplicação sem CGO e sem bibliotecas nativas de imagens. **Transição concluída nas issues 031–036; geração de imagem social ainda requer planejamento.**
     - Primeiro: migrar capas, avatares e cache, preservando JPEG/PNG de entrada e WebP de saída; validar qualidade, memória e desempenho (issues 031–034).

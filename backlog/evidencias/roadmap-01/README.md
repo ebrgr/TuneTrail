@@ -5,7 +5,7 @@ compilados nesta execução. **Primeira prévia Go implementada e validada local
 Integração com as páginas e os dados reais continua no passo 2. A revisão final
 completa de paridade visual permanece pendente.
 
-Issue: [001 — prévia Go, fechada e resolvida](<../../tasks/iss-001 - 001-—-Prévia-visual-da-interface-em-Go-roadmap-1.md>).
+Issue: [001 — prévia Go, fechada e resolvida](<../../tasks/issue-001 - 001-—-Prévia-visual-da-interface-em-Go-roadmap-1.md>).
 Plano: [análise do passo 1](<../../docs/roadmaps/doc-002 - Roadmap-1-—-layout-fontes-temas-barra-lateral-e-cards.md>).
 Banco: **SQLite com esquema consolidado v3**, sem alterações nesta etapa.
 
