@@ -15,6 +15,10 @@ Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do G
 
 **`/.agents/deslop/SKILL.md`** - Revisar um diff em busca de complexidade acidental ou ruído de código gerado; ler a skill para gerar código melhor quando possível.
 
+**`/.agents/issue-first/SKILL.md`** - Ciclo de uma tarefa do Backlog.md: registrar, iniciar a branch, enviar para aceite e publicar com `make issue.*`.
+
+**`/.agents/changelog/SKILL.md`** - Quando e como escrever entradas no `CHANGELOG.md`.
+
 **`/.agents/ui-craft/SKILL.md`** - Orientações para projetar, construir e revisar UI: páginas, componentes, formulários e estados de carregamento e erro.
 
 **graphify** - Use para manutenção do código
@@ -44,7 +48,7 @@ Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do G
 
 - **Nunca realize um *push* ou publicação sem autorização explícita.** Sinta-se à vontade para fazer *commits*; Qualquer ação que envolva alterações no sistema depende sempre da decisão do usuário — pergunte e aguarde. Uma *skill* (procedimento/tarefa) que mencione `git push` em suas etapas está apenas documentando o processo, não autorizando a execução.
 A única exceção permanente: uma vez que um *branch* de um *Pull Request* (PR) tenha sido aprovado para envio (*push*), correções para falhas de CI nesse PR podem ser enviadas. A operação de *merge* sempre exige uma autorização explícita à parte. Consulte a *skill* **source-control** para entender os limites, o que mais não é considerado autorização, além das diretrizes sobre *staging* e reescrita de histórico.
-- **Prioridade para *Issues* (*Issue-first*):** demandas substanciais ou funcionais (correções de *bugs*, novas funcionalidades, mudanças de comportamento, refatorações não triviais) devem ser registradas como uma *issue* no GitHub *antes* de escrever o código, e encerradas por meio do *commit* (usando `Fixes #N`). Apenas alterações que não alteram o comportamento em tempo de execução (*runtime*) — como formatação, *linting*, comentários ou testes — estão isentas disso; consulte a *skill* `issue-first` para entender o critério de distinção.
+- **Prioridade para *Issues* (*Issue-first*):** demandas substanciais ou funcionais (correções de *bugs*, novas funcionalidades, mudanças de comportamento, refatorações não triviais) devem ser registradas como tarefa `ISSUE-NNN` em `backlog/` *antes* de escrever o código, feitas na branch `<tipo>/issue-NNN-slug` com commits prefixados por `ISSUE-NNN: ` e, após o aceite do usuário (Done), publicadas com `make issue.publish ISSUE=N`, que incrementa a versão, fecha a seção do `CHANGELOG.md` e cria a tag local (push só com `PUSH=1`, autorizado pelo usuário). Apenas alterações que não alteram o comportamento em tempo de execução (*runtime*) — como formatação, *linting*, comentários ou testes — estão isentas disso; consulte a *skill* `issue-first` para entender o critério de distinção.
 - **Registro de alterações (*Changelog*):** quando uma mudança for visível ao usuário, adicione uma linha ao arquivo `CHANGELOG.md`, sob a seção `[Unreleased]`, no mesmo *commit* — consulte a *skill* `changelog` para saber o que deve ser incluído e como redigir o texto.
 - **Comente o código em inglês:** sempre que fazer uma mudança em alguma função deixe um comentário no código para posterior validação.
 
@@ -54,7 +58,7 @@ Ferramenta instalada no sistema (`brew install backlog-md`); a configuração fi
 
 | Conteúdo | Onde | Comando |
 | --- | --- | --- |
-| Issues | `backlog/tasks/` — IDs `ISS-NNN` continuam a numeração local (001–058 importadas) | `backlog task create "NNN — Título" -d "..." -s Aberta -l <área> --type <tipo> -m "<milestone>" --plain` |
+| Issues | `backlog/tasks/` — IDs `ISSUE-NNN` continuam a numeração local (001–058 importadas) | `backlog task create "NNN — Título" -d "..." -s Aberta -l <área> --type <tipo> -m "<milestone>" --plain` |
 | Roadmaps | `backlog/docs/roadmaps/` e milestones | `backlog doc create "Título" -p roadmaps -t specification` · `backlog milestone add "Nome"` |
 | Estudos | `backlog/docs/estudos/` | `backlog doc create "Título" -p estudos -t other`, depois `backlog doc update doc-NNN --content "..." --tags estudo` |
 | Design e contratos | `backlog/docs/design/` | idem, com `-p design` |
@@ -65,13 +69,13 @@ Ferramenta instalada no sistema (`brew install backlog-md`); a configuração fi
 
 **Ciclo de uma issue:** `Aberta → Planejada → Em andamento → Aguardando aceite → Done`.
 
-- Toda mudança de status leva um comentário que explique o motivo: `backlog task edit ISS-NNN -s "Aguardando aceite" --comment "Verificação: ..." --comment-author <agente>`. Use comentários para verificação, refinamento, parecer do Advisor e aceite; não reescreva o histórico anterior.
+- Toda mudança de status leva um comentário que explique o motivo: `backlog task edit ISSUE-NNN -s "Aguardando aceite" --comment "Verificação: ..." --comment-author <agente>`. Use comentários para verificação, refinamento, parecer do Advisor e aceite; não reescreva o histórico anterior.
 - `Done` somente após aceite explícito do usuário, registrado em comentário. O nome `Done` é necessário para que milestones e estatísticas do Backlog.md contem a tarefa como concluída.
 - Critérios de aceite com `--ac "..."`; marque com `--check-ac N` somente o que foi de fato verificado.
-- Ligue a tarefa às evidências com `--add-ref <caminho ou URL>` e ao estudo com `--add-doc doc-NNN`; dependências com `--depends-on ISS-NNN`.
+- Ligue a tarefa às evidências com `--add-ref <caminho ou URL>` e ao estudo com `--add-doc doc-NNN`; dependências com `--depends-on ISSUE-NNN`.
 - Labels permitidas estão em `backlog/config.yml`; o Backlog.md não as valida, então não invente labels novas sem atualizar a configuração.
 
-**Consultas úteis:** `backlog task list --exclude-status Done --sort priority --plain` · `backlog task list --ready --plain` · `backlog search <termo> --plain` · `backlog task view ISS-NNN --plain` · `backlog milestone list --plain` · quadro: `backlog board` (terminal) ou `backlog browser` (web em 127.0.0.1).
+**Consultas úteis:** `backlog task list --exclude-status Done --sort priority --plain` · `backlog task list --ready --plain` · `backlog search <termo> --plain` · `backlog task view ISSUE-NNN --plain` · `backlog milestone list --plain` · quadro: `backlog board` (terminal) ou `backlog browser` (web em 127.0.0.1).
 
 **Estudos privados:** `backlog/docs/estudos-locais/` está em `.git/info/exclude`. Nunca adicione esses arquivos ao Git (nem com `git add -f`), e nunca copie seu conteúdo para issues, PRs, commits ou qualquer serviço externo. Eles não existem no histórico do Git: faça backup local deles.
 

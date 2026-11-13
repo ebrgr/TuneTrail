@@ -15,3 +15,12 @@ A captura `capture_settings_041.cjs` compara administração e configuração em
 desktop/celular e testa salvamento sem JavaScript. **Use somente uma instância
 com banco descartável:** o teste grava um valor fictício no campo Last.fm.
 Instruções e evidências estão em `backlog/evidencias/configuracao/ISSUE_041.md`.
+
+## Ciclo das tarefas
+
+`issue.py` automatiza o ciclo do Backlog.md descrito na skill `issue-first`:
+`make issue.new`, `issue.start`, `issue.review` e `issue.publish`. A publicação
+só aceita tarefa Done com comentário de aceite, roda `make check`, incrementa a
+versão com `version.py`, cria a seção da versão no `CHANGELOG.md`, faz
+fast-forward no `main` e cria a tag; `DRY=1` simula e `PUSH=1` envia.
+`make issue.test` testa o fluxo em repositórios descartáveis.
