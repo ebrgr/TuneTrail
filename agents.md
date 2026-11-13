@@ -26,8 +26,8 @@ Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do G
 
 
 ## Regras de Delegação para o @Opus (Advisor)
-- Para revisões de arquivos de configuração, rotas e CRUDs simples: delegar para `@sol` com effort=medium`.
-- Para revisões de lógica de criptografia, manipulação financeira, sistemas de mensageria ou algoritmos matemáticos: delegar obrigatoriamente para `@sol` com `effort=high`.
+- Para revisões de arquivos de configuração, rotas e CRUDs simples: delegar para `@Opus` com effort=medium`.
+- Para revisões de lógica de criptografia, manipulação financeira, sistemas de mensageria ou algoritmos matemáticos: delegar obrigatoriamente para `@Opus` com `effort=high`.
 
 ## Leia isto primeiro (não duplique o conteúdo aqui)
 
