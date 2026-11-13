@@ -1,0 +1,10 @@
+# Paths graphify must never read, even with --no-gitignore.
+# Private studies and local agent skills (also in .git/info/exclude).
+backlog/docs/estudos-locais/
+.agents/
+# Graph output, if graphify is ever run inside the repository.
+graphify-out/
+# Local data and secrets.
+.env*
+*.db*
+*.sqlite*

@@ -9,7 +9,7 @@ Este arquivo serve como um guia de *como trabalhar neste repositório*. Para evi
 # Subagentes Disponíveis
 Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do Git (`.git/info/exclude`). Não adicione esses arquivos a commits.
 
-**`/.agents/advisor.md`** - Persona do Advisor. Quando o Codex Terra identificar problemas de lógica, concorrência ou algoritmos de alta densidade, ele deve sugerir ao usuário a delegação para o subagente @Sol com essa persona.
+**`/.agents/advisor.md`** - Persona do Advisor. Quando o Codex Terra ou o Claude Sonnet identificar problemas de lógica, concorrência ou algoritmos de alta densidade, ele deve sugerir ao usuário a delegação para o subagente, @Sol no Codex ou @Opus no Claude, essa persona.
 
 **`/.agents/golang-master/SKILL.md`** - Escrever ou revisar Go de produção: erros, concorrência, `context`, tipos, genéricos, testes, benchmarks e estrutura de módulos.
 
@@ -19,14 +19,19 @@ Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do G
 
 **graphify** - Use para manutenção do código
 
+
 ## Regras de Delegação para o @Sol (Advisor)
 - Para revisões de arquivos de configuração, rotas e CRUDs simples: delegar para `@sol` com effort=low`.
 - Para revisões de lógica de criptografia, manipulação financeira, sistemas de mensageria ou algoritmos matemáticos: delegar obrigatoriamente para `@sol` com `effort=medium`.
 
 
+## Regras de Delegação para o @Opus (Advisor)
+- Para revisões de arquivos de configuração, rotas e CRUDs simples: delegar para `@sol` com effort=medium`.
+- Para revisões de lógica de criptografia, manipulação financeira, sistemas de mensageria ou algoritmos matemáticos: delegar obrigatoriamente para `@sol` com `effort=high`.
+
 ## Leia isto primeiro (não duplique o conteúdo aqui)
 
-- **`README.md`** — a apresentação: o que é o Koito, como ele se posiciona em relação ao salvamento de feeds de música. Ele utiliza links externos em vez de fornecer explicações detalhadas; mantenha esse formato.
+- **`README.md`** — a apresentação: o que é o TuneTrail, como ele se posiciona em relação ao salvamento de feeds de música. Ele utiliza links externos em vez de fornecer explicações detalhadas; mantenha esse formato.
 
 - **Documentação do usuário** — `docs/ contém informações sobre o aplicativo e como configurar o seu uso. O histórico de versões deve constar em `CHANGELOG.md`.
 
@@ -84,4 +89,5 @@ Rules:
 - If /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `/Users/evertonberger/.local/share/tunetrail-graphify/analisar-tunetrail.sh` to keep the graph current (AST-only, no API cost).
+- The `/graphify` skill is installed for Claude Code and Codex, and `graphify` is on the PATH. In this repository the graph lives outside the project: always pass `--graph /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json` to `query`, `path` and `explain`, and rebuild only with the script above. Never run `/graphify .`, `graphify extract .` or any semantic (LLM) extraction inside the repository; `.graphifyignore` keeps `backlog/docs/estudos-locais/` and `.agents/` out of any scan as a second safeguard.
 - A committed /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
