@@ -56,4 +56,13 @@ created: 2026-11-14T22:41:00Z
 Aceite: aprovada pelo usuário em 14/11/2026. Publicação local autorizada na mensagem: "1 e após commite e publique". Push não solicitado.
 
 ---
+
+author: ebrgr
+created: 2026-11-14T22:41:00Z
+
+---
+
+Publicação: versão 0.13 (tag `v0.13`), branch `fix/issue-113-colunas-da-home-lado-a` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->

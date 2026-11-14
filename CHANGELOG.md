@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.13] - 2026-11-14
+
 ### Fixed
 
 - Show the Home top artists, albums and tracks side by side from about 1318px wide instead of only from 1536px; narrower windows keep the stacked layout (ISSUE-113).
