@@ -6,7 +6,7 @@ import (
 	"text/template/parse"
 )
 
-// ValidateTemplates rejects references to undefined partials even in branches not taken at startup.
+// ValidateTemplates rejects undefined or bodyless partials and identifies the referring template.
 func ValidateTemplates(templates *template.Template) error {
 	var visit func(parse.Node) error
 	visit = func(node parse.Node) error {
@@ -21,8 +21,8 @@ func ValidateTemplates(templates *template.Template) error {
 				}
 			}
 		case *parse.TemplateNode:
-			if templates.Lookup(n.Name) == nil {
-				return fmt.Errorf("undefined template %q", n.Name)
+			if target := templates.Lookup(n.Name); target == nil || target.Tree == nil {
+				return fmt.Errorf("undefined or bodyless template %q", n.Name)
 			}
 		case *parse.IfNode:
 			if err := visit(n.List); err != nil {
@@ -45,7 +45,7 @@ func ValidateTemplates(templates *template.Template) error {
 	for _, t := range templates.Templates() {
 		if t.Tree != nil {
 			if err := visit(t.Tree.Root); err != nil {
-				return err
+				return fmt.Errorf("template %q: %w", t.Name(), err)
 			}
 		}
 	}

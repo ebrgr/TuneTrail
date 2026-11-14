@@ -176,16 +176,27 @@ func TestInternalSymlinkCannotExposePrivateTemplate(t *testing.T) {
 	}
 }
 
-// TestTemplateReferences checks missing partials independently of the branch executed by a page.
+// TestTemplateReferences checks missing partials in both branches and reports their source.
 func TestTemplateReferences(t *testing.T) {
-	for _, body := range []string{`{{template "absent" .}}`, `{{if .}}{{template "absent" .}}{{end}}`, `{{range .}}{{template "absent" .}}{{end}}`, `{{with .}}{{template "absent" .}}{{end}}`} {
-		parsed, err := template.New("root").Parse(body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if ValidateTemplates(parsed) == nil {
-			t.Fatal("undefined partial accepted")
-		}
+	for _, tc := range []struct{ name, body string }{
+		{"direct", `{{template "absent" .}}`},
+		{"if", `{{if .}}{{template "absent" .}}{{end}}`},
+		{"range", `{{range .}}{{template "absent" .}}{{end}}`},
+		{"with", `{{with .}}{{template "absent" .}}{{end}}`},
+		{"if else", `{{if .}}{{else}}{{template "absent" .}}{{end}}`},
+		{"range else", `{{range .}}{{else}}{{template "absent" .}}{{end}}`},
+		{"with else", `{{with .}}{{else}}{{template "absent" .}}{{end}}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			parsed, err := template.New("caller").Parse(tc.body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = ValidateTemplates(parsed)
+			if err == nil || err.Error() != `template "caller": undefined or bodyless template "absent"` {
+				t.Fatalf("unexpected diagnostic: %v", err)
+			}
+		})
 	}
 	parsed, err := template.New("root").Parse(`{{define "present"}}ok{{end}}{{template "present" .}}`)
 	if err != nil {
@@ -193,5 +204,17 @@ func TestTemplateReferences(t *testing.T) {
 	}
 	if err = ValidateTemplates(parsed); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestTemplateReferenceWithoutBody rejects a call to an associated but unparsed root.
+func TestTemplateReferenceWithoutBody(t *testing.T) {
+	parsed := template.New("admin")
+	if _, err := parsed.New("caller").Parse(`{{template "admin" .}}`); err != nil {
+		t.Fatal(err)
+	}
+	err := ValidateTemplates(parsed)
+	if err == nil || err.Error() != `template "caller": undefined or bodyless template "admin"` {
+		t.Fatalf("unexpected diagnostic: %v", err)
 	}
 }

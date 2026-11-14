@@ -1,0 +1,88 @@
+CGO_ENABLED=0 go vet ./...
+CGO_ENABLED=0 go test ./... -timeout 60s
+ok  	github.com/ebrgr/TuneTrail/cmd/api	1.483s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	(cached)
+?   	github.com/ebrgr/TuneTrail/db/migrations_sqlite	[no test files]
+ok  	github.com/ebrgr/TuneTrail/engine	5.677s
+ok  	github.com/ebrgr/TuneTrail/engine/handlers	(cached)
+ok  	github.com/ebrgr/TuneTrail/engine/middleware	(cached)
+ok  	github.com/ebrgr/TuneTrail/imagecache	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/admin	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/adminui	0.795s
+ok  	github.com/ebrgr/TuneTrail/internal/adminweb	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/catalog	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/cfg	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/db	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/db/sqlite	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/export	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/i18n	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagefetch	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagepipeline	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/images	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagework	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/importer	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/listenbrainz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/listening	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/logger	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/mbz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/memkv	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/models	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/relay	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/summary	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/utils	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/version	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webassets	1.013s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/webui	1.214s
+ok  	github.com/ebrgr/TuneTrail/queue	(cached)
+?   	github.com/ebrgr/TuneTrail/scripts/experiments/tls034	[no test files]
+?   	github.com/ebrgr/TuneTrail/testing_init	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.383s
+{
+  "files": 113,
+  "differences": [],
+  "exit_code": 0
+}
+python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+OK
+CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+CGO_ENABLED=0 go test ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.612s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/listening	(cached)
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	(cached)
+node --check assets/js/theme.js
+node --check assets/js/ui.js
+node --check assets/js/live.js
+node --check assets/js/admin.js
+node --test internal/webui/theme.test.mjs
+✔ unavailable storage and invalid saved JSON leave a usable default (2.4825ms)
+✔ custom colors survive startup and reset clears inline overrides (0.569ms)
+✔ incomplete and injected palettes cannot set arbitrary CSS (0.271584ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36.146917
+CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
+python3 scripts/e2e.py --binary ./tunetrail
+PASS  web-assets     0.9s
+PASS  multiuser      1.2s
+PASS  admin          2.2s
+PASS  public         0.4s
+PASS  permissions    0.8s
+PASS  isolation      2.3s
+PASS  migration      1.8s
+PASS  standalone     0.2s
+PASS  legacy-env     0.2s
+PASS  shutdown       0.8s
+PASS  vscode         0.0s
+PASS  tools          4.6s
+e2e: 12/12 journeys passed

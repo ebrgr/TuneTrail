@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T19:19:00Z'
+updated_date: '2026-11-14T19:36:00Z'
 labels:
   - ui
 milestone: m-10
@@ -92,6 +92,24 @@ created: 2026-11-14T19:19:00Z
 ---
 
 Verificação: Reviewer Claude Opus aprovou a revisão principal e o complemento de validação AST, autorizado explicitamente pelo usuário, sem correções obrigatórias. make check passou, incluindo 12/12 e2e e renderização de 113 arquivos idênticos à ISSUE-065. Detector de corridas, pacote e Docker UID 65532 verificados anteriormente e documentados. Implementação concluída; falta aceite do usuário e autorização de publicação. Sem merge, push ou publicação.
+
+---
+
+author: Codex
+created: 2026-11-14T19:34:00Z
+
+---
+
+Refinamento autorizado pelo usuário: aplicar as três sugestões opcionais do Reviewer antes do próximo commit (diagnóstico com template de origem, testes dos ramos else e recusa de referência a template sem corpo).
+
+---
+
+author: ebrgr
+created: 2026-11-14T19:36:00Z
+
+---
+
+Reviewer Claude Opus aprovou antes do commit as três sugestões aplicadas: nome do chamador no erro, testes de else em if/range/with e recusa de referência a template associado sem corpo. make check passou, incluindo 12/12 e2e e equivalência dos 113 arquivos da ISSUE-065. Evidências em backlog/evidencias/issue-066/reviewer-refinamentos.md e refinamentos-check.log. Falta aceite do usuário e autorização de publicação.
 
 ---
 <!-- COMMENTS:END -->
