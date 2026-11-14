@@ -1,7 +1,9 @@
-{{define "settings.html"}}
+{{define "admin/settings"}}
   <!doctype html>
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
-    <head>{{template "admin-head" .}}</head>
+    <head>
+      {{template "partial/head" (head "admin" (tr "admin.shell.title" "Administration — TuneTrail"))}}
+    </head>
     <body
       data-admin-ui="go"
       data-i18n-copy="{{tr "admin.js.copy" "Copy"}}"
@@ -9,7 +11,7 @@
       data-i18n-copy-manual="{{tr "admin.js.copy_manual" "Select and copy manually"}}"
     >
       <a class="skip-link" href="#admin-main">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>
-      {{template "admin-nav" .}}
+      {{template "admin/sidebar" .}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
           <h1>{{tr "admin.text.server_configuration" "Server configuration"}}</h1>
@@ -73,7 +75,9 @@
                   <p
                     id="override-{{.Name}}"
                     class="server-setting-override{{if .Deprecated}} server-setting-override-deprecated{{end}}"
-                  >{{tr "admin.env_source" "Set by environment variable"}} <code>{{.OverrideVariable}}</code>{{if .Deprecated}} <strong class="setting-deprecated">({{tr "admin.env_deprecated" "DEPRECATED"}})</strong> {{tr "admin.env_rename" "Rename it to"}} <code>{{.CurrentVariable}}</code>.<br>{{else}}. {{end}}{{tr
+                  >{{tr "admin.env_source" "Set by environment variable"}} <code>{{.OverrideVariable}}</code>
+                    {{- if .Deprecated}} <strong class="setting-deprecated">({{tr "admin.env_deprecated" "DEPRECATED"}})</strong> {{tr "admin.env_rename"
+                    "Rename it to"}} <code>{{.CurrentVariable}}</code>.<br>{{else}}. {{end}}{{tr
                     "admin.env_locked"
                     "To edit this field, remove the environment override and restart TuneTrail."
                   }}</p>
@@ -108,10 +112,12 @@
             }}</p>
             <div class="server-settings-actions">
               <button type="submit">{{tr "admin.text.save_configuration" "Save configuration"}}</button>
-              <button type="submit" formaction="/admin/settings/subsonic/test">{{tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button>
+              <button type="submit" formaction="/admin/settings/subsonic/test">
+                {{- tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button>
             </div>
           </form>
-          <p><a href="/admin/settings">{{tr "admin.text.reload_saved_configuration" "Reload saved configuration"}}</a> · <a href="/admin">{{tr "admin.text.back_to_administration" "Back to administration"}}</a></p>
+          <p><a href="/admin/settings">{{tr "admin.text.reload_saved_configuration" "Reload saved configuration"}}</a> · <a href="/admin">
+            {{- tr "admin.text.back_to_administration" "Back to administration"}}</a></p>
         </main>
         <footer class="admin-footer">
           TuneTrail ·

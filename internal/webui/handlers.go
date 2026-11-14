@@ -232,7 +232,7 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 	var b bytes.Buffer
 	tmpl, err := localizedTemplates(h.templates, p.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&b, "live.html", p)
+		err = tmpl.ExecuteTemplate(&b, "page/live", p)
 	}
 	if err != nil {
 		log.Printf("HTML render failed: %v", err)

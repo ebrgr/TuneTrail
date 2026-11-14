@@ -1,0 +1,26 @@
+{{/* The single document head for public pages, the visual preview and administration.
+     Called with (head "live"|"preview"|"admin" title); asset names stay literal for startup validation. */}}
+{{define "partial/head"}}
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>{{.Title}}</title>
+      <link rel="icon" type="image/png" href="{{asset "public/favicon-96x96.png"}}">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      >
+      <link rel="stylesheet" href="{{asset "themes.css"}}">
+      <script src="{{asset "theme.js"}}"></script>
+      <link rel="stylesheet" href="{{asset "ui.css"}}">
+      {{- if eq .Kind "admin"}}
+      <link rel="stylesheet" href="{{asset "admin.css"}}">
+      <script defer src="{{asset "admin.js"}}"></script>
+      {{- else}}
+      <script defer src="{{asset "ui.js"}}"></script>
+      {{- end}}
+      {{- if eq .Kind "live"}}
+      <script defer src="{{asset "live.js"}}"></script>
+      {{- end}}
+{{end}}

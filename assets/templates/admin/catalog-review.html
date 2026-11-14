@@ -1,7 +1,9 @@
-{{define "catalog-review.html"}}
+{{define "admin/catalog-review"}}
   <!doctype html>
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
-    <head>{{template "admin-head" .}}</head>
+    <head>
+      {{template "partial/head" (head "admin" (tr "admin.shell.title" "Administration — TuneTrail"))}}
+    </head>
     <body
       data-admin-ui="go"
       data-i18n-copy="{{tr "admin.js.copy" "Copy"}}"
@@ -9,7 +11,7 @@
       data-i18n-copy-manual="{{tr "admin.js.copy_manual" "Select and copy manually"}}"
     >
       <a class="skip-link" href="#admin-main">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>
-      {{template "admin-nav" .}}
+      {{template "admin/sidebar" .}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
           <h1>{{trn
@@ -24,15 +26,21 @@
             "admin.text.this_changes_the_shared_catalog_for_all_profiles_this_action_cannot_be_undone"
             "This changes the shared catalog for all profiles. This action cannot be undone."
           }}</p>
-          <p>{{tr "admin.review.source" "Source:"}} {{.Plan.SourceName}} (ID {{.Plan.From}}).{{if eq .Plan.Action "merge"}} {{tr "admin.review.destination" "Destination and surviving ID:"}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
-          <p>{{tr "admin.review.source_tracks" "Source-linked tracks:"}} {{.Plan.SourceTracks}}{{tr "admin.review.albums" "; albums:"}} {{.Plan.SourceAlbums}}{{tr "admin.review.listens" "; listens:"}} {{.Plan.SourceListens}}.</p>
+          <p>
+            {{- tr "admin.review.source" "Source:"}} {{.Plan.SourceName}} (ID {{.Plan.From}}).{{if eq .Plan.Action "merge"}} {{tr "admin.review.destination"
+            "Destination and surviving ID:"}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
+          <p>{{tr "admin.review.source_tracks" "Source-linked tracks:"}} {{.Plan.SourceTracks}}{{tr "admin.review.albums" "; albums:"}} {{.Plan.SourceAlbums}}
+            {{- tr "admin.review.listens" "; listens:"}} {{.Plan.SourceListens}}.</p>
           {{if eq .Plan.Action "delete"}}
-            <p>{{tr "admin.review.deleted_albums" "Albums deleted by this action:"}} {{.Plan.RemovedAlbums}}{{tr "admin.review.deleted_tracks" "; tracks deleted by this action:"}} {{.Plan.RemovedTracks}}{{tr "admin.review.deleted_listens" "; listens deleted:"}} {{.Plan.RemovedListens}}{{tr
+            <p>{{tr "admin.review.deleted_albums" "Albums deleted by this action:"}} {{.Plan.RemovedAlbums}}
+              {{- tr "admin.review.deleted_tracks" "; tracks deleted by this action:"}} {{.Plan.RemovedTracks}}
+              {{- tr "admin.review.deleted_listens" "; listens deleted:"}} {{.Plan.RemovedListens}}{{tr
               "admin.review.orphan_warning"
               ". Removing an artist can also remove albums with no remaining album artist."
             }}</p>
           {{else}}
-            <p>{{tr "admin.review.duplicates" "Duplicate listens in the same profile and second:"}} {{.Plan.DuplicateListens}}{{tr "admin.review.profiles_separate" ". Listens from different profiles stay separate."}}</p>
+            <p>{{tr "admin.review.duplicates" "Duplicate listens in the same profile and second:"}} {{.Plan.DuplicateListens}}
+              {{- tr "admin.review.profiles_separate" ". Listens from different profiles stay separate."}}</p>
             <p>{{tr
               "admin.review.alias_policy"
               "The destination retains its aliases, MusicBrainz ID and other metadata; aliases from the source are removed."
@@ -49,19 +57,28 @@
           {{end}}
           <h2>{{tr "admin.text.source_metadata_and_relations" "Source metadata and relations"}}</h2>
           <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.SourceMBID}}{{.Plan.SourceMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
-          <p>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
+          <p>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}
+            {{- end}}.</p>
           {{if .Plan.SourceArtists}}
-            <p>{{tr "admin.review.source_artists" "Source artists:"}} {{range .Plan.SourceArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}{{tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
+            <p>{{tr "admin.review.source_artists" "Source artists:"}} {{range .Plan.SourceArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
+              {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
           {{end}}
           {{if eq .Plan.Action "merge"}}
             <h2>{{tr "admin.text.destination_metadata_and_relations" "Destination metadata and relations"}}</h2>
-            <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.DestinationMBID}}{{.Plan.DestinationMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
-            <p>{{tr "admin.review.destination_aliases" "Destination aliases:"}} {{range .Plan.DestinationAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
+            <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.DestinationMBID}}{{.Plan.DestinationMBID}}{{else}}{{tr "admin.review.none" "none"}}
+              {{- end}}.</p>
+            <p>{{tr "admin.review.destination_aliases" "Destination aliases:"}} {{range .Plan.DestinationAliases}}<span>{{.}}; </span>{{else}}
+              {{- tr "admin.review.none" "none"}}{{end}}.</p>
             {{if .Plan.DestinationArtists}}
-              <p>{{tr "admin.review.destination_artists" "Destination artists:"}} {{range .Plan.DestinationArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}{{tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
+              <p>{{tr "admin.review.destination_artists" "Destination artists:"}} {{range .Plan.DestinationArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
+                {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
             {{end}}
           {{end}}
-          <p>{{tr "admin.review.source_image" "Source image ID:"}} {{if .Plan.SourceImage}}{{.Plan.SourceImage}}{{else}}{{tr "admin.review.none" "none"}}{{end}}{{tr "admin.review.destination_image" ". Destination image ID:"}} {{if .Plan.DestinationImage}}{{.Plan.DestinationImage}}{{else}}{{tr "admin.review.none" "none"}}{{end}}. {{if eq .Plan.Action "merge"}}{{if .Plan.ReplaceImage}}{{tr "admin.review.use_source" "Use source image when present."}}{{else}}{{tr "admin.review.keep_destination" "Keep destination image."}}{{end}}{{end}}</p>
+          <p>{{tr "admin.review.source_image" "Source image ID:"}} {{if .Plan.SourceImage}}{{.Plan.SourceImage}}{{else}}{{tr "admin.review.none" "none"}}{{end}}
+            {{- tr "admin.review.destination_image" ". Destination image ID:"}} {{if .Plan.DestinationImage}}{{.Plan.DestinationImage}}{{else}}
+            {{- tr "admin.review.none" "none"}}{{end}}. {{if eq .Plan.Action "merge"}}{{if .Plan.ReplaceImage}}
+            {{- tr "admin.review.use_source" "Use source image when present."}}{{else}}{{tr "admin.review.keep_destination" "Keep destination image."}}{{end}}
+            {{- end}}</p>
           <h2>{{tr "admin.text.affected_profiles" "Affected profiles"}}</h2>
           <ul>
             {{range .Plan.Profiles}}
@@ -94,7 +111,8 @@
             <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
             <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
             <input type="hidden" name="plan" value="{{.Token}}">
-            <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_this_global_catalog_change" "Confirm this global catalog change"}}</label>
+            <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_this_global_catalog_change"
+              "Confirm this global catalog change"}}</label>
             <button>{{trn
               "admin.review.confirm"
               "Confirm {{.Action}}"

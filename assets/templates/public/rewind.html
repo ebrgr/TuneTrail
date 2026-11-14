@@ -1,4 +1,4 @@
-{{define "rewind-choice"}}
+{{define "partial/rewind-choice"}}
   {{if .Current}}
     <span class="card rewind-choice" aria-current="date">{{.Label}}</span>
   {{else if .Disabled}}
@@ -8,7 +8,7 @@
   {{end}}
 {{end}}
 
-{{define "live-rewind"}}
+{{define "page/rewind"}}
   {{$rewind:=.Rewind}}
   <main class="rewind-layout">
     <aside class="rewind-controls" aria-label="{{tr "ui.rewind_period" "Rewind period"}}">
@@ -26,12 +26,13 @@
             <span aria-hidden="true"></span>
           {{end}}
         </nav>
-        <nav class="rewind-options rewind-months" aria-label="{{tr "ui.months" "Months"}}">{{range $rewind.Months}}{{template "rewind-choice" .}}{{end}}</nav>
+        <nav class="rewind-options rewind-months" aria-label="{{tr "ui.months" "Months"}}">{{range $rewind.Months}}{{template "partial/rewind-choice" .}}
+          {{- end}}</nav>
       {{else}}
         <h2>{{tr "ui.years" "Years"}}</h2>
         <nav class="rewind-options" aria-label="{{tr "ui.years" "Years"}}">
           {{range $rewind.Years}}
-            {{template "rewind-choice" .}}
+            {{template "partial/rewind-choice" .}}
           {{else}}
             <p>{{tr "ui.no_completed_years_available" "No completed years available."}}</p>
           {{end}}
@@ -45,7 +46,8 @@
         {{with .Params.Get "tz"}}
           <input type="hidden" name="tz" value="{{.}}">
         {{end}}
-        <label><input type="checkbox" name="show_time" value="1" {{if $rewind.ShowTime}}checked{{end}}>{{tr "ui.show_time_listened_question" " Show time listened?"}}</label>
+        <label><input type="checkbox" name="show_time" value="1" {{if $rewind.ShowTime}}checked{{end}}>
+          {{- tr "ui.show_time_listened_question" " Show time listened?"}}</label>
         <noscript>
           <button type="submit" class="large-button">{{tr "ui.apply" "Apply"}}</button>
         </noscript>
@@ -58,7 +60,8 @@
       data-minutes="{{$rewind.Stats.MinutesListened}}"
       data-average-plays="{{printf "%.6f" $rewind.Stats.AvgPlaysPerDay}}"
     >
-      <nav class="rewind-modes" aria-label="{{tr "ui.rewind_mode" "Rewind mode"}}">{{template "rewind-choice" $rewind.Monthly}}{{template "rewind-choice" $rewind.Yearly}}</nav>
+      <nav class="rewind-modes" aria-label="{{tr "ui.rewind_mode" "Rewind mode"}}">{{template "partial/rewind-choice" $rewind.Monthly}}
+        {{- template "partial/rewind-choice" $rewind.Yearly}}</nav>
       <div class="card rewind-card">
         <header class="rewind-header">
           <h1 id="rewind-title">{{$rewind.Title}}</h1>
@@ -92,7 +95,8 @@
                         <span>{{quantity "quantity.plays" $item.Count}}{{if $rewind.ShowTime}} ({{quantity "quantity.minutes" $item.Minutes}}){{end}}</span>
                       </div>
                     {{else}}
-                      <p>{{$item.Title}} <span>— {{quantity "quantity.plays" $item.Count}}{{if $rewind.ShowTime}} ({{quantity "quantity.minutes" $item.Minutes}}){{end}}</span></p>
+                      <p>{{$item.Title}} <span>— {{quantity "quantity.plays" $item.Count}}
+                        {{- if $rewind.ShowTime}} ({{quantity "quantity.minutes" $item.Minutes}}){{end}}</span></p>
                     {{end}}
                   {{end}}
                 </div>

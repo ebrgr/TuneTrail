@@ -148,7 +148,7 @@ func New(store Store, opts Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": initials, "avatarIcon": avatarIcon}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": initials, "avatarIcon": avatarIcon}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}
@@ -312,7 +312,7 @@ func (h *Handler) render(w http.ResponseWriter, status int, data view) {
 	data.Error = localMessage(data.Locale, data.Error)
 	tmpl, err := h.adminTemplate(data.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&out, "admin.html", data)
+		err = tmpl.ExecuteTemplate(&out, "admin/home", data)
 	}
 	if err != nil {
 		textError(w, "operation failed", 500)

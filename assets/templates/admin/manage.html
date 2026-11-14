@@ -1,7 +1,9 @@
-{{define "manage.html"}}
+{{define "admin/manage"}}
   <!doctype html>
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
-    <head>{{template "admin-head" .}}</head>
+    <head>
+      {{template "partial/head" (head "admin" (tr "admin.shell.title" "Administration — TuneTrail"))}}
+    </head>
     <body
       data-admin-ui="go"
       data-i18n-copy="{{tr "admin.js.copy" "Copy"}}"
@@ -9,7 +11,7 @@
       data-i18n-copy-manual="{{tr "admin.js.copy_manual" "Select and copy manually"}}"
     >
       <a class="skip-link" href="#admin-main">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>
-      {{template "admin-nav" .}}
+      {{template "admin/sidebar" .}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
           <p><a href="/{{.Profile.Slug}}/{{.Kind}}/{{.ID}}">{{trn "admin.manage.back" "Back to {{.Name}}" "Name" .Name}}</a></p>
@@ -108,7 +110,8 @@
                 <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
                 <input type="hidden" name="artist_id" value="{{.ID}}">
                 <span>{{.Name}}{{if .IsPrimary}} {{tr "admin.text.primary" "(primary)"}}{{end}}</span>
-                <button name="primary" value="{{if .IsPrimary}}0{{else}}1{{end}}">{{if .IsPrimary}}{{tr "admin.text.unset_primary" "Unset primary"}}{{else}}{{tr "admin.text.set_primary" "Set primary"}}{{end}}</button>
+                <button name="primary" value="{{if .IsPrimary}}0{{else}}1{{end}}">{{if .IsPrimary}}{{tr "admin.text.unset_primary" "Unset primary"}}{{else}}
+                  {{- tr "admin.text.set_primary" "Set primary"}}{{end}}</button>
               </form>
             {{end}}
           {{end}}
@@ -116,7 +119,8 @@
             <h2>{{tr "admin.text.track_artists" "Track artists"}}</h2>
             <form method="get" action="/{{.Profile.Slug}}/manage/track/{{.ID}}">
               <input type="hidden" name="tz" value="{{.Timezone}}">
-              <label>{{tr "admin.text.search_shared_artists" "Search shared artists"}} <input name="artist_query" value="{{.ArtistQuery}}" maxlength="100"></label>
+              <label>
+                {{- tr "admin.text.search_shared_artists" "Search shared artists"}} <input name="artist_query" value="{{.ArtistQuery}}" maxlength="100"></label>
               <button>{{tr "admin.text.search" "Search"}}</button>
             </form>
             {{range .ArtistResults}}
@@ -138,7 +142,9 @@
               <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
               <input type="hidden" name="return_to" value="{{.ReturnTo}}">
               <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-              <label>{{tr "admin.text.existing_artist_id" "Existing artist ID"}} <input name="artist_id" value="{{.Values.Get "artist_id"}}" type="number" min="1" required></label>
+              <label>
+                {{- tr "admin.text.existing_artist_id" "Existing artist ID"}} <input name="artist_id" value="{{.Values.Get "artist_id"}}" type="number" min="1"
+                required></label>
               <button>{{tr "admin.text.add_artist" "Add artist"}}</button>
             </form>
             {{range .Artists}}
@@ -171,7 +177,8 @@
                 <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
                 <input type="hidden" name="unix" value="{{.Time.Unix}}">
                 <time datetime="{{(.Time.In $.Location).Format "2006-01-02T15:04:05Z07:00"}}">{{(.Time.In $.Location).Format "2006-01-02 15:04:05 MST"}}</time>
-                <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen" "Confirm removal of this listen"}}</label>
+                <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen"
+                  "Confirm removal of this listen"}}</label>
                 <button>{{tr "admin.text.delete_listen" "Delete listen"}}</button>
               </form>
             {{else}}
@@ -188,14 +195,18 @@
               <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
               <input type="hidden" name="return_to" value="{{.ReturnTo}}">
               <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-              <label>{{tr "admin.text.local_date_and_time" "Local date and time"}} <input type="datetime-local" name="local_time" value="{{.Values.Get "local_time"}}" required></label>
+              <label>
+                {{- tr "admin.text.local_date_and_time" "Local date and time"}} <input type="datetime-local" name="local_time" value="{{.Values.Get
+                "local_time"}}" required></label>
               <label>{{tr "admin.text.time_zone_iana" "Time zone (IANA)"}} <input
                 name="timezone"
                 value="{{if .Values.Get "timezone"}}{{.Values.Get "timezone"}}{{else}}{{.Timezone}}{{end}}"
                 placeholder="America/Sao_Paulo"
                 required
               ></label>
-              <label>{{tr "admin.text.utc_offset_for_ambiguous_time" "UTC offset for ambiguous time"}} <input name="offset" value="{{.Values.Get "offset"}}" placeholder="-03:00"></label>
+              <label>
+                {{- tr "admin.text.utc_offset_for_ambiguous_time" "UTC offset for ambiguous time"}} <input name="offset" value="{{.Values.Get "offset"}}"
+                placeholder="-03:00"></label>
               <button>{{tr "admin.text.add_listen" "Add listen"}}</button>
             </form>
           {{end}}
@@ -216,7 +227,8 @@
                   name="return_to"
                   value="{{if .HistoryReturn}}{{.HistoryReturn}}{{else}}{{.ReturnTo}}{{end}}"
                 >
-                <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen_only" "Confirm removal of this listen only"}}</label>
+                <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen_only"
+                  "Confirm removal of this listen only"}}</label>
                 <button>{{tr "admin.text.delete_this_listen" "Delete this listen"}}</button>
               </form>
             </section>
@@ -236,11 +248,14 @@
             <button>{{tr "admin.text.review_deletion" "Review deletion"}}</button>
           </form>
           <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}">
-            <label>{{tr "admin.text.search_merge_destination" "Search merge destination"}} <input name="merge_query" value="{{.MergeQuery}}" maxlength="100"></label>
+            <label>
+              {{- tr "admin.text.search_merge_destination" "Search merge destination"}} <input name="merge_query" value="{{.MergeQuery}}"
+              maxlength="100"></label>
             <button>{{tr "admin.text.search_destinations" "Search destinations"}}</button>
           </form>
           {{range .MergeCandidates}}
-            <p><a href="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/review?action=merge&amp;to={{.ID}}">{{trn "admin.manage.review_merge" "Review merge into {{.Name}} (ID {{.ID}})" "Name" .Name "ID" .ID}}</a></p>
+            <p><a href="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/review?action=merge&amp;to={{.ID}}">
+              {{- trn "admin.manage.review_merge" "Review merge into {{.Name}} (ID {{.ID}})" "Name" .Name "ID" .ID}}</a></p>
           {{end}}
           <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/review">
             <input type="hidden" name="action" value="merge">
@@ -252,7 +267,8 @@
             }} <input name="to" type="number" min="1" required></label>
             <label><input type="checkbox" name="reverse" value="1"> {{tr "admin.text.reverse_direction" "Reverse direction"}}</label>
             {{if ne .Kind "track"}}
-              <label><input type="checkbox" name="replace_image" value="1"> {{tr "admin.text.use_source_image_if_available" "Use source image if available"}}</label>
+              <label><input type="checkbox" name="replace_image" value="1"> {{tr "admin.text.use_source_image_if_available"
+                "Use source image if available"}}</label>
             {{end}}
             <button>{{tr "admin.text.review_merge" "Review merge"}}</button>
           </form>

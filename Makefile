@@ -84,6 +84,8 @@ ui.check:
 	node --check assets/js/live.js
 	node --check assets/js/admin.js
 	node --test internal/webui/theme.test.mjs
+	python3 -m unittest scripts/test_check_web_style.py
+	python3 scripts/check_web_style.py
 
 test: api.test
 
@@ -140,12 +142,12 @@ ui.reference.test:
 
 ui.check: ui.reference.test
 
-# Render public/admin/preview fixtures against the content-addressed ISSUE-106 reference.
+# Render public/admin/preview fixtures against the ISSUE-067 reference (shared head, renamed blocks).
 .PHONY: ui.reference.check
 ui.reference.check:
 	@task_reference_dir=$$(mktemp -d); trap 'rm -rf "$$task_reference_dir"' EXIT; \
 	TZ=UTC TUNETRAIL_UI_REFERENCE="$$task_reference_dir/candidate" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1 && \
-	python3 scripts/compare_ui_reference.py backlog/evidencias/issue-106/reference "$$task_reference_dir/candidate"
+	python3 scripts/compare_ui_reference.py backlog/evidencias/issue-067/reference "$$task_reference_dir/candidate"
 
 ui.check: ui.reference.check
 

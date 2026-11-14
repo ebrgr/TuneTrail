@@ -55,7 +55,7 @@ func (h *Handler) renderMedia(w http.ResponseWriter, status int, v mediaView) {
 	v.Error = localMessage(v.Locale, v.Error)
 	tmpl, err := h.adminTemplate(v.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&output, "manage.html", v)
+		err = tmpl.ExecuteTemplate(&output, "admin/manage", v)
 	}
 	if err != nil {
 		textError(w, "operation failed", 500)

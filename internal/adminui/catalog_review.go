@@ -103,7 +103,7 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 	var out strings.Builder
 	tmpl, err := h.adminTemplate(view.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&out, "catalog-review.html", view)
+		err = tmpl.ExecuteTemplate(&out, "admin/catalog-review", view)
 	}
 	if err != nil {
 		h.fail(w, err)

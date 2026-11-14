@@ -172,7 +172,7 @@ func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap 
 	v.Error = localMessage(v.Locale, v.Error)
 	tmpl, err := h.adminTemplate(v.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&out, "settings.html", v)
+		err = tmpl.ExecuteTemplate(&out, "admin/settings", v)
 	}
 	if err != nil {
 		textError(w, "operation failed", 500)

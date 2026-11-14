@@ -1,21 +1,8 @@
-{{define "page.html"}}
+{{define "page/preview"}}
   <!doctype html>
   <html lang="en" data-theme="{{.Theme}}">
     <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>TuneTrail · Go visual preview</title>
-      <link rel="icon" href="{{asset "public/favicon-96x96.png"}}" type="image/png">
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-      >
-      <link rel="stylesheet" href="{{asset "themes.css"}}">
-      <script src="{{asset "theme.js"}}"></script>
-      <link rel="stylesheet" href="{{asset "ui.css"}}">
-      <script defer src="{{asset "ui.js"}}"></script>
+      {{template "partial/head" (head "preview" "TuneTrail · Go visual preview")}}
     </head>
     <body
       data-themes-url="{{asset "themes.json"}}"
@@ -31,11 +18,11 @@
       data-i18n-theme-invalid-palette="{{tr "js.theme_invalid_palette" "Use exactly the 14 expected hexadecimal color properties."}}"
     >
       <div class="app-shell">
-        {{template "sidebar" .}}
+        {{template "partial/sidebar" .}}
         <div class="app-content">
           {{if .Profile}}
             <header class="profile-header">
-              {{template "avatar" .Profile}}
+              {{template "partial/avatar" .Profile}}
               <div class="profile-identity">
                 <strong>{{.Profile.Name}}</strong>
                 <span>Listening profile · /{{.Profile.Slug}}</span>
@@ -43,9 +30,9 @@
             </header>
           {{end}}
           {{if .Selection}}
-            {{template "profiles" .}}
+            {{template "page/preview-profiles" .}}
           {{else}}
-            {{template "home" .}}
+            {{template "page/preview-home" .}}
           {{end}}
           <footer>
             <div>TuneTrail {{.Version}}</div>
@@ -65,7 +52,7 @@
           </footer>
         </div>
       </div>
-      {{template "dialogs" .}}
+      {{template "partial/dialogs" .}}
       <noscript>
         <p class="noscript">Page navigation works without JavaScript. Enable JavaScript for appearance settings and dialogs.</p>
       </noscript>
@@ -73,11 +60,12 @@
   </html>
 {{end}}
 
-{{define "avatar"}}
-  <span class="avatar" aria-hidden="true">{{if .Image}}<img src="/image/{{.Image}}/128x128.webp" alt="" data-avatar-image><span hidden data-avatar-fallback>{{initials .Name}}</span>{{else if avatarIcon .Icon}}{{icon (avatarIcon .Icon)}}{{else}}{{initials .Name}}{{end}}</span>
+{{define "partial/avatar"}}
+  <span class="avatar" aria-hidden="true">{{if .Image}}<img src="/image/{{.Image}}/128x128.webp" alt="" data-avatar-image><span hidden data-avatar-fallback>
+    {{- initials .Name}}</span>{{else if avatarIcon .Icon}}{{icon (avatarIcon .Icon)}}{{else}}{{initials .Name}}{{end}}</span>
 {{end}}
 
-{{define "sidebar"}}
+{{define "partial/sidebar"}}
   <nav class="sidebar" aria-label="{{tr "ui.main_navigation" "Main navigation"}}">
     <div class="nav-group">
       {{/* Provide essential document navigation when dialog scripts are unavailable. */}}
@@ -103,7 +91,7 @@
         data-dialog="profiles-dialog"
         aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}{{if .Profile}}: {{.Profile.Name}}{{end}}"
         data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
-      >{{if .Profile}}{{template "avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}</button>
+      >{{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}</button>
       {{if .Profile}}
         <button
           class="nav-button"
@@ -156,7 +144,7 @@
   </nav>
 {{end}}
 
-{{define "profiles"}}
+{{define "page/preview-profiles"}}
   <main class="profile-selection">
     <p class="eyebrow">TuneTrail</p>
     <h1>Choose a listening profile</h1>
@@ -164,7 +152,7 @@
     <div class="profile-grid">
       {{range .Profiles}}
         <a href="/{{.Slug}}" class="card profile-card">
-          {{template "avatar" .}}
+          {{template "partial/avatar" .}}
           <div class="profile-identity">
             <strong>{{.Name}}</strong>
             <span>/{{.Slug}}</span>
@@ -176,16 +164,16 @@
   </main>
 {{end}}
 
-{{define "section-title"}}
+{{define "partial/preview-section-title"}}
   <h3 class="section-title">{{.}}</h3>
 {{end}}
 
-{{define "home"}}
+{{define "page/preview-home"}}
   <main class="home">
     <div class="home-inner">
       <div class="overview">
         <section class="stats">
-          {{template "section-title" "All time stats"}}
+          {{template "partial/preview-section-title" "All time stats"}}
           {{if eq .State "error"}}
             <p class="error">Error: Demonstration error</p>
           {{else}}
@@ -268,7 +256,8 @@
               </div>
               <div class="activity-footer">
                 <span>Streak · <span class="primary">{{if eq .State "empty"}}0{{else}}12{{end}}</span></span>
-                <span class="legend">Less <i style="opacity:.28"></i><i style="opacity:.46"></i><i style="opacity:.64"></i><i style="opacity:.82"></i><i></i> More</span>
+                <span class="legend">Less <i style="opacity:.28"></i><i style="opacity:.46"></i><i style="opacity:.64"></i><i
+                  style="opacity:.82"></i><i></i> More</span>
               </div>
             </div>
           {{end}}
@@ -281,8 +270,8 @@
         {{end}}
       </nav>
       <div class="home-blocks">
-        {{template "artist-card" .}}
-        {{template "album-card" .}}
+        {{template "partial/preview-artist-card" .}}
+        {{template "partial/preview-album-card" .}}
         <section class="tracks">
           <h3 class="section-title offset"><button class="section-link" data-dialog="feature-dialog">Top tracks <span>→</span></button></h3>
           {{if eq .State "error"}}
@@ -345,7 +334,7 @@
   </main>
 {{end}}
 
-{{define "artist-card"}}
+{{define "partial/preview-artist-card"}}
   <section class="feature-section">
     <h3 class="section-title offset"><button class="section-link" data-dialog="feature-dialog">Top artists <span>→</span></button></h3>
     {{if eq .State "error"}}
@@ -363,13 +352,13 @@
             <div class="secondary">{{$hero.Count}} plays</div>
           </div>
         </div>
-        <div class="feature-list">{{range tail .Artists}}{{template "media" .}}{{end}}</div>
+        <div class="feature-list">{{range tail .Artists}}{{template "partial/preview-media" .}}{{end}}</div>
       </div>
     {{end}}
   </section>
 {{end}}
 
-{{define "album-card"}}
+{{define "partial/preview-album-card"}}
   <section class="feature-section">
     <h3 class="section-title offset"><button class="section-link" data-dialog="feature-dialog">Top albums <span>→</span></button></h3>
     {{if eq .State "error"}}
@@ -388,13 +377,13 @@
             <div class="secondary">{{$hero.Count}} plays</div>
           </div>
         </div>
-        <div class="feature-list album-list">{{range tail .Albums}}{{template "media" .}}{{end}}</div>
+        <div class="feature-list album-list">{{range tail .Albums}}{{template "partial/preview-media" .}}{{end}}</div>
       </div>
     {{end}}
   </section>
 {{end}}
 
-{{define "media"}}
+{{define "partial/preview-media"}}
   <div class="media medium">
     <button class="art-button" data-dialog="feature-dialog">
       <img src="{{.Image}}" width="90" height="90" alt="{{.Title}}" loading="lazy" data-cover>
@@ -407,7 +396,7 @@
   </div>
 {{end}}
 
-{{define "language-picker"}}
+{{define "partial/language-picker"}}
   <form class="language-picker" method="post" action="/language">
     <label>{{.T "language.label"}}<select name="language">
       <option value="auto"{{if eq .Choice "auto"}} selected{{end}}>{{.T "language.auto"}}</option>

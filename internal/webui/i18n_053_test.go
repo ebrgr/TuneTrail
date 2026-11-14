@@ -55,7 +55,7 @@ func TestGraphLocalizationPreservesMachineData(t *testing.T) {
 			t.Fatal(e)
 		}
 		var out bytes.Buffer
-		if e = tpl.ExecuteTemplate(&out, "interest-graph", graph); e != nil {
+		if e = tpl.ExecuteTemplate(&out, "partial/interest-graph", graph); e != nil {
 			t.Fatal(e)
 		}
 		return out.String()

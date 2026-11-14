@@ -266,7 +266,9 @@ func validEntry(key, name string) bool {
 	}
 	for _, kind := range []string{"public", "admin"} {
 		if strings.HasPrefix(key, kind+"/templates/") {
-			return strings.HasPrefix(name, "templates/"+kind+"/") && path.Ext(name) == ".html"
+			// Shared partials (one head for every page) may be mounted in both template sets.
+			own := strings.HasPrefix(name, "templates/"+kind+"/") || strings.HasPrefix(name, "templates/shared/")
+			return own && path.Ext(name) == ".html"
 		}
 	}
 	if strings.HasPrefix(key, "public/static/") {

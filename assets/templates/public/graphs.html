@@ -1,4 +1,4 @@
-{{define "activity-grid"}}
+{{define "partial/activity-grid"}}
   <div class="card activity-card">
     <div class="activity-calendar" aria-hidden="true">
       <div class="day-labels">
@@ -21,7 +21,9 @@
     </div>
     <div class="activity-footer">
       <span>{{tr "ui.streak" "Streak"}} · <span class="primary">{{.Streak}}</span></span>
-      <span class="legend" aria-hidden="true">{{tr "ui.less" "Less"}} <i style="opacity:.28"></i><i style="opacity:.46"></i><i style="opacity:.64"></i><i style="opacity:.82"></i><i></i> {{tr "ui.more" "More"}}</span>
+      <span class="legend" aria-hidden="true">
+        {{- tr "ui.less" "Less"}} <i style="opacity:.28"></i><i style="opacity:.46"></i><i style="opacity:.64"></i><i style="opacity:.82"></i><i></i> {{tr
+        "ui.more" "More"}}</span>
     </div>
   </div>
   <details class="graph-values">
@@ -50,7 +52,7 @@
   </details>
 {{end}}
 
-{{define "interest-graph"}}
+{{define "partial/interest-graph"}}
   {{$graph:=.}}
   {{if .Empty}}
     <p>{{tr "ui.no_listens_in_this_interval" "No listens in this interval."}}</p>
@@ -111,7 +113,8 @@
           {{range .Rows}}
             <tr>
               <td><time datetime="{{.From.Format "2006-01-02T15:04:05Z07:00"}}">{{datetime .From}}</time></td>
-              <td><time datetime="{{.To.Format "2006-01-02T15:04:05Z07:00"}}">{{datetime .To}}</time>{{if .Last}} {{tr "ui.inclusive" "(inclusive)"}}{{else if .Empty}} {{tr "ui.empty_interval" "(empty interval)"}}{{end}}</td>
+              <td><time datetime="{{.To.Format "2006-01-02T15:04:05Z07:00"}}">{{datetime .To}}</time>{{if .Last}} {{tr "ui.inclusive" "(inclusive)"}}
+                {{- else if .Empty}} {{tr "ui.empty_interval" "(empty interval)"}}{{end}}</td>
               <td>{{number .Count}}</td>
             </tr>
           {{else}}

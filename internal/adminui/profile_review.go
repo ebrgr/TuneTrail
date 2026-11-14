@@ -64,7 +64,7 @@ func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
 	view := profileReviewView{Locale: i18n.ViewOf(w), Profile: p, Count: count, CSRF: token, Submission: ticket}
 	tmpl, err := h.adminTemplate(view.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&out, "profile-review.html", view)
+		err = tmpl.ExecuteTemplate(&out, "admin/profile-review", view)
 	}
 	if err != nil {
 		h.fail(w, err)

@@ -205,7 +205,7 @@ func NewPreview() (http.Handler, error) {
 		var b bytes.Buffer
 		localized, err := localizedTemplates(tmpl, nil)
 		if err == nil {
-			err = localized.ExecuteTemplate(&b, "page.html", p)
+			err = localized.ExecuteTemplate(&b, "page/preview", p)
 		}
 		if err != nil {
 			http.Error(w, "Unable to render preview", 500)

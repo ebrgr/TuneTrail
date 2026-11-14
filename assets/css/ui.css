@@ -314,7 +314,19 @@ a:hover,button.media-title:hover {
   position: absolute;
   inset: 0;
   border-radius: 8px 8px 0 0;
-  background-image: linear-gradient(to top,var(--color-bg-secondary) 0%,color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,color-mix(in srgb,var(--color-bg-secondary) 95%,transparent) 12%,color-mix(in srgb,var(--color-bg-secondary) 86%,transparent) 20%,color-mix(in srgb,var(--color-bg-secondary) 72%,transparent) 28%,color-mix(in srgb,var(--color-bg-secondary) 55%,transparent) 36%,color-mix(in srgb,var(--color-bg-secondary) 37%,transparent) 44%,color-mix(in srgb,var(--color-bg-secondary) 22%,transparent) 51%,color-mix(in srgb,var(--color-bg-secondary) 11%,transparent) 57%,color-mix(in srgb,var(--color-bg-secondary) 4%,transparent) 61%,color-mix(in srgb,var(--color-bg-secondary) 1%,transparent) 63.5%,transparent 65%)
+  background-image: linear-gradient(to top,
+    var(--color-bg-secondary) 0%,
+    color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,
+    color-mix(in srgb,var(--color-bg-secondary) 95%,transparent) 12%,
+    color-mix(in srgb,var(--color-bg-secondary) 86%,transparent) 20%,
+    color-mix(in srgb,var(--color-bg-secondary) 72%,transparent) 28%,
+    color-mix(in srgb,var(--color-bg-secondary) 55%,transparent) 36%,
+    color-mix(in srgb,var(--color-bg-secondary) 37%,transparent) 44%,
+    color-mix(in srgb,var(--color-bg-secondary) 22%,transparent) 51%,
+    color-mix(in srgb,var(--color-bg-secondary) 11%,transparent) 57%,
+    color-mix(in srgb,var(--color-bg-secondary) 4%,transparent) 61%,
+    color-mix(in srgb,var(--color-bg-secondary) 1%,transparent) 63.5%,
+    transparent 65%)
 }
 .hero-caption {
   position: absolute;
@@ -1089,7 +1101,14 @@ button {
 .pagination [aria-disabled] { color:var(--color-fg-tertiary); }
 .listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:24px 0; }
 .listing-filters label { display:flex; flex-direction:column; font-size:14px; }
-.listing-filters input,.listing-filters select { background:var(--color-bg); color:var(--color-fg); border:1px solid var(--color-border); border-radius:6px; padding:8px; max-width:110px; }
+.listing-filters input,.listing-filters select {
+  background:var(--color-bg);
+  color:var(--color-fg);
+  border:1px solid var(--color-border);
+  border-radius:6px;
+  padding:8px;
+  max-width:110px;
+}
 .see-more { display:block; text-align:center; margin-top:8px; color:var(--color-fg-secondary); }
 @media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
 .delete-listen { color:var(--color-fg-tertiary); padding:8px; }
@@ -1171,7 +1190,31 @@ button {
 .rewind-stats b::after { content:""; position:absolute; left:-10px; bottom:-3px; width:100%; height:2px; background:var(--color-primary); }
 .rewind-empty { margin-top:24px; }
 @media(max-width:900px) { .rewind-controls { width:100%; max-width:400px; } .rewind-content { flex-basis:100%; } }
-@media(max-width:639px) { .rewind-layout { gap:24px; margin:24px auto; } .rewind-controls { width:100%; } .rewind-content { flex-basis:100%; } .rewind-card { padding:20px 16px; } .rewind-stats { grid-template-columns:1fr; } .rewind-group-content img { width:120px; height:120px; } .rewind-group-items { flex:1 1 120px; } }
+@media(max-width:639px) {
+  .rewind-layout {
+    gap:24px;
+    margin:24px auto;
+  }
+  .rewind-controls {
+    width:100%;
+  }
+  .rewind-content {
+    flex-basis:100%;
+  }
+  .rewind-card {
+    padding:20px 16px;
+  }
+  .rewind-stats {
+    grid-template-columns:1fr;
+  }
+  .rewind-group-content img {
+    width:120px;
+    height:120px;
+  }
+  .rewind-group-items {
+    flex:1 1 120px;
+  }
+}
 
 @media(max-width:480px) { .rewind-group-content { flex-direction:column; } .rewind-group-items { flex-basis:auto; } }
 
@@ -1180,7 +1223,15 @@ button {
 
 /* Keep dropdown arrows inset consistently while retaining native select behavior. */
 select:not([multiple]):not([size]) {
-  --select-arrow: linear-gradient(45deg, transparent 40%, currentColor 40%, currentColor 60%, transparent 60%), linear-gradient(135deg, transparent 40%, currentColor 40%, currentColor 60%, transparent 60%);
+  --select-arrow: linear-gradient(45deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%), linear-gradient(135deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%);
   appearance: none;
   background-image: var(--select-arrow);
   background-position: calc(100% - 20px) center, calc(100% - 15px) center;
@@ -1195,7 +1246,14 @@ select:not([multiple]):not([size]) {
 /* A native form keeps language selection available without JavaScript. */
 .language-picker{display:flex;align-items:end;justify-content:flex-start;flex-wrap:wrap;gap:.65rem;margin:1.5rem 0;color:var(--color-fg-secondary)}
 .language-picker label{display:flex;flex-direction:column;gap:.4rem;min-width:0}
-.language-picker select,.language-picker button{min-height:44px;border:1px solid var(--color-bg-tertiary);border-radius:7px;background-color:var(--color-bg-secondary);color:var(--color-fg);padding:8px 12px}
+.language-picker select,.language-picker button {
+  min-height:44px;
+  border:1px solid var(--color-bg-tertiary);
+  border-radius:7px;
+  background-color:var(--color-bg-secondary);
+  color:var(--color-fg);
+  padding:8px 12px
+}
 .language-picker select{padding-right:2.5rem}.language-picker button{cursor:pointer}
 .language-settings-fallback{max-width:36rem;margin:1.5rem auto;padding:0 1rem;color:var(--color-fg-secondary)}
 .language-settings-fallback summary{cursor:pointer}

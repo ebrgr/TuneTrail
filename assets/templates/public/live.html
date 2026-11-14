@@ -1,22 +1,8 @@
-{{define "live.html"}}
+{{define "page/live"}}
   <!doctype html>
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{.Theme}}">
     <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>{{.Title}} - TuneTrail</title>
-      <link rel="icon" type="image/png" href="{{asset "public/favicon-96x96.png"}}">
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-      >
-      <link rel="stylesheet" href="{{asset "themes.css"}}">
-      <script src="{{asset "theme.js"}}"></script>
-      <link rel="stylesheet" href="{{asset "ui.css"}}">
-      <script defer src="{{asset "ui.js"}}"></script>
-      <script defer src="{{asset "live.js"}}"></script>
+      {{template "partial/head" (head "live" (printf "%s - TuneTrail" .Title))}}
     </head>
     <body
       data-themes-url="{{asset "themes.json"}}"
@@ -41,11 +27,11 @@
       data-profile-slug="{{.Profile.Slug}}"{{end}}
     >
       <div class="app-shell">
-        {{template "sidebar" .}}
+        {{template "partial/sidebar" .}}
         <div class="app-content">
           {{if .Profile}}
             <header class="profile-header">
-              {{template "avatar" .Profile}}
+              {{template "partial/avatar" .Profile}}
               <div class="profile-identity">
                 <strong>{{.Profile.Name}}</strong>
                 <span>{{tr "ui.listening_profile" "Listening profile"}} · /{{.Profile.Slug}}</span>
@@ -55,28 +41,32 @@
           {{if .Error}}
             <main class="profile-selection">
               <h1>{{.Error}}</h1>
-              <p class="intro">{{if eq .Status 404}}{{tr "ui.this_profile_or_page_is_unavailable" "This profile or page is unavailable."}}{{else if eq .Status 400}}{{tr "ui.please_check_the_filters_in_this_address" "Please check the filters in this address."}}{{else}}{{tr "ui.unable_to_load_this_page_please_try_again" "Unable to load this page. Please try again."}}{{end}}</p>
+              <p class="intro">{{if eq .Status 404}}{{tr "ui.this_profile_or_page_is_unavailable" "This profile or page is unavailable."}}
+                {{- else if eq .Status 400}}{{tr "ui.please_check_the_filters_in_this_address" "Please check the filters in this address."}}{{else}}
+                {{- tr "ui.unable_to_load_this_page_please_try_again" "Unable to load this page. Please try again."}}{{end}}</p>
               <a href="/" class="text-link">{{tr "ui.choose_a_profile" "Choose a profile"}}</a>
             </main>
           {{else if .Selection}}
-            {{template "live-profiles" .}}
+            {{template "page/profiles" .}}
           {{else if eq .Section "home"}}
-            {{template "live-home" .}}
+            {{template "page/home" .}}
           {{else if .Media}}
-            {{template "live-media-page" .}}
+            {{template "page/media" .}}
           {{else if .Rewind}}
-            {{template "live-rewind" .}}
+            {{template "page/rewind" .}}
           {{else if eq .Section "search"}}
             <main class="listing">
               <h1>{{tr "ui.search" "Search"}}</h1>
               <form method="get" class="listing-filters">
-                <label>{{tr "ui.search_your_listening_history" "Search your listening history"}}<input type="search" name="q" value="{{.Search}}" maxlength="200" required></label>
+                <label>
+                  {{- tr "ui.search_your_listening_history" "Search your listening history"}}<input type="search" name="q" value="{{.Search}}" maxlength="200"
+                  required></label>
                 <button class="large-button">{{tr "ui.search" "Search"}}</button>
               </form>
-              {{template "live-ranking" .Items}}
+              {{template "partial/ranking" .Items}}
             </main>
           {{else}}
-            {{template "live-listing" .}}
+            {{template "page/listing" .}}
           {{end}}
           <footer>
             <div>
@@ -93,25 +83,26 @@
                 style="display:inline-block;vertical-align:middle"
               > Koito 0.3.2</small>
             </div>
-            <a href="https://github.com/ebrgr/TuneTrail" target="_blank" rel="noopener">{{tr "ui.view_github" "View the source on GitHub"}} {{icon "ExternalLink"}}</a>
+            <a href="https://github.com/ebrgr/TuneTrail" target="_blank" rel="noopener">
+              {{- tr "ui.view_github" "View the source on GitHub"}} {{icon "ExternalLink"}}</a>
           </footer>
           <noscript>
             {{if .Locale}}
               <details class="language-settings-fallback">
                 <summary>{{.Locale.T "settings.title"}}</summary>
-                {{template "language-picker" .Locale}}
+                {{template "partial/language-picker" .Locale}}
               </details>
             {{end}}
             <p class="noscript">{{tr "ui.appearance_settings_require_javascript" "Appearance settings require JavaScript."}}</p>
           </noscript>
         </div>
       </div>
-      {{template "dialogs" .}}
+      {{template "partial/dialogs" .}}
     </body>
   </html>
 {{end}}
 
-{{define "live-profiles"}}
+{{define "page/profiles"}}
   <main class="profile-selection">
     <p class="eyebrow">TuneTrail</p>
     <h1>{{if .Locale}}{{.Locale.T "profiles.title"}}{{else}}Choose a listening profile{{end}}</h1>
@@ -120,7 +111,7 @@
       {{$page:=.}}
       {{range .Profiles}}
         <a href="/{{.Slug}}{{$page.Next}}" class="card profile-card">
-          {{template "avatar" .}}
+          {{template "partial/avatar" .}}
           <div class="profile-identity">
             <strong>{{.Name}}</strong>
             <span>/{{.Slug}}</span>
@@ -139,7 +130,7 @@
   </main>
 {{end}}
 
-{{define "live-periods"}}
+{{define "partial/periods"}}
   <nav class="card period-selector" aria-label="{{tr "ui.time_period" "Time period"}}">
     {{$period:=.Period}}
     {{range .Periods}}
@@ -148,7 +139,7 @@
   </nav>
 {{end}}
 
-{{define "live-home"}}
+{{define "page/home"}}
   <main class="home">
     <div class="home-inner">
       <div class="overview">
@@ -210,15 +201,15 @@
           {{if index .Errors "activity"}}
             <p class="error">{{tr "ui.activity_unavailable_please_retry" "Activity unavailable. Please retry."}}</p>
           {{else}}
-            {{template "activity-grid" .Activity}}
+            {{template "partial/activity-grid" .Activity}}
           {{end}}
         </section>
       </div>
-      {{template "live-periods" .}}
+      {{template "partial/periods" .}}
       <div class="home-blocks">
         {{range .Cards}}
           {{if ne .Kind "tracks"}}
-            {{template "live-card" .}}
+            {{template "partial/card" .}}
           {{end}}
         {{end}}
         <section class="tracks">
@@ -228,7 +219,7 @@
               {{if .Error}}
                 <p class="error">{{tr "ui.ranking_unavailable" "Ranking unavailable."}}</p>
               {{else}}
-                {{template "live-ranking" .Items}}
+                {{template "partial/ranking" .Items}}
               {{end}}
             {{end}}
           {{end}}
@@ -238,7 +229,7 @@
           {{if index .Errors "listens"}}
             <p class="error">{{tr "ui.listening_history_unavailable" "Listening history unavailable."}}</p>
           {{else}}
-            {{template "live-listens" .}}
+            {{template "partial/listens" .}}
           {{end}}
           {{if .HistoryMore}}
             <a href="/{{.Profile.Slug}}/listens?period=all_time" class="see-more">{{tr "ui.see_more_arrow" "SEE MORE →"}}</a>
@@ -249,7 +240,7 @@
   </main>
 {{end}}
 
-{{define "live-card"}}
+{{define "partial/card"}}
   <section class="feature-section">
     <h3 class="section-title offset"><a class="section-link" href="{{.URL}}">{{.Title}} →</a></h3>
     {{if .Error}}
@@ -274,13 +265,13 @@
               <div class="hero-gradient"></div>
               <div class="hero-caption">
                 <h5><a href="{{.URL}}">{{.Title}}</a></h5>
-                {{template "live-artists" .}}
+                {{template "partial/artists" .}}
                 <div class="secondary">{{quantity "quantity.plays" .Count}}</div>
               </div>
             </div>
           {{else}}
             <div class="feature-list {{if eq $card.Kind "albums"}}album-list{{end}}">
-              <div class="media medium">{{template "live-media" .}}</div>
+              <div class="media medium">{{template "partial/media" .}}</div>
             </div>
           {{end}}
         {{end}}
@@ -289,11 +280,12 @@
   </section>
 {{end}}
 
-{{define "live-artists"}}
-  <span class="media-artist">{{if .Various}}{{tr "ui.various_artists" "Various Artists"}}{{else}}{{range $i,$a:=.Artists}}{{if $i}}, {{end}}<a href="{{.URL}}">{{.Label}}</a>{{end}}{{end}}</span>
+{{define "partial/artists"}}
+  <span class="media-artist">{{if .Various}}{{tr "ui.various_artists" "Various Artists"}}{{else}}{{range $i,$a:=.Artists}}{{if $i}}, {{end}}<a href="{{.URL}}">
+    {{- .Label}}</a>{{end}}{{end}}</span>
 {{end}}
 
-{{define "live-media"}}
+{{define "partial/media"}}
   <a href="{{.URL}}" class="art-button">
     <img
       src="{{.Image.Medium}}"
@@ -308,12 +300,12 @@
   </a>
   <div class="media-text">
     <a class="media-title" href="{{.URL}}">{{.Title}}</a>
-    {{template "live-artists" .}}
+    {{template "partial/artists" .}}
     <div class="media-meta">{{quantity "quantity.plays" .Count}}</div>
   </div>
 {{end}}
 
-{{define "live-ranking"}}
+{{define "partial/ranking"}}
   <ol class="ranked-list">
     {{range .}}
       <li data-media-id="{{.ID}}" data-rank="{{.Rank}}">
@@ -333,7 +325,7 @@
           </a>
           <div class="media-text">
             <a class="media-title" href="{{.URL}}">{{.Title}}</a>
-            {{template "live-artists" .}}
+            {{template "partial/artists" .}}
           </div>
         </div>
         <span class="plays">{{quantity "quantity.plays" .Count}}</span>
@@ -347,7 +339,7 @@
   </ol>
 {{end}}
 
-{{define "live-listens"}}
+{{define "partial/listens"}}
   {{$page:=.}}
   {{if or .Listens .Playing}}
     <table class="listens">
@@ -355,14 +347,14 @@
         {{if .Playing}}
           <tr>
             <td><img src="{{.Playing.Image.Small}}" width="32" height="32" alt="" data-cover></td>
-            <td>{{template "live-artists" .Playing}} — <a href="{{.Playing.URL}}">{{.Playing.Title}}</a></td>
+            <td>{{template "partial/artists" .Playing}} — <a href="{{.Playing.URL}}">{{.Playing.Title}}</a></td>
             <td class="listen-time"><span class="now-dot"></span>{{tr "ui.now_playing" "Now Playing"}}</td>
           </tr>
         {{end}}
         {{range .Listens}}
           <tr data-track-id="{{.Item.ID}}" data-unix="{{.Unix}}">
             <td><a href="{{.Item.URL}}"><img src="{{.Item.Image.Small}}" width="32" height="32" alt="{{.Item.Title}}" data-cover></a></td>
-            <td>{{template "live-artists" .Item}} — <a href="{{.Item.URL}}">{{.Item.Title}}</a></td>
+            <td>{{template "partial/artists" .Item}} — <a href="{{.Item.URL}}">{{.Item.Title}}</a></td>
             <td class="listen-time"><time datetime="{{.Time.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .Time}}">{{.Relative}}</time><a
               class="listen-manage"
               href="/{{$page.Profile.Slug}}/manage/track/{{.Item.ID}}?listen_at={{.Unix}}&amp;history_return={{urlquery $page.CurrentURL}}#selected-listen"
@@ -377,7 +369,7 @@
   {{end}}
 {{end}}
 
-{{define "live-pager"}}
+{{define "partial/pager"}}
   <nav class="pagination" aria-label="{{tr "ui.pagination" "Pagination"}}">
     {{if .Previous}}
       <a href="{{.Previous}}">{{tr "ui.prev" "Prev"}}</a>
@@ -393,23 +385,23 @@
   </nav>
 {{end}}
 
-{{define "live-listing"}}
+{{define "page/listing"}}
   <main class="listing">
     <h1>{{.Title}}</h1>
-    {{template "live-periods" .}}
+    {{template "partial/periods" .}}
     <p class="date-range">{{.DateRange}} · {{.Timezone}}</p>
-    {{template "live-filters" .}}
-    {{template "live-pager" .Pager}}
+    {{template "partial/filters" .}}
+    {{template "partial/pager" .Pager}}
     {{if eq .Section "listens"}}
-      {{template "live-listens" .}}
+      {{template "partial/listens" .}}
     {{else}}
-      {{template "live-ranking" .Items}}
+      {{template "partial/ranking" .Items}}
     {{end}}
-    {{template "live-pager" .Pager}}
+    {{template "partial/pager" .Pager}}
   </main>
 {{end}}
 
-{{define "live-filters"}}
+{{define "partial/filters"}}
   <form class="listing-filters" method="get">
     <label>{{tr "ui.year" "Year"}}<select name="year">
       <option value="">{{tr "ui.year" "Year"}}</option>

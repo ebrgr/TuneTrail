@@ -113,7 +113,7 @@ func TestUIReference(t *testing.T) {
 			count := activityCount(date)
 			p.Cells = append(p.Cells, Cell{date.Format("02/01/2006") + fmt.Sprintf(" %d plays", count), count, fmt.Sprintf("%.3f", 0.1+float64(count)/100*0.9), date.After(today), i / 7})
 		}
-		if err := previewTemplates.ExecuteTemplate(w, "page.html", p); err != nil {
+		if err := previewTemplates.ExecuteTemplate(w, "page/preview", p); err != nil {
 			t.Error(err)
 		}
 	})
