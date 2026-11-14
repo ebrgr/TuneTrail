@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:53:00Z'
-updated_date: '2026-11-14T04:53:00Z'
+updated_date: '2026-11-14T04:54:00Z'
 labels:
   - config
   - operacao
@@ -135,6 +135,15 @@ created: 2026-11-14T04:53:00Z
 ---
 
 Aceite: aprovada pelo usuário em 14/11/2026.
+
+---
+
+author: ebrgr
+created: 2026-11-14T04:54:00Z
+
+---
+
+Publicação: versão 0.10 (tag `v0.10`), branch `feat/issue-111-trocar-koito-por-tunetrail-na` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

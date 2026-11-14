@@ -5,7 +5,7 @@ name: tunetrail
 
 services:
   tunetrail:
-    image: ghcr.io/ebrgr/tunetrail:${KOITO_IMAGE_TAG:-0.9}
+    image: ghcr.io/ebrgr/tunetrail:${KOITO_IMAGE_TAG:-0.10}
     restart: unless-stopped
     ports:
       - "${KOITO_HOST_BIND:-127.0.0.1}:${KOITO_HOST_PORT:-4110}:4110"
