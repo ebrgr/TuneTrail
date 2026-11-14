@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T01:33:00Z'
+updated_date: '2026-11-14T01:38:00Z'
 labels:
   - validacao
   - processo
@@ -34,7 +34,7 @@ Passos:
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 Inventário dos 37 scripts com destino de cada um
-- [ ] #2 Suíte de jornadas executa em `make check` e no CI sem rede externa
+- [x] #2 Suíte de jornadas executa em `make check` e no CI sem rede externa
 - [x] #3 Jornadas cobrem perfis, ingestão, páginas públicas, administração, importação e isolamento
 - [x] #4 Scripts de issue removidos ou arquivados como históricos, sem quebrar evidências citadas no backlog
 <!-- AC:END -->
@@ -84,6 +84,15 @@ created: 2026-11-14T01:33:00Z
 ---
 
 Publicação: integrada ao main por fast-forward sem versão nem tag, a pedido do usuário (somente testes e ferramentas), e enviada ao GitHub; o critério 2 será marcado após o workflow Test passar no push.
+
+---
+
+author: claude
+created: 2026-11-14T01:38:00Z
+
+---
+
+Verificação do critério 2: workflow Test aprovado no GitHub para o commit 4c04172 (https://github.com/ebrgr/TuneTrail/actions/runs/43541472021), com make check incluindo a suíte e2e.
 
 ---
 <!-- COMMENTS:END -->
