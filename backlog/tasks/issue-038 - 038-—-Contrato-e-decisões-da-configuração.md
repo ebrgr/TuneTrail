@@ -1,14 +1,14 @@
 ---
 id: ISSUE-038
 title: 038 — Contrato e decisões da configuração
-status: Em andamento
+status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:20:00Z'
 labels:
   - config
 milestone: m-4
 dependencies: []
-references: []
 priority: high
 type: feature
 ordinal: 38000
@@ -60,3 +60,16 @@ Testes dirigidos existentes de configuração, fuso e relay passaram com Go sem 
 comandos e alcance estão no contrato. Advisor/Sol revisou o plano antes das edições.
 Não foi criado leitor TOML, tela, endpoint ou migração de banco nesta etapa.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T00:20:00Z
+
+---
+
+Aceite: usuário pediu o fechamento da ISSUE-038 em 13/11/2026, a partir de Em andamento (etapa Aguardando aceite opcional). Encerrada com as verificações já registradas; sem nova execução de testes nesta etapa além do make check da publicação 0.8.
+
+---
+<!-- COMMENTS:END -->

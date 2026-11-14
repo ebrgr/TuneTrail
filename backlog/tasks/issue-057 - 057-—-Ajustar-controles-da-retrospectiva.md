@@ -1,14 +1,14 @@
 ---
 id: ISSUE-057
 title: 057 — Ajustar controles da retrospectiva
-status: Aguardando aceite
+status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:20:00Z'
 labels:
   - ui
 milestone: m-6
 dependencies: []
-references: []
 type: feature
 ordinal: 57000
 ---
@@ -40,3 +40,16 @@ Espaçamento dos itens ampliado e cartões responsivos sem conteúdo oculto em t
 
 Ajuste posterior: listas sempre visíveis, sem limite de altura ou rolagem interna em qualquer largura.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T00:20:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 13/11/2026. Publicada na versão 0.8.
+
+---
+<!-- COMMENTS:END -->
