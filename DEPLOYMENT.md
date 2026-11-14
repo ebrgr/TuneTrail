@@ -55,7 +55,10 @@ host data directory.
 
 If the old container is still running on the same data directory, the new one
 refuses to start ("another TuneTrail server is already using this data
-directory"). Installations with their own compose file or an Unraid template
+directory"). This guard relies on file locks: it works on Linux hosts (including
+Unraid) and Docker volumes, but bind mounts from macOS or Windows through
+Docker Desktop do not share locks between containers, so always stop the old
+project first. Installations with their own compose file or an Unraid template
 that mount `/etc/koito` keep working without changes until 2.0; the log asks to
 move the mount to `/etc/tunetrail`. The administrator signs in again once,
 because the session cookie was renamed.
