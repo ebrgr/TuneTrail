@@ -1,11 +1,11 @@
 ---
 id: ISSUE-113
 title: 113 — Colunas da Home lado a lado em larguras médias
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:40:00Z'
-updated_date: '2026-11-14T22:40:00Z'
+updated_date: '2026-11-14T22:41:00Z'
 labels:
   - ui
 milestone: m-10
@@ -36,6 +36,24 @@ created: 2026-11-14T22:40:00Z
 ---
 
 Início: branch `fix/issue-113-colunas-da-home-lado-a` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-14T22:41:00Z
+
+---
+
+Verificação: make check aprovado (12/12 jornadas, referência sem diferenças); capturas Chrome antes/depois: 375, 1024 e 1920px idênticas, 1300px empilha, 1320/1366/1440px com três colunas.
+
+---
+
+author: ebrgr
+created: 2026-11-14T22:41:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026. Publicação local autorizada na mensagem: "1 e após commite e publique". Push não solicitado.
 
 ---
 <!-- COMMENTS:END -->
