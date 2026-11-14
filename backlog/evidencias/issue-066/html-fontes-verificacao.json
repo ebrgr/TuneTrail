@@ -1,0 +1,74 @@
+[
+  {
+    "file": "assets/templates/admin/admin.html",
+    "goActions": 178,
+    "htmlTags": 274,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/admin/manage.html",
+    "goActions": 293,
+    "htmlTags": 277,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/admin/profile-review.html",
+    "goActions": 28,
+    "htmlTags": 38,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/admin/shell.html",
+    "goActions": 74,
+    "htmlTags": 141,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/admin/settings.html",
+    "goActions": 94,
+    "htmlTags": 95,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/admin/catalog-review.html",
+    "goActions": 149,
+    "htmlTags": 87,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/public/page.html",
+    "goActions": 249,
+    "htmlTags": 390,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/public/dialogs.html",
+    "goActions": 80,
+    "htmlTags": 121,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/public/media.html",
+    "goActions": 101,
+    "htmlTags": 81,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/public/graphs.html",
+    "goActions": 76,
+    "htmlTags": 124,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/public/live.html",
+    "goActions": 340,
+    "htmlTags": 324,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  },
+  {
+    "file": "assets/templates/public/rewind.html",
+    "goActions": 110,
+    "htmlTags": 113,
+    "actionsAttributesAndNonWhitespaceTextUnchanged": true
+  }
+]

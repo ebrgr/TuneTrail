@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T19:36:00Z'
+updated_date: '2026-11-14T20:01:00Z'
 labels:
   - ui
 milestone: m-10
@@ -110,6 +110,24 @@ created: 2026-11-14T19:36:00Z
 ---
 
 Reviewer Claude Opus aprovou antes do commit as três sugestões aplicadas: nome do chamador no erro, testes de else em if/range/with e recusa de referência a template associado sem corpo. make check passou, incluindo 12/12 e2e e equivalência dos 113 arquivos da ISSUE-065. Evidências em backlog/evidencias/issue-066/reviewer-refinamentos.md e refinamentos-check.log. Falta aceite do usuário e autorização de publicação.
+
+---
+
+author: Codex
+created: 2026-11-14T19:44:00Z
+
+---
+
+Usuário solicitou, antes do aceite, reformatar os 12 templates HTML para leitura e edição humanas. Escopo adicional: indentação e quebras de linha, preservando textos, atributos e lógica; não antecipa a unificação de head/sidebar nem renomeação de blocos da ISSUE-067. A referência original da 065 será preservada; a atualização de whitespace será documentada e verificada.
+
+---
+
+author: ebrgr
+created: 2026-11-14T20:01:00Z
+
+---
+
+Reviewer Claude Opus aprovou a formatação dos 12 HTML antes do commit. make check completo sem cache passou, 12/12 e2e e 113 arquivos exatos com base complementar HTML; base original da 065 preservada. Comparação Chrome: 276 cenários com texto, atributos e geometria idênticos; 272 pares de pixels exatos e quatro variações registradas. Evidências em backlog/evidencias/issue-066/html-formatacao.md. Falta aceite do usuário e autorização de publicação.
 
 ---
 <!-- COMMENTS:END -->

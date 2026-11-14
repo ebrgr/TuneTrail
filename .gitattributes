@@ -1,0 +1,2 @@
+# Rendered fixtures intentionally preserve exact whitespace emitted by Go templates.
+backlog/evidencias/issue-066/html-formatado/** whitespace=-blank-at-eol

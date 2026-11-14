@@ -8,14 +8,14 @@ import (
 	"testing"
 )
 
-// TestRenderedGraphTablesMatchIndependentProfileCounts checks values users can read without JavaScript.
+// TestRenderedGraphTablesMatchIndependentProfileCounts checks accessible values independently of HTML indentation.
 func TestRenderedGraphTablesMatchIndependentProfileCounts(t *testing.T) {
 	store := pageStore(t)
 	handler, err := NewHandler(store, Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	rowCount := regexp.MustCompile(`<td>([0-9]+)</td></tr>`)
+	rowCount := regexp.MustCompile(`<td>([0-9]+)</td>\s*</tr>`)
 	sumTable := func(t *testing.T, body, title string) int {
 		t.Helper()
 		marker := `<summary>` + title + `</summary>`

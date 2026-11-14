@@ -23,7 +23,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 )
 
-// TestSettingsHTTPJourney verifies real login, CSRF, persistence, conflicts and a non-saving Subsonic test.
+// TestSettingsHTTPJourney verifies the settings journey independently of presentation indentation.
 func TestSettingsHTTPJourney(t *testing.T) {
 	if os.Getenv("TUNETRAIL_TEST_041_SERVER") == "1" {
 		os.Args = []string{"tunetrail"}
@@ -254,7 +254,7 @@ disable_cover_art_archive=true
 		t.Fatal("saved, overridden or restart state not shown")
 	}
 	// A KOITO_* override is flagged DEPRECATED with its TUNETRAIL_* name; a TUNETRAIL_* one is not (ISSUE-111).
-	if !strings.Contains(refreshed, `class="server-setting-override server-setting-override-deprecated">Set by environment variable <code>KOITO_DISABLE_DEEZER_FILE</code> <strong class="setting-deprecated">(DEPRECATED)</strong> Rename it to <code>TUNETRAIL_DISABLE_DEEZER_FILE</code>.<br>To edit`) {
+	if !regexp.MustCompile(`class="server-setting-override server-setting-override-deprecated"\s*>` + regexp.QuoteMeta(`Set by environment variable <code>KOITO_DISABLE_DEEZER_FILE</code> <strong class="setting-deprecated">(DEPRECATED)</strong> Rename it to <code>TUNETRAIL_DISABLE_DEEZER_FILE</code>.<br>To edit`)).MatchString(refreshed) {
 		t.Fatal("deprecated KOITO_ override not flagged with its new name")
 	}
 	if !strings.Contains(refreshed, "<code>TUNETRAIL_LOG_LEVEL</code>. ") || strings.Count(refreshed, `class="setting-deprecated"`) != 1 || strings.Count(refreshed, "server-setting-override-deprecated") != 1 {
@@ -393,7 +393,7 @@ disable_cover_art_archive=true
 				break
 			}
 		}
-		if !strings.Contains(section, "<dt>Running</dt><dd>"+html.EscapeString(value)+"</dd>") {
+		if !regexp.MustCompile(`<dt>Running</dt>\s*<dd>` + regexp.QuoteMeta(html.EscapeString(value)) + `</dd>`).MatchString(section) {
 			t.Fatalf("running value for %s after restart missing or incorrect", name)
 		}
 	}
@@ -434,7 +434,7 @@ disable_cover_art_archive=true
 		}
 		restarted = getPage()
 	}
-	if !strings.Contains(restarted, "<dt>Running</dt><dd>info</dd>") || strings.Contains(restarted, "Set by environment variable <code>TUNETRAIL_LOG_LEVEL</code>") || calls.Load() != 3 {
+	if !regexp.MustCompile(`<dt>Running</dt>\s*<dd>info</dd>`).MatchString(restarted) || strings.Contains(restarted, "Set by environment variable <code>TUNETRAIL_LOG_LEVEL</code>") || calls.Load() != 3 {
 		t.Fatal("saved value did not become active after removing override")
 	}
 }

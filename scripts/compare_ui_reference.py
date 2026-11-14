@@ -7,12 +7,17 @@ import re
 from pathlib import Path
 
 
-def compare(base, candidate):
-    """Keep asset order and inline spaces; normalize only indentation between tags."""
+def compare(base, candidate, html_baseline=None):
+    """Compare exact bytes, optionally overlaying explicitly reviewed HTML fixtures only."""
     def inventory(root):
         return {str(p.relative_to(root)): p.read_bytes() for p in root.rglob('*')
                 if p.is_file()}
     left, right = inventory(base), inventory(candidate)
+    if html_baseline is not None:
+        for name, data in inventory(html_baseline).items():
+            if not name.endswith('.html') or name not in left:
+                raise ValueError(f'HTML baseline must replace an existing HTML fixture: {name}')
+            left[name] = data
     differences = []
     for name in sorted(left.keys() | right.keys()):
         a, b = left.get(name), right.get(name)
@@ -33,10 +38,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('base', type=Path)
     parser.add_argument('candidate', type=Path)
+    parser.add_argument('--html-baseline', type=Path, help='Reviewed HTML-only overlay; original assets remain authoritative')
     args = parser.parse_args()
     if not args.base.is_dir() or not args.candidate.is_dir():
         parser.error('both reference directories must exist')
-    report = compare(args.base, args.candidate)
+    if args.html_baseline is not None and not args.html_baseline.is_dir():
+        parser.error('HTML baseline must be a directory')
+    try:
+        report = compare(args.base, args.candidate, args.html_baseline)
+    except ValueError as error:
+        parser.error(str(error))
     print(json.dumps(report, indent=2))
     raise SystemExit(report['exit_code'])
 

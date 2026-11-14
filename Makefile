@@ -52,11 +52,12 @@ api.debug:
 api.vet:
 	CGO_ENABLED=0 go vet ./...
 
+# External assets read through os.Root are not reliably observed by the Go test result cache.
 api.test:
-	CGO_ENABLED=0 go test ./... -timeout 60s
+	CGO_ENABLED=0 go test -count=1 ./... -timeout 60s
 
 api.race:
-	CGO_ENABLED=1 go test -race ./... -timeout 120s
+	CGO_ENABLED=1 go test -race -count=1 ./... -timeout 120s
 
 api.build:
 	CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
@@ -77,7 +78,7 @@ ui.preview:
 
 ui.check:
 	CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
-	CGO_ENABLED=0 go test ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+	CGO_ENABLED=0 go test -count=1 ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
 	node --check assets/js/theme.js
 	node --check assets/js/ui.js
 	node --check assets/js/live.js
@@ -144,7 +145,7 @@ ui.check: ui.reference.test
 ui.reference.check:
 	@task_reference_dir=$$(mktemp -d); trap 'rm -rf "$$task_reference_dir"' EXIT; \
 	TZ=UTC TUNETRAIL_UI_REFERENCE="$$task_reference_dir/candidate" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1 && \
-	python3 scripts/compare_ui_reference.py backlog/evidencias/ui-responsiva/base/reference "$$task_reference_dir/candidate"
+	python3 scripts/compare_ui_reference.py backlog/evidencias/ui-responsiva/base/reference "$$task_reference_dir/candidate" --html-baseline backlog/evidencias/issue-066/html-formatado
 
 ui.check: ui.reference.check
 

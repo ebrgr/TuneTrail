@@ -37,3 +37,11 @@ Os HTMLs estão em `assets/templates/public/` e `assets/templates/admin/`; CSS, 
 A carga cria um snapshot em memória por processo. Reinicie após editar arquivos; não é necessário recompilar para editar HTML/CSS. Não há hot reload nesta entrega. Público e administração usam conjuntos separados de templates. A base de renderização da ISSUE-065 roda em `make ui.check`/`make check` e mantém versão de fixture 0.10, relógio e dados fixos, independentemente da versão publicada.
 
 `make package OUT=/tmp/tunetrail-new.tar.gz` cria uma distribuição local com binário, assets, catálogos e licenças. O destino precisa ser novo. A opção de embed permanece futura.
+
+### Formatação dos templates
+
+Os arquivos em `assets/templates/{public,admin}/` usam indentação de dois espaços, blocos estruturais separados e atributos longos em várias linhas. Mantenha juntos os textos com elementos em linha quando uma quebra acrescentaria espaço visível; expressões Go longas podem ter os argumentos em linhas separadas sem alterar o texto produzido. Não quebre strings de tradução nem valores de atributos. Use `{{-` e `-}}` pontualmente para preservar espaços nas fronteiras de blocos condicionais.
+
+`make ui.reference.check` continua comparando bytes exatos. A referência original da ISSUE-065 permanece intacta; somente os 23 HTML reformatados na ISSUE-066 usam a base complementar em `backlog/evidencias/issue-066/html-formatado/`. CSS, JS e os demais arquivos continuam comparados à referência original. A opção `--html-baseline` do comparador só substitui HTML já existente na base, recusando arquivos novos e assets. Mudanças de conteúdo exigem revisão; a comparação não ignora diferenças de whitespace para aprovar o gate.
+
+Os alvos de teste do Makefile usam `-count=1`: mudanças nos arquivos externos lidos por `os.Root` não devem reaproveitar resultados anteriores do cache de testes Go.

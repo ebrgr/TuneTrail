@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
 )
 
-// TestLanguageJourney checks public and admin pages, same-origin protection and request isolation.
+// TestLanguageJourney checks localized fallbacks regardless of markup indentation, origin and isolation.
 func TestLanguageJourney(t *testing.T) {
 	a := newProfileTestApp(t)
 	page := func(path, locale string) *httptest.ResponseRecorder {
@@ -38,11 +39,11 @@ func TestLanguageJourney(t *testing.T) {
 		if end < 0 || !strings.Contains(body[start:start+end], `name="language"`) {
 			t.Fatal("language form outside settings dialog")
 		}
-		fallback := `<noscript><details class="language-settings-fallback">`
-		pos := strings.Index(body, fallback)
-		if pos < 0 {
+		fallback := regexp.MustCompile(`<noscript>\s*<details class="language-settings-fallback">`).FindStringIndex(body)
+		if fallback == nil {
 			t.Fatal("no-JS settings missing")
 		}
+		pos := fallback[0]
 		close := strings.Index(body[pos:], "</noscript>")
 		if close < 0 || !strings.Contains(body[pos:pos+close], `name="language"`) {
 			t.Fatal("no-JS language form missing")

@@ -1,0 +1,169 @@
+{
+  "comparisons": 16,
+  "allScreenshotsIdentical": true,
+  "allVisibleCharacterPositionsIdentical": true,
+  "allElementPositionsIdentical": true,
+  "harnessAttributeDifferences": [
+    {
+      "scenario": "320-pearl-public-empty.html",
+      "tag": "BUTTON",
+      "before": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "yuu"
+        ],
+        [
+          "style",
+          "background:#191310;color:#f5ece3;border-color:#231b18"
+        ],
+        [
+          "aria-pressed",
+          "true"
+        ]
+      ],
+      "after": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "yuu"
+        ],
+        [
+          "style",
+          "background:#191310;color:#f5ece3;border-color:#231b18"
+        ],
+        [
+          "aria-pressed",
+          "false"
+        ]
+      ]
+    },
+    {
+      "scenario": "320-pearl-public-empty.html",
+      "tag": "BUTTON",
+      "before": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "pearl"
+        ],
+        [
+          "style",
+          "background:#FAFAFA;color:#0E121C;border-color:#F5F5F5"
+        ],
+        [
+          "aria-pressed",
+          "false"
+        ]
+      ],
+      "after": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "pearl"
+        ],
+        [
+          "style",
+          "background:#FAFAFA;color:#0E121C;border-color:#F5F5F5"
+        ],
+        [
+          "aria-pressed",
+          "true"
+        ]
+      ]
+    },
+    {
+      "scenario": "768-pearl-public-empty.html",
+      "tag": "BUTTON",
+      "before": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "yuu"
+        ],
+        [
+          "style",
+          "background:#191310;color:#f5ece3;border-color:#231b18"
+        ],
+        [
+          "aria-pressed",
+          "true"
+        ]
+      ],
+      "after": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "yuu"
+        ],
+        [
+          "style",
+          "background:#191310;color:#f5ece3;border-color:#231b18"
+        ],
+        [
+          "aria-pressed",
+          "false"
+        ]
+      ]
+    },
+    {
+      "scenario": "768-pearl-public-empty.html",
+      "tag": "BUTTON",
+      "before": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "pearl"
+        ],
+        [
+          "style",
+          "background:#FAFAFA;color:#0E121C;border-color:#F5F5F5"
+        ],
+        [
+          "aria-pressed",
+          "false"
+        ]
+      ],
+      "after": [
+        [
+          "class",
+          "theme-option"
+        ],
+        [
+          "data-theme-choice",
+          "pearl"
+        ],
+        [
+          "style",
+          "background:#FAFAFA;color:#0E121C;border-color:#F5F5F5"
+        ],
+        [
+          "aria-pressed",
+          "true"
+        ]
+      ]
+    }
+  ],
+  "note": "The harness sets theme after page load. On the first pearl navigation, hidden theme-button aria-pressed may reflect the previous theme. The comparison found identical pixels, visible text and character/element positions in all 16 cases."
+}

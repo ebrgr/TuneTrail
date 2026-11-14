@@ -25,5 +25,29 @@ class ReferenceTests(unittest.TestCase):
             (b/'font.woff2').write_bytes(b'font')
             self.assertEqual(len(compare(a,b)['differences']),3)
 
+    def test_reviewed_html_overlay_preserves_asset_checks(self):
+        """An HTML overlay cannot authorize asset changes or introduce new fixtures."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base, candidate, overlay = [Path(tmp)/name for name in ('base', 'candidate', 'overlay')]
+            for directory in (base, candidate, overlay):
+                directory.mkdir()
+            (base/'index.html').write_text('<p>original</p>')
+            (candidate/'index.html').write_text('<p>reviewed</p>')
+            (overlay/'index.html').write_text('<p>reviewed</p>')
+            for directory in (base, candidate):
+                (directory/'ui.css').write_text('body{}')
+            self.assertEqual(compare(base, candidate, overlay)['exit_code'], 0)
+            (candidate/'ui.css').write_text('changed')
+            self.assertEqual(compare(base, candidate, overlay)['exit_code'], 2)
+            (candidate/'index.html').write_text('<p>unreviewed</p>')
+            self.assertEqual(compare(base, candidate, overlay)['exit_code'], 2)
+            for name in ('unknown.html', 'ui.css'):
+                with self.subTest(name=name):
+                    extra = overlay/name
+                    extra.write_text('unexpected')
+                    with self.assertRaises(ValueError):
+                        compare(base, candidate, overlay)
+                    extra.unlink()
+
 if __name__ == '__main__':
     unittest.main()

@@ -4,6 +4,7 @@ title: 067 — Reformatar templates e unificar head, barra lateral e nomes de bl
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
+updated_date: '2026-11-14T20:02:00Z'
 labels:
   - ui
 milestone: m-10
@@ -33,3 +34,16 @@ Passos:
 - [ ] #3 Head e barra lateral definidos uma única vez
 - [ ] #4 Capturas sem diferença visual nas seis larguras
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-11-14T20:02:00Z
+
+---
+
+A pedido do usuário antes do aceite da ISSUE-066, a organização básica dos 12 HTML em assets/templates foi antecipada naquela branch: dois espaços, blocos e atributos desdobrados, argumentos Go legíveis e preservação de textos inline. Evidências: backlog/evidencias/issue-066/html-formatacao.md. Esta tarefa continua aberta: unificação de head/sidebar, nomes dos blocos, verificador/limite de 160 caracteres e demais critérios da 067 não foram implementados ou dados como aceitos.
+
+---
+<!-- COMMENTS:END -->

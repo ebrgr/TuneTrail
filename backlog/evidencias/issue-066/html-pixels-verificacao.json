@@ -1,0 +1,46 @@
+[
+  {
+    "file": "768-yuu-public-empty.html-0.png",
+    "changedPixels": 668,
+    "maxChannelDifference": 7,
+    "bounds": [
+      137,
+      415,
+      688,
+      725
+    ]
+  },
+  {
+    "file": "768-pearl-public-home.html-0.png",
+    "changedPixels": 28029,
+    "maxChannelDifference": 14,
+    "bounds": [
+      111,
+      556,
+      688,
+      2016
+    ]
+  },
+  {
+    "file": "320-pearl-public-album.html-0.png",
+    "changedPixels": 13,
+    "maxChannelDifference": 14,
+    "bounds": [
+      22,
+      21,
+      295,
+      1137
+    ]
+  },
+  {
+    "file": "320-yuu-admin-settings.html-0.png",
+    "changedPixels": 12,
+    "maxChannelDifference": 9,
+    "bounds": [
+      40,
+      413,
+      292,
+      939
+    ]
+  }
+]

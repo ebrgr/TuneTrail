@@ -72,3 +72,5 @@ Para capturar a referência exportada: `PLAYWRIGHT_MODULE=/caminho/node_modules/
 `validate_web_distribution.py --binary ./tunetrail` integra a jornada `web-assets` de `make e2e`. Copia binário/assets/langs para diretório descartável, inicia via symlink com cwd `/`, verifica snapshot, headers e rotas protegidas e recusa raízes inválidas/binário sem assets antes de tocar no diretório de dados. As demais jornadas recebem os caminhos do checkout explicitamente; os nomes legados de configuração continuam sendo testados.
 
 `make ui.reference.check` compara a renderização atual com os 113 arquivos aceitos da 065 e faz parte de `make ui.check`/CI. O relógio e a versão da fixture ficam fixos em 2024/0.10 para que publicações futuras não invalidem a base apenas pelo número de versão. Somente tokens conhecidos são mascarados; mudanças reais de HTML/CSS continuam falhando.
+
+A formatação dos templates na ISSUE-066 tem uma base complementar somente de HTML em `backlog/evidencias/issue-066/html-formatado/`. O gate usa `compare_ui_reference.py --html-baseline` para compará-la byte a byte e continua verificando os demais arquivos contra a base original da ISSUE-065.
