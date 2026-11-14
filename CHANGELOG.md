@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.9] - 2026-11-14
+
 ### Fixed
 
 - Removing a track artist now removes its derived album participation while preserving independent and legacy album credits, without a database migration (ISSUE-049).

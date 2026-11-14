@@ -4,7 +4,7 @@ title: 049 — Associação residual de artista em álbum após edição de faix
 status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-14T02:46:00Z'
+updated_date: '2026-11-14T02:51:00Z'
 labels:
   - catalogo
   - banco
@@ -133,6 +133,15 @@ created: 2026-11-14T02:46:00Z
 ---
 
 Aceite: autorizado pelo usuário em 13/11/2026, condicionado à verificação acima. Atenção: o caso real registrado nesta issue (Engenheiros do Hawaii → álbum 1) permanece no banco do usuário até o reparo manual de docs/src/content/docs/guides/editing.md, com backup e aplicação parada.
+
+---
+
+author: ebrgr
+created: 2026-11-14T02:51:00Z
+
+---
+
+Publicação: versão 0.9 (tag `v0.9`), branch `fix/issue-049-associacao-artista-album` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

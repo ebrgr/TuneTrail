@@ -2,9 +2,9 @@
 
 TuneTrail adds public listening profiles and administrator-only management to
 Koito. The current source version is
-**TuneTrail 0.8**, a prerelease intended for testing with a backup of your data.
+**TuneTrail 0.9**, a prerelease intended for testing with a backup of your data.
 
-The target image is `ghcr.io/ebrgr/tunetrail:0.8`, built for Linux amd64
+The target image is `ghcr.io/ebrgr/tunetrail:0.9`, built for Linux amd64
 and arm64. Publish the matching image before pulling this tag, or build it locally. The image serves both the API and compiled interface on port 4110;
 Node.js, Go, and Vite are not required on the deployment host.
 
@@ -140,7 +140,7 @@ them, and import them again after upgrading.
    migration"; follow step 5 of the recovery procedure, or upgrade from a new
    directory restored from the backup.
 
-These paths were exercised with TuneTrail 0.5 and 0.8 on fictional data
+These paths were exercised with TuneTrail 0.5 and 0.9 on fictional data
 (`scripts/validate_rollback.py`).
 
 ## Container registry access
@@ -158,7 +158,7 @@ the image and recreating the container are still necessary to apply updates.
 ## Build locally
 
 ```sh
-docker build --build-arg KOITO_VERSION=0.8 -t tunetrail:local .
+docker build --build-arg KOITO_VERSION=0.9 -t tunetrail:local .
 ```
 
 .dockerignore excludes local databases, credentials, caches, and development
@@ -168,4 +168,4 @@ timezone data and curl for the healthcheck.
 
 For local development and validation, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-Current source: **TuneTrail 0.8**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.9 becomes 0.10); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
+Current source: **TuneTrail 0.9**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.9 becomes 0.10); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
