@@ -29,14 +29,17 @@ var (
 
 // SettingsSnapshot describes persisted, currently effective and startup values.
 type SettingsSnapshot struct {
-	Revision        string
-	Exists          bool
-	Saved           map[string]string
-	Effective       map[string]string
-	Active          map[string]string
-	Origins         map[string]Origin
-	SavedOrigins    map[string]Origin
-	Overridden      []string
+	Revision     string
+	Exists       bool
+	Saved        map[string]string
+	Effective    map[string]string
+	Active       map[string]string
+	Origins      map[string]Origin
+	SavedOrigins map[string]Origin
+	Overridden   []string
+	// Sources names the environment variable that overrides each key, e.g.
+	// TUNETRAIL_LOG_LEVEL or KOITO_DISABLE_DEEZER_FILE (ISSUE-111).
+	Sources         map[string]string
 	RestartRequired bool
 }
 
@@ -118,7 +121,7 @@ func settingsRevision(raw []byte, present bool) string {
 
 // makeSnapshot validates saved and effective compositions while retaining legacy behavior without TOML.
 func (s *SettingsStore) makeSnapshot(raw []byte, present bool, r *envReader) (SettingsSnapshot, error) {
-	state := SettingsSnapshot{Revision: settingsRevision(raw, present), Exists: present, Saved: copySettings(managedDefaults), Active: copySettings(s.active), Origins: map[string]Origin{}, SavedOrigins: map[string]Origin{}}
+	state := SettingsSnapshot{Revision: settingsRevision(raw, present), Exists: present, Saved: copySettings(managedDefaults), Active: copySettings(s.active), Origins: map[string]Origin{}, SavedOrigins: map[string]Origin{}, Sources: map[string]string{}}
 	for k := range managedDefaults {
 		state.Origins[k] = OriginDefault
 		state.SavedOrigins[k] = OriginDefault
@@ -146,6 +149,7 @@ func (s *SettingsStore) makeSnapshot(raw []byte, present bool, r *envReader) (Se
 		if origin != OriginDefault {
 			state.Effective[k] = value
 			state.Origins[k] = origin
+			state.Sources[k] = r.source(k)
 			state.Overridden = append(state.Overridden, k)
 		}
 	}

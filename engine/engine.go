@@ -50,7 +50,11 @@ func initLogger(getenv func(string) string, version string, w io.Writer) (*zerol
 	}
 
 	ctx := logger.NewContext(l)
-	l.Info().Msgf("TuneTrail %s", version) // product name in the startup log (ISSUE-111)
+	l.Info().Msgf("TuneTrail %s", version)
+	// Reported here, once per start, because cfg.Load runs before the logger is configured.
+	for _, notice := range cfg.DeprecationNotices() {
+		l.Warn().Str("type", "config").Msg(notice)
+	} // product name in the startup log (ISSUE-111)
 	return l, ctx, nil
 }
 

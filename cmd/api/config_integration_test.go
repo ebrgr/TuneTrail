@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 )
 
 // TestTOMLStartupAndReset verifies the real command uses the same _FILE directory for both operations.
@@ -51,8 +53,15 @@ force_tz="America/Sao_Paulo"
 	port := listener.Addr().(*net.TCPAddr).Port
 	listener.Close()
 	env := []string{}
+	// Drop every configuration variable in both prefixes (ISSUE-111): a developer's
+	// .env exported by the Makefile must never reach the fixture server.
+	configNames := map[string]bool{}
+	for _, name := range cfg.EnvironmentNames() {
+		configNames[name] = true
+	}
 	for _, v := range os.Environ() {
-		if !strings.HasPrefix(v, "KOITO_") && !strings.HasPrefix(v, "TUNETRAIL_TEST_039_ACTION=") {
+		name, _, _ := strings.Cut(v, "=")
+		if !configNames[name] && !strings.HasPrefix(v, "TUNETRAIL_TEST_039_ACTION=") {
 			env = append(env, v)
 		}
 	}

@@ -106,7 +106,9 @@ func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap 
 		if draft != nil {
 			value = draft[spec.Name]
 		}
-		field := settingField{Name: spec.Name, Label: adminText(v.Locale, "admin.setting."+spec.Name+".label", spec.Label), Description: adminText(v.Locale, "admin.setting."+spec.Name+".description", spec.Description), Kind: spec.Kind, Value: value, Saved: displaySetting(snap.Saved[spec.Name]), Effective: displaySetting(snap.Effective[spec.Name]), Active: displaySetting(snap.Active[spec.Name]), Source: adminText(v.Locale, "admin.text."+originKey(snap.Origins[spec.Name]), originLabel(snap.Origins[spec.Name])), SavedSource: adminText(v.Locale, "admin.text."+originKey(snap.SavedOrigins[spec.Name]), originLabel(snap.SavedOrigins[spec.Name]))}
+		// Translation keys are prefix-neutral (admin.setting.LOG_LEVEL.label), ISSUE-111.
+		key := "admin.setting." + strings.TrimPrefix(spec.Name, "KOITO_")
+		field := settingField{Name: spec.Name, Label: adminText(v.Locale, key+".label", spec.Label), Description: adminText(v.Locale, key+".description", spec.Description), Kind: spec.Kind, Value: value, Saved: displaySetting(snap.Saved[spec.Name]), Effective: displaySetting(snap.Effective[spec.Name]), Active: displaySetting(snap.Active[spec.Name]), Source: adminText(v.Locale, "admin.text."+originKey(snap.Origins[spec.Name]), originLabel(snap.Origins[spec.Name])), SavedSource: adminText(v.Locale, "admin.text."+originKey(snap.SavedOrigins[spec.Name]), originLabel(snap.SavedOrigins[spec.Name]))}
 		if snap.Saved[spec.Name] == "" {
 			field.Saved = adminText(v.Locale, "admin.text.not_set", "Not set")
 		}
@@ -120,9 +122,13 @@ func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap 
 		if field.Overridden {
 			field.Value = snap.Effective[spec.Name]
 			value = field.Value
-			field.OverrideVariable = spec.Name
-			if snap.Origins[spec.Name] == cfg.OriginFile {
-				field.OverrideVariable += "_FILE"
+			// Show the variable actually used: TUNETRAIL_X, KOITO_X or their _FILE forms (ISSUE-111).
+			field.OverrideVariable = snap.Sources[spec.Name]
+			if field.OverrideVariable == "" {
+				field.OverrideVariable = cfg.CurrentName(spec.Name)
+				if snap.Origins[spec.Name] == cfg.OriginFile {
+					field.OverrideVariable += "_FILE"
+				}
 			}
 		}
 		if spec.Kind == "bool" {

@@ -56,12 +56,19 @@ disable_cover_art_archive=true
 	port := listener.Addr().(*net.TCPAddr).Port
 	listener.Close()
 	env := []string{}
+	// Drop every configuration variable in both prefixes (ISSUE-111): a developer's
+	// .env exported by the Makefile must never reach the fixture server.
+	configNames := map[string]bool{}
+	for _, name := range cfg.EnvironmentNames() {
+		configNames[name] = true
+	}
 	for _, v := range os.Environ() {
-		if !strings.HasPrefix(v, "KOITO_") && !strings.HasPrefix(v, "TUNETRAIL_TEST_041_SERVER=") {
+		name, _, _ := strings.Cut(v, "=")
+		if !configNames[name] && !strings.HasPrefix(v, "TUNETRAIL_TEST_041_SERVER=") {
 			env = append(env, v)
 		}
 	}
-	env = append(env, "TUNETRAIL_TEST_041_SERVER=1", "KOITO_CONFIG_DIR="+dir, "KOITO_BIND_ADDR=127.0.0.1", fmt.Sprintf("KOITO_LISTEN_PORT=%d", port), "KOITO_DEFAULT_PASSWORD=fixture-only", "KOITO_SKIP_IMPORT=true", "KOITO_LOG_LEVEL=error", "KOITO_DISABLE_DEEZER_FILE="+envFile)
+	env = append(env, "TUNETRAIL_TEST_041_SERVER=1", "KOITO_CONFIG_DIR="+dir, "KOITO_BIND_ADDR=127.0.0.1", fmt.Sprintf("KOITO_LISTEN_PORT=%d", port), "KOITO_DEFAULT_PASSWORD=fixture-only", "KOITO_SKIP_IMPORT=true", "TUNETRAIL_LOG_LEVEL=error", "KOITO_DISABLE_DEEZER_FILE="+envFile)
 	cmd := exec.Command(os.Args[0], "-test.run=^TestSettingsHTTPJourney$")
 	cmd.Env = env
 	cmd.Stdout = io.Discard
@@ -243,7 +250,7 @@ disable_cover_art_archive=true
 		t.Fatalf("conflict did not preserve draft and revision: %d", code)
 	}
 	refreshed := getPage()
-	if !strings.Contains(refreshed, "Restart to apply") || !strings.Contains(refreshed, "Set by environment variable <code>KOITO_LOG_LEVEL</code>") || !strings.Contains(refreshed, "Set by environment variable <code>KOITO_DISABLE_DEEZER_FILE</code>") || !strings.Contains(refreshed, `value="draft-key-one"`) {
+	if !strings.Contains(refreshed, "Restart to apply") || !strings.Contains(refreshed, "Set by environment variable <code>TUNETRAIL_LOG_LEVEL</code>") || !strings.Contains(refreshed, "Set by environment variable <code>KOITO_DISABLE_DEEZER_FILE</code>") || !strings.Contains(refreshed, `value="draft-key-one"`) {
 		t.Fatal("saved, overridden or restart state not shown")
 	}
 	public, err := client.Get(base + "/apis/web/v1/config")
@@ -383,7 +390,7 @@ disable_cover_art_archive=true
 			t.Fatalf("running value for %s after restart missing or incorrect", name)
 		}
 	}
-	if strings.Contains(restarted, "Restart to apply it") || !strings.Contains(restarted, "Set by environment variable <code>KOITO_LOG_LEVEL</code>") || calls.Load() != 2 {
+	if strings.Contains(restarted, "Restart to apply it") || !strings.Contains(restarted, "Set by environment variable <code>TUNETRAIL_LOG_LEVEL</code>") || calls.Load() != 2 {
 		t.Fatal("restart state, environment override or Subsonic startup ping incorrect")
 	}
 	// Removing the external override activates the saved value on the next restart.
@@ -391,7 +398,7 @@ disable_cover_art_archive=true
 	_ = cmd.Wait()
 	withoutOverride := make([]string, 0, len(env))
 	for _, item := range env {
-		if !strings.HasPrefix(item, "KOITO_LOG_LEVEL=") {
+		if !strings.HasPrefix(item, "TUNETRAIL_LOG_LEVEL=") {
 			withoutOverride = append(withoutOverride, item)
 		}
 	}
@@ -420,7 +427,7 @@ disable_cover_art_archive=true
 		}
 		restarted = getPage()
 	}
-	if !strings.Contains(restarted, "<dt>Running</dt><dd>info</dd>") || strings.Contains(restarted, "Set by environment variable <code>KOITO_LOG_LEVEL</code>") || calls.Load() != 3 {
+	if !strings.Contains(restarted, "<dt>Running</dt><dd>info</dd>") || strings.Contains(restarted, "Set by environment variable <code>TUNETRAIL_LOG_LEVEL</code>") || calls.Load() != 3 {
 		t.Fatal("saved value did not become active after removing override")
 	}
 }

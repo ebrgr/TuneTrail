@@ -96,15 +96,32 @@ type config struct {
 var (
 	globalConfig    *config
 	startupDocument Document
-	loadErr         error
-	once            sync.Once
-	lock            sync.RWMutex
+	// startupNotices holds deprecated-variable notices found by Load (ISSUE-111).
+	startupNotices []string
+	loadErr        error
+	once           sync.Once
+	lock           sync.RWMutex
 )
 
 // Load initializes configuration once and preserves failures for subsequent calls.
+// scanEnvironment resolves every aliased key up front (ISSUE-111), so a conflict
+// in a setting that is never read (e.g. the relay token with the relay disabled)
+// still stops startup, and deprecation notices cover every variable.
+func scanEnvironment(getenv func(string) string) (*envReader, error) {
+	reader := &envReader{getenv: getenv}
+	for _, key := range aliasedKeys {
+		reader.get(key)
+	}
+	return reader, reader.err
+}
+
 func Load(getenv func(string) string, version string) error {
 	once.Do(func() {
-		reader := &envReader{getenv: getenv}
+		reader, err := scanEnvironment(getenv)
+		if err != nil {
+			loadErr = err
+			return
+		}
 		document, effective, err := prepareTOML(reader)
 		if err != nil {
 			loadErr = err
@@ -130,6 +147,7 @@ func Load(getenv func(string) string, version string) error {
 		lock.Lock()
 		globalConfig = loaded
 		startupDocument = *document
+		startupNotices = append([]string(nil), reader.notices...)
 		lock.Unlock()
 	})
 	if loadErr != nil {

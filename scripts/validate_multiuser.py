@@ -65,7 +65,7 @@ class Server:
             port = sock.getsockname()[1]
         port = self.fixed_port or port
         self.origin = f"http://127.0.0.1:{port}"
-        self.env = {k: v for k, v in os.environ.items() if not k.startswith("KOITO_")}
+        self.env = clean_environment()
         self.env.update(KOITO_CONFIG_DIR=str(self.directory), KOITO_BIND_ADDR="127.0.0.1",
                         KOITO_LISTEN_PORT=str(port), KOITO_DEFAULT_USERNAME="validation-admin",
                         KOITO_DEFAULT_PASSWORD=PASSWORD, KOITO_DISABLE_MUSICBRAINZ="true",
@@ -239,6 +239,20 @@ def validate_journey(server):
         assert conn.execute("SELECT COUNT(*) FROM listens l LEFT JOIN listening_profiles p ON p.id=l.profile_id WHERE p.id IS NULL").fetchone()[0] == 0
         assert conn.execute("SELECT COUNT(*) FROM api_keys k LEFT JOIN listening_profiles p ON p.id=k.profile_id WHERE p.id IS NULL").fetchone()[0] == 0
     print(f"PASS {server.directory.name}: administration → keys → concurrent ingestion → public reads → import/export → revocation/deletion → restart; SQLite integrity OK")
+
+
+def clean_environment():
+    """Copy os.environ without configuration in either prefix (ISSUE-111).
+
+    The Makefile exports .env, so a developer's KOITO_* or TUNETRAIL_* settings
+    must never reach a fixture server. TUNETRAIL_LANGS_DIR (catalog location)
+    and TUNETRAIL_TEST_* (test control) are not configuration and are kept.
+    """
+    def is_config(name):
+        if name.startswith("KOITO_"):
+            return True
+        return name.startswith("TUNETRAIL_") and name != "TUNETRAIL_LANGS_DIR" and not name.startswith("TUNETRAIL_TEST_")
+    return {k: v for k, v in os.environ.items() if not is_config(k)}
 
 
 def create_legacy(database, password_hash):

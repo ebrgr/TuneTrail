@@ -3,7 +3,6 @@ package cfg
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -65,11 +64,13 @@ var managedDefaults = map[string]string{
 type envValue struct {
 	value  string
 	origin Origin
+	source string // variable actually used, e.g. TUNETRAIL_LOG_LEVEL or KOITO_X_FILE (ISSUE-111)
 }
 type envReader struct {
-	getenv func(string) string
-	err    error
-	cache  map[string]envValue
+	getenv  func(string) string
+	err     error
+	cache   map[string]envValue
+	notices []string // deprecation notices, reported once by Load
 }
 
 // get snapshots each source once to keep discovery and loading consistent.
@@ -80,22 +81,21 @@ func (r *envReader) get(key string) (string, Origin) {
 	if r.cache == nil {
 		r.cache = make(map[string]envValue)
 	}
-	result := envValue{origin: OriginDefault}
-	if value := r.getenv(key); value != "" {
-		result = envValue{value: value, origin: OriginEnvironment}
-	} else if filename := r.getenv(key + "_FILE"); filename != "" {
-		data, err := os.ReadFile(filename)
-		result.origin = OriginFile
-		if err != nil {
-			if r.err == nil {
-				r.err = fmt.Errorf("cannot read %s_FILE: %w", key, err)
-			}
-		} else {
-			result.value = strings.TrimSpace(string(data))
-		}
+	// TUNETRAIL_* and KOITO_* are resolved together (env_alias.go, ISSUE-111).
+	result, notice, err := resolveEnv(r.getenv, key)
+	if err != nil && r.err == nil {
+		r.err = err
+	}
+	if notice != "" {
+		r.notices = append(r.notices, notice)
 	}
 	r.cache[key] = result
 	return result.value, result.origin
+}
+
+// source returns the variable name that supplied key, after get resolved it.
+func (r *envReader) source(key string) string {
+	return r.cache[key].source
 }
 
 func readTOML(path string) (*tomlDocument, []byte, bool, error) {

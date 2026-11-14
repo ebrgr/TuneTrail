@@ -10,6 +10,8 @@ import subprocess
 import tempfile
 import time
 import urllib.error
+
+from validate_multiuser import clean_environment
 import urllib.request
 from pathlib import Path
 
@@ -36,7 +38,7 @@ def run(binary, root, mode):
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
     origin = f"http://127.0.0.1:{port}"
-    env = {key: value for key, value in os.environ.items() if not key.startswith("KOITO_")}
+    env = clean_environment()  # both prefixes, see validate_multiuser.py
     env.update(KOITO_CONFIG_DIR=str(directory), KOITO_BIND_ADDR="127.0.0.1", KOITO_LISTEN_PORT=str(port),
                KOITO_DEFAULT_USERNAME="validation-admin", KOITO_DEFAULT_PASSWORD="validation-password",
                KOITO_SKIP_IMPORT="true", KOITO_DISABLE_MUSICBRAINZ="true", KOITO_DISABLE_DEEZER="true",

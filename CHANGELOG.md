@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Configuration variables can use the TUNETRAIL_ prefix (and TUNETRAIL_*_FILE); KOITO_ names keep working with a startup warning, and different values under both names stop startup without revealing them (ISSUE-111).
+
 ### Changed
 
 - TuneTrail now identifies itself as TuneTrail, with its own project contact, to MusicBrainz, Deezer, Last.fm and Subsonic servers (ISSUE-111).

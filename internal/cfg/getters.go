@@ -9,6 +9,14 @@ import (
 // ProjectURL is the public contact sent in the User-Agent to external services.
 const ProjectURL = "https://github.com/ebrgr/TuneTrail"
 
+// DeprecationNotices returns the deprecated-variable notices found at startup.
+// Load runs before the logger exists, so initLogger reports them once.
+func DeprecationNotices() []string {
+	lock.RLock()
+	defer lock.RUnlock()
+	return append([]string(nil), startupNotices...)
+}
+
 func UserAgent() string {
 	lock.RLock()
 	defer lock.RUnlock()
