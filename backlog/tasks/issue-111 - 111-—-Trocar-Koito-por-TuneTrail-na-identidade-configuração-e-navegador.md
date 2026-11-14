@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:53:00Z'
-updated_date: '2026-11-14T04:03:00Z'
+updated_date: '2026-11-14T04:28:00Z'
 labels:
   - config
   - operacao
@@ -55,10 +55,10 @@ Pode ser dividida: a Fase A é pequena e independente e pode ser publicada antes
 - [x] #1 User-Agent e cliente Subsonic identificam o TuneTrail, sem o contato do Koito (teste)
 - [x] #2 TUNETRAIL_* e TUNETRAIL_*_FILE aceitos para as 30 variáveis ativas com alias (das 34 constantes; DATABASE_URL, WEB_UI, SQLITE_ENABLED e ENABLE_FULL_IMAGE_CACHE ficam só como KOITO_*); KOITO_* funciona com aviso de descontinuação emitido uma vez na partida (testes)
 - [x] #3 Valores diferentes entre prefixos (inclusive combinações com _FILE e chaves não lidas) recusam a partida com mensagem que não contém valores (teste)
-- [ ] #4 Administrador com koito_session continua logado após atualizar; o próximo login grava tunetrail_session e expira o antigo; logout revoga as duas sessões
-- [ ] #5 Troca do cookie de início da semana não provoca recarga extra da página
+- [x] #4 Somente tunetrail_session autentica; koito_session é ignorado (decisão do usuário: sem alternativa) e o login grava só o novo; CHANGELOG avisa que o administrador entra de novo uma vez
+- [x] #5 Cookie de início da semana, preauth e nomes JS (TuneTrailTheme, tunetrail-theme-change) renomeados sem alternativa; uma recarga no primeiro acesso é aceitável
 - [ ] #6 Imagem sem ENV KOITO_* fixas; compose mantém a interpolação compatível com deploy/.env existente; exemplos, CI e referência usam os nomes novos; e2e roda com TUNETRAIL_* e uma jornada e um smoke de contêiner confirmam KOITO_* com diretório personalizado
-- [ ] #7 Decisões da Fase C registradas (diretório padrão, nome do projeto compose, prazo do fallback de cookie, KOITO_* vira erro fatal no 1.0)
+- [ ] #7 Decisões da Fase C registradas (diretório padrão, nome do projeto compose, KOITO_* vira erro fatal no 1.0)
 - [ ] #8 koito.db, formato e arquivo de exportação koito, créditos e histórico intactos; inventário atualizado ao final
 <!-- AC:END -->
 
@@ -98,6 +98,15 @@ created: 2026-11-14T04:03:00Z
 ---
 
 Fase B1 concluída: resolvedor TUNETRAIL_/KOITO_ (env_alias.go) com a tabela de precedência do Advisor; varredura antecipada de todas as 30 chaves em Load; avisos coletados uma vez e emitidos em initLogger; nome real exibido na página de configurações (Sources), sem alterar Origin; chaves de tradução neutras; filtros de ambiente dos testes cobrindo os dois prefixos. Verificação: testes da tabela (env e _FILE nos dois prefixos, vazio como ausente, _FILE ilegível falha fechado), erro de conflito sem valores, conflito em chave não lida, um aviso por variável; integração mostra TUNETRAIL_LOG_LEVEL e KOITO_DISABLE_DEEZER_FILE na mesma página; binário real: nomes antigos iniciam com aviso, nomes novos sem aviso, valores divergentes recusam a partida sem revelar valores; make check verde (10/10 e2e). Próximo: B2 (navegador), aguardando o usuário.
+
+---
+
+author: claude
+created: 2026-11-14T04:28:00Z
+
+---
+
+Fase B2 concluída. Decisão do usuário (14/11/2026): só os nomes novos, sem cookies antigos como alternativa. tunetrail_session, tunetrail_preauth e tunetrail-weekstart substituem koito_*; window.TuneTrailTheme e tunetrail-theme-change substituem os nomes JS; temporário .tunetrail_perm_check_*. Consequência registrada no CHANGELOG: o administrador entra de novo uma vez após atualizar. A transição com fallback chegou a ser implementada e foi retirada a pedido. Verificação: testes confirmam que koito_session não autentica e que o login grava só tunetrail_session; validate_permissions.py com caso legacy-cookie-name; testes atualizados para os nomes novos; make ui.check e make check verdes (10/10 e2e). Critérios 4 e 5 reescritos conforme a decisão; o prazo do cookie antigo deixa de existir na Fase C.
 
 ---
 <!-- COMMENTS:END -->
