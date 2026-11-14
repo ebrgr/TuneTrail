@@ -1,10 +1,11 @@
 ---
 id: ISSUE-064
 title: 064 — Testes de recuperação de banco, migração e importação
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T01:22:00Z'
+updated_date: '2026-11-14T01:37:00Z'
 labels:
   - banco
   - validacao
@@ -48,6 +49,15 @@ created: 2026-11-14T01:22:00Z
 ---
 
 Lacunas da ISSUE-046 reconciliadas na ISSUE-062: critérios 4 (versão desconhecida sem teste), 5 (injeção de falhas e interrupção por fase), 6 (rollback não exercitado) e 8 (procedimento de recuperação). Os três primeiros critérios desta tarefa já cobrem a injeção de falhas; acrescentados critérios para os demais.
+
+---
+
+author: ebrgr
+created: 2026-11-14T01:37:00Z
+
+---
+
+Início: branch `chore/issue-064-testes-de-recuperacao-de-banco` criada a partir de `main`.
 
 ---
 <!-- COMMENTS:END -->

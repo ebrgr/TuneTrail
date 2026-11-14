@@ -29,6 +29,7 @@ Para acrescentar uma jornada, crie o script com `--binary` e diretório descart�
 
 - `validate_container.py --image <imagem>` — sobe a imagem Docker com volume novo; exige Docker.
 - `validate_upgrade.py` — atualização sobre uma **cópia somente leitura** de um banco legado; nunca aponte para o banco em uso.
+- `validate_rollback.py --binary ./tunetrail --previous-binary <build 0.5>` — rollback para a última versão que lê `koito.db` e volta a partir do `.bak`, em dados fictícios (instruções de build no próprio script).
 - `serve_roadmap06.py --binary ./tunetrail --work-dir <novo>` — mantém um servidor com a fixture fictícia para capturas.
 - `capture_admin_webui.cjs` — capturas da administração em navegador.
 

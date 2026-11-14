@@ -76,6 +76,41 @@ Profiles are public; only administrative operations require a password. The
 volume contains credentials and listening data and must be retained across
 container upgrades.
 
+## Recover an interrupted or refused migration
+
+The migration publishes `tunetrail.db` in a single atomic step, after the
+backup, the copy, the schema upgrade and the checks have finished. An
+interrupted start (crash, `kill -9`, power loss or a full disk) therefore
+leaves either no `tunetrail.db` or a complete one; `koito.db` is never
+modified. Always stop every TuneTrail and Koito container before acting.
+
+1. **No `tunetrail.db` in the data directory.** The migration did not finish.
+   Free disk space if the log reports it, then start the container again; it
+   repeats the migration from `koito.db` and creates a new backup.
+2. **`tunetrail.db` exists.** The migration finished. Start normally.
+3. **Leftover files.** An interrupted start can leave `.tunetrail-migrate-*.db`
+   files and extra `koito.db.pre-tunetrail-*.bak` backups. They are never
+   used automatically. After a successful start, find the backup in use with
+   `sqlite3 tunetrail.db "SELECT backup_name FROM tunetrail_migration"`, keep
+   it, and remove the `.tunetrail-migrate-*.db` files. Keep the other backups
+   until you no longer need them.
+4. **"orphaned database sidecar".** A `tunetrail.db-wal`, `-shm` or `-journal`
+   exists without `tunetrail.db`. Move those files out of the data directory
+   (do not delete them yet) and start again.
+5. **"legacy database changed after migration" or "conflicting databases".**
+   `koito.db` was written after the migration, usually because an older
+   version ran against the same directory. Choose one copy:
+   - keep the newer history in `tunetrail.db`: move `koito.db` (and its
+     `-wal`/`-shm` files) out of the data directory, then start; or
+   - start over from the legacy database: move `tunetrail.db` and its
+     `-wal`/`-shm` files out of the data directory, then start; listens
+     recorded only in `tunetrail.db` are lost unless you export them first.
+
+To restore from the backup, stop the container, create a new data directory,
+copy the backup in use into it as `koito.db` (permissions `0600`), copy the
+image cache, point `KOITO_DATA_DIR` at the new directory and start. The
+migration runs again from that copy.
+
 ## Logs, health, and shutdown
 
 ```sh
@@ -89,11 +124,24 @@ to shut down gracefully. `stop` and `down` preserve the host data directory.
 
 ## Rollback
 
-Stop the SUM container. Restore the complete pre-upgrade backup/data directory
-and run the previous application version against that restored copy. The
-migration intentionally does not offer a destructive SQL downgrade. Restoring
-a backup loses writes made after that backup; retain the newer data separately
-if you need to inspect or reconcile it.
+The migration intentionally does not offer a destructive SQL downgrade.
+Versions up to 0.5 read `koito.db`; later versions read `tunetrail.db`. A
+rollback to such a version shows the history as it was before the upgrade:
+listens, keys and settings recorded afterwards exist only in `tunetrail.db`.
+Export the affected profiles from the Administration tab first if you need
+them, and import them again after upgrading.
+
+1. Stop the container and back up the complete data directory.
+2. Either start the previous version against the same directory (it reads the
+   untouched `koito.db`), or restore the backup in use as `koito.db` in a new
+   directory, as described above, and start the previous version there.
+3. The previous version upgrades `koito.db` in place. Upgrading again later
+   in the same directory is refused with "legacy database changed after
+   migration"; follow step 5 of the recovery procedure, or upgrade from a new
+   directory restored from the backup.
+
+These paths were exercised with TuneTrail 0.5 and 0.8 on fictional data
+(`scripts/validate_rollback.py`).
 
 ## Container registry access
 

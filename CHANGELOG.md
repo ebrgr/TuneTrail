@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Step-by-step guide to recover an interrupted or refused database migration and to roll back, in DEPLOYMENT.md (ISSUE-064).
+
 ## [0.8] - 2026-11-13
 
 ### Added
