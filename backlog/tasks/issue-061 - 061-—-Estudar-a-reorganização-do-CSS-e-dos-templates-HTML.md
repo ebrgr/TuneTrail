@@ -4,10 +4,10 @@ title: 061 — Estudar a reorganização do CSS e dos templates HTML
 status: Aguardando aceite
 assignee: []
 created_date: '2026-11-13T23:47:00Z'
-updated_date: '2026-11-13T23:47:00Z'
+updated_date: '2026-11-14T00:39:00Z'
 labels:
   - ui
-milestone: m-8
+milestone: m-10
 dependencies: []
 documentation:
   - doc-031
@@ -39,6 +39,15 @@ created: 2026-11-13T23:47:00Z
 ---
 
 Verificação: estudo doc-031 escrito a partir de leitura de internal/webui/preview.go:21, internal/adminui/admin.go:35, internal/webui/assets.go, internal/i18n/i18n.go (precedente langs/), Dockerfile e medição de todos os templates e CSS (tamanho, linhas, maior linha, media queries). Sem mudança de código. Aguarda decisões do usuário: embutido+dev (recomendado) ou externo; nomes templates/ e assets/; fonte local na mesma leva ou separada.
+
+---
+
+author: claude
+created: 2026-11-14T00:39:00Z
+
+---
+
+Plano TuneTrail 1.0 (doc-032): as fases do doc-031 viraram ISSUE-065 a ISSUE-070. Pontos de quebra alinhados ao doc-010: 40, 64 e 90rem.
 
 ---
 <!-- COMMENTS:END -->

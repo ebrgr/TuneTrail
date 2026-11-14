@@ -4,12 +4,12 @@ title: 049 — Associação residual de artista em álbum após edição de faix
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:39:00Z'
 labels:
   - catalogo
   - banco
-milestone: m-6
+milestone: m-9
 dependencies: []
-references: []
 priority: high
 type: bug
 ordinal: 49000
@@ -64,3 +64,16 @@ migrations consolidadas retroativamente.
 
 Advisor/Sol apontou que não se pode inferir a procedência com os campos atuais.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T00:39:00Z
+
+---
+
+Plano TuneTrail 1.0 (doc-032): incluída na Fase 0 · Base; corrigir antes de novos recursos de catálogo (ISSUE-096 depende desta).
+
+---
+<!-- COMMENTS:END -->

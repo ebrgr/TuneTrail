@@ -3,11 +3,14 @@ id: doc-031
 title: Estudo — reorganização do CSS e dos templates HTML
 type: other
 created_date: '2026-11-13T23:46:00Z'
+updated_date: '2026-11-14T00:30:00Z'
 tags:
   - estudo
 ---
 
-**Tarefa:** ISSUE-061 · **Substitui:** ISSUE-058 (Tailwind não será adotado, decision-006) · **Data:** 13/11/2026
+**Tarefa:** ISSUE-061 · **Substitui:** ISSUE-058 (Tailwind não será adotado, decision-006) · **Data:** 13/11/2026 · **Plano:** [ROADMAP — TuneTrail 1.0](<../roadmaps/doc-032 - ROADMAP-—-TuneTrail-1.0.md>), Fase 1
+
+> Atualizado em 13/11/2026: pontos de quebra alinhados ao doc-010 (40, 64 e 90rem) e fases convertidas nas tarefas ISSUE-065 a ISSUE-070. Este estudo substitui a árvore `internal/webui/static/css/` do doc-010 §3.2.
 
 ## Pergunta
 
@@ -114,7 +117,7 @@ assets/css/
 
 Como servir sem etapa de build: o Go concatena os arquivos em ordem alfabética na inicialização e serve um único `/web-assets/ui.css`, com hash do conteúdo para cache longo (`ui.css?v=<hash>` ou `ui.<hash>.css`). São poucas linhas de Go, sem ferramenta nova. Alternativa descartada: vários `<link>` ou `@import`, que aumentam o número de requisições.
 
-Pontos de quebra: reduzir os 13 a três (`40rem`, `64rem`, `96rem`) e usar container queries nos cards e grades. Variáveis CSS não funcionam dentro de `@media`, então a escala é garantida por uma verificação automática (abaixo).
+Pontos de quebra: reduzir os 13 a três (`40rem`, `64rem`, `90rem`, os mesmos do doc-010 §3.1; 90rem corresponde à captura de 1440px) e usar container queries nos cards e grades. Variáveis CSS não funcionam dentro de `@media`, então a escala é garantida por uma verificação automática (abaixo).
 
 ## Organização dos templates
 
@@ -126,7 +129,7 @@ Pontos de quebra: reduzir os 13 a três (`40rem`, `64rem`, `96rem`) e usar conta
 
 ## Como verificar cada fase
 
-1. **Antes de tudo:** um teste que renderiza todas as páginas da prévia e da administração com dados fictícios e grava o HTML como referência (`backlog/evidencias/reorganizacao-web/`).
+1. **Antes de tudo (ISSUE-065):** um teste que renderiza todas as páginas da prévia e da administração com dados fictícios e grava o HTML como referência (`backlog/evidencias/reorganizacao-web/`).
 2. **Mudança de lugar:** HTML renderizado e CSS servido **idênticos byte a byte** à referência.
 3. **Reformatação dos templates:** HTML idêntico depois de normalizar espaços em branco, mais capturas em 320, 390, 768 e 1440 px nos temas Yuu e Pearl com os scripts de captura existentes.
 4. **Divisão do CSS:** o CSS concatenado é igual ao `ui.css` atual, salvo espaços e a ordem documentada.
@@ -134,15 +137,15 @@ Pontos de quebra: reduzir os 13 a três (`40rem`, `64rem`, `96rem`) e usar conta
 
 ## Fases propostas (cada uma vira uma tarefa)
 
-| Fase | Escopo | Visível ao usuário? |
-| --- | --- | --- |
-| 1 | Mover para `templates/` e `assets/` + `web.go` na raiz + `TUNETRAIL_WEB_DIR` para desenvolvimento; ajustar Dockerfile, Makefile e scripts | Não (HTML idêntico) |
-| 2 | Reformatar templates e unificar o `<head>`/barra lateral | Não (HTML equivalente) |
-| 3 | Dividir `ui.css`/`admin.css` em camadas, concatenação no Go, hash para cache | Não (CSS equivalente) |
-| 4 | Tokens e três pontos de quebra, container queries | Sim (layout responsivo) |
-| 5 | Fontes servidas pelo próprio TuneTrail, sem Google Fonts | Sim (privacidade, funciona offline) |
+| Fase | Tarefa | Escopo | Visível ao usuário? |
+| --- | --- | --- | --- |
+| 1 | ISSUE-066 | Mover para `templates/` e `assets/` + `web.go` na raiz + `TUNETRAIL_WEB_DIR` para desenvolvimento; ajustar Dockerfile, Makefile e scripts | Não (HTML idêntico) |
+| 2 | ISSUE-067 | Reformatar templates e unificar o `<head>`/barra lateral | Não (HTML equivalente) |
+| 3 | ISSUE-068 | Dividir `ui.css`/`admin.css` em camadas, concatenação no Go, hash para cache | Não (CSS equivalente) |
+| 4 | ISSUE-069 | Tokens e três pontos de quebra, container queries | Sim (layout responsivo) |
+| 5 | ISSUE-070 | Fontes servidas pelo próprio TuneTrail, sem Google Fonts | Sim (privacidade, funciona offline) |
 
-As fases 1–3 não mudam o comportamento e podem ser verificadas por comparação. As fases 4 e 5 precisam de aceite visual.
+A referência de renderização (ISSUE-065) vem antes de todas. As fases 1–3 não mudam o comportamento e podem ser verificadas por comparação. As fases 4 e 5 precisam de aceite visual.
 
 ## Decisões para o usuário
 

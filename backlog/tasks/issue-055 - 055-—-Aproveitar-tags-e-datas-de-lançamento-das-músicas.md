@@ -4,12 +4,13 @@ title: 055 — Aproveitar tags e datas de lançamento das músicas
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:39:00Z'
 labels:
   - catalogo
   - ingestao
-milestone: m-8
-dependencies: []
-references: []
+milestone: m-13
+dependencies:
+  - ISSUE-079
 type: feature
 ordinal: 55000
 ---
@@ -63,3 +64,16 @@ Esta issue é um planejamento local. Não altera o esquema, não executa migraç
 - [API MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API) — consultas por entidade e dados adicionais como gêneros e tags.
 - [Integrações externas do Navidrome](https://www.navidrome.org/docs/usage/external-integrations/) — metadados e uso de IDs MusicBrainz.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T00:39:00Z
+
+---
+
+Plano TuneTrail 1.0 (doc-032): ROADMAP item 7, Fase 4 · Insights. A migração de metadados deve ser coordenada com a v4 da ISSUE-079/080.
+
+---
+<!-- COMMENTS:END -->

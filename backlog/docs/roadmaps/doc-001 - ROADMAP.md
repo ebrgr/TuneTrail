@@ -3,13 +3,15 @@ id: doc-001
 title: ROADMAP
 type: specification
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:45:00Z'
 tags:
   - roadmap
 ---
 > Importado de `docs-dev/ROADMAP.md`. Original removido em 12/11/2026; consulte o histórico do Git.
 
 ROADMAP.md
+
+> **13/11/2026:** os itens 2, 4, 5, 7 e 8 e as pendências abaixo foram convertidos em tarefas no [ROADMAP — TuneTrail 1.0](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>) (ISSUE-062 a ISSUE-105). Este documento fica como registro histórico; a reconciliação completa é a ISSUE-062.
 
 ## TAREFAS
 
@@ -20,13 +22,14 @@ ROADMAP.md
 2. Melhorar o layout de adiminstração e separar opções por usuários de forma mais efetiva, senha simples para cada usuário para deixar perfil público/privado
     - Colocar badge do lado do nome do usuário sempre que conta de administração estiver logada somente esta conta pode apagar dados e adicionar / deletar novos perfis.
     - Senha simples em cada perfil somente para deixar as visualizações públicas ou não
+    - → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): ISSUE-074 (layout e badge) e ISSUE-100 (perfis públicos/privados).
 
 3. Desenvolver a interface multilíngue — [estudo e plano](<doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>), com [issues locais 050–054](<../historico/doc-025 - Índice-histórico-das-issues-locais-001–058.md>). Issue 050 fechada e aprovada; 051 fechada e aprovada; 052–054 implementadas e aguardando teste funcional e aceite. Catálogos externos em `langs`.
-4. Integrar Escutas do spotify / deezer / tidal ou de outros serviços ao koito.
-5.  Gerar imagens que podem ser postadas em FEEDs de midias sociais como instagram
+4. Integrar Escutas do spotify / deezer / tidal ou de outros serviços ao koito. → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): Fase 3, ISSUE-085 a ISSUE-091.
+5.  Gerar imagens que podem ser postadas em FEEDs de midias sociais como instagram → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): ISSUE-098 e ISSUE-099.
 6. Revisar a documentação e preparar o site oficial do TuneTrail: conteúdo, identidade, endereço, hospedagem, build e capturas. [Issue 048 — documentação e site](<../../tasks/issue-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>).
-7. Aproveitar tags, gêneros e datas de lançamento: priorizar informações recebidas na escuta e complementar pelo MusicBrainz quando necessário, com migração segura do SQLite. [Issue 055 — metadados musicais](<../../tasks/issue-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>).
-8. Estudar melhorias de interação e funções dinâmicas na interface. [Issue 056 — interações da UI](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>).
+7. Aproveitar tags, gêneros e datas de lançamento: priorizar informações recebidas na escuta e complementar pelo MusicBrainz quando necessário, com migração segura do SQLite. → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): Fase 4, coordenada com a ISSUE-079. [Issue 055 — metadados musicais](<../../tasks/issue-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>).
+8. Estudar melhorias de interação e funções dinâmicas na interface. → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): ISSUE-075 e ISSUE-084. [Issue 056 — interações da UI](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>).
 
 ## PENDENCIAS
 

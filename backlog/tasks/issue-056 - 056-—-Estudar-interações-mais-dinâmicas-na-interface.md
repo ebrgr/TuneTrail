@@ -4,11 +4,13 @@ title: 056 — Estudar interações mais dinâmicas na interface
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:56:00Z'
 labels:
   - ui
-milestone: m-8
+milestone: m-10
 dependencies: []
-references: []
+references:
+  - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 type: spike
 ordinal: 56000
 ---
@@ -68,3 +70,25 @@ Ordem sugerida para investigação: começar por **tocando agora** e **busca com
 - [ ] Propor sequência de implementação e issues próprias quando necessário, com capturas ou protótipos se ajudarem na decisão.
 - [ ] Apresentar o estudo para avaliação do usuário antes de encerrar esta issue.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T00:39:00Z
+
+---
+
+Plano TuneTrail 1.0 (doc-032): ROADMAP item 8. As recomendações estão no doc-010 §3.5 e viram as ISSUE-075 (fragmentos, transições, busca) e ISSUE-084 (tocando agora por SSE); encerrar este estudo junto com a ISSUE-075.
+
+---
+
+author: claude
+created: 2026-11-14T00:56:00Z
+
+---
+
+Comparação com o Koito React em 127.0.0.1:4111 (13/11/2026): o servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem de busca e edição refazerem a página inteira, de arquivos estáticos sem cache e de no-store nas páginas públicas. Encaminhamento: ISSUE-106 (cache e bfcache) e ISSUE-107 (busca instantânea e edição sem recarregar), antecipadas na fase 1; ISSUE-075 generaliza os fragmentos.
+
+---
+<!-- COMMENTS:END -->

@@ -4,11 +4,11 @@ title: 048 — Documentação e site oficial do TuneTrail
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T00:39:00Z'
 labels:
   - docs
-milestone: m-5
+milestone: m-15
 dependencies: []
-references: []
 type: docs
 ordinal: 48000
 ---
@@ -91,3 +91,16 @@ Documentação revisada, site pronto para aceite, evidências de build/preview e
 capturas em `backlog/evidencias/issue-048/` quando a execução começar.
 Este registro não inicia a implementação nem publica o site.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T00:39:00Z
+
+---
+
+Plano TuneTrail 1.0 (doc-032): Fase 6 · Operação; requisito da candidatura ao 1.0 (ISSUE-105).
+
+---
+<!-- COMMENTS:END -->

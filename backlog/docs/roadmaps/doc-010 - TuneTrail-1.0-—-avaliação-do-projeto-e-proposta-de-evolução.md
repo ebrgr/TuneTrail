@@ -3,7 +3,7 @@ id: doc-010
 title: TuneTrail 1.0 — avaliação do projeto e proposta de evolução
 type: specification
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-12T23:54:00Z'
+updated_date: '2026-11-14T00:30:00Z'
 tags:
   - roadmap
 ---
@@ -12,6 +12,8 @@ tags:
 # TuneTrail 1.0 — avaliação do projeto e proposta de evolução
 
 **Data:** 12/11/2026 · **Base avaliada:** TuneTrail 0.6, HEAD `be07697` + 113 arquivos com alterações locais não commitadas.
+> **Atualização em 13/11/2026 (TuneTrail 0.8):** o plano de execução deste documento foi convertido em tarefas no [ROADMAP — TuneTrail 1.0](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>) (ISSUE-062 a ISSUE-105, marcos m-9 a m-15). Da Fase 0 já foram resolvidos: trabalho não commitado (publicado na 0.8), aceites de 038, 042, 052–054 e 057, remoção de `agents - cópia.md` e de `soKz24cd/`. A reorganização do CSS e dos templates segue o [doc-031](<../estudos/doc-031 - Estudo-—-reorganização-do-CSS-e-dos-templates-HTML.md>), que substitui a árvore proposta em §3.2. O Tailwind não será adotado (ISSUE-058, decision-006).
+
 **Natureza:** proposta para decisão do usuário. Não autoriza implementação, não abre issues no GitHub e não altera o plano vigente em [ROADMAP.md](<doc-001 - ROADMAP.md>).
 **Fontes:** `agents.md`, README, CHANGELOG, roadmaps 01–06, issues locais 001–057, [revisão de pendências](<../estudos/doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>), [issue 056](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>), grafo Graphify, CSS/templates atuais, capturas em `comparisons/` e os estudos privados em `estudos-locais/` (Maloja, maloja-rs, multi-scrobbler, Scrobblet e síntese).
 
@@ -97,6 +99,8 @@ Seis pilares, em ordem de dependência:
 - **Progressive enhancement:** todo fluxo continua funcionando como documento HTML; o JS só acrescenta melhorias.
 
 ### 3.2 Reorganização do CSS
+
+> Localização e fases definitivas no doc-031: `templates/` e `assets/css/` na raiz, embutidos com `go:embed` (ISSUE-065 a ISSUE-070).
 
 ```
 internal/webui/static/css/
@@ -267,6 +271,8 @@ Antes disso, decidir e documentar a semântica das médias (pendência da 018).
 
 ## 9. Plano de execução proposto
 
+> **Numeração definitiva:** a tabela abaixo é a proposta original; as tarefas criadas, com números, dependências e prioridades, estão no [doc-032](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>).
+
 Numeração indicativa: a 059 foi usada pela adoção do Backlog.md e a 058 pelo [estudo do Tailwind CSS](<../../tasks/issue-058 - 058-—-Estudar-a-adoção-do-Tailwind-CSS.md>), que antecede a 061. Os números abaixo serão renumerados quando as issues forem criadas. Esforço: **P** ≤ 2 dias, **M** 3–7 dias, **G** > 1 semana (estimativas iniciais).
 
 | Fase | Issues | Entrega | Esforço |
@@ -291,4 +297,4 @@ As fases 1 e 2 podem correr em paralelo, pois tocam camadas diferentes. A 3 depe
 2. Aceitar uma **barra de navegação inferior** no celular (muda a identidade herdada do Koito).
 3. **Retenção** de `ingest_events` e se o payload bruto deve ser guardado.
 4. **Spotify nativo × somente coletor externo**.
-5. Commitar este documento ou mantê-lo como estudo local, por causa dos links para `estudos-locais/`.
+5. ~~Commitar este documento ou mantê-lo como estudo local~~ — resolvido: commitado no Backlog.md em 12/11/2026.
