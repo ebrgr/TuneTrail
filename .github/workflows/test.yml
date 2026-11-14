@@ -26,14 +26,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Test versioning rules
-        run: python3 -m unittest scripts.test_version
       - name: Check synchronized and incrementing version
         run: python3 scripts/version.py --check-parent
       - name: Validate language catalogs and localization
         run: go test ./internal/i18n ./internal/webui -run 'Test(Catalog|PresentationLocale|LocalizedRelativeTime)'
+      # make check includes the end-to-end journeys (scripts/e2e.py) and the
+      # unit tests of the version and issue workflow scripts.
       - run: make check
-      - run: make multiuser.check
       - name: Verify static Linux builds
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /tmp/tunetrail-linux-amd64 ./cmd/api

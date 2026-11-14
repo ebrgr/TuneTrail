@@ -7,7 +7,7 @@ endif
 YARN ?= corepack yarn
 DLV_VERSION ?= v1.27.2
 
-.PHONY: help setup doctor api.deps api.dev api.debug api.vet api.test api.race api.build debugger.deps docs.dev check multiuser.check test build
+.PHONY: help setup doctor api.deps api.dev api.debug api.vet api.test api.race api.build debugger.deps docs.dev check e2e multiuser.check test build
 
 help:
 	@echo "make setup           Install project dependencies and create .env"
@@ -17,6 +17,7 @@ help:
 	@echo "make check           Run Go and interface checks"
 	@echo "make api.race        Run Go race tests (requires a C compiler)"
 	@echo "make build           Build the Go application"
+	@echo "make e2e             Run end-to-end journeys on disposable data (part of make check)"
 	@echo "make multiuser.check Validate multiuser journeys on disposable databases"
 	@echo "make ui.preview      Run the isolated Go visual preview (no database)"
 	@echo "make ui.check        Check Go pages, preview and their JavaScript"
@@ -60,7 +61,12 @@ api.build:
 docs.dev:
 	cd docs && $(YARN) dev
 
-check: api.vet api.test ui.check
+# check is the quality gate used locally, in CI and by issue.review/issue.publish.
+check: api.vet api.test ui.check e2e
+
+# Starts isolated loopback servers on fictional data; never uses the database in .env.
+e2e: api.build
+	python3 scripts/e2e.py --binary ./tunetrail
 
 .PHONY: ui.preview ui.check
 ui.preview:

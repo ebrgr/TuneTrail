@@ -1,20 +1,52 @@
-# Scripts de validação
+# Scripts
 
-Os validadores atuais usam bancos SQLite descartáveis: `validate_multiuser.py`,
-`validate_admin_webui.py`, `validate_permissions_017.py`,
-`validate_isolation_019.py`, `validate_migration_030.py` e
-`validate_standalone_030.py`. Aceitam `--binary` e nunca usam o banco operacional.
-`make multiuser.check` constrói o binário e executa a jornada principal.
+## Suíte e2e
 
-Os scripts de comparação visual das issues 022–028 que iniciam React permanecem
-como registro histórico dos métodos usados antes da remoção. Eles exigem uma
-versão histórica do cliente e não são a suíte executável da versão atual; suas
-capturas e relatórios continuam em `backlog/evidencias/`.
+`make e2e` constrói o binário e roda `scripts/e2e.py`, que executa as jornadas de ponta a ponta contra o binário real, cada uma com servidores em `127.0.0.1`, dados fictícios em diretório descartável e serviços externos desligados. Nenhuma lê `.env` nem o banco operacional. A suíte faz parte de `make check`, portanto do CI e de `make issue.review`/`issue.publish`.
 
-A captura `capture_settings_041.cjs` compara administração e configuração em
-desktop/celular e testa salvamento sem JavaScript. **Use somente uma instância
-com banco descartável:** o teste grava um valor fictício no campo Last.fm.
-Instruções e evidências estão em `backlog/evidencias/configuracao/ISSUE_041.md`.
+```sh
+make e2e                                               # todas as jornadas
+python3 scripts/e2e.py --list                          # o que cada jornada cobre
+python3 scripts/e2e.py --binary ./tunetrail --only admin public
+```
+
+| Jornada | Script |
+| --- | --- |
+| multiuser | `validate_multiuser.py` (também a biblioteca `Server` usada pelos demais) |
+| admin | `validate_admin_webui.py` |
+| public | `validate_webui.py` |
+| permissions | `validate_permissions.py` |
+| isolation | `validate_isolation.py` |
+| migration | `validate_migration.py` |
+| standalone | `validate_standalone.py` |
+| shutdown | `validate_shutdown.py` |
+| vscode | `test_vscode_launch.py` |
+| tools | `test_version.py`, `test_issue.py`, `test_roadmap06_fixture.py` |
+
+Para acrescentar uma jornada, crie o script com `--binary` e diretório descartável e registre-o em `JOURNEYS` no `e2e.py`. Não use número de issue no nome: o histórico fica na tarefa.
+
+## Ferramentas manuais
+
+- `validate_container.py --image <imagem>` — sobe a imagem Docker com volume novo; exige Docker.
+- `validate_upgrade.py` — atualização sobre uma **cópia somente leitura** de um banco legado; nunca aponte para o banco em uso.
+- `serve_roadmap06.py --binary ./tunetrail --work-dir <novo>` — mantém um servidor com a fixture fictícia para capturas.
+- `capture_admin_webui.cjs` — capturas da administração em navegador.
+
+## Scripts históricos
+
+`scripts/historico/` guarda 30 scripts das issues 017–041 que comparavam a interface Go com o React removido ou capturavam evidências visuais pontuais. Eles não rodam na versão atual e não fazem parte da suíte; servem para reproduzir as evidências em `backlog/evidencias/`. Inventário e destino de cada um: `backlog/evidencias/e2e/ISSUE_063.md`.
+
+Nomes antigos dos scripts mantidos (ISSUE-063):
+
+| Antes | Agora |
+| --- | --- |
+| `validate_permissions_017.py` | `validate_permissions.py` |
+| `validate_isolation_019.py` | `validate_isolation.py` |
+| `validate_shutdown_020.py` | `validate_shutdown.py` |
+| `validate_standalone_030.py` | `validate_standalone.py` |
+| `validate_migration_030.py` (+ auxiliares do `_025`) | `validate_migration.py` |
+| `test_vscode_launch_027.py` | `test_vscode_launch.py` |
+| `validate_container_034.py` | `validate_container.py` |
 
 ## Ciclo das tarefas
 

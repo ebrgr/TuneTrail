@@ -1,9 +1,11 @@
 ---
 id: ISSUE-063
 title: 063 — Consolidar os scripts de validação por issue em uma suíte e2e no CI
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
+updated_date: '2026-11-14T01:25:00Z'
 labels:
   - validacao
   - processo
@@ -34,3 +36,16 @@ Passos:
 - [ ] #3 Jornadas cobrem perfis, ingestão, páginas públicas, administração, importação e isolamento
 - [ ] #4 Scripts de issue removidos ou arquivados como históricos, sem quebrar evidências citadas no backlog
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-14T01:25:00Z
+
+---
+
+Início: branch `chore/issue-063-consolidar-os-scripts-de-validacao` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->
