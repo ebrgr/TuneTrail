@@ -17,7 +17,9 @@ repository or extract the release's deployment bundle. From its root:
 cp deploy/.env.example deploy/.env
 ```
 
-Edit `deploy/.env`. Set `KOITO_ADMIN_PASSWORD` to a unique password of at least
+Edit `deploy/.env`. Its `KOITO_*` names are read by Docker Compose and stay as
+they are until 1.0; inside the container TuneTrail uses `TUNETRAIL_*` variables
+(see the configuration reference). Set `KOITO_ADMIN_PASSWORD` to a unique password of at least
 eight characters. `KOITO_ADMIN_USERNAME` defaults to `admin`. These settings
 create the administrator only when the database has no users.
 
@@ -158,7 +160,7 @@ the image and recreating the container are still necessary to apply updates.
 ## Build locally
 
 ```sh
-docker build --build-arg KOITO_VERSION=0.9 -t tunetrail:local .
+docker build -t tunetrail:local .
 ```
 
 .dockerignore excludes local databases, credentials, caches, and development

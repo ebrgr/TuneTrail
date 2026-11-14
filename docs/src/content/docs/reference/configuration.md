@@ -5,10 +5,29 @@ description: Configuration options for TuneTrail.
 
 TuneTrail supports environment variables and an optional `conf.toml` for the settings listed below. The other options continue to use environment variables.
 
+## Variable names
+
+Since version 0.10 the variables use the `TUNETRAIL_` prefix, and each one also
+accepts a `_FILE` form whose file content is used as the value (for secrets).
+The earlier `KOITO_` names still work during the 0.x series:
+
+- Only the `KOITO_` name set: it is used, and the startup log and the
+  Administration → Settings page mark it as deprecated with the new name.
+- Both names set to the same value: the `TUNETRAIL_` name is used and the
+  duplicate is reported.
+- Both names set to different values: TuneTrail refuses to start and names
+  the two variables, without showing their values. Remove the old one.
+
+`KOITO_WEB_UI`, `KOITO_DATABASE_URL` and `KOITO_SQLITE_ENABLED` only reject
+settings from older versions and keep their names. The variables read by the
+supplied `deploy/compose.yaml` from `deploy/.env` (`KOITO_DATA_DIR`,
+`KOITO_ADMIN_PASSWORD`, `KOITO_IMAGE_TAG` and similar) belong to Docker
+Compose, not to TuneTrail, and also keep their names until 1.0.
+
 ## Optional `conf.toml`
 
 Place `conf.toml` in the configured data directory, next to `tunetrail.db`. The
-directory is selected by `KOITO_CONFIG_DIR` or `KOITO_CONFIG_DIR_FILE` before the
+directory is selected by `TUNETRAIL_CONFIG_DIR` or `TUNETRAIL_CONFIG_DIR_FILE` before the
 file is read; its default is `/etc/koito`. An absent file preserves the existing
 environment-based configuration. Neither the file nor values are created automatically.
 
@@ -59,13 +78,13 @@ relay settings remain on each profile's administration page.
 With the supplied Docker Compose file, `KOITO_DATA_DIR` is mounted at
 `/etc/koito`. Place `conf.toml` inside that host directory; it persists across
 container replacement along with `tunetrail.db`. Compose supplies `TZ` through
-`KOITO_TIMEZONE`; it does not set `KOITO_FORCE_TZ`. The application setting
+`KOITO_TIMEZONE`; it does not set `TUNETRAIL_FORCE_TZ`. The application setting
 `time.force_tz` overrides the browser preference where a forced timezone is used.
 An empty setting keeps the browser/request preference and falls back to process `TZ`.
 
 Before upgrading, back up the data directory, including the SQLite database and
 configuration, with the service stopped or using a SQLite-consistent backup.
-Changing `KOITO_CONFIG_DIR` selects a different data directory; it does not move
+Changing `TUNETRAIL_CONFIG_DIR` selects a different data directory; it does not move
 existing data. Global changes take effect after a service or container restart.
 Variables supplied by the host, Compose or VS Code keep their precedence after
 restart. `reset-password` uses the same data directory and configuration, so an
@@ -104,82 +123,82 @@ browser cookie. Without JavaScript, open the **Settings** disclosure on the page
   supported and must be removed from existing configurations. SQLite schema v3
   and its existing data remain unchanged.
 
-The suffix `_FILE` is also supported for every environment variable. For example, `KOITO_SUBSONIC_PARAMS_FILE=/etc/koito/subsonic-params` loads the value of `KOITO_SUBSONIC_PARAMS` from that file.
+The suffix `_FILE` is also supported for every environment variable. For example, `TUNETRAIL_SUBSONIC_PARAMS_FILE=/etc/koito/subsonic-params` loads the value of `TUNETRAIL_SUBSONIC_PARAMS` from that file.
 
 :::caution
 If the environment variable is defined without **and** with the suffix at the same time, the content of the environment variable without the `_FILE` suffix will have the higher priority.
 :::
 
-##### KOITO_DEFAULT_USERNAME
+##### TUNETRAIL_DEFAULT_USERNAME
 
 - Default: `admin`
 - Description: The username for the user that is created on first startup. Only applies when running Koito for the first time.
 
-##### KOITO_DEFAULT_PASSWORD
+##### TUNETRAIL_DEFAULT_PASSWORD
 
 - Default: `changeme`
 - Description: The password for the user that is created on first startup. Only applies when running Koito for the first time.
 
-##### KOITO_DEFAULT_THEME
+##### TUNETRAIL_DEFAULT_THEME
 
 - Default: `yuu`
 - Description: The lowercase name of the default theme to be used by the client. Overridden if a user picks a theme in the theme switcher.
 
-##### KOITO_LOGIN_GATE
+##### TUNETRAIL_LOGIN_GATE
 
 - Default: `false`
 - Description: When `true`, Koito will not show any statistics unless the user is logged in.
 
-##### KOITO_BIND_ADDR
+##### TUNETRAIL_BIND_ADDR
 
 - Description: The address to bind to. The default blank value is equivalent to `0.0.0.0`.
 
-##### KOITO_LISTEN_PORT
+##### TUNETRAIL_LISTEN_PORT
 
 - Default: `4110`
 - Description: The port Koito will listen on.
 
-##### KOITO_ENABLE_STRUCTURED_LOGGING
+##### TUNETRAIL_ENABLE_STRUCTURED_LOGGING
 
 - Default: `false`
 - Description: When set to `true`, will log in JSON format.
 
-##### KOITO_LOG_LEVEL
+##### TUNETRAIL_LOG_LEVEL
 
 - Default: `info`
 - Description: One of `debug | info | warn | error | fatal`
 
-##### KOITO_ARTIST_SEPARATORS_REGEX
+##### TUNETRAIL_ARTIST_SEPARATORS_REGEX
 
 - Default: `\s+·\s+`
 - Description: The list of regex patterns Koito will use to separate artist strings, separated by two semicolons (`;;`).
 
-##### KOITO_MUSICBRAINZ_URL
+##### TUNETRAIL_MUSICBRAINZ_URL
 
 - Default: `https://musicbrainz.org`
 - Description: The URL Koito will use to contact MusicBrainz. Replace this value if you have your own MusicBrainz mirror.
 
-##### KOITO_MUSICBRAINZ_RATE_LIMIT
+##### TUNETRAIL_MUSICBRAINZ_RATE_LIMIT
 
 - Default: `1`
 - Description: The number of requests to send to the MusicBrainz server per second. Unless you are using your own MusicBrainz mirror, **do not touch this value**.
 
-##### KOITO_ENABLE_LBZ_RELAY
+##### TUNETRAIL_ENABLE_LBZ_RELAY
 
 - Default: `false`
 - Description: Legacy bootstrap only: set to `true` to associate the URL/token below once with a single eligible existing profile. With multiple profiles, configure each destination in Settings → Administration. This flag does not globally enable or disable saved per-profile relays. See [relay setup](/guides/scrobbler/#forward-a-profile-to-another-server).
 
-##### KOITO_LBZ_RELAY_URL
+##### TUNETRAIL_LBZ_RELAY_URL
 
 - Required: `true` if relays are enabled.
 - Description: Legacy relay base URL, for example `https://api.listenbrainz.org/1`. Used only for the one-time profile association; later edits belong in Administration.
 
-##### KOITO_LBZ_RELAY_TOKEN
+##### TUNETRAIL_LBZ_RELAY_TOKEN
 
 - Required: `true` if relays are enabled.
 - Description: External user token for the legacy one-time relay association. Saved tokens are visible only to administrators. Removing these environment variables does not remove a saved relay; disable and save it in Administration.
 
-##### KOITO_CONFIG_DIR
+##### TUNETRAIL_CONFIG_DIR
 
 - Default: `/etc/koito`
 - Description: The location where import folders and image caches are stored.
@@ -190,7 +209,7 @@ responses are limited to 8 MiB. A failed image download can fall back to the
 default artwork; self-hosted HTTP(S) sources are supported. Images must be JPEG,
 PNG or static WebP; animated images and other formats are not supported.
 
-##### KOITO_FORCE_TZ
+##### TUNETRAIL_FORCE_TZ
 
 - Description: A canonical IANA database time zone name (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) that Koito will use to serve all clients. Overrides any timezones requested via a `tz` cookie or `tz` query parameter. Koito will fail to start if this value is invalid.
 
@@ -198,68 +217,68 @@ When this option is unset, a valid `tz` query parameter takes precedence over
 a valid `tz` cookie; otherwise Koito uses the process timezone. Activity and
 streaks use local calendar days. Weekly activity begins on Monday.
 
-##### KOITO_DISABLE_DEEZER
+##### TUNETRAIL_DISABLE_DEEZER
 
 - Default: `false`
 - Description: Disables Deezer as a source for finding artist and album images.
 
-##### KOITO_DISABLE_COVER_ART_ARCHIVE
+##### TUNETRAIL_DISABLE_COVER_ART_ARCHIVE
 
 - Default: `false`
 - Description: Disables Cover Art Archive as a source for finding album images.
 
-##### KOITO_DISABLE_MUSICBRAINZ
+##### TUNETRAIL_DISABLE_MUSICBRAINZ
 
 - Default: `false`
 
-##### KOITO_SUBSONIC_URL
+##### TUNETRAIL_SUBSONIC_URL
 
-- Required: `true` if KOITO_SUBSONIC_PARAMS is set
+- Required: `true` if TUNETRAIL_SUBSONIC_PARAMS is set
 - Description: The URL of your subsonic compatible music server. For example, `https://navidrome.mydomain.com`.
 
-##### KOITO_SUBSONIC_PARAMS
+##### TUNETRAIL_SUBSONIC_PARAMS
 
-- Required: `true` if KOITO_SUBSONIC_URL is set
+- Required: `true` if TUNETRAIL_SUBSONIC_URL is set
 - Description: The `u`, `t`, and `s` authentication parameters to use for authenticated requests to your subsonic server, in the format `u=XXX&t=XXX&s=XXX`. An easy way to find them is to open the network tab in the developer tools of your browser of choice and copy them from a request.
   :::caution
   If Koito is unable to validate your Subsonic configuration, it will fail to start. If you notice your container isn't running after
   changing these parameters, check the logs!
   :::
 
-##### KOITO_LASTFM_API_KEY
+##### TUNETRAIL_LASTFM_API_KEY
 
 - Required: `false`
 - Description: Your LastFM API key, which will be used for fetching images if provided. You can get an API key [here](https://www.last.fm/api/authentication),
 
-##### KOITO_SKIP_IMPORT
+##### TUNETRAIL_SKIP_IMPORT
 
 - Default: `false`
 - Description: Skips running the importer on startup.
 
-##### KOITO_DISABLE_RATE_LIMIT
+##### TUNETRAIL_DISABLE_RATE_LIMIT
 
 - Default: `false`
 - Description: When enabled, disables the rate limiter that Koito has on the `/apis/web/v1/login` endpoint.
 
-##### KOITO_THROTTLE_IMPORTS_MS
+##### TUNETRAIL_THROTTLE_IMPORTS_MS
 
 - Default: `0`
 - Description: The amount of time to wait, in milliseconds, between listen imports. Can help when running Koito on low-powered machines.
 
-##### KOITO_IMPORT_BEFORE_UNIX
+##### TUNETRAIL_IMPORT_BEFORE_UNIX
 
 - Description: A unix timestamp. If an imported listen has a timestamp after this, it will be discarded.
 
-##### KOITO_IMPORT_AFTER_UNIX
+##### TUNETRAIL_IMPORT_AFTER_UNIX
 
 - Description: A unix timestamp. If an imported listen has a timestamp before this, it will be discarded.
 
-##### KOITO_FETCH_IMAGES_DURING_IMPORT
+##### TUNETRAIL_FETCH_IMAGES_DURING_IMPORT
 
 - Default: `false`
 - Description: When true, images will be downloaded and cached during imports.
 
-##### KOITO_CORS_ALLOWED_ORIGINS
+##### TUNETRAIL_CORS_ALLOWED_ORIGINS
 
 - Default: No CORS policy
 - Description: A comma separated list of origins to allow CORS requests from. The special value `*` allows CORS requests from all origins.

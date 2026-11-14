@@ -8,6 +8,7 @@
 
 ### Changed
 
+- The container image no longer presets configuration variables and the supplied compose file passes `TUNETRAIL_` names; an existing `deploy/.env` keeps working unchanged (ISSUE-111).
 - The administrative session cookie is now `tunetrail_session`; administrators sign in again once after upgrading (ISSUE-111).
 - TuneTrail now identifies itself as TuneTrail, with its own project contact, to MusicBrainz, Deezer, Last.fm and Subsonic servers (ISSUE-111).
 

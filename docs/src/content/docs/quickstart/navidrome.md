@@ -13,9 +13,9 @@ services:
     image: ghcr.io/ebrgr/tunetrail:latest
     container_name: koito
     environment:
-      - KOITO_SUBSONIC_URL=https://navidrome.mydomain.com # the url to your navidrome instance
-      - KOITO_SUBSONIC_PARAMS=u=<navidrome_username>&t=<navidrome_token>&s=<navidrome_salt>
-      - KOITO_DEFAULT_THEME=black # i like this theme, use whatever you want
+      - TUNETRAIL_SUBSONIC_URL=https://navidrome.mydomain.com # the url to your navidrome instance
+      - TUNETRAIL_SUBSONIC_PARAMS=u=<navidrome_username>&t=<navidrome_token>&s=<navidrome_salt>
+      - TUNETRAIL_DEFAULT_THEME=black # i like this theme, use whatever you want
     ports:
       - "4110:4110"
     volumes:
@@ -34,7 +34,7 @@ the developer options and navigate to the **Network** tab. Find a `getCoverArt` 
 page) and look for the part of the URL that looks like `u=<username>&t=<random_string>&s=<small_random_string>`. This
 is what you need to copy and provide to Koito.
 :::note
-If you don't want to use Navidrome to provide images to Koito, you can skip the `KOITO_SUBSONIC_URL` and `KOITO_SUBSONIC_PARAMS`
+If you don't want to use Navidrome to provide images to Koito, you can skip the `TUNETRAIL_SUBSONIC_URL` and `TUNETRAIL_SUBSONIC_PARAMS`
 variables entirely.
 :::
 

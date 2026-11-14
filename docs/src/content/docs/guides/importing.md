@@ -12,9 +12,9 @@ Koito currently supports the following sources to import data from:
 - ListenBrainz
 
 :::note
-ListenBrainz and LastFM imports can take a long time for large imports due to MusicBrainz requests being throttled at one per second. If you want these imports to go faster, you can [disable MusicBrainz](/reference/configuration/#koito_disable_musicbrainz) in the config while running the importer.
+ListenBrainz and LastFM imports can take a long time for large imports due to MusicBrainz requests being throttled at one per second. If you want these imports to go faster, you can [disable MusicBrainz](/reference/configuration/#tunetrail_disable_musicbrainz) in the config while running the importer.
 However, this means that artist aliases will not be automatically fetched for imported artists.
-You can also use [your own MusicBrainz mirror](https://musicbrainz.org/doc/MusicBrainz_Server/Setup) and [disable MusicBrainz rate limiting](/reference/configuration/#koito_musicbrainz_url) in the config if you want imports to be faster.
+You can also use [your own MusicBrainz mirror](https://musicbrainz.org/doc/MusicBrainz_Server/Setup) and [disable MusicBrainz rate limiting](/reference/configuration/#tunetrail_musicbrainz_url) in the config if you want imports to be faster.
 :::
 
 ## Choose the destination profile
@@ -26,7 +26,7 @@ the other formats use JSON. Export history from the same selected profile.
 
 For automatic startup imports, place files under
 `<config-directory>/import/<profile-id>/`, not directly under `import/`.
-Startup imports run only when `KOITO_SKIP_IMPORT` is not enabled.
+Startup imports run only when `TUNETRAIL_SKIP_IMPORT` is not enabled.
 The selected directory determines ownership; names inside the file do not change
 it. See [Listening profiles](/guides/profiles). Keep a database backup; a failed
 import can have saved some records, so check before retrying.

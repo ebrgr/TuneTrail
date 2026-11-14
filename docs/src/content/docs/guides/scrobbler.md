@@ -48,8 +48,8 @@ and preserves local history. Enabling again requires entering the credentials.
 Forwarding is asynchronous and has no persistent delivery queue; historical
 imports, edits and deletions are not synchronized to the destination.
 
-The legacy `KOITO_ENABLE_LBZ_RELAY`, `KOITO_LBZ_RELAY_URL` and
-`KOITO_LBZ_RELAY_TOKEN` variables only bootstrap a single eligible existing profile
+The legacy `TUNETRAIL_ENABLE_LBZ_RELAY`, `TUNETRAIL_LBZ_RELAY_URL` and
+`TUNETRAIL_LBZ_RELAY_TOKEN` variables only bootstrap a single eligible existing profile
 once. With multiple profiles, configure destinations explicitly in Administration.
 Changing or disabling these variables does not remove a relay already saved in
 the database. See the [configuration reference](/reference/configuration).
