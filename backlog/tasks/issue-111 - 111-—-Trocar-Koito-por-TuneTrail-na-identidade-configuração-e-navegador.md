@@ -1,11 +1,11 @@
 ---
 id: ISSUE-111
 title: 111 — Trocar Koito por TuneTrail na identidade, configuração e navegador
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:53:00Z'
-updated_date: '2026-11-14T04:35:00Z'
+updated_date: '2026-11-14T04:53:00Z'
 labels:
   - config
   - operacao
@@ -14,6 +14,7 @@ milestone: m-5
 dependencies: []
 references:
   - backlog/evidencias/identidade/inventario-koito.md
+  - backlog/evidencias/identidade/simulacao-atualizacao.md
 priority: high
 type: enhancement
 ordinal: 111000
@@ -58,8 +59,8 @@ Pode ser dividida: a Fase A é pequena e independente e pode ser publicada antes
 - [x] #4 Somente tunetrail_session autentica; koito_session é ignorado (decisão do usuário: sem alternativa) e o login grava só o novo; CHANGELOG avisa que o administrador entra de novo uma vez
 - [x] #5 Cookie de início da semana, preauth e nomes JS (TuneTrailTheme, tunetrail-theme-change) renomeados sem alternativa; uma recarga no primeiro acesso é aceitável
 - [x] #6 Imagem sem ENV KOITO_* fixas; compose mantém a interpolação compatível com deploy/.env existente; exemplos, CI e referência usam os nomes novos; e2e roda com TUNETRAIL_* e uma jornada e um smoke de contêiner confirmam KOITO_* com diretório personalizado
-- [ ] #7 Decisões da Fase C registradas (diretório padrão, nome do projeto compose, KOITO_* vira erro fatal no 1.0)
-- [ ] #8 koito.db, formato e arquivo de exportação koito, créditos e histórico intactos; inventário atualizado ao final
+- [x] #7 Decisões da Fase C aplicadas: diretório padrão /etc/tunetrail com alternativa /etc/koito até 2.0; projeto e serviço compose renomeados para tunetrail com procedimento documentado e recusa de segundo servidor no mesmo diretório; KOITO_* aceito até a 2.0
+- [x] #8 koito.db migra para tunetrail.db sem alteração do original; exportação tunetrail_export.json e formato de importação TuneTrail, mantendo os arquivos Koito; créditos e histórico intactos; inventário atualizado
 <!-- AC:END -->
 
 ## Comments
@@ -116,6 +117,24 @@ created: 2026-11-14T04:35:00Z
 ---
 
 Fase B3 concluída (commits c3097ac e 29806a4). Imagem sem ENV de configuração (padrões equivalentes) e sem -X main.Version (versão embutida); ARG TUNETRAIL_VERSION só para o rótulo, com docker.yml no mesmo commit. Compose com TUNETRAIL_* no environment e interpolação ${KOITO_*} do deploy/.env inalterada. CI: smoke do contêiner com TUNETRAIL_* (sem aviso) e com KOITO_* + KOITO_CONFIG_DIR=/data em volume próprio (banco em /data, aviso no log). Scripts: Server com legacy_env; jornada e2e legacy-env. Docs: seção 'Variable names' na referência, 30 variáveis com nomes novos, guias e âncoras; DEPLOYMENT explica o deploy/.env. Verificação local: docker build + script de smoke do CI (achado e corrigido SIGPIPE de grep -q com pipefail), validate_container com a imagem nova, validate_rollback contra a 0.5 com nomes legados, docker compose config, YAML dos workflows, make check com 11/11 jornadas. Restam: decisões da Fase C (critério 7) e conferência final com inventário atualizado (critério 8).
+
+---
+
+author: ebrgr
+created: 2026-11-14T04:51:00Z
+
+---
+
+Verificação: Fases A, B1, B2, B3 e C concluídas (commits 1052ba8…9108948 na branch feat/issue-111-…). Fase C conforme o usuário: diretório padrão /etc/tunetrail com alternativa /etc/koito até 2.0 (recusa quando os dois têm banco; testes da tabela), compose e serviço tunetrail com procedimento no DEPLOYMENT.md e trava que recusa um segundo servidor no mesmo diretório (funciona em Linux e volumes Docker; ressalva para bind mounts do Docker Desktop no macOS/Windows), KOITO_* até 2.0, exportação tunetrail_export.json com formato de importação TuneTrail e Koito. Simulação com Docker (backlog/evidencias/identidade/simulacao-atualizacao.md): trocar só a imagem 0.9 pela nova, sem mudar compose, .env ou diretórios, inicia sem erro, preserva as escutas, mostra avisos KOITO_* e pede novo login; compose novo depois de parar o antigo funciona com o mesmo .env; koito.db legado migra com SHA-256 do original inalterado. Teste de contêiner do CI com três variantes aprovado localmente; validate_container e validate_rollback aprovados; make check verde (11/11 e2e). Histórico intacto (CHANGELOG só com acréscimos em Unreleased; releases e backlog anteriores sem alteração); créditos mantidos; inventário: 481 ocorrências restantes, todas classificadas.
+
+---
+
+author: claude
+created: 2026-11-14T04:53:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026.
 
 ---
 <!-- COMMENTS:END -->
