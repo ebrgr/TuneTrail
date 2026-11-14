@@ -1,11 +1,11 @@
 ---
 id: ISSUE-066
 title: 066 — Reunir arquivos web em assets/ com leitura do disco
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T20:01:00Z'
+updated_date: '2026-11-14T20:04:00Z'
 labels:
   - ui
 milestone: m-10
@@ -128,6 +128,15 @@ created: 2026-11-14T20:01:00Z
 ---
 
 Reviewer Claude Opus aprovou a formatação dos 12 HTML antes do commit. make check completo sem cache passou, 12/12 e2e e 113 arquivos exatos com base complementar HTML; base original da 065 preservada. Comparação Chrome: 276 cenários com texto, atributos e geometria idênticos; 272 pares de pixels exatos e quatro variações registradas. Evidências em backlog/evidencias/issue-066/html-formatacao.md. Falta aceite do usuário e autorização de publicação.
+
+---
+
+author: Codex
+created: 2026-11-14T20:04:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026, incluindo a formatação dos templates HTML. Publicação local autorizada na mensagem: aceito pode publicar. Push não solicitado.
 
 ---
 <!-- COMMENTS:END -->
