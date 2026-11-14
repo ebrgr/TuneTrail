@@ -4,6 +4,7 @@ title: '112 — Logs: diagnóstico, correções e visualização na administraç
 status: Aberta
 assignee: []
 created_date: '2026-11-14T03:48:00Z'
+updated_date: '2026-11-14T03:54:00Z'
 labels:
   - admin
   - operacao
@@ -54,4 +55,24 @@ Fora do escopo: envio para serviços externos (Loki, syslog) e métricas (ISSUE-
 - [ ] #6 Nível temporário com volta automática, CSRF e auditoria
 - [ ] #7 Decisão do usuário sobre o arquivo em disco registrada; se ativado, rotação e retenção testadas
 - [ ] #8 Central de saúde mostra erros e avisos recentes com link (quando a ISSUE-083 existir)
+- [ ] #9 Linhas registradas durante uma requisição, inclusive no trabalho em segundo plano iniciado por ela, saem com o request_id (teste); RequestIDHook removido
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T03:54:00Z
+
+---
+
+Esclarecimento sobre request_id e RequestIDHook (14/11/2026, a pedido do usuário).
+
+request_id: código aleatório de 8 caracteres gerado por requisição (WithRequestID, engine/middleware/middleware.go), gravado nas linhas de log daquela requisição e devolvido no cabeçalho X-Request-ID. Serve para ligar todas as linhas de um mesmo acontecimento (ex.: uma escuta com erro 500 mostra, filtrando pelo código, a sequência associação de álbum → consulta MusicBrainz → falha ao salvar). Na tela /admin/logs, clicar num request_id filtra a requisição inteira. Hoje chega ao log pelo logger da requisição que o middleware Logger injeta no contexto (baseLogger.With().Str("request_id", ...)); quem usa logger.FromContext(ctx) já o grava.
+
+RequestIDHook (middleware.go:20): hook do zerolog pensado para acrescentar o request_id a qualquer linha registrada com contexto (.Ctx(ctx)), inclusive pelo logger global — cobriria trabalho em segundo plano (ex.: fila de imagens) e código que usa logger.Get() com ctx em mãos. Não faz nada hoje: (1) nunca é registrado (nenhum .Hook(RequestIDHook{})); (2) procura ctx.Value("requestID") com string simples, enquanto o middleware guarda com a chave tipada MiddlwareContextKey("requestID"); em Go as chaves comparam também o tipo, então nunca coincidem. Provável herança incompleta do Koito.
+
+Decisão recomendada para a Etapa 1: remover o RequestIDHook e propagar o contexto com o logger da requisição para o trabalho em segundo plano. Acrescentado critério: linhas registradas durante uma requisição, inclusive em segundo plano, saem com o request_id (teste). Alternativa descartada salvo necessidade: consertar o hook (registrar no logger global e usar a chave tipada).
+
+---
+<!-- COMMENTS:END -->
