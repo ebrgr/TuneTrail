@@ -87,6 +87,9 @@ func Directory() (string, error) {
 	}
 	exe, err := os.Executable()
 	if err == nil {
+		exe, err = filepath.EvalSymlinks(exe)
+	}
+	if err == nil {
 		p := filepath.Join(filepath.Dir(exe), "langs")
 		if st, e := os.Stat(p); e == nil && st.IsDir() {
 			return p, nil

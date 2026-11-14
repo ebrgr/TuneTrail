@@ -21,3 +21,6 @@ __debug_bin*
 .DS_Store
 
 tunetrail
+
+# README screenshots and brand originals are not runtime UI files.
+assets/brand/

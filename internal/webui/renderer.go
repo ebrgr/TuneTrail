@@ -8,9 +8,14 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/i18n"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
+// loadTemplates validates external assets before parsing the public template set.
 func loadTemplates() (*template.Template, error) {
+	if err := ensureAssets(); err != nil {
+		return nil, err
+	}
 	tmpl, err := template.New("page.html").Funcs(formatFuncs(nil)).Funcs(template.FuncMap{
 		"tr": func(_ string, fallback string) string { return fallback },
 		"tr2": func(_ string, fallback, name1 string, value1 any, name2 string, value2 any) string {
@@ -76,6 +81,9 @@ func loadTemplates() (*template.Template, error) {
 		},
 	}).ParseFS(files, "templates/*.html")
 	if err != nil {
+		return nil, err
+	}
+	if err := webassets.ValidateTemplates(tmpl); err != nil {
 		return nil, err
 	}
 	return tmpl, nil

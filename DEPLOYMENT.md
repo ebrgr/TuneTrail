@@ -195,3 +195,15 @@ timezone data and curl for the healthcheck.
 For local development and validation, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 Current source: **TuneTrail 0.10**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.10 becomes 0.10); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
+
+## External web assets (ISSUE-066)
+
+Install the executable together with the `assets/` and `langs/` directories from the same release. A binary alone no longer contains the web interface. Without an override, web assets are loaded from `assets/` beside the real executable, following executable symlinks. `TUNETRAIL_WEB_DIR` selects another asset root explicitly; an invalid override fails startup. This is the asset root, not its templates subdirectory.
+
+The server validates and loads a single immutable in-memory generation at startup. Restart after changing templates, CSS, JavaScript or palettes. There is no automatic reload or fallback to embedded files. Deploy matching binary+assets as a complete release in a trusted directory, separate from writable database/import/cache storage. Disk edits after startup do not modify the running generation. Root ownership and read-only modes are set on assets in the image; running the entire container as UID65532 remains the coordinated work of ISSUE-102.
+
+The image already copies assets into its final stage, including non-served license files. Only allowlisted static file types are exposed, with no directory listings or source-template/license routes. Static MIME types are explicit and responses use nosniff. Modification times remain absent as with the old bundled assets; versioned caching and retention of previous asset URLs belong to ISSUE-106.
+
+Language catalogs retain their separate existing lookup contract: an explicit `TUNETRAIL_LANGS_DIR` is used without fallback if invalid; otherwise catalogs beside the resolved executable are preferred, then a checkout with `go.mod` may be found from cwd for compatibility. Packaged/server installations should always use the beside-executable catalogs or an explicit root. This compatibility fallback applies to language catalogs only, never web assets.
+
+For local distribution, use `make package OUT=/path/new-archive.tar.gz`. The archive includes `tunetrail`, `assets/`, `langs/` and `LICENSE`; icons licenses remain within the assets distribution but are not served. Sources are not embedded in the executable.

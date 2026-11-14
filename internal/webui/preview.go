@@ -4,34 +4,52 @@ package webui
 
 import (
 	"bytes"
-	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"io/fs"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/version"
 )
 
-//go:embed templates/*.html static palettes.json
-var files embed.FS
+var files = webassets.FS{Prefix: "public"}
 
 type Palette map[string]string
 
 var themeNames = []string{"yuu", "varia", "midnight", "catppuccin", "autumn", "black", "wine", "pearl", "rosebud", "urim", "match", "lemon"}
-var palettes = func() map[string]Palette {
-	data, _ := files.ReadFile("palettes.json")
-	var p map[string]Palette
-	if err := json.Unmarshal(data, &p); err != nil {
-		panic(err)
-	}
-	return p
-}()
+
+// Palettes are initialized once from the same immutable generation as templates and icons.
+var palettes map[string]Palette
+var assetInit sync.Once
+var assetError error
+
+func ensureAssets() error {
+	assetInit.Do(func() {
+		data, err := files.ReadFile("palettes.json")
+		if err != nil {
+			assetError = err
+			return
+		}
+		if err = json.Unmarshal(data, &palettes); err != nil {
+			assetError = err
+			return
+		}
+		for _, name := range themeNames {
+			if len(palettes[name]) != 14 {
+				assetError = fmt.Errorf("invalid or missing palette %s", name)
+				return
+			}
+		}
+	})
+	return assetError
+}
 
 type Profile struct {
 	ID    int    `json:"id"`
@@ -212,7 +230,7 @@ func bindAssets(mux *http.ServeMux) {
 		_, _ = w.Write(data)
 	})
 	sub, _ := fs.Sub(files, "static")
-	mux.Handle("GET /preview-assets/", http.StripPrefix("/preview-assets/", http.FileServer(http.FS(sub))))
+	mux.Handle("GET /preview-assets/", http.StripPrefix("/preview-assets/", StaticHandler(staticFiles{http.FS(sub)})))
 	mux.HandleFunc("GET /preview-assets/themes.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		data, _ := files.ReadFile("palettes.json")

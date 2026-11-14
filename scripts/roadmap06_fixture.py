@@ -92,7 +92,7 @@ def create(output):
         backup(canonical, folder / "koito.db")
         cache = folder / "image_cache" / IMAGE[:2] / IMAGE
         cache.mkdir(parents=True, mode=0o700)
-        (cache / "source.webp").write_bytes((ROOT / "internal/webui/static/avatar.webp").read_bytes())
+        (cache / "source.webp").write_bytes((ROOT / "assets/preview/avatar.webp").read_bytes())
         check_database(folder / "koito.db", expected)
     for name, remove, want in (("zero", (1, 2, 3), {}), ("one", (2, 3), {"alpha": 7})):
         folder = output / name

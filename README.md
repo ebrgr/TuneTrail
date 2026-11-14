@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="assets/icon.png" alt="TuneTrail logo" width="180">
+  <img src="assets/brand/icon.png" alt="TuneTrail logo" width="180">
 
 # TuneTrail
 
 **Your music. Your journey.**
 
 A self-hosted listening history, based on
-<img src="assets/koito-original.svg" alt="" width="18"> Koito engine version 0.3.2.
+<img src="assets/brand/koito-original.svg" alt="" width="18"> Koito engine version 0.3.2.
 </div>
 
 TuneTrail records your listening history and presents statistics for artists, albums and tracks. It accepts scrobbles from ListenBrainz-compatible players and lets you manage separate listening profiles.

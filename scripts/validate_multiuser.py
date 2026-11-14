@@ -68,14 +68,14 @@ class Server:
         port = self.fixed_port or port
         self.origin = f"http://127.0.0.1:{port}"
         self.env = clean_environment()
-        settings = dict(TUNETRAIL_CONFIG_DIR=str(self.directory), TUNETRAIL_BIND_ADDR="127.0.0.1",
+        settings = dict(TUNETRAIL_WEB_DIR=str(ROOT / "assets"), TUNETRAIL_LANGS_DIR=str(ROOT / "langs"), TUNETRAIL_CONFIG_DIR=str(self.directory), TUNETRAIL_BIND_ADDR="127.0.0.1",
                         TUNETRAIL_LISTEN_PORT=str(port), TUNETRAIL_DEFAULT_USERNAME="validation-admin",
                         TUNETRAIL_DEFAULT_PASSWORD=PASSWORD, TUNETRAIL_DISABLE_MUSICBRAINZ="true",
                         TUNETRAIL_DISABLE_DEEZER="true", TUNETRAIL_DISABLE_COVER_ART_ARCHIVE="true",
                         TUNETRAIL_SKIP_IMPORT="true", TUNETRAIL_DISABLE_RATE_LIMIT="true", TUNETRAIL_LOG_LEVEL="warn")
         settings.update(self.extra_environment)
         if self.legacy_env:
-            settings = {k.replace("TUNETRAIL_", "KOITO_", 1) if k.startswith("TUNETRAIL_") else k: v for k, v in settings.items()}
+            settings = {k.replace("TUNETRAIL_", "KOITO_", 1) if k.startswith("TUNETRAIL_") and k not in ("TUNETRAIL_WEB_DIR", "TUNETRAIL_LANGS_DIR") else k: v for k, v in settings.items()}
         self.env.update(settings)
         self.log = open(self.directory / "server.log", "ab")
         os.chmod(self.directory / "server.log", 0o600)

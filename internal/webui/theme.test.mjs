@@ -3,8 +3,8 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 
-const script = readFileSync(new URL('./static/theme.js', import.meta.url), 'utf8');
-const palettes = JSON.parse(readFileSync(new URL('./palettes.json', import.meta.url)));
+const script = readFileSync(new URL('../../assets/js/theme.js', import.meta.url), 'utf8');
+const palettes = JSON.parse(readFileSync(new URL('../../assets/themes/palettes.json', import.meta.url)));
 
 // Unit harness for the before-paint script; no browser or extra dependency.
 function startup(stored = {}, unavailable = false) {

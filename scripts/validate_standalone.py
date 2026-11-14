@@ -39,6 +39,8 @@ def run(binary, root, mode, legacy_env=False):
         port = sock.getsockname()[1]
     origin = f"http://127.0.0.1:{port}"
     env = clean_environment()  # both prefixes, see validate_multiuser.py
+    env["TUNETRAIL_WEB_DIR"] = str(ROOT / "assets")
+    env["TUNETRAIL_LANGS_DIR"] = str(ROOT / "langs")
     # TUNETRAIL_ names; --legacy-env uses the deprecated KOITO_ names (ISSUE-111).
     prefix = "KOITO_" if legacy_env else "TUNETRAIL_"
     env.update({prefix + k: v for k, v in dict(

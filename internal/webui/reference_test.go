@@ -22,6 +22,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/version"
 )
 
 // referenceStore fixes the interest clock seam without changing production aggregation.
@@ -55,10 +56,14 @@ func TestUIReference(t *testing.T) {
 	if out == "" {
 		t.Skip("set TUNETRAIL_UI_REFERENCE to an empty output directory")
 	}
+	// Freeze the fixture presentation version so product release bumps do not rewrite the baseline.
+	previousVersion := version.Current
+	version.Current = "0.10"
+	t.Cleanup(func() { version.Current = previousVersion })
 	// Make exports the developer .env; never let operational configuration enter this fixture.
 	for _, entry := range os.Environ() {
 		key, _, _ := strings.Cut(entry, "=")
-		if (strings.HasPrefix(key, "TUNETRAIL_") || strings.HasPrefix(key, "KOITO_")) && key != "TUNETRAIL_UI_REFERENCE" {
+		if (strings.HasPrefix(key, "TUNETRAIL_") || strings.HasPrefix(key, "KOITO_")) && key != "TUNETRAIL_UI_REFERENCE" && key != "TUNETRAIL_WEB_DIR" && key != "TUNETRAIL_LANGS_DIR" {
 			t.Setenv(key, "")
 		}
 	}

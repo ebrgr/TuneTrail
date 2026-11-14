@@ -14,6 +14,9 @@ permissions:
 jobs:
   check:
     name: Go and multiuser validation
+    env:
+      TUNETRAIL_WEB_DIR: ${{ github.workspace }}/assets
+      TUNETRAIL_LANGS_DIR: ${{ github.workspace }}/langs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

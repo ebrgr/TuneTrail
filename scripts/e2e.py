@@ -17,6 +17,8 @@ SCRIPTS = Path(__file__).resolve().parent
 # (name, script, needs binary, extra arguments, what the journey covers).
 # "{work}" is replaced by a new directory inside the run's temporary root.
 JOURNEYS = [
+    ("web-assets", "validate_web_distribution.py", True, [],
+     "external assets: real executable symlink, cwd /, startup guards, exposure and immutable generation"),
     ("multiuser", "validate_multiuser.py", True, [],
      "fresh and migrated databases: administration, keys, concurrent ingestion, public reads, import/export, revocation, restart"),
     ("admin", "validate_admin_webui.py", True, ["--work-dir", "{work}"],

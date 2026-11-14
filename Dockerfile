@@ -13,6 +13,9 @@ COPY db/ ./db/
 # The version comes from internal/version/VERSION embedded in the binary; no
 # -X override, so a renamed or missing build argument cannot change it (ISSUE-111).
 RUN go build -trimpath -ldflags "-s -w" -o /tunetrail ./cmd/api
+# Prepare permissions in the build stage; the final image receives only one assets layer.
+COPY assets/ /distribution-assets/
+RUN find /distribution-assets -type d -exec chmod 0555 {} + && find /distribution-assets -type f -exec chmod 0444 {} +
 
 FROM debian:bookworm-slim AS final
 
@@ -21,7 +24,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates tzdata && \
     rm -rf /var/lib/apt/lists/*
 COPY --from=backend /tunetrail ./tunetrail
-COPY assets/ ./assets/
+COPY --from=backend --chown=0:0 /distribution-assets/ ./assets/
 COPY langs/ ./langs/
 # Image label only; kept in sync with VERSION by scripts/version.py.
 ARG TUNETRAIL_VERSION=0.10
@@ -32,7 +35,7 @@ LABEL org.opencontainers.image.title="TuneTrail" \
 # No configuration variables are fixed in the image (ISSUE-111): the defaults are
 # /etc/tunetrail (or a legacy /etc/koito mount), all interfaces and port 4110, and a fixed value would conflict
 # with a user's own KOITO_* or TUNETRAIL_* setting.
-ENV TUNETRAIL_LANGS_DIR=/app/langs
+ENV TUNETRAIL_LANGS_DIR=/app/langs TUNETRAIL_WEB_DIR=/app/assets
 EXPOSE 4110
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD curl --fail --silent http://127.0.0.1:4110/apis/web/v1/health || exit 1

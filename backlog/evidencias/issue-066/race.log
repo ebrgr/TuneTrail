@@ -1,0 +1,38 @@
+CGO_ENABLED=1 go test -race ./... -timeout 120s
+ok  	github.com/ebrgr/TuneTrail/cmd/api	6.583s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	1.439s
+?   	github.com/ebrgr/TuneTrail/db/migrations_sqlite	[no test files]
+ok  	github.com/ebrgr/TuneTrail/engine	59.369s
+ok  	github.com/ebrgr/TuneTrail/engine/handlers	1.858s
+ok  	github.com/ebrgr/TuneTrail/engine/middleware	1.340s
+ok  	github.com/ebrgr/TuneTrail/imagecache	2.712s
+ok  	github.com/ebrgr/TuneTrail/internal/admin	12.132s
+ok  	github.com/ebrgr/TuneTrail/internal/adminui	5.817s
+ok  	github.com/ebrgr/TuneTrail/internal/adminweb	2.364s
+ok  	github.com/ebrgr/TuneTrail/internal/catalog	6.864s
+ok  	github.com/ebrgr/TuneTrail/internal/cfg	5.465s
+ok  	github.com/ebrgr/TuneTrail/internal/db	1.844s
+ok  	github.com/ebrgr/TuneTrail/internal/db/sqlite	28.205s
+ok  	github.com/ebrgr/TuneTrail/internal/export	1.208s
+ok  	github.com/ebrgr/TuneTrail/internal/i18n	1.564s
+ok  	github.com/ebrgr/TuneTrail/internal/imagefetch	1.317s
+ok  	github.com/ebrgr/TuneTrail/internal/imagepipeline	1.547s
+ok  	github.com/ebrgr/TuneTrail/internal/images	1.294s
+ok  	github.com/ebrgr/TuneTrail/internal/imagework	1.208s
+?   	github.com/ebrgr/TuneTrail/internal/importer	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/listenbrainz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/listening	1.183s
+?   	github.com/ebrgr/TuneTrail/internal/logger	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/mbz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/memkv	1.170s
+?   	github.com/ebrgr/TuneTrail/internal/models	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/relay	1.198s
+ok  	github.com/ebrgr/TuneTrail/internal/summary	1.488s
+ok  	github.com/ebrgr/TuneTrail/internal/utils	1.176s
+?   	github.com/ebrgr/TuneTrail/internal/version	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webassets	1.336s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	1.222s
+ok  	github.com/ebrgr/TuneTrail/internal/webui	9.689s
+ok  	github.com/ebrgr/TuneTrail/queue	1.299s
+?   	github.com/ebrgr/TuneTrail/scripts/experiments/tls034	[no test files]
+?   	github.com/ebrgr/TuneTrail/testing_init	[no test files]

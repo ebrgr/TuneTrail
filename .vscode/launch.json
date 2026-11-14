@@ -10,8 +10,10 @@
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "env": {
+        "TUNETRAIL_WEB_DIR": "${workspaceFolder}/assets",
         "CGO_ENABLED": "0",
-        "KOITO_WEB_UI": "go"
+        "KOITO_WEB_UI": "go",
+        "TUNETRAIL_LANGS_DIR": "${workspaceFolder}/langs"
       },
       "serverReadyAction": {
         "pattern": "Engine: Listening on (?:127\\.0\\.0\\.1|localhost|0\\.0\\.0\\.0)?:([0-9]+)",
@@ -28,7 +30,9 @@
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env",
       "env": {
-        "CGO_ENABLED": "0"
+        "CGO_ENABLED": "0",
+        "TUNETRAIL_WEB_DIR": "${workspaceFolder}/assets",
+        "TUNETRAIL_LANGS_DIR": "${workspaceFolder}/langs"
       }
     }
   ]

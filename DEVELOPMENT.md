@@ -29,3 +29,11 @@ No VS Code, instale a extensão Go e use **TuneTrail: Desenvolvimento Go (localh
 `cmd/api` contém a entrada; `engine` concentra rotas e handlers; `internal/webui` e `internal/adminui` implementam as páginas públicas e administrativas; `internal/db/sqlite` e `db/migrations_sqlite` contêm persistência e migrações. `internal/importer`, `internal/relay`, `internal/catalog` e `queue` cuidam das demais operações. A documentação Astro fica em `docs`; `make docs.dev` exige suas dependências próprias.
 
 `make e2e` roda as jornadas de `scripts/e2e.py` (administração, páginas públicas, permissões, isolamento, migração, encerramento) contra o binário real, com bancos novos e migrados criados em diretórios descartáveis, sem acessar o banco configurado em `.env`; o que cada jornada cobre está em `scripts/README.md`. Para validar uma cópia de banco de exemplo, use `python3 scripts/validate_multiuser.py --binary ./tunetrail --example-db /caminho/koito.db`; o original é aberto somente para leitura. A prévia fictícia isolada é iniciada por `make ui.preview`.
+
+## Arquivos da interface
+
+Os HTMLs estão em `assets/templates/public/` e `assets/templates/admin/`; CSS, JS, ícones e temas ficam em subpastas de `assets/`. O Makefile exporta `TUNETRAIL_WEB_DIR` e `TUNETRAIL_LANGS_DIR` para o checkout. Para `go run`, `go test` ou Delve fora do Makefile, informe esses caminhos explicitamente. A produção procura `assets/` ao lado do executável real, com symlinks resolvidos; um override explícito inválido falha sem fallback.
+
+A carga cria um snapshot em memória por processo. Reinicie após editar arquivos; não é necessário recompilar para editar HTML/CSS. Não há hot reload nesta entrega. Público e administração usam conjuntos separados de templates. A base de renderização da ISSUE-065 roda em `make ui.check`/`make check` e mantém versão de fixture 0.10, relógio e dados fixos, independentemente da versão publicada.
+
+`make package OUT=/tmp/tunetrail-new.tar.gz` cria uma distribuição local com binário, assets, catálogos e licenças. O destino precisa ser novo. A opção de embed permanece futura.

@@ -31,10 +31,13 @@ func TestCatalogCompleteness(t *testing.T) {
 		}
 	}
 	expr := regexp.MustCompile(`\b(?:tr|tr1|tr2|trn|trnp|quantity|unit)\s+"([^"]+)"`)
-	for _, dir := range []string{"../../internal/webui/templates", "../../internal/adminui/templates"} {
+	for _, dir := range []string{"../../assets/templates/public", "../../assets/templates/admin"} {
 		paths, err := filepath.Glob(filepath.Join(dir, "*.html"))
 		if err != nil {
 			t.Fatal(err)
+		}
+		if len(paths) == 0 {
+			t.Fatalf("no templates in %s", dir)
 		}
 		for _, path := range paths {
 			data, err := os.ReadFile(path)

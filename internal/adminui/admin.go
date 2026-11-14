@@ -3,7 +3,6 @@ package adminui
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"html/template"
@@ -28,12 +27,13 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/relay"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/go-chi/httprate"
 	"github.com/google/uuid"
 )
 
-//go:embed templates/*.html
-var templates embed.FS
+// Administration has its own private template namespace within the process snapshot.
+var templates = webassets.FS{Prefix: "admin"}
 
 // Store contains the existing persistence contracts; no implementation-specific database is needed.
 type Store interface {
@@ -145,6 +145,9 @@ func New(store Store, opts Options) (*Handler, error) {
 		return map[string]string{"music": "music", "headphones": "headphones", "disc": "disc", "radio": "radio", "user": "user"}[*icon]
 	}
 	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"defaultTheme": func() string { return opts.DefaultTheme }, "initials": initials, "avatarIcon": avatarIcon}).ParseFS(templates, "templates/*.html")
+	if err == nil {
+		err = webassets.ValidateTemplates(tmpl)
+	}
 	if err != nil {
 		return nil, err
 	}

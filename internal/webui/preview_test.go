@@ -51,6 +51,9 @@ func TestPreviewRoutesAndEscaping(t *testing.T) {
 
 // TestPalettesComplete verifies all bundled themes remain available without React.
 func TestPalettesComplete(t *testing.T) {
+	if err := ensureAssets(); err != nil {
+		t.Fatal(err)
+	}
 	if len(palettes) != 12 {
 		t.Fatal("expected all 12 palettes")
 	}

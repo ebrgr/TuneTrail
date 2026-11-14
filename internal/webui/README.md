@@ -64,3 +64,5 @@ for real-server journeys using disposable SQLite v3. Screenshots are captured by
 `scripts/capture_admin_webui.cjs` against the paired servers from
 `validate_webui.py --serve`. Playwright/Chrome are test tools, not runtime
 dependencies.
+
+ISSUE-066: interface files now live in the repository-root `assets/` directory and are read from disk into one immutable process snapshot. The previous embedded paths described above are historical. Use `TUNETRAIL_WEB_DIR` for tests/dev; installed binaries default to adjacent assets. Restart to load edits.

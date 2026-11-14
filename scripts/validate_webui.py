@@ -39,7 +39,7 @@ def seed(server):
     second = server.request('GET', WEB + '/profiles/luna/user/apikeys', admin=True)[0]['key']
     server.request('POST', LBZ + '/submit-listens', {'listen_type': 'single', 'payload': [{'listened_at': now, 'track_metadata': {'artist_name': 'Luna Artist', 'release_name': 'Luna Album', 'track_name': 'Exclusive Luna Song'}}]}, token=second)
     # Local generated artwork, uploaded through the real administrative endpoint.
-    image = (ROOT / 'internal/webui/static/avatar.webp').read_bytes()
+    image = (ROOT / 'assets/preview/avatar.webp').read_bytes()
     for kind in ['artists', 'albums']:
         records = server.request('GET', WEB + f'/profiles/mara/top/{kind}?period=all_time')['items']
         for record in records[:5]:

@@ -154,7 +154,7 @@ func bindRoutes(
 			Get("/validate-token", handlers.LbzValidateTokenHandler())
 	})
 
-	// Serve Go documents and bundled assets independently of the working directory.
+	// Serve Go documents and the external asset snapshot independently of the working directory.
 	var pages *webui.Pages
 	var administration *adminui.Handler
 	{
@@ -216,7 +216,7 @@ func publicServer(r chi.Router, path string, root http.FileSystem) {
 	if strings.ContainsAny(path, "{}*") {
 		panic("FileServer does not permit any URL parameters.")
 	}
-	fs := http.FileServer(root)
+	fs := webui.StaticHandler(root)
 	r.Get(path+"*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, path)
 		fs.ServeHTTP(w, r)

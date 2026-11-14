@@ -23,6 +23,7 @@ import (
 	mbz "github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
@@ -89,6 +90,10 @@ func Run(
 	w io.Writer,
 	version string,
 ) error {
+	// Validate the external distribution before opening or migrating the data directory.
+	if _, err := webassets.Current(); err != nil {
+		return err
+	}
 	l, ctx, err := initLogger(getenv, version, w)
 	if err != nil {
 		return fmt.Errorf("Engine: %w", err)

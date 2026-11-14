@@ -3,6 +3,9 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
+export TUNETRAIL_WEB_DIR ?= $(CURDIR)/assets
+export TUNETRAIL_LANGS_DIR ?= $(CURDIR)/langs
+
 .DEFAULT_GOAL := help
 YARN ?= corepack yarn
 DLV_VERSION ?= v1.27.2
@@ -75,10 +78,10 @@ ui.preview:
 ui.check:
 	CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
 	CGO_ENABLED=0 go test ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
-	node --check internal/webui/static/theme.js
-	node --check internal/webui/static/ui.js
-	node --check internal/webui/static/live.js
-	node --check internal/webui/static/admin.js
+	node --check assets/js/theme.js
+	node --check assets/js/ui.js
+	node --check assets/js/live.js
+	node --check assets/js/admin.js
 	node --test internal/webui/theme.test.mjs
 
 test: api.test
@@ -135,3 +138,18 @@ ui.reference.test:
 	python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
 
 ui.check: ui.reference.test
+
+# Render real public/admin/preview fixtures and compare with the accepted ISSUE-065 baseline.
+.PHONY: ui.reference.check
+ui.reference.check:
+	@task_reference_dir=$$(mktemp -d); trap 'rm -rf "$$task_reference_dir"' EXIT; \
+	TZ=UTC TUNETRAIL_UI_REFERENCE="$$task_reference_dir/candidate" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1 && \
+	python3 scripts/compare_ui_reference.py backlog/evidencias/ui-responsiva/base/reference "$$task_reference_dir/candidate"
+
+ui.check: ui.reference.check
+
+# External assets and catalogs are required parts of a local distribution.
+.PHONY: package
+package: api.build
+	@test -n "$(OUT)" || (echo 'Use make package OUT=/path/new-archive.tar.gz'; exit 1)
+	python3 scripts/package_release.py --binary ./tunetrail --output "$(OUT)"
