@@ -20,7 +20,9 @@ def version_pattern(value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bump", action="store_true", help="Increment the 0.x version and synchronize current files")
-    parser.add_argument("--check-parent", action="store_true", help="Require a higher version than the parent commit")
+    parser.add_argument("--check-parent", action="store_true", help="Require a higher version than the parent commit (publish commits)")
+    # CI checks ordinary commits: since ISSUE-060 the version rises once per published task, not per commit.
+    parser.add_argument("--check-not-lower", action="store_true", help="Allow the parent's version but reject a lower one (CI)")
     args = parser.parse_args()
     current = SOURCE.read_text().strip()
     match = re.fullmatch(PATTERN, current)
@@ -31,13 +33,15 @@ def main():
     for name, text in contents.items():
         if not pattern.search(text):
             raise SystemExit(f"Version out of sync: {name}")
-    if args.check_parent:
+    if args.check_parent or args.check_not_lower:
         parent = subprocess.run(["git", "show", "HEAD^:internal/version/VERSION"], cwd=ROOT, capture_output=True, text=True)
         if parent.returncode == 0:
             parent_version = parent.stdout.strip()
             previous = re.fullmatch(PATTERN, parent_version)
-            if previous and int(match[1]) <= int(previous[1]):
+            if previous and args.check_parent and int(match[1]) <= int(previous[1]):
                 raise SystemExit("Increment the version before committing: make version.bump")
+            if previous and int(match[1]) < int(previous[1]):
+                raise SystemExit(f"Version decreased from {parent_version} to {current}")
             # Allow the first TuneTrail commit to advance beyond the initial 0.3.
             if not previous and not (re.fullmatch(LEGACY_PATTERN, parent_version) and int(match[1]) >= 3):
                 raise SystemExit("Unsupported previous version or invalid SUM migration: " + parent_version)

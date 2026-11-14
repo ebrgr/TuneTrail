@@ -26,8 +26,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Check synchronized and incrementing version
-        run: python3 scripts/version.py --check-parent
+      # The version rises once per published task (ISSUE-060), so ordinary commits
+      # may keep it; publish commits are checked strictly by make issue.publish.
+      - name: Check synchronized and non-decreasing version
+        run: python3 scripts/version.py --check-not-lower
       - name: Validate language catalogs and localization
         run: go test ./internal/i18n ./internal/webui -run 'Test(Catalog|PresentationLocale|LocalizedRelativeTime)'
       # make check includes the end-to-end journeys (scripts/e2e.py) and the

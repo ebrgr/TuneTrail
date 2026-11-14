@@ -72,6 +72,22 @@ class VersionTests(unittest.TestCase):
         self.commit()
         self.assertNotEqual(self.run_version("--check-parent").returncode, 0)
 
+    def test_not_lower_allows_unchanged_version(self):
+        # Ordinary commits keep the version; only a regression is rejected.
+        self.files("0.8")
+        self.commit()
+        self.git("commit", "--allow-empty", "-qm", "same version")
+        self.assertEqual(self.run_version("--check-not-lower").returncode, 0)
+        self.assertNotEqual(self.run_version("--check-parent").returncode, 0)
+        self.files("0.9")
+        self.commit()
+        self.assertEqual(self.run_version("--check-not-lower").returncode, 0)
+        self.files("0.7")
+        self.commit()
+        result = self.run_version("--check-not-lower")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("decreased", result.stderr)
+
     def test_legacy_migration_after_bump(self):
         # A first TuneTrail commit may already have been bumped to 0.4.
         self.files("0.3.2-SUM-RC3")
