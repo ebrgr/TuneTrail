@@ -1,11 +1,11 @@
 ---
 id: ISSUE-114
 title: '114 — Estudo: issues e PRs abertos do Koito para o roadmap 1.0'
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-14T22:56:00Z'
+updated_date: '2026-11-14T23:37:00Z'
 labels:
   - processo
 milestone: m-8
@@ -37,6 +37,15 @@ created: 2026-11-14T22:54:00Z
 ---
 
 Início: branch `spike/issue-114-estudo-issues-e-prs-abertos` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-14T23:37:00Z
+
+---
+
+Aceite: estudo aprovado pelo usuário em 14/11/2026 ("aceito o estudo, faça o merge"). Spike sem versão: merge fast-forward no main, sem tag.
 
 ---
 <!-- COMMENTS:END -->
