@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-14T23:37:00Z'
+updated_date: '2026-11-14T23:40:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -29,10 +29,10 @@ Cada correção com teste de regressão.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Endereço IPv6 aceito no bind
-- [ ] #2 listened_at decimal aceito no envio e na importação
-- [ ] #3 Ping Subsonic com versão semântica
-- [ ] #4 Importação funciona com pastas em volumes diferentes
+- [x] #1 Endereço IPv6 aceito no bind
+- [x] #2 listened_at decimal aceito no envio e na importação
+- [x] #3 Ping Subsonic com versão semântica
+- [x] #4 Importação funciona com pastas em volumes diferentes
 <!-- AC:END -->
 
 ## Comments
