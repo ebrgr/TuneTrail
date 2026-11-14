@@ -9,7 +9,6 @@
   const cssName = key => '--color-' + key.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
   const valid = palette => palette && typeof palette === 'object' && !Array.isArray(palette) && Object.keys(palette).length === keys.length && keys.every(key => typeof palette[key] === 'string' && /^(#[0-9a-f]{3}|#[0-9a-f]{6}|#[0-9a-f]{8})$/i.test(palette[key]));
   let custom = null;
-
   function apply(name, palette, persist = true) {
     if (name === 'custom' && !valid(palette)) return false;
     if (name !== 'custom' && !names.includes(name)) name = defaultTheme;

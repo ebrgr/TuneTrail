@@ -119,6 +119,8 @@
     const row = button.closest('tr[data-track-id][data-unix]');
     if (!row) return;
     button.disabled = true;
+    // A pending reload keeps the button disabled until the document unloads.
+    let reloading = false;
     const target = new URL(`/apis/web/v1/profiles/${encodeURIComponent(slug)}/listens`, location.origin);
     target.searchParams.set('track_id', row.dataset.trackId);
     target.searchParams.set('unix', row.dataset.unix);
@@ -126,7 +128,7 @@
       await requestScope(controller, async signal => {
         const response = await fetch(target, {method: 'DELETE', signal, cache: 'no-store', credentials: 'same-origin'});
         if (!response.ok) throw Error(body.dataset.i18nDeleteError);
-        if (active === controller && !signal.aborted) location.reload();
+        if (active === controller && !signal.aborted) { reloading = true; location.reload(); }
       });
     } catch {
       if (active !== controller) return;
@@ -140,7 +142,7 @@
       }
       message.textContent = body.dataset.i18nDeleteError;
     } finally {
-      if (button.isConnected && active === controller) button.disabled = false;
+      if (!reloading && button.isConnected && active === controller) button.disabled = false;
     }
   });
   activate(false);

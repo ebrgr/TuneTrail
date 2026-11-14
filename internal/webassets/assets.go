@@ -279,7 +279,7 @@ func validEntry(key, name string) bool {
 					return false
 				}
 				ext := path.Ext(name)
-				return strings.Contains("|.css|.js|.svg|.json|.png|.jpg|.webp|.ico|.webmanifest|.woff2|", "|"+ext+"|") || path.Base(name) == "LICENSE"
+				return strings.Contains("|.css|.js|.svg|.json|.png|.jpg|.webp|.ico|.webmanifest|.woff2|", "|"+ext+"|")
 			}
 		}
 	}
