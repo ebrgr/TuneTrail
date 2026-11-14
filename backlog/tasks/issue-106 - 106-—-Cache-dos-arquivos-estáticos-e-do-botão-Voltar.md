@@ -144,7 +144,9 @@ created: 2026-11-15T01:30:00Z
 
 ---
 
-Sugestões finais do Reviewer aplicadas e referência regenerada para os novos hashes; make check (12/12) e make api.race aprovados. Aceite: aprovada pelo usuário em 14/11/2026 ("aceito as mudanças"). Publicação de versão, merge, tag e push não solicitados.
+Sugestões finais do Reviewer aplicadas e referência regenerada para os novos hashes; make check (12/12) e make api.race aprovados.
+
+Aceite: aprovada pelo usuário em 14/11/2026 ("aceito as mudanças"). Publicação local autorizada na mensagem: "commite e publique". Push não solicitado.
 
 ---
 <!-- COMMENTS:END -->
