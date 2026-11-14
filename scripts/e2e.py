@@ -31,6 +31,8 @@ JOURNEYS = [
      "v2 to v3 migrations (including WAL), backup restore, route matrix and journeys after migration"),
     ("standalone", "validate_standalone.py", True, [],
      "standalone binary from an empty directory: Go interface, routing and SQLite v3"),
+    ("legacy-env", "validate_standalone.py", True, ["--legacy-env"],
+     "deprecated KOITO_* variable names still start the server, with a warning (ISSUE-111)"),
     ("shutdown", "validate_shutdown.py", True, [],
      "graceful shutdown with a stalled relay receiver"),
     ("vscode", "test_vscode_launch.py", False, [],

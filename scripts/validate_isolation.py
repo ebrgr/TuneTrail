@@ -41,7 +41,7 @@ def seed_server(binary,root,mode,large=False):
     directory.mkdir()
     with disposable_fixture(large) as source:
         shutil.copyfile(source,directory/'koito.db')
-    return Server(binary,directory,environment={'KOITO_WEB_UI':mode,'KOITO_FORCE_TZ':'UTC'})
+    return Server(binary,directory,environment={'KOITO_WEB_UI':mode,'TUNETRAIL_FORCE_TZ':'UTC'})
 
 
 def scrobble(track,stamp,kind='single'):

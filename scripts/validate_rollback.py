@@ -27,7 +27,7 @@ def listens(server):
 
 
 def start(binary, directory, stack):
-    server = Server(binary, directory, environment={'KOITO_FORCE_TZ': 'UTC'})
+    server = Server(binary, directory, environment={'TUNETRAIL_FORCE_TZ': 'UTC'}, legacy_env=True)  # 0.5 reads KOITO_ only
     server.start()
     stack.callback(server.stop)
     return server
@@ -76,7 +76,7 @@ def main():
         # The previous release migrates koito.db in place, so the current build now
         # refuses the directory conservatively instead of guessing which copy is right.
         with contextlib.ExitStack() as stack:
-            again = Server(current, legacy_dir, environment={'KOITO_FORCE_TZ': 'UTC'})
+            again = Server(current, legacy_dir, environment={'TUNETRAIL_FORCE_TZ': 'UTC'}, legacy_env=True)
             try:
                 again.start()
                 raise AssertionError('current build must refuse a koito.db changed after migration')

@@ -21,7 +21,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Screenshots/Logs**
-If applicable, add screenshots to help explain your problem and any relevant logs with `KOITO_LOG_LEVEL=debug` if possible.
+If applicable, add screenshots to help explain your problem and any relevant logs with `TUNETRAIL_LOG_LEVEL=debug` if possible.
 
 **Version (please complete the following information):**
  - TuneTrail version: 0.x (shown in the footer and in the startup log)

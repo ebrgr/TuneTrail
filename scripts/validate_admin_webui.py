@@ -176,7 +176,7 @@ def validate(server):
     return {'schema':3,'formats':list(fixtures),'checks':['HTML login/return','HEAD','CSRF/origin','profiles','keys/revocation','local relay','five import formats','export/round-trip','metadata/form state','DST','personal deletion','stale merge/repetition','zero profiles','password revocation','SQLite integrity']}
 
 def rate_limit(binary,root,html_first):
-    server=Server(binary,root,environment={'KOITO_WEB_UI':'go','KOITO_DISABLE_RATE_LIMIT':'false'})
+    server=Server(binary,root,environment={'KOITO_WEB_UI':'go','TUNETRAIL_DISABLE_RATE_LIMIT':'false'})
     try:
         server.start();f=Forms(server);token=f.token()
         order=['html']*6+['json']*4 if html_first else ['json']*4+['html']*6

@@ -6,14 +6,15 @@ services:
     restart: unless-stopped
     ports:
       - "${KOITO_HOST_BIND:-127.0.0.1}:${KOITO_HOST_PORT:-4110}:4110"
+    # Application variables use the TUNETRAIL_ prefix (ISSUE-111). The ${KOITO_*}
+    # names below are read from deploy/.env and stay as they are until 1.0, so an
+    # existing deploy/.env keeps pointing at the same data directory.
     environment:
-      KOITO_CONFIG_DIR: /etc/koito
-      KOITO_BIND_ADDR: 0.0.0.0
-      KOITO_LISTEN_PORT: "4110"
-      KOITO_DEFAULT_USERNAME: ${KOITO_ADMIN_USERNAME:-admin}
-      KOITO_DEFAULT_PASSWORD: ${KOITO_ADMIN_PASSWORD:?Set KOITO_ADMIN_PASSWORD in deploy/.env before starting}
-      KOITO_SKIP_IMPORT: "true"
+      TUNETRAIL_DEFAULT_USERNAME: ${KOITO_ADMIN_USERNAME:-admin}
+      TUNETRAIL_DEFAULT_PASSWORD: ${KOITO_ADMIN_PASSWORD:?Set KOITO_ADMIN_PASSWORD in deploy/.env before starting}
+      TUNETRAIL_SKIP_IMPORT: "true"
       TZ: ${KOITO_TIMEZONE:-Etc/UTC}
     volumes:
+      # /etc/koito is the default configuration and data directory inside the image.
       - ${KOITO_DATA_DIR:-./data}:/etc/koito
     stop_grace_period: 30s

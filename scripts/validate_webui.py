@@ -118,7 +118,7 @@ def main():
     args = parser.parse_args()
     root = args.work_dir.resolve(); root.mkdir(parents=True, exist_ok=False); root.chmod(0o700)
     binary = args.binary.resolve()
-    go = Server(binary, root / 'go', environment={'KOITO_WEB_UI': 'go', 'KOITO_FORCE_TZ': 'America/Sao_Paulo'}, port=args.go_port)
+    go = Server(binary, root / 'go', environment={'KOITO_WEB_UI': 'go', 'TUNETRAIL_FORCE_TZ': 'America/Sao_Paulo'}, port=args.go_port)
     try:
         # The React comparison server was removed with React itself (ISSUE-030).
         go.start(); key = seed(go); report = validate(go, key)

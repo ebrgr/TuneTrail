@@ -54,7 +54,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: KOITO_VERSION=${{ steps.image.outputs.version }}
+          build-args: TUNETRAIL_VERSION=${{ steps.image.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Smoke test the published image
@@ -63,10 +63,10 @@ jobs:
         shell: bash
         run: |
           docker run -d --name tunetrail-release-smoke -p 127.0.0.1:14110:4110 \
-            -e KOITO_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
-            -e KOITO_LOG_LEVEL=warn -e KOITO_SKIP_IMPORT=true \
-            -e KOITO_DISABLE_MUSICBRAINZ=true -e KOITO_DISABLE_DEEZER=true \
-            -e KOITO_DISABLE_COVER_ART_ARCHIVE=true "$IMAGE"
+            -e TUNETRAIL_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
+            -e TUNETRAIL_LOG_LEVEL=warn -e TUNETRAIL_SKIP_IMPORT=true \
+            -e TUNETRAIL_DISABLE_MUSICBRAINZ=true -e TUNETRAIL_DISABLE_DEEZER=true \
+            -e TUNETRAIL_DISABLE_COVER_ART_ARCHIVE=true "$IMAGE"
           trap 'docker rm -f tunetrail-release-smoke >/dev/null' EXIT
           healthy=false
           for attempt in {1..60}; do

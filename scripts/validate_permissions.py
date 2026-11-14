@@ -64,7 +64,7 @@ def full_snapshot(path):
 
 def run_mode(binary, root, mode):
     """Test all protected JSON families in both modes and HTML in Go mode."""
-    server = Server(binary, root / mode, environment={'KOITO_WEB_UI': mode, 'KOITO_LOG_LEVEL': 'debug'})
+    server = Server(binary, root / mode, environment={'KOITO_WEB_UI': mode, 'TUNETRAIL_LOG_LEVEL': 'debug'})
     checks = 0
     try:
         server.start()

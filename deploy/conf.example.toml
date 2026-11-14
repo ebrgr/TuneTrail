@@ -1,4 +1,4 @@
-# Copy to conf.toml in KOITO_CONFIG_DIR and adjust for your installation.
+# Copy to conf.toml in TUNETRAIL_CONFIG_DIR (default /etc/koito) and adjust for your installation.
 # All values here are fictional examples. Environment variables take precedence.
 schema_version = 1
 

@@ -30,7 +30,7 @@ def main():
         report = {"schema": 3, "timezone": "America/Sao_Paulo", "fixture_version": 1, "modes": {}}
         # React was removed in ISSUE-030; only the Go interface remains to serve.
         for mode in ("go",):
-            server = Server(binary, root / mode, environment={"KOITO_WEB_UI": mode, "KOITO_FORCE_TZ": "America/Sao_Paulo"})
+            server = Server(binary, root / mode, environment={"KOITO_WEB_UI": mode, "TUNETRAIL_FORCE_TZ": "America/Sao_Paulo"})
             servers.append(server)
             server.start()
             if server.request("GET", WEB + "/config")["web_ui"] != mode:

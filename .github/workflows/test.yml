@@ -57,29 +57,53 @@ jobs:
       - name: Verify container startup and Go interface
         shell: bash
         run: |
-          docker run -d --name tunetrail-ci -p 127.0.0.1:14110:4110 \
-            --health-interval=2s --health-start-period=0s --health-retries=15 \
+          # smoke NAME [docker run options...]: start, check health and pages, stop cleanly.
+          smoke() {
+            local name=$1; shift
+            docker run -d --name "$name" -p 127.0.0.1:14110:4110 \
+              --health-interval=2s --health-start-period=0s --health-retries=15 "$@" tunetrail:ci
+            healthy=false
+            for attempt in {1..60}; do
+              if curl --fail --silent http://127.0.0.1:14110/apis/web/v1/health >/dev/null; then
+                healthy=true
+                break
+              fi
+              sleep 2
+            done
+            test "$healthy" = true
+            curl --fail --silent http://127.0.0.1:14110/default >/dev/null
+            curl --fail --silent http://127.0.0.1:14110/apis/web/v1/profiles | python3 -c 'import json,sys; p=json.load(sys.stdin); assert len(p)==1 and p[0]["slug"]=="default"'
+            for attempt in {1..30}; do
+              test "$(docker inspect --format '{{.State.Health.Status}}' "$name")" = healthy && break
+              sleep 2
+            done
+            test "$(docker inspect --format '{{.State.Health.Status}}' "$name")" = healthy
+          }
+          stop() {
+            docker stop --time 20 "$1" >/dev/null
+            test "$(docker inspect --format '{{.State.ExitCode}}' "$1")" = 0
+          }
+          trap 'docker rm -f tunetrail-ci tunetrail-ci-legacy >/dev/null 2>&1; docker volume rm -f tunetrail-ci-legacy >/dev/null 2>&1' EXIT
+          # Current TUNETRAIL_* names (ISSUE-111).
+          smoke tunetrail-ci \
+            -e TUNETRAIL_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
+            -e TUNETRAIL_LOG_LEVEL=warn -e TUNETRAIL_SKIP_IMPORT=true \
+            -e TUNETRAIL_DISABLE_MUSICBRAINZ=true -e TUNETRAIL_DISABLE_DEEZER=true \
+            -e TUNETRAIL_DISABLE_COVER_ART_ARCHIVE=true
+          docker exec tunetrail-ci sh -c '! dpkg-query -W libvips42 >/dev/null 2>&1 && test -s /etc/ssl/certs/ca-certificates.crt && test -f /usr/share/zoneinfo/America/Sao_Paulo && test -f /etc/koito/tunetrail.db'
+          # Read logs first: grep -q closing the pipe early would fail under pipefail.
+          logs=$(docker logs tunetrail-ci 2>&1)
+          ! grep -q 'is deprecated' <<<"$logs"
+          stop tunetrail-ci
+          # Legacy KOITO_* names with a custom data directory, as an Unraid upgrade
+          # would run: the image must not override the directory (ISSUE-111).
+          smoke tunetrail-ci-legacy -v tunetrail-ci-legacy:/data \
+            -e KOITO_CONFIG_DIR=/data \
             -e KOITO_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
             -e KOITO_LOG_LEVEL=warn -e KOITO_SKIP_IMPORT=true \
             -e KOITO_DISABLE_MUSICBRAINZ=true -e KOITO_DISABLE_DEEZER=true \
-            -e KOITO_DISABLE_COVER_ART_ARCHIVE=true tunetrail:ci
-          trap 'docker rm -f tunetrail-ci >/dev/null' EXIT
-          healthy=false
-          for attempt in {1..60}; do
-            if curl --fail --silent http://127.0.0.1:14110/apis/web/v1/health >/dev/null; then
-              healthy=true
-              break
-            fi
-            sleep 2
-          done
-          test "$healthy" = true
-          curl --fail --silent http://127.0.0.1:14110/default >/dev/null
-          curl --fail --silent http://127.0.0.1:14110/apis/web/v1/profiles | python3 -c 'import json,sys; p=json.load(sys.stdin); assert len(p)==1 and p[0]["slug"]=="default"'
-          for attempt in {1..30}; do
-            test "$(docker inspect --format '{{.State.Health.Status}}' tunetrail-ci)" = healthy && break
-            sleep 2
-          done
-          test "$(docker inspect --format '{{.State.Health.Status}}' tunetrail-ci)" = healthy
-          docker exec tunetrail-ci sh -c '! dpkg-query -W libvips42 >/dev/null 2>&1 && test -s /etc/ssl/certs/ca-certificates.crt && test -f /usr/share/zoneinfo/America/Sao_Paulo'
-          docker stop --time 20 tunetrail-ci >/dev/null
-          test "$(docker inspect --format '{{.State.ExitCode}}' tunetrail-ci)" = 0
+            -e KOITO_DISABLE_COVER_ART_ARCHIVE=true
+          docker exec tunetrail-ci-legacy sh -c 'test -f /data/tunetrail.db && test ! -e /etc/koito/tunetrail.db'
+          logs=$(docker logs tunetrail-ci-legacy 2>&1)
+          grep -q 'KOITO_CONFIG_DIR is deprecated' <<<"$logs"
+          stop tunetrail-ci-legacy

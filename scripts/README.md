@@ -19,6 +19,7 @@ python3 scripts/e2e.py --binary ./tunetrail --only admin public
 | isolation | `validate_isolation.py` |
 | migration | `validate_migration.py` |
 | standalone | `validate_standalone.py` |
+| legacy-env | `validate_standalone.py --legacy-env` (nomes `KOITO_*` descontinuados ainda iniciam, com aviso) |
 | shutdown | `validate_shutdown.py` |
 | vscode | `test_vscode_launch.py` |
 | tools | `test_version.py`, `test_issue.py`, `test_roadmap06_fixture.py` |

@@ -44,10 +44,10 @@ def main():
         docker('volume', 'create', volume); created_volume = True
         docker('run', '-d', '--name', container, '--health-interval=2s', '--health-start-period=0s',
                '--health-retries=15', '-p', '127.0.0.1::4110', '-v', f'{volume}:/etc/koito',
-               '-e', 'KOITO_DEFAULT_USERNAME=validation-admin', '-e', 'KOITO_DEFAULT_PASSWORD=fictional-validation-password',
-               '-e', 'KOITO_FORCE_TZ=America/Sao_Paulo', '-e', 'KOITO_SKIP_IMPORT=true',
-               '-e', 'KOITO_DISABLE_MUSICBRAINZ=true', '-e', 'KOITO_DISABLE_DEEZER=true',
-               '-e', 'KOITO_DISABLE_COVER_ART_ARCHIVE=true', '-e', 'KOITO_LOG_LEVEL=warn', args.image)
+               '-e', 'TUNETRAIL_DEFAULT_USERNAME=validation-admin', '-e', 'TUNETRAIL_DEFAULT_PASSWORD=fictional-validation-password',
+               '-e', 'TUNETRAIL_FORCE_TZ=America/Sao_Paulo', '-e', 'TUNETRAIL_SKIP_IMPORT=true',
+               '-e', 'TUNETRAIL_DISABLE_MUSICBRAINZ=true', '-e', 'TUNETRAIL_DISABLE_DEEZER=true',
+               '-e', 'TUNETRAIL_DISABLE_COVER_ART_ARCHIVE=true', '-e', 'TUNETRAIL_LOG_LEVEL=warn', args.image)
         created_container = True
         address = docker('port', container, '4110/tcp').stdout.strip().splitlines()[0]
         origin = 'http://' + address

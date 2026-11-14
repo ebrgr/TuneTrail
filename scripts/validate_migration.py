@@ -52,7 +52,7 @@ def migrate(binary, root, name, stack, wal=False):
     before = snapshot(database)
     with contextlib.closing(sqlite3.connect(database)) as conn:
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (2,)
-    server = Server(binary, directory, environment={'KOITO_FORCE_TZ': 'UTC'})
+    server = Server(binary, directory, environment={'TUNETRAIL_FORCE_TZ': 'UTC'})
     stack.callback(server.stop)
     server.start()
     after = snapshot(directory / "tunetrail.db")

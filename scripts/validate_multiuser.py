@@ -49,10 +49,12 @@ def snapshot(database):
 
 
 class Server:
-    def __init__(self, binary, directory, *, environment=None, port=None):
+    def __init__(self, binary, directory, *, environment=None, port=None, legacy_env=False):
         self.binary, self.directory = binary, directory
         self.extra_environment = environment or {}
         self.fixed_port = port
+        # legacy_env=True passes KOITO_* names, for builds older than ISSUE-111.
+        self.legacy_env = legacy_env
         self.process = None
         self.cookies = http.cookiejar.CookieJar()
         self.admin = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.cookies))
@@ -66,12 +68,15 @@ class Server:
         port = self.fixed_port or port
         self.origin = f"http://127.0.0.1:{port}"
         self.env = clean_environment()
-        self.env.update(KOITO_CONFIG_DIR=str(self.directory), KOITO_BIND_ADDR="127.0.0.1",
-                        KOITO_LISTEN_PORT=str(port), KOITO_DEFAULT_USERNAME="validation-admin",
-                        KOITO_DEFAULT_PASSWORD=PASSWORD, KOITO_DISABLE_MUSICBRAINZ="true",
-                        KOITO_DISABLE_DEEZER="true", KOITO_DISABLE_COVER_ART_ARCHIVE="true",
-                        KOITO_SKIP_IMPORT="true", KOITO_DISABLE_RATE_LIMIT="true", KOITO_LOG_LEVEL="warn")
-        self.env.update(self.extra_environment)
+        settings = dict(TUNETRAIL_CONFIG_DIR=str(self.directory), TUNETRAIL_BIND_ADDR="127.0.0.1",
+                        TUNETRAIL_LISTEN_PORT=str(port), TUNETRAIL_DEFAULT_USERNAME="validation-admin",
+                        TUNETRAIL_DEFAULT_PASSWORD=PASSWORD, TUNETRAIL_DISABLE_MUSICBRAINZ="true",
+                        TUNETRAIL_DISABLE_DEEZER="true", TUNETRAIL_DISABLE_COVER_ART_ARCHIVE="true",
+                        TUNETRAIL_SKIP_IMPORT="true", TUNETRAIL_DISABLE_RATE_LIMIT="true", TUNETRAIL_LOG_LEVEL="warn")
+        settings.update(self.extra_environment)
+        if self.legacy_env:
+            settings = {k.replace("TUNETRAIL_", "KOITO_", 1) if k.startswith("TUNETRAIL_") else k: v for k, v in settings.items()}
+        self.env.update(settings)
         self.log = open(self.directory / "server.log", "ab")
         os.chmod(self.directory / "server.log", 0o600)
         self.process = subprocess.Popen([str(self.binary)], cwd=ROOT, env=self.env,
@@ -315,7 +320,7 @@ def run(binary, root, example=None):
                 assert not conn.execute("PRAGMA foreign_key_check").fetchall()
             sample.stop()
             # Only the disposable copy gets a temporary known password for the journey.
-            reset_env = {**sample.env, "KOITO_LOG_LEVEL": "info"}
+            reset_env = {**sample.env, "TUNETRAIL_LOG_LEVEL": "info"}
             reset = subprocess.run([str(binary), "reset-password"], cwd=ROOT, env=reset_env,
                                    capture_output=True, text=True, check=True)
             password = re.search(r"New password: ([A-Za-z0-9]+)", reset.stdout)
