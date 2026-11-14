@@ -32,7 +32,7 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 | 3 · Integrações | `m-12` | ROADMAP item 4: fontes nativas e compatibilidade | 7 | 6 | 0.35 |
 | 4 · Insights | `m-13` | ROADMAP item 7 e novas análises | 7 | 6 | 0.41 |
 | 5 · Compartilhar | `m-14` | ROADMAP itens 2 e 5: cards sociais e perfis públicos/privados | 4 | 3 | 0.44 |
-| 6 · Operação | `m-15` | Container sem root, backup, observabilidade, site | 4 | 3 | 0.47 |
+| 6 · Operação | `m-15` | Container sem root, backup, observabilidade, logs, site | 5 | 4 | 0.48 |
 | Marco 1.0 | `m-8` | Candidatura ao TuneTrail 1.0 | 1 | — | 1.0 (decisão do usuário) |
 
 \* Projeção pela [regra de versionamento](#versionamento), a partir da 0.9, na ordem das fases e contando a ISSUE-111 (marco Identidade, 1 versão) antes da Fase 1.
@@ -169,6 +169,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | [ISSUE-102](<../../tasks/issue-102 - 102-—-Container-sem-root-com-migração-de-permissões.md>) | Container sem root com migração de permissões | chore | medium | — | +0.1 | Aberta |
 | [ISSUE-103](<../../tasks/issue-103 - 103-—-Backup-e-restauração-pela-interface.md>) | Backup e restauração pela interface | feature | medium | — | +0.1 | Aberta |
 | [ISSUE-104](<../../tasks/issue-104 - 104-—-OpenAPI-e-métricas-Prometheus.md>) | OpenAPI e métricas Prometheus | feature | low | 082 | +0.1 | Aberta |
+| [ISSUE-112](<../../tasks/issue-112 - 112-—-Logs-diagnóstico-correções-e-visualização-na-administração.md>) | Logs: diagnóstico, correções e visualização na administração | feature | medium | — | +0.1 | Aberta |
 
 ### Identidade TuneTrail (`m-5`)
 
@@ -205,6 +206,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | CSS difícil de manter, templates em linha única, 13 pontos de quebra | 061, 065–069 |
 | Fontes externas (Google Fonts) | 070 |
 | Busca e edição lentas em relação ao Koito React; estáticos sem cache; `no-store` nas páginas públicas | 106, 107 |
+| Logs só na saída do contêiner, senha do reset-password no log, sem visualização na interface | 112 |
 | Página de mídia sem ícones de ação; link de gestão visível a visitantes; página de gestão misturando todas as tarefas | 108, 073 |
 | Nenhum sinal de sessão de administrador; ícone Info só com link; configurações em modal com abas | 109, 110 |
 | Acessibilidade sem validação abrangente (024/026) | 078 |
@@ -239,5 +241,5 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 - Uma tarefa que publica versão gera exatamente uma versão; tarefas não são agrupadas numa publicação.
 - O push e a tag dependem de autorização do usuário em cada publicação (`PUSH=1`); o push da tag publica a imagem Docker da versão e `latest`.
 - O CI exige versão não decrescente (`version.py --check-not-lower`); a publicação exige aumento estrito (`--check-parent`).
-- Projeção: das 51 tarefas abertas, **38 publicam versão**, levando de 0.9 a cerca de **0.47** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
+- Projeção: das 52 tarefas abertas, **39 publicam versão**, levando de 0.9 a cerca de **0.48** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
 - Descartadas: uma versão por fase e versões de correção 0.x.y.

@@ -4,6 +4,7 @@ title: 083 — Central de saúde da ingestão e "por que esta escuta está aqui"
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
+updated_date: '2026-11-14T03:48:00Z'
 labels:
   - admin
   - ingestao
@@ -27,3 +28,16 @@ Origem: doc-010 §4.2. `/admin/health` por perfil (último envio, cliente, fila,
 - [ ] #2 Explicação por escuta acessível ao admin
 - [ ] #3 Testes de isolamento entre perfis
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T03:48:00Z
+
+---
+
+Coordenar com a ISSUE-112 (logs): a central de saúde mostra a contagem de erros e avisos da última hora com link para /admin/logs filtrado.
+
+---
+<!-- COMMENTS:END -->
