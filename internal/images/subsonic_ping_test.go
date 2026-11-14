@@ -29,7 +29,7 @@ func TestSubsonicProbe(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path != "/base/rest/ping.view" || r.URL.Query().Get("u") != "test" {
+				if r.URL.Path != "/base/rest/ping.view" || r.URL.Query().Get("u") != "test" || r.URL.Query().Get("v") != "1.13.0" {
 					t.Errorf("invalid request path or parameters")
 				}
 				if tc.redirect {

@@ -18,7 +18,8 @@ func TestSubsonic(ctx context.Context, baseURL, params string) error {
 		return fmt.Errorf("invalid Subsonic parameters")
 	}
 	q.Set("f", "json")
-	q.Set("v", "1")
+	// Semantic version, as in subsonic.go; LMS rejects "1" (Koito #211).
+	q.Set("v", "1.13.0")
 	q.Set("c", subsonicClient) // shared client name, see subsonic.go
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(baseURL, "/")+"/rest/ping.view?"+q.Encode(), nil)
 	if err != nil {

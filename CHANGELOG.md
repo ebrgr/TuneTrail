@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Accept an IPv6 bind address such as `::` or `[::]` (Koito #74; ISSUE-115).
+- Accept a decimal `listened_at` from ListenBrainz clients and exports, keeping whole seconds (Koito PR #373; ISSUE-115).
+- Send a semantic API version in the Subsonic connection test, which LMS requires (Koito #211; ISSUE-115).
+- Finish imports when the import and archive folders are on different volumes (Koito #185; ISSUE-115).
+
 ## [0.13] - 2026-11-14
 
 ### Fixed

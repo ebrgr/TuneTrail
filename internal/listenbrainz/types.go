@@ -2,7 +2,7 @@
 package listenbrainz
 
 type LbzSubmitListenPayload struct {
-	ListenedAt int64        `json:"listened_at,omitempty"`
+	ListenedAt UnixSeconds  `json:"listened_at,omitempty"`
 	TrackMeta  LbzTrackMeta `json:"track_metadata"`
 }
 

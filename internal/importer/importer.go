@@ -12,6 +12,7 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/logger"
+	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
 // ErrInvalidFile marks input rejected before or during parsing.
@@ -128,7 +129,7 @@ func finishImport(ctx context.Context, filename string, numImported int) error {
 	if err := os.MkdirAll(path.Dir(destination), 0700); err != nil {
 		return fmt.Errorf("prepare archive: %w", err)
 	}
-	if err := os.Rename(importPath(ctx, filename), destination); err != nil {
+	if err := utils.MoveFile(importPath(ctx, filename), destination); err != nil {
 		return fmt.Errorf("archive import: %w", err)
 	}
 	if numImported > 0 {

@@ -132,7 +132,7 @@ func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.Mus
 			ignored(ctx)
 			continue
 		}
-		ts := time.Unix(payload.ListenedAt, 0)
+		ts := time.Unix(int64(payload.ListenedAt), 0)
 		if !inImportTimeWindow(ts) {
 			l.Debug().Msgf("Skipping import due to import time rules")
 			ignored(ctx)

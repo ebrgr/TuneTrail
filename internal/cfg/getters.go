@@ -1,8 +1,10 @@
 package cfg
 
 import (
-	"fmt"
+	"net"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,7 +28,12 @@ func UserAgent() string {
 func ListenAddr() string {
 	lock.RLock()
 	defer lock.RUnlock()
-	return fmt.Sprintf("%s:%d", globalConfig.bindAddr, globalConfig.listenPort)
+	// JoinHostPort brackets IPv6 literals (Koito #74); accept an already bracketed value.
+	host := globalConfig.bindAddr
+	if strings.HasPrefix(host, "[") && strings.HasSuffix(host, "]") {
+		host = host[1 : len(host)-1]
+	}
+	return net.JoinHostPort(host, strconv.Itoa(globalConfig.listenPort))
 }
 
 func ConfigDir() string {

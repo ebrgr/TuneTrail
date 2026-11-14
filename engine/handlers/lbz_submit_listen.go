@@ -240,7 +240,7 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 
 			var listenedAt = time.Now()
 			if payload.ListenedAt != 0 {
-				listenedAt = time.Unix(payload.ListenedAt, 0)
+				listenedAt = time.Unix(int64(payload.ListenedAt), 0)
 			}
 
 			var artistMbidMap []catalog.ArtistMbidMap

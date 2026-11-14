@@ -168,3 +168,24 @@ func TestManualImportFailureLeavesBootQueue(t *testing.T) {
 	}
 	require.True(t, found)
 }
+
+// Koito PR #373: ListenBrainz exports may carry a decimal listened_at; keep the whole seconds.
+func TestListenBrainzImportAcceptsDecimalTimestamp(t *testing.T) {
+	a := newProfileTestApp(t)
+	var z bytes.Buffer
+	zw := zip.NewWriter(&z)
+	member, err := zw.Create("listens/data.jsonl")
+	require.NoError(t, err)
+	_, err = member.Write([]byte(`{"listened_at":1700000100.75,"track_metadata":{"artist_name":"Fictional Artist D","track_name":"Fictional Track D","release_name":"Fictional Album D"}}` + "\n"))
+	require.NoError(t, err)
+	require.NoError(t, zw.Close())
+	f := filepath.Join(t.TempDir(), "listenbrainz")
+	require.NoError(t, os.WriteFile(f, z.Bytes(), 0600))
+	result, err := importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, 2, "listenbrainz", f)
+	require.NoError(t, err)
+	require.Equal(t, 1, result.Imported)
+	require.Zero(t, result.Errors)
+	var n int
+	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM listens WHERE profile_id=2 AND listened_at=1700000100`).Scan(&n))
+	require.Equal(t, 1, n)
+}

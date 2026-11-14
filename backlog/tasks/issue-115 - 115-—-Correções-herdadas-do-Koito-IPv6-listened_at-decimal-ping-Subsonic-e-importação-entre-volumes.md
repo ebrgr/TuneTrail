@@ -3,10 +3,11 @@ id: ISSUE-115
 title: >-
   115 — Correções herdadas do Koito: IPv6, listened_at decimal, ping Subsonic e
   importação entre volumes
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-14T22:54:00Z'
+updated_date: '2026-11-14T23:37:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -33,3 +34,16 @@ Cada correção com teste de regressão.
 - [ ] #3 Ping Subsonic com versão semântica
 - [ ] #4 Importação funciona com pastas em volumes diferentes
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-14T23:37:00Z
+
+---
+
+Início: branch `fix/issue-115-tarefa` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->

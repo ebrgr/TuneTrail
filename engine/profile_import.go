@@ -76,7 +76,7 @@ func profileImportHandler(store db.DB, mbzc mbz.MusicBrainzCaller) http.HandlerF
 			return
 		}
 		stagePath := path.Join(stageDir, uuid.NewString()+"-manual")
-		if err := os.Rename(path.Join(cfg.ConfigDir(), "import", filename), stagePath); err != nil {
+		if err := utils.MoveFile(path.Join(cfg.ConfigDir(), "import", filename), stagePath); err != nil {
 			utils.WriteError(w, "could not prepare import", 500)
 			return
 		}
@@ -112,7 +112,7 @@ func profileImportHandler(store db.DB, mbzc mbz.MusicBrainzCaller) http.HandlerF
 				}
 			}
 			if quarantineErr == nil {
-				quarantineErr = os.Rename(stagePath, path.Join(failedDir, uuid.NewString()+"-"+body.Filename))
+				quarantineErr = utils.MoveFile(stagePath, path.Join(failedDir, uuid.NewString()+"-"+body.Filename))
 			}
 			message := "import failed; some records may have been saved"
 			if quarantineErr != nil {
