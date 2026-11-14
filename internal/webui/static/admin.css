@@ -34,7 +34,9 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 @media (forced-colors: active) {
   :is(.admin-main, #admin-settings) select:not([multiple]):not([size]) { background-image: none; }
 }
-/* Deprecated KOITO_* override on the settings page (ISSUE-111). 15% of the theme's
-   text colour keeps the red at least 4.5:1 on every palette (pearl and rosebud
-   alone are 4.27/4.30); browsers without color-mix keep the plain error red. */
-.setting-deprecated{color:var(--color-error);color:color-mix(in srgb,var(--color-error) 85%,var(--color-fg));font-weight:700;letter-spacing:.03em}
+/* Deprecated KOITO_* override on the settings page (ISSUE-111). The notice uses the
+   theme's warning colour: border at least 3:1 and a 12% tint behind the text. The red
+   mark mixes 35% of the text colour so it stays at least 4.5:1 on that tint in every
+   palette (worst: rosebud 4.78); without color-mix the plain colours are used. */
+.server-setting-override-deprecated{border:1px solid var(--color-warning);border-left-width:4px;border-radius:.5rem;padding:.6rem .8rem;background:var(--color-bg);background:color-mix(in srgb,var(--color-warning) 12%,var(--color-bg))}
+.setting-deprecated{color:var(--color-error);color:color-mix(in srgb,var(--color-error) 65%,var(--color-fg));font-weight:700;letter-spacing:.03em}
