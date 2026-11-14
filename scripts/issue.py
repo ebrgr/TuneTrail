@@ -77,18 +77,30 @@ def task_file(num):
     return matches[0]
 
 
+def front_field(front, key):
+    # Backlog.md folds long titles into YAML block scalars (">-"); join their indented lines.
+    match = re.search(rf"^{key}:[ \t]*(.*)$", front, re.M)
+    if not match:
+        return ""
+    value = match[1].strip()
+    if value in (">", ">-", "|", "|-"):
+        lines = []
+        for line in front[match.end():].split("\n")[1:]:
+            if not line.startswith((" ", "\t")):
+                break
+            lines.append(line.strip())
+        return (" " if value.startswith(">") else "\n").join(lines)
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
+        value = value[1:-1].replace("''", "'")
+    return value
+
+
 def read_task(num):
     # Parse only the fields the workflow needs from the Backlog.md frontmatter.
     path = task_file(num)
     text = path.read_text()
     front = text.split("---", 2)[1] if text.startswith("---") else ""
-    fields = {}
-    for key in ("title", "status", "type"):
-        match = re.search(rf"^{key}:\s*(.*)$", front, re.M)
-        value = match[1].strip() if match else ""
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
-            value = value[1:-1].replace("''", "'")
-        fields[key] = value
+    fields = {key: front_field(front, key) for key in ("title", "status", "type")}
     comments = text.split("<!-- COMMENTS:BEGIN -->", 1)[-1] if "<!-- COMMENTS:BEGIN -->" in text else ""
     fields["accepted"] = bool(re.search(r"^Aceite\b", comments, re.M | re.I))
     fields["path"] = path

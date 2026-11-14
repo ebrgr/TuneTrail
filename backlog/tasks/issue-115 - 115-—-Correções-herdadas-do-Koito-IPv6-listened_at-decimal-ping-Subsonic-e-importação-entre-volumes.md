@@ -3,11 +3,11 @@ id: ISSUE-115
 title: >-
   115 — Correções herdadas do Koito: IPv6, listened_at decimal, ping Subsonic e
   importação entre volumes
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-14T23:40:00Z'
+updated_date: '2026-11-14T23:41:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -44,6 +44,15 @@ created: 2026-11-14T23:37:00Z
 ---
 
 Início: branch `fix/issue-115-tarefa` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-14T23:41:00Z
+
+---
+
+Verificação: make check (12/12 jornadas, referência sem diferenças) e make api.race aprovados; testes de regressão para IPv6 (6 endereços), listened_at decimal (unidade e importação ListenBrainz), ping Subsonic v=1.13.0 e movimentação entre volumes simulando EXDEV, inclusive recusa de symlink.
 
 ---
 <!-- COMMENTS:END -->

@@ -45,6 +45,19 @@ class ChangelogTests(unittest.TestCase):
         self.assertEqual(issue.branch_name("060", task), "fix/issue-060-corrigir-paginacao-do-historico-de")
 
 
+class FrontMatterTests(unittest.TestCase):
+    def test_reads_folded_title(self):
+        front = "\nid: ISSUE-115\ntitle: >-\n  115 — Correções herdadas do Koito: IPv6 e\n  importação entre volumes\nstatus: Done\n"
+        self.assertEqual(issue.front_field(front, "title"), "115 — Correções herdadas do Koito: IPv6 e importação entre volumes")
+        self.assertEqual(issue.front_field(front, "status"), "Done")
+
+    def test_reads_quoted_and_plain_values(self):
+        front = "\ntitle: '112 — Logs: it''s fine'\ntype: bug\n"
+        self.assertEqual(issue.front_field(front, "title"), "112 — Logs: it's fine")
+        self.assertEqual(issue.front_field(front, "type"), "bug")
+        self.assertEqual(issue.front_field(front, "status"), "")
+
+
 class PublishTests(unittest.TestCase):
     prefix = "issue"
 
