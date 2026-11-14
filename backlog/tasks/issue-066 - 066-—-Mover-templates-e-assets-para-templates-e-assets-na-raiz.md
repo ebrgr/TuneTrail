@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T20:04:00Z'
+updated_date: '2026-11-14T20:05:00Z'
 labels:
   - ui
 milestone: m-10
@@ -137,6 +137,15 @@ created: 2026-11-14T20:04:00Z
 ---
 
 Aceite: aprovada pelo usuário em 14/11/2026, incluindo a formatação dos templates HTML. Publicação local autorizada na mensagem: aceito pode publicar. Push não solicitado.
+
+---
+
+author: ebrgr
+created: 2026-11-14T20:05:00Z
+
+---
+
+Publicação: versão 0.11 (tag `v0.11`), branch `feat/issue-066-reunir-arquivos-web-em-assets` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

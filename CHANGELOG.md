@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.11] - 2026-11-14
+
 ### Changed
 
 - Load the web interface from an external assets directory distributed with the executable; templates and static files are validated at startup and updates take effect after restart (ISSUE-066).
