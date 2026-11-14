@@ -1,0 +1,84 @@
+{
+  "version": "0.11",
+  "fixtureOnly": true,
+  "requests": [
+    {
+      "path": "/web-assets/ui.css",
+      "status": 200,
+      "bodyBytes": 28634,
+      "headers": {
+        "Cache-Control": null,
+        "ETag": null,
+        "Last-Modified": null,
+        "Vary": null,
+        "Content-Type": "text/css; charset=utf-8",
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    {
+      "path": "/web-assets/themes.css",
+      "status": 200,
+      "bodyBytes": 4423,
+      "headers": {
+        "Cache-Control": null,
+        "ETag": null,
+        "Last-Modified": null,
+        "Vary": null,
+        "Content-Type": "text/css; charset=utf-8",
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    {
+      "path": "/web-assets/theme.js",
+      "status": 200,
+      "bodyBytes": 2366,
+      "headers": {
+        "Cache-Control": null,
+        "ETag": null,
+        "Last-Modified": null,
+        "Vary": null,
+        "Content-Type": "text/javascript; charset=utf-8",
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    {
+      "path": "/web-assets/themes.json",
+      "status": 200,
+      "bodyBytes": 4618,
+      "headers": {
+        "Cache-Control": null,
+        "ETag": null,
+        "Last-Modified": null,
+        "Vary": null,
+        "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    {
+      "path": "/study-alpha?period=all_time&tz=UTC",
+      "status": 200,
+      "bodyBytes": 122519,
+      "headers": {
+        "Cache-Control": "no-store",
+        "ETag": null,
+        "Last-Modified": null,
+        "Vary": "Accept-Language",
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Content-Type-Options": null
+      }
+    },
+    {
+      "path": "/admin",
+      "status": 200,
+      "bodyBytes": 6782,
+      "headers": {
+        "Cache-Control": "no-store",
+        "ETag": null,
+        "Last-Modified": null,
+        "Vary": "Accept-Language",
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Content-Type-Options": null
+      }
+    }
+  ]
+}

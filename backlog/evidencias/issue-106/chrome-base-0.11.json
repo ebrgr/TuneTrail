@@ -1,0 +1,244 @@
+{
+  "browser": "157.0.8103.51",
+  "headless": true,
+  "fixtureOnly": true,
+  "routeInterception": false,
+  "disableBackForwardCacheDefaultRemoved": true,
+  "externalFontResolutionBlocked": true,
+  "first": {
+    "resources": [
+      {
+        "path": "/web-assets/themes.css",
+        "transferSize": 4723,
+        "encodedBodySize": 4423
+      },
+      {
+        "path": "/web-assets/theme.js",
+        "transferSize": 2666,
+        "encodedBodySize": 2366
+      },
+      {
+        "path": "/web-assets/ui.css",
+        "transferSize": 28934,
+        "encodedBodySize": 28634
+      },
+      {
+        "path": "/web-assets/ui.js",
+        "transferSize": 5155,
+        "encodedBodySize": 4855
+      },
+      {
+        "path": "/web-assets/live.js",
+        "transferSize": 4141,
+        "encodedBodySize": 3841
+      },
+      {
+        "path": "/web-assets/themes.json",
+        "transferSize": 4918,
+        "encodedBodySize": 4618
+      }
+    ]
+  },
+  "second": {
+    "resources": [
+      {
+        "path": "/web-assets/themes.css",
+        "transferSize": 4723,
+        "encodedBodySize": 4423
+      },
+      {
+        "path": "/web-assets/ui.css",
+        "transferSize": 28934,
+        "encodedBodySize": 28634
+      },
+      {
+        "path": "/web-assets/theme.js",
+        "transferSize": 2666,
+        "encodedBodySize": 2366
+      },
+      {
+        "path": "/web-assets/ui.js",
+        "transferSize": 5155,
+        "encodedBodySize": 4855
+      },
+      {
+        "path": "/web-assets/live.js",
+        "transferSize": 4141,
+        "encodedBodySize": 3841
+      },
+      {
+        "path": "/web-assets/themes.json",
+        "transferSize": 4918,
+        "encodedBodySize": 4618
+      }
+    ]
+  },
+  "back": {
+    "persisted": false,
+    "sameDocument": false,
+    "notRestoredReasons": {
+      "src": null,
+      "id": null,
+      "url": "http://127.0.0.1:52755/study-alpha?period=all_time&tz=UTC",
+      "name": null,
+      "reasons": [
+        {
+          "reason": "masked"
+        },
+        {
+          "reason": "response-cache-control-no-store"
+        },
+        {
+          "reason": "response-cache-control-no-store-with-js-network-request"
+        }
+      ],
+      "children": []
+    }
+  },
+  "network": [
+    {
+      "phase": "first",
+      "path": "/web-assets/ui.css",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 197
+    },
+    {
+      "phase": "first",
+      "path": "/web-assets/themes.css",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 180
+    },
+    {
+      "phase": "first",
+      "path": "/web-assets/theme.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 203
+    },
+    {
+      "phase": "first",
+      "path": "/web-assets/ui.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 203
+    },
+    {
+      "phase": "first",
+      "path": "/web-assets/live.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 203
+    },
+    {
+      "phase": "first",
+      "path": "/web-assets/themes.json",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 173
+    },
+    {
+      "phase": "second",
+      "path": "/web-assets/ui.css",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 197
+    },
+    {
+      "phase": "second",
+      "path": "/web-assets/themes.css",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 180
+    },
+    {
+      "phase": "second",
+      "path": "/web-assets/theme.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 203
+    },
+    {
+      "phase": "second",
+      "path": "/web-assets/ui.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 203
+    },
+    {
+      "phase": "second",
+      "path": "/web-assets/live.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 203
+    },
+    {
+      "phase": "second",
+      "path": "/web-assets/themes.json",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 173
+    },
+    {
+      "phase": "back",
+      "path": "/web-assets/themes.css",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 4629
+    },
+    {
+      "phase": "back",
+      "path": "/web-assets/theme.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 2569
+    },
+    {
+      "phase": "back",
+      "path": "/web-assets/ui.css",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 28831
+    },
+    {
+      "phase": "back",
+      "path": "/web-assets/ui.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 5058
+    },
+    {
+      "phase": "back",
+      "path": "/web-assets/live.js",
+      "status": 200,
+      "fromDiskCache": false,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 4044
+    },
+    {
+      "phase": "back",
+      "path": "/web-assets/themes.json",
+      "status": 200,
+      "fromDiskCache": true,
+      "fromPrefetchCache": false,
+      "encodedDataLength": 0
+    }
+  ]
+}

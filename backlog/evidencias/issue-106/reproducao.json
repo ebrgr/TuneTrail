@@ -1,0 +1,14 @@
+{
+  "source": "3bcc93e",
+  "version": "0.11",
+  "measurementToolsExecutedFromRepository": true,
+  "httpResponses": 6,
+  "chrome": "157.0.8103.51",
+  "secondNavigationEncodedBodyBytes": 48737,
+  "backForwardCacheRestored": false,
+  "nodeSyntaxCheck": "passed",
+  "pythonHelpCheck": "passed",
+  "operationalDataAccessed": false,
+  "firefoxMeasured": false,
+  "proxyHttpsMeasured": false
+}
