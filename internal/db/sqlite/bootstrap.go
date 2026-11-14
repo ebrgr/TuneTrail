@@ -177,6 +177,11 @@ func checkDatabase(db *sql.DB) error {
 }
 
 // bootstrap serializes selection and publishes only fully prepared databases.
+// bootstrapPhase marks the boundaries of the migration phases. Production keeps
+// it a no-op; recovery tests replace it to inject failures or to terminate the
+// process at each boundary (see bootstrap_recovery_test.go, ISSUE-064).
+var bootstrapPhase = func(phase string) error { return nil }
+
 func bootstrap(dir string, allowCreate bool) (string, error) {
 	// Normalize relative configuration paths before constructing SQLite URIs.
 	absolute, err := filepath.Abs(dir)
@@ -199,6 +204,9 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 		return "", err
 	}
 	defer syscall.Flock(fd, syscall.LOCK_UN)
+	if err := bootstrapPhase("locked"); err != nil {
+		return "", err
+	}
 	source := filepath.Join(dir, "koito.db")
 	target := filepath.Join(dir, "tunetrail.db")
 	old, err := regularFile(source)
@@ -292,7 +300,13 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 			if err := goose.SetDialect("sqlite3"); err != nil {
 				return "", err
 			}
+			if err := bootstrapPhase("inplace-backup-synced"); err != nil {
+				return "", err
+			}
 			if err := goose.Up(db, "."); err != nil {
+				return "", err
+			}
+			if err := bootstrapPhase("inplace-migrated"); err != nil {
 				return "", err
 			}
 		}
@@ -339,6 +353,9 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 		if err = src.Close(); err != nil {
 			return "", err
 		}
+		if err = bootstrapPhase("backup-written"); err != nil {
+			return "", err
+		}
 		digest, err = legacyDigest(source)
 		if err != nil {
 			return "", err
@@ -353,6 +370,9 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 		err = f.Sync()
 		f.Close()
 		if err != nil {
+			return "", err
+		}
+		if err = bootstrapPhase("backup-synced"); err != nil {
 			return "", err
 		}
 	}
@@ -374,6 +394,9 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 		_, err = b.Exec(`VACUUM INTO ?`, tmp)
 		b.Close()
 		if err != nil {
+			return "", err
+		}
+		if err = bootstrapPhase("temp-copied"); err != nil {
 			return "", err
 		}
 	}
@@ -398,12 +421,18 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 	if err = goose.SetDialect("sqlite3"); err == nil {
 		err = goose.Up(db, ".")
 	}
+	if err == nil {
+		err = bootstrapPhase("temp-migrated")
+	}
 	if err != nil {
 		db.Close()
 		return "", err
 	}
 	if old {
 		_, err = db.Exec(`CREATE TABLE tunetrail_migration (id INTEGER PRIMARY KEY CHECK (id=1), source_digest TEXT NOT NULL, backup_name TEXT NOT NULL); INSERT INTO tunetrail_migration VALUES (1, ?, ?)`, digest, filepath.Base(backup))
+		if err == nil {
+			err = bootstrapPhase("marker-written")
+		}
 		if err != nil {
 			db.Close()
 			return "", err
@@ -425,8 +454,14 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if err = bootstrapPhase("temp-synced"); err != nil {
+		return "", err
+	}
 	if err = os.Link(tmp, target); err != nil {
 		return "", fmt.Errorf("publish database without overwrite: %w", err)
+	}
+	if err = bootstrapPhase("published"); err != nil {
+		return "", err
 	}
 	d, err := os.Open(dir)
 	if err != nil {
