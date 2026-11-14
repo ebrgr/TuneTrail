@@ -1,11 +1,11 @@
 ---
 id: ISSUE-066
 title: 066 — Reunir arquivos web em assets/ com leitura do disco
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T19:09:00Z'
+updated_date: '2026-11-14T19:19:00Z'
 labels:
   - ui
 milestone: m-10
@@ -83,6 +83,15 @@ created: 2026-11-14T19:09:00Z
 ---
 
 Implementação concluída na branch da ISSUE-066: assets externos por manifesto e snapshot imutável, distribuição e Docker ajustados. make check passou (12/12 e2e) e 113 arquivos renderizados equivalem à referência da 065. Reviewer principal aprovou, com achados corrigidos. Recarga automática não implementada: reinício carrega geração completa. Mantida Em andamento: revisão complementar da última validação AST de templates foi bloqueada pelo auto-review, que exige autorização explícita para envio de código ao Claude CLI; aguardando essa autorização antes de encaminhar ao aceite. Sem publicação, merge ou push.
+
+---
+
+author: ebrgr
+created: 2026-11-14T19:19:00Z
+
+---
+
+Verificação: Reviewer Claude Opus aprovou a revisão principal e o complemento de validação AST, autorizado explicitamente pelo usuário, sem correções obrigatórias. make check passou, incluindo 12/12 e2e e renderização de 113 arquivos idênticos à ISSUE-065. Detector de corridas, pacote e Docker UID 65532 verificados anteriormente e documentados. Implementação concluída; falta aceite do usuário e autorização de publicação. Sem merge, push ou publicação.
 
 ---
 <!-- COMMENTS:END -->

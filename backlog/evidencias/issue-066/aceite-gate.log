@@ -1,0 +1,94 @@
+python3 scripts/issue.py review 66 -m "Verificação: Reviewer Claude Opus aprovou a revisão principal e o complemento de validação AST, autorizado explicitamente pelo usuário, sem correções obrigatórias. make check passou, incluindo 12/12 e2e e renderização de 113 arquivos idênticos à ISSUE-065. Detector de corridas, pacote e Docker UID 65532 verificados anteriormente e documentados. Implementação concluída; falta aceite do usuário e autorização de publicação. Sem merge, push ou publicação."
+CGO_ENABLED=0 go vet ./...
+CGO_ENABLED=0 go test ./... -timeout 60s
+ok  	github.com/ebrgr/TuneTrail/cmd/api	1.291s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	(cached)
+?   	github.com/ebrgr/TuneTrail/db/migrations_sqlite	[no test files]
+ok  	github.com/ebrgr/TuneTrail/engine	6.178s
+ok  	github.com/ebrgr/TuneTrail/engine/handlers	(cached)
+ok  	github.com/ebrgr/TuneTrail/engine/middleware	(cached)
+ok  	github.com/ebrgr/TuneTrail/imagecache	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/admin	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/adminui	1.048s
+ok  	github.com/ebrgr/TuneTrail/internal/adminweb	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/catalog	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/cfg	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/db	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/db/sqlite	3.822s
+ok  	github.com/ebrgr/TuneTrail/internal/export	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/i18n	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagefetch	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagepipeline	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/images	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagework	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/importer	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/listenbrainz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/listening	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/logger	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/mbz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/memkv	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/models	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/relay	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/summary	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/utils	(cached)
+?   	github.com/ebrgr/TuneTrail/internal/version	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webassets	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/webui	(cached)
+ok  	github.com/ebrgr/TuneTrail/queue	(cached)
+?   	github.com/ebrgr/TuneTrail/scripts/experiments/tls034	[no test files]
+?   	github.com/ebrgr/TuneTrail/testing_init	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.365s
+{
+  "files": 113,
+  "differences": [],
+  "exit_code": 0
+}
+python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+OK
+CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+CGO_ENABLED=0 go test ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+ok  	github.com/ebrgr/TuneTrail/internal/webui	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/listening	(cached)
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	(cached)
+node --check assets/js/theme.js
+node --check assets/js/ui.js
+node --check assets/js/live.js
+node --check assets/js/admin.js
+node --test internal/webui/theme.test.mjs
+✔ unavailable storage and invalid saved JSON leave a usable default (2.10275ms)
+✔ custom colors survive startup and reset clears inline overrides (0.613709ms)
+✔ incomplete and injected palettes cannot set arbitrary CSS (0.236833ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36.406958
+CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
+python3 scripts/e2e.py --binary ./tunetrail
+PASS  web-assets     0.8s
+PASS  multiuser      1.3s
+PASS  admin          2.1s
+PASS  public         0.4s
+PASS  permissions    0.8s
+PASS  isolation      2.2s
+PASS  migration      1.8s
+PASS  standalone     0.2s
+PASS  legacy-env     0.2s
+PASS  shutdown       0.8s
+PASS  vscode         0.0s
+PASS  tools          4.8s
+e2e: 12/12 journeys passed
+$ make check
+ISSUE-066 aguardando aceite do usuário
+AVISO ao usuário: ISSUE-066 — Reunir arquivos web em assets/ com leitura do disco está em Aguardando aceite.
+  Verificação: Verificação: Reviewer Claude Opus aprovou a revisão principal e o complemento de validação AST, autorizado explicitamente pelo usuário, sem correções obrigatórias. make check passou, incluindo 12/12 e2e e renderização de 113 arquivos idênticos à ISSUE-065. Detector de corridas, pacote e Docker UID 65532 verificados anteriormente e documentados. Implementação concluída; falta aceite do usuário e autorização de publicação. Sem merge, push ou publicação.
+  Para publicar: registrar o aceite (Done) e rodar make issue.publish ISSUE=66
