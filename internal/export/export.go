@@ -62,7 +62,8 @@ func ExportData(ctx context.Context, profile *models.ListeningProfile, store db.
 	pageSize := int32(1000)
 
 	l := logger.FromContext(ctx)
-	l.Info().Msg("ExportData: Generating Koito export file...")
+	// The export keeps the Koito JSON format for interoperability; only the wording is TuneTrail's.
+	l.Info().Msg("ExportData: generating export file in the Koito format...")
 
 	exportedAt := time.Now()
 	// exportFile := path.Join(cfg.ConfigDir(), fmt.Sprintf("koito_export_%d.json", exportedAt.Unix()))

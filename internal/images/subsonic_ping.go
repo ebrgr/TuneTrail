@@ -19,7 +19,7 @@ func TestSubsonic(ctx context.Context, baseURL, params string) error {
 	}
 	q.Set("f", "json")
 	q.Set("v", "1")
-	q.Set("c", "koito")
+	q.Set("c", subsonicClient) // shared client name, see subsonic.go
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(baseURL, "/")+"/rest/ping.view?"+q.Encode(), nil)
 	if err != nil {
 		return fmt.Errorf("invalid Subsonic address")

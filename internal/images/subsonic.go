@@ -45,10 +45,13 @@ type SubsonicArtistResponse struct {
 	} `json:"subsonic-response"`
 }
 
+// subsonicClient is the client name the Subsonic server records for these requests (ISSUE-111).
+const subsonicClient = "tunetrail"
+
 const (
-	subsonicAlbumSearchFmtStr  = "/rest/search3?%s&f=json&query=%s&v=1.13.0&c=koito&artistCount=0&songCount=0&albumCount=10"
-	subsonicArtistSearchFmtStr = "/rest/search3?%s&f=json&query=%s&v=1.13.0&c=koito&artistCount=1&songCount=0&albumCount=0"
-	subsonicCoverArtFmtStr     = "/rest/getCoverArt?%s&id=%s&v=1.13.0&c=koito"
+	subsonicAlbumSearchFmtStr  = "/rest/search3?%s&f=json&query=%s&v=1.13.0&c=" + subsonicClient + "&artistCount=0&songCount=0&albumCount=10"
+	subsonicArtistSearchFmtStr = "/rest/search3?%s&f=json&query=%s&v=1.13.0&c=" + subsonicClient + "&artistCount=1&songCount=0&albumCount=0"
+	subsonicCoverArtFmtStr     = "/rest/getCoverArt?%s&id=%s&v=1.13.0&c=" + subsonicClient
 )
 
 func NewSubsonicClient() *SubsonicClient {

@@ -214,7 +214,9 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 	cfg.lastfmApiKey = getenv(LASTFM_API_KEY_ENV)
 	cfg.skipImport = parseBool(getenv(SKIP_IMPORT_ENV))
 
-	cfg.userAgent = fmt.Sprintf("Koito %s (contact@koito.io)", version)
+	// Identify TuneTrail itself to MusicBrainz, Deezer and Last.fm with a project contact URL,
+	// never the upstream Koito contact (ISSUE-111). Format: "Name/version ( contact )".
+	cfg.userAgent = fmt.Sprintf("TuneTrail/%s ( %s )", version, ProjectURL)
 
 	if getenv(DEFAULT_USERNAME_ENV) == "" {
 		cfg.defaultUsername = "admin"

@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// ProjectURL is the public contact sent in the User-Agent to external services.
+const ProjectURL = "https://github.com/ebrgr/TuneTrail"
+
 func UserAgent() string {
 	lock.RLock()
 	defer lock.RUnlock()

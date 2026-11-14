@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- TuneTrail now identifies itself as TuneTrail, with its own project contact, to MusicBrainz, Deezer, Last.fm and Subsonic servers (ISSUE-111).
+
 ## [0.9] - 2026-11-14
 
 ### Fixed

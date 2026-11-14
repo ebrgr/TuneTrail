@@ -50,7 +50,7 @@ func initLogger(getenv func(string) string, version string, w io.Writer) (*zerol
 	}
 
 	ctx := logger.NewContext(l)
-	l.Info().Msgf("Koito %s", version)
+	l.Info().Msgf("TuneTrail %s", version) // product name in the startup log (ISSUE-111)
 	return l, ctx, nil
 }
 
