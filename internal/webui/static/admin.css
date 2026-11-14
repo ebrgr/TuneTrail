@@ -34,3 +34,7 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 @media (forced-colors: active) {
   :is(.admin-main, #admin-settings) select:not([multiple]):not([size]) { background-image: none; }
 }
+/* Deprecated KOITO_* override on the settings page (ISSUE-111). 15% of the theme's
+   text colour keeps the red at least 4.5:1 on every palette (pearl and rosebud
+   alone are 4.27/4.30); browsers without color-mix keep the plain error red. */
+.setting-deprecated{color:var(--color-error);color:color-mix(in srgb,var(--color-error) 85%,var(--color-fg));font-weight:700;letter-spacing:.03em}

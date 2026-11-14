@@ -381,6 +381,8 @@
   "admin.invalid_option": "Invalid: {{.Value}}",
   "admin.process_zone": "Process time zone: {{.Zone}}. An empty application time zone uses the request or process time zone.",
   "admin.env_source": "Set by environment variable",
+  "admin.env_deprecated": "DEPRECATED",
+  "admin.env_rename": "Rename it to",
   "admin.env_locked": "To edit this field, remove the environment override and restart TuneTrail.",
   "admin.js.copy": "Copy",
   "admin.js.copied": "Copied",

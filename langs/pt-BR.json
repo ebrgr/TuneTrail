@@ -381,6 +381,8 @@
   "admin.invalid_option": "Inválido: {{.Value}}",
   "admin.process_zone": "Fuso do processo: {{.Zone}}. Um fuso de aplicação vazio usa o fuso da requisição ou do processo.",
   "admin.env_source": "Definido pela variável de ambiente",
+  "admin.env_deprecated": "DEPRECATED",
+  "admin.env_rename": "Renomeie para",
   "admin.env_locked": "Para editar este campo, remova a variável de ambiente e reinicie o TuneTrail.",
   "admin.js.copy": "Copiar",
   "admin.js.copied": "Copiado",

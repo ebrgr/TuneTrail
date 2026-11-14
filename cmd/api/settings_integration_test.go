@@ -253,6 +253,13 @@ disable_cover_art_archive=true
 	if !strings.Contains(refreshed, "Restart to apply") || !strings.Contains(refreshed, "Set by environment variable <code>TUNETRAIL_LOG_LEVEL</code>") || !strings.Contains(refreshed, "Set by environment variable <code>KOITO_DISABLE_DEEZER_FILE</code>") || !strings.Contains(refreshed, `value="draft-key-one"`) {
 		t.Fatal("saved, overridden or restart state not shown")
 	}
+	// A KOITO_* override is flagged DEPRECATED with its TUNETRAIL_* name; a TUNETRAIL_* one is not (ISSUE-111).
+	if !strings.Contains(refreshed, `<code>KOITO_DISABLE_DEEZER_FILE</code> <strong class="setting-deprecated">DEPRECATED</strong> Rename it to <code>TUNETRAIL_DISABLE_DEEZER_FILE</code>.`) {
+		t.Fatal("deprecated KOITO_ override not flagged with its new name")
+	}
+	if !strings.Contains(refreshed, "<code>TUNETRAIL_LOG_LEVEL</code>. ") || strings.Count(refreshed, `class="setting-deprecated"`) != 1 {
+		t.Fatal("TUNETRAIL_ override must not be flagged as deprecated")
+	}
 	public, err := client.Get(base + "/apis/web/v1/config")
 	if err != nil {
 		t.Fatal(err)

@@ -27,6 +27,10 @@ type settingField struct {
 	OverrideVariable                                                                     string
 	Options                                                                              []settingOption
 	Overridden                                                                           bool
+	// Deprecated marks a KOITO_* override that has a TUNETRAIL_* name (ISSUE-111);
+	// CurrentVariable is that new name, shown as the rename suggestion.
+	Deprecated      bool
+	CurrentVariable string
 }
 type settingsView struct {
 	Locale                                                   *i18n.View
@@ -128,6 +132,14 @@ func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap 
 				field.OverrideVariable = cfg.CurrentName(spec.Name)
 				if snap.Origins[spec.Name] == cfg.OriginFile {
 					field.OverrideVariable += "_FILE"
+				}
+			}
+			// Flag deprecated KOITO_* names and suggest the TUNETRAIL_* equivalent.
+			if current := cfg.CurrentName(spec.Name); current != spec.Name && strings.HasPrefix(field.OverrideVariable, "KOITO_") {
+				field.Deprecated = true
+				field.CurrentVariable = current
+				if strings.HasSuffix(field.OverrideVariable, "_FILE") {
+					field.CurrentVariable += "_FILE"
 				}
 			}
 		}

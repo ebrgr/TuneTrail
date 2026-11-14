@@ -4,7 +4,7 @@
 
 ### Added
 
-- Configuration variables can use the TUNETRAIL_ prefix (and TUNETRAIL_*_FILE); KOITO_ names keep working with a startup warning, and different values under both names stop startup without revealing them (ISSUE-111).
+- Configuration variables can use the TUNETRAIL_ prefix (and TUNETRAIL_*_FILE); KOITO_ names keep working with a startup warning and a DEPRECATED mark on the settings page, and different values under both names stop startup without revealing them (ISSUE-111).
 
 ### Changed
 
