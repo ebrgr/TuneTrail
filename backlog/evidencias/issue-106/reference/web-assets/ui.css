@@ -388,6 +388,8 @@ a:hover,button.media-title:hover {
   margin-top: 24px
 }
 .tracks {
+  /* Sits beside the two 350px cards once a 400px column fits; otherwise wraps full-width. */
+  flex: 1 1 400px;
   width: 100%;
   max-width: 750px;
   min-width: 0
