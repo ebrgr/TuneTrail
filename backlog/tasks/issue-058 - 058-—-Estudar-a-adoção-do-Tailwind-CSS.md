@@ -1,14 +1,14 @@
 ---
 id: ISSUE-058
 title: 058 — Estudar a adoção do Tailwind CSS
-status: Aberta
+status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-13T23:47:00Z'
 labels:
   - ui
 milestone: m-8
 dependencies: []
-references: []
 type: spike
 ordinal: 58000
 ---
@@ -114,3 +114,16 @@ Medir e registrar em `comparisons/tailwind-058/`:
 - [ ] Executar a prova de conceito, se autorizada, e registrar as evidências.
 - [ ] Apresentar a recomendação final ao usuário antes de encerrar esta issue. Se a decisão for adotar, abrir issues de implementação separadas (e a issue no GitHub, conforme `issue-first`).
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-13T23:47:00Z
+
+---
+
+Aceite: usuário decidiu em 13/11/2026 não implementar o Tailwind e reorganizar o CSS e os templates atuais. Continuação em ISSUE-061 (estudo doc-031).
+
+---
+<!-- COMMENTS:END -->

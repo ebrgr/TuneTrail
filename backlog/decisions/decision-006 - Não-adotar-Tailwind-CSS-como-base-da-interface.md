@@ -2,7 +2,7 @@
 id: decision-006
 title: Não adotar Tailwind CSS como base da interface
 date: '2026-11-12T23:40:00Z'
-status: proposed
+status: accepted
 ---
 ## Context
 O CSS atual tem larguras fixas em px, nove breakpoints e dois estilos de escrita (ISSUE-058).
@@ -13,5 +13,5 @@ Reorganizar o CSS próprio com tokens, `@layer` e container queries (opção D);
 
 
 ## Consequences
-Sem etapa de build nova; a decisão final depende da avaliação do usuário na ISSUE-058.
+Sem etapa de build nova. Aceita pelo usuário em 13/11/2026: Tailwind não será adotado; a reorganização segue em ISSUE-061 (doc-031).
 
