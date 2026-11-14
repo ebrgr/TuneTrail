@@ -3,7 +3,7 @@ id: doc-032
 title: ROADMAP — TuneTrail 1.0
 type: specification
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-14T02:20:00Z'
+updated_date: '2026-11-14T03:30:00Z'
 tags:
   - roadmap
 ---
@@ -18,7 +18,7 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 ## Como trabalhar este roadmap
 
 - Ciclo de cada tarefa conforme a skill `issue-first`: `make issue.start` → commits `ISSUE-NNN: ` → (opcional) `make issue.review` → aceite do usuário → `make issue.publish`. O agente sempre avisa o usuário quando coloca uma tarefa em Aguardando aceite.
-- Estudos (`spike`) e documentação (`docs`) fecham por aceite, sem publicar versão. As demais publicam uma versão cada (coluna **Versão**).
+- Versão conforme a [regra de versionamento](#versionamento): mudanças no produto publicam uma versão cada; estudos, documentação, testes e ferramentas entram no `main` sem versão (coluna **Versão**).
 - Tarefas com concorrência, mensageria ou criptografia (079, 081, 082, 084, 086, 090, 100) exigem parecer do Advisor antes da implementação (`AGENTS.md`).
 - Tarefas da UI usam a referência da ISSUE-065: as que não mudam o visual provam equivalência por comparação; as que mudam pedem capturas antes/depois e aceite visual.
 
@@ -26,20 +26,20 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 
 | Fase | Marco | Objetivo | Tarefas | Versões | Versão ao final* |
 | --- | --- | --- | ---: | ---: | --- |
-| 0 · Base | `m-9` | Registros reconciliados, suíte e2e no CI, recuperação testada, 049 corrigida | 4 | 3 | 0.11 |
-| 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 21 | 19 | 0.30 |
-| 2 · Ingestão confiável | `m-11` | Nenhuma escuta perdida: eventos, deduplicação, outbox, saúde, SSE | 6 | 5 | 0.35 |
-| 3 · Integrações | `m-12` | ROADMAP item 4: fontes nativas e compatibilidade | 7 | 6 | 0.41 |
-| 4 · Insights | `m-13` | ROADMAP item 7 e novas análises | 7 | 6 | 0.47 |
-| 5 · Compartilhar | `m-14` | ROADMAP itens 2 e 5: cards sociais e perfis públicos/privados | 4 | 3 | 0.50 |
-| 6 · Operação | `m-15` | Container sem root, backup, observabilidade, site | 4 | 3 | 0.53 |
+| 0 · Base | `m-9` | Registros reconciliados, suíte e2e no CI, recuperação testada, 049 corrigida | 4 | 1 | **concluída** (0.9) |
+| 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 21 | 14 | 0.24 |
+| 2 · Ingestão confiável | `m-11` | Nenhuma escuta perdida: eventos, deduplicação, outbox, saúde, SSE | 6 | 5 | 0.29 |
+| 3 · Integrações | `m-12` | ROADMAP item 4: fontes nativas e compatibilidade | 7 | 6 | 0.35 |
+| 4 · Insights | `m-13` | ROADMAP item 7 e novas análises | 7 | 6 | 0.41 |
+| 5 · Compartilhar | `m-14` | ROADMAP itens 2 e 5: cards sociais e perfis públicos/privados | 4 | 3 | 0.44 |
+| 6 · Operação | `m-15` | Container sem root, backup, observabilidade, site | 4 | 3 | 0.47 |
 | Marco 1.0 | `m-8` | Candidatura ao TuneTrail 1.0 | 1 | — | 1.0 (decisão do usuário) |
 
-\* Projeção pela regra atual (uma versão por tarefa publicada), na ordem das fases. Ver [Versionamento](#versionamento).
+\* Projeção pela [regra de versionamento](#versionamento), a partir da 0.9, na ordem das fases e contando a ISSUE-111 (marco Identidade, 1 versão) antes da Fase 1.
 
 **Paralelismo:** a Fase 0 vem primeiro. Depois, as fases 1 e 2 podem correr juntas (camadas diferentes). A 3 depende da 2. A 4 começa pela ISSUE-092 assim que a fase 0 terminar; a 097 depende da 2. A 5 depende de partes da 1 (070, 074). A 6 pode começar a qualquer momento após 063/064.
 
-## Plano detalhado — Fase 0 · Base
+## Plano detalhado — Fase 0 · Base (concluída em 13/11/2026)
 
 Ordem sugerida, uma tarefa por vez:
 
@@ -87,14 +87,9 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 
 ## Tarefas por fase
 
-### Fase 0 · Base (`m-9`)
+### Fase 0 · Base (`m-9`) — concluída
 
-| Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| [ISSUE-049](<../../tasks/issue-049 - 049-—-Associação-residual-de-artista-em-álbum-após-edição-de-faixa.md>) | Associação residual de artista em álbum após edição de faixa | bug | high | — | +0.1 | Aberta |
-| [ISSUE-062](<../../tasks/issue-062 - 062-—-Reconciliar-registros-do-projeto-e-higiene-do-repositório.md>) | Reconciliar registros do projeto e higiene do repositório | docs | high | — | — | Aberta |
-| [ISSUE-063](<../../tasks/issue-063 - 063-—-Consolidar-os-scripts-de-validação-por-issue-em-uma-suíte-e2e-no-CI.md>) | Consolidar os scripts de validação por issue em uma suíte e2e no CI | chore | high | — | +0.1 | Aberta |
-| [ISSUE-064](<../../tasks/issue-064 - 064-—-Testes-de-recuperação-de-banco-migração-e-importação.md>) | Testes de recuperação de banco, migração e importação | chore | high | 062 | +0.1 | Aberta |
+ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem versão (13/11/2026).
 
 ### Fase 1 · UI responsiva (`m-10`)
 
@@ -102,10 +97,10 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 | --- | --- | --- | --- | --- | --- | --- |
 | [ISSUE-056](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>) | Estudar interações mais dinâmicas na interface | spike | — | — | — | Aberta |
 | [ISSUE-061](<../../tasks/issue-061 - 061-—-Estudar-a-reorganização-do-CSS-e-dos-templates-HTML.md>) | Estudar a reorganização do CSS e dos templates HTML | spike | — | — | — | Aguardando aceite |
-| [ISSUE-065](<../../tasks/issue-065 - 065-—-Referência-de-renderização-e-capturas-de-base-da-interface.md>) | Referência de renderização e capturas de base da interface | chore | high | 061 | +0.1 | Aberta |
-| [ISSUE-066](<../../tasks/issue-066 - 066-—-Mover-templates-e-assets-para-templates-e-assets-na-raiz.md>) | Mover templates e assets para templates/ e assets/ na raiz | chore | high | 065 | +0.1 | Aberta |
-| [ISSUE-067](<../../tasks/issue-067 - 067-—-Reformatar-templates-e-unificar-head-barra-lateral-e-nomes-de-blocos.md>) | Reformatar templates e unificar head, barra lateral e nomes de blocos | chore | high | 066 | +0.1 | Aberta |
-| [ISSUE-068](<../../tasks/issue-068 - 068-—-Dividir-o-CSS-em-camadas-com-concatenação-e-cache-no-Go.md>) | Dividir o CSS em camadas com concatenação e cache no Go | chore | high | 067 | +0.1 | Aberta |
+| [ISSUE-065](<../../tasks/issue-065 - 065-—-Referência-de-renderização-e-capturas-de-base-da-interface.md>) | Referência de renderização e capturas de base da interface | chore | high | 061 | — | Aberta |
+| [ISSUE-066](<../../tasks/issue-066 - 066-—-Mover-templates-e-assets-para-templates-e-assets-na-raiz.md>) | Mover templates e assets para templates/ e assets/ na raiz | chore | high | 065 | — | Aberta |
+| [ISSUE-067](<../../tasks/issue-067 - 067-—-Reformatar-templates-e-unificar-head-barra-lateral-e-nomes-de-blocos.md>) | Reformatar templates e unificar head, barra lateral e nomes de blocos | chore | high | 066 | — | Aberta |
+| [ISSUE-068](<../../tasks/issue-068 - 068-—-Dividir-o-CSS-em-camadas-com-concatenação-e-cache-no-Go.md>) | Dividir o CSS em camadas com concatenação e cache no Go | chore | high | 067 | — | Aberta |
 | [ISSUE-069](<../../tasks/issue-069 - 069-—-Tokens-de-design-três-pontos-de-quebra-e-container-queries.md>) | Tokens de design, três pontos de quebra e container queries | enhancement | high | 068 | +0.1 | Aberta |
 | [ISSUE-070](<../../tasks/issue-070 - 070-—-Servir-as-fontes-localmente-e-remover-o-Google-Fonts.md>) | Servir as fontes localmente e remover o Google Fonts | enhancement | medium | 068 | +0.1 | Aberta |
 | [ISSUE-071](<../../tasks/issue-071 - 071-—-Navegação-responsiva-barra-inferior-lateral-de-ícones-e-expansível.md>) | Navegação responsiva: barra inferior, lateral de ícones e expansível | feature | high | 069 | +0.1 | Aberta |
@@ -115,7 +110,7 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 | [ISSUE-075](<../../tasks/issue-075 - 075-—-Fragmentos-parciais-View-Transitions-Speculation-Rules-e-busca-com-sugestões.md>) | Fragmentos parciais, View Transitions e Speculation Rules | feature | medium | 073, 056, 107 | +0.1 | Aberta |
 | [ISSUE-076](<../../tasks/issue-076 - 076-—-App-instalável-com-service-worker-mínimo-e-página-offline.md>) | App instalável com service worker mínimo e página offline | feature | low | 068, 070 | +0.1 | Aberta |
 | [ISSUE-077](<../../tasks/issue-077 - 077-—-Curvas-mais-suaves-no-gráfico-de-escutas-sem-ultrapassar-os-pontos.md>) | Curvas mais suaves no gráfico de escutas sem ultrapassar os pontos | enhancement | low | — | +0.1 | Aberta |
-| [ISSUE-078](<../../tasks/issue-078 - 078-—-Auditoria-de-acessibilidade-desempenho-e-aceite-da-UI-responsiva.md>) | Auditoria de acessibilidade, desempenho e aceite da UI responsiva | chore | high | 072, 073, 074, 075, 070 | +0.1 | Aberta |
+| [ISSUE-078](<../../tasks/issue-078 - 078-—-Auditoria-de-acessibilidade-desempenho-e-aceite-da-UI-responsiva.md>) | Auditoria de acessibilidade, desempenho e aceite da UI responsiva | chore | high | 072, 073, 074, 075, 070 | — | Aberta |
 | [ISSUE-106](<../../tasks/issue-106 - 106-—-Cache-dos-arquivos-estáticos-e-do-botão-Voltar.md>) | Cache dos arquivos estáticos e do botão Voltar | enhancement | high | — | +0.1 | Aberta |
 | [ISSUE-107](<../../tasks/issue-107 - 107-—-Busca-instantânea-e-edição-de-faixas-sem-recarregar-a-página.md>) | Busca instantânea e edição de faixas sem recarregar a página | feature | high | 106 | +0.1 | Aberta |
 | [ISSUE-108](<../../tasks/issue-108 - 108-—-Barra-de-ações-nas-páginas-de-mídia-e-edição-separada-por-tarefa.md>) | Barra de ações nas páginas de mídia e edição separada por tarefa | feature | high | 107, 109 | +0.1 | Aberta |
@@ -126,7 +121,7 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 
 | Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ISSUE-079](<../../tasks/issue-079 - 079-—-Contrato-de-ingestão-retenção-e-revisão-do-Advisor.md>) | Contrato de ingestão, retenção e revisão do Advisor | spike | high | 064 | — | Aberta |
+| [ISSUE-079](<../../tasks/issue-079 - 079-—-Contrato-de-ingestão-retenção-e-revisão-do-Advisor.md>) | Contrato de ingestão, retenção e revisão do Advisor | spike | high | — | — | Aberta |
 | [ISSUE-080](<../../tasks/issue-080 - 080-—-Migração-SQLite-v4-ingest_events-outbox-e-integrations.md>) | Migração SQLite v4: ingest_events, outbox e integrations | feature | high | 079 | +0.1 | Aberta |
 | [ISSUE-081](<../../tasks/issue-081 - 081-—-Pipeline-de-ingestão-com-deduplicação-explicável.md>) | Pipeline de ingestão com deduplicação explicável | feature | high | 080 | +0.1 | Aberta |
 | [ISSUE-082](<../../tasks/issue-082 - 082-—-Outbox-durável-no-lugar-do-relay-best-effort.md>) | Outbox durável no lugar do relay best-effort | feature | high | 081 | +0.1 | Aberta |
@@ -154,7 +149,7 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 | [ISSUE-093](<../../tasks/issue-093 - 093-—-Comparação-de-períodos-e-setas-de-posição-nos-rankings.md>) | Comparação de períodos e setas de posição nos rankings | feature | medium | 092, 072 | +0.1 | Aberta |
 | [ISSUE-094](<../../tasks/issue-094 - 094-—-Redescobertas-e-relógio-de-escuta.md>) | Redescobertas e relógio de escuta | feature | low | 092 | +0.1 | Aberta |
 | [ISSUE-095](<../../tasks/issue-095 - 095-—-Sessões-de-escuta.md>) | Sessões de escuta | feature | low | 092 | +0.1 | Aberta |
-| [ISSUE-096](<../../tasks/issue-096 - 096-—-Grupos-de-artistas-sem-fundir-entidades.md>) | Grupos de artistas sem fundir entidades | feature | low | 092, 049 | +0.1 | Aberta |
+| [ISSUE-096](<../../tasks/issue-096 - 096-—-Grupos-de-artistas-sem-fundir-entidades.md>) | Grupos de artistas sem fundir entidades | feature | low | 092 | +0.1 | Aberta |
 | [ISSUE-097](<../../tasks/issue-097 - 097-—-Qualidade-do-histórico-e-tempo-realmente-ouvido.md>) | Qualidade do histórico e tempo realmente ouvido | feature | low | 083 | +0.1 | Aberta |
 
 ### Fase 5 · Compartilhar (`m-14`)
@@ -171,9 +166,15 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 | Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | [ISSUE-048](<../../tasks/issue-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>) | Documentação e site oficial do TuneTrail | docs | — | — | — | Aberta |
-| [ISSUE-102](<../../tasks/issue-102 - 102-—-Container-sem-root-com-migração-de-permissões.md>) | Container sem root com migração de permissões | chore | medium | 063 | +0.1 | Aberta |
-| [ISSUE-103](<../../tasks/issue-103 - 103-—-Backup-e-restauração-pela-interface.md>) | Backup e restauração pela interface | feature | medium | 064 | +0.1 | Aberta |
+| [ISSUE-102](<../../tasks/issue-102 - 102-—-Container-sem-root-com-migração-de-permissões.md>) | Container sem root com migração de permissões | chore | medium | — | +0.1 | Aberta |
+| [ISSUE-103](<../../tasks/issue-103 - 103-—-Backup-e-restauração-pela-interface.md>) | Backup e restauração pela interface | feature | medium | — | +0.1 | Aberta |
 | [ISSUE-104](<../../tasks/issue-104 - 104-—-OpenAPI-e-métricas-Prometheus.md>) | OpenAPI e métricas Prometheus | feature | low | 082 | +0.1 | Aberta |
+
+### Identidade TuneTrail (`m-5`)
+
+| Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| [ISSUE-111](<../../tasks/issue-111 - 111-—-Trocar-Koito-por-TuneTrail-na-identidade-configuração-e-navegador.md>) | Trocar Koito por TuneTrail na identidade, configuração e navegador | enhancement | high | — | +0.1 | Aberta |
 
 ### Marco TuneTrail 1.0 (`m-8`)
 
@@ -224,15 +225,19 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 | Retenção de `ingest_events` e guarda do payload bruto | 079 | 90 dias, payload redigido |
 | Spotify nativo ou somente coletor externo | 090 | Decidir depois da PoC (085) |
 | Semântica das médias | 092 | Documentar antes de mudar cálculos |
-| Regra de versão (abaixo) | Todas | Ver opções |
 | Candidatura ao 1.0 | 105 | Reservada ao usuário |
 
 ## Versionamento
 
-Pela regra atual (`make issue.publish`: uma versão por tarefa aceita), as 45 tarefas que publicam versão levariam o projeto de **0.8 a cerca de 0.53** antes do 1.0. O doc-010 previa as fases 0–2 em 0.8–0.9. As duas coisas não cabem juntas; é decisão do usuário:
+**Regra decidida pelo usuário em 14/11/2026**, a partir da prática das versões 0.8 e 0.9:
 
-1. **Manter a regra** e aceitar números altos na série 0.x (0.30 ao fim da fase 1). Nada muda no processo.
-2. **Uma versão por fase**: tarefas são integradas ao `main` sem bump e a fase fecha com uma publicação (exigiria um modo `NOBUMP=1` no `make issue.publish` e um `make release`).
-3. **Versão de correção**: tarefas publicam 0.8.1, 0.8.2…; o fim de fase sobe o número do meio (exigiria adaptar `scripts/version.py` ao formato 0.x.y e o workflow Docker).
+| A tarefa… | Como entra no `main` | Exemplos |
+| --- | --- | --- |
+| muda o produto: comportamento, interface, dados, API ou forma de instalar e executar (`bug`, `feature`, `enhancement` e `chore` que altere imagem ou implantação) | **publica uma versão**: `make issue.publish ISSUE=N`, que sobe 0.x → 0.x+1, fecha `[Unreleased]` no CHANGELOG e cria a tag `v0.x` | 049 → 0.9; 106; 111; 102 |
+| não muda o produto: estudo (`spike`), documentação (`docs`), testes, ferramentas, CI e registros do backlog | **sem versão**: merge fast-forward no `main`, sem tag; uma entrada no CHANGELOG, se houver, espera a próxima versão publicada | 062, 063, 064; 061, 065–068, 078 |
 
-Até a decisão, vale a opção 1.
+- Uma tarefa que publica versão gera exatamente uma versão; tarefas não são agrupadas numa publicação.
+- O push e a tag dependem de autorização do usuário em cada publicação (`PUSH=1`); o push da tag publica a imagem Docker da versão e `latest`.
+- O CI exige versão não decrescente (`version.py --check-not-lower`); a publicação exige aumento estrito (`--check-parent`).
+- Projeção: das 51 tarefas abertas, **38 publicam versão**, levando de 0.9 a cerca de **0.47** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
+- Descartadas: uma versão por fase e versões de correção 0.x.y.
