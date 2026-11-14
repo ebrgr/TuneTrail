@@ -1,0 +1,1953 @@
+{
+  "browser": "157.0.8103.51",
+  "fixtureOnly": true,
+  "externalFonts": "allowed; failures recorded",
+  "entries": [
+    {
+      "file": "preview-home-yuu-320.png",
+      "page": "preview/home",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-yuu-320.png",
+      "page": "public/profiles",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-yuu-320.png",
+      "page": "public/home",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-yuu-320.png",
+      "page": "public/artist",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-yuu-320.png",
+      "page": "public/rewind",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-yuu-320.png",
+      "page": "admin/login",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-yuu-320.png",
+      "page": "admin/profiles",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-yuu-320.png",
+      "page": "admin/account",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-yuu-320.png",
+      "page": "admin/track",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-yuu-320.png",
+      "page": "admin/merge",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-yuu-360.png",
+      "page": "preview/home",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-yuu-360.png",
+      "page": "public/profiles",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-yuu-360.png",
+      "page": "public/home",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-yuu-360.png",
+      "page": "public/artist",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-yuu-360.png",
+      "page": "public/rewind",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-yuu-360.png",
+      "page": "admin/login",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-yuu-360.png",
+      "page": "admin/profiles",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-yuu-360.png",
+      "page": "admin/account",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-yuu-360.png",
+      "page": "admin/track",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-yuu-360.png",
+      "page": "admin/merge",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-yuu-390.png",
+      "page": "preview/home",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-yuu-390.png",
+      "page": "public/profiles",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-yuu-390.png",
+      "page": "public/home",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-yuu-390.png",
+      "page": "public/artist",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-yuu-390.png",
+      "page": "public/rewind",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-yuu-390.png",
+      "page": "admin/login",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-yuu-390.png",
+      "page": "admin/profiles",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-yuu-390.png",
+      "page": "admin/account",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-yuu-390.png",
+      "page": "admin/track",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-yuu-390.png",
+      "page": "admin/merge",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-yuu-768.png",
+      "page": "preview/home",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-yuu-768.png",
+      "page": "public/profiles",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-yuu-768.png",
+      "page": "public/home",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-yuu-768.png",
+      "page": "public/artist",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-yuu-768.png",
+      "page": "public/rewind",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-yuu-768.png",
+      "page": "admin/login",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-yuu-768.png",
+      "page": "admin/profiles",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-yuu-768.png",
+      "page": "admin/account",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-yuu-768.png",
+      "page": "admin/track",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-yuu-768.png",
+      "page": "admin/merge",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-yuu-1024.png",
+      "page": "preview/home",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-yuu-1024.png",
+      "page": "public/profiles",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-yuu-1024.png",
+      "page": "public/home",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-yuu-1024.png",
+      "page": "public/artist",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-yuu-1024.png",
+      "page": "public/rewind",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-yuu-1024.png",
+      "page": "admin/login",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-yuu-1024.png",
+      "page": "admin/profiles",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-yuu-1024.png",
+      "page": "admin/account",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-yuu-1024.png",
+      "page": "admin/track",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-yuu-1024.png",
+      "page": "admin/merge",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-yuu-1440.png",
+      "page": "preview/home",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-yuu-1440.png",
+      "page": "public/profiles",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-yuu-1440.png",
+      "page": "public/home",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-yuu-1440.png",
+      "page": "public/artist",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-yuu-1440.png",
+      "page": "public/rewind",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-yuu-1440.png",
+      "page": "admin/login",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-yuu-1440.png",
+      "page": "admin/profiles",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-yuu-1440.png",
+      "page": "admin/account",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-yuu-1440.png",
+      "page": "admin/track",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-yuu-1440.png",
+      "page": "admin/merge",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-pearl-320.png",
+      "page": "preview/home",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-pearl-320.png",
+      "page": "public/profiles",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-pearl-320.png",
+      "page": "public/home",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-pearl-320.png",
+      "page": "public/artist",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-pearl-320.png",
+      "page": "public/rewind",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-pearl-320.png",
+      "page": "admin/login",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-pearl-320.png",
+      "page": "admin/profiles",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-pearl-320.png",
+      "page": "admin/account",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-pearl-320.png",
+      "page": "admin/track",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-pearl-320.png",
+      "page": "admin/merge",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-pearl-360.png",
+      "page": "preview/home",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-pearl-360.png",
+      "page": "public/profiles",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-pearl-360.png",
+      "page": "public/home",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-pearl-360.png",
+      "page": "public/artist",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-pearl-360.png",
+      "page": "public/rewind",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-pearl-360.png",
+      "page": "admin/login",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-pearl-360.png",
+      "page": "admin/profiles",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-pearl-360.png",
+      "page": "admin/account",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-pearl-360.png",
+      "page": "admin/track",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-pearl-360.png",
+      "page": "admin/merge",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-pearl-390.png",
+      "page": "preview/home",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-pearl-390.png",
+      "page": "public/profiles",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-pearl-390.png",
+      "page": "public/home",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-pearl-390.png",
+      "page": "public/artist",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-pearl-390.png",
+      "page": "public/rewind",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-pearl-390.png",
+      "page": "admin/login",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-pearl-390.png",
+      "page": "admin/profiles",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-pearl-390.png",
+      "page": "admin/account",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-pearl-390.png",
+      "page": "admin/track",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-pearl-390.png",
+      "page": "admin/merge",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-pearl-768.png",
+      "page": "preview/home",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-pearl-768.png",
+      "page": "public/profiles",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-pearl-768.png",
+      "page": "public/home",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-pearl-768.png",
+      "page": "public/artist",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-pearl-768.png",
+      "page": "public/rewind",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-pearl-768.png",
+      "page": "admin/login",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-pearl-768.png",
+      "page": "admin/profiles",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-pearl-768.png",
+      "page": "admin/account",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-pearl-768.png",
+      "page": "admin/track",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-pearl-768.png",
+      "page": "admin/merge",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-pearl-1024.png",
+      "page": "preview/home",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-pearl-1024.png",
+      "page": "public/profiles",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-pearl-1024.png",
+      "page": "public/home",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-pearl-1024.png",
+      "page": "public/artist",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-pearl-1024.png",
+      "page": "public/rewind",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-pearl-1024.png",
+      "page": "admin/login",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-pearl-1024.png",
+      "page": "admin/profiles",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-pearl-1024.png",
+      "page": "admin/account",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-pearl-1024.png",
+      "page": "admin/track",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-pearl-1024.png",
+      "page": "admin/merge",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "preview-home-pearl-1440.png",
+      "page": "preview/home",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-profiles-pearl-1440.png",
+      "page": "public/profiles",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": [
+        "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4jQmfxI.woff2",
+        "https://fonts.gstatic.com/s/leaguespartan/v15/kJEqBuEW6A0lliaV_m88ja5TwvZwLZmXD4Zh.woff2"
+      ]
+    },
+    {
+      "file": "public-home-pearl-1440.png",
+      "page": "public/home",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-artist-pearl-1440.png",
+      "page": "public/artist",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "public-rewind-pearl-1440.png",
+      "page": "public/rewind",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-login-pearl-1440.png",
+      "page": "admin/login",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-profiles-pearl-1440.png",
+      "page": "admin/profiles",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-account-pearl-1440.png",
+      "page": "admin/account",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-track-pearl-1440.png",
+      "page": "admin/track",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-merge-pearl-1440.png",
+      "page": "admin/merge",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-yuu-320.png",
+      "page": "admin/settings",
+      "theme": "yuu",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-yuu-360.png",
+      "page": "admin/settings",
+      "theme": "yuu",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-yuu-390.png",
+      "page": "admin/settings",
+      "theme": "yuu",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-yuu-768.png",
+      "page": "admin/settings",
+      "theme": "yuu",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-yuu-1024.png",
+      "page": "admin/settings",
+      "theme": "yuu",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-yuu-1440.png",
+      "page": "admin/settings",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-pearl-320.png",
+      "page": "admin/settings",
+      "theme": "pearl",
+      "width": 320,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-pearl-360.png",
+      "page": "admin/settings",
+      "theme": "pearl",
+      "width": 360,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-pearl-390.png",
+      "page": "admin/settings",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-pearl-768.png",
+      "page": "admin/settings",
+      "theme": "pearl",
+      "width": 768,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-pearl-1024.png",
+      "page": "admin/settings",
+      "theme": "pearl",
+      "width": 1024,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-settings-pearl-1440.png",
+      "page": "admin/settings",
+      "theme": "pearl",
+      "width": 1440,
+      "height": 900,
+      "overflow": false,
+      "failedFonts": []
+    }
+  ],
+  "typography": [
+    {
+      "theme": "yuu",
+      "width": 390,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "28px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "48px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 390,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "30px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 390,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "transform": "uppercase",
+        "lineHeight": "27px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 390,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "22px",
+        "weight": "400",
+        "transform": "uppercase",
+        "lineHeight": "24.2px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 390,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "transform": "none",
+        "lineHeight": "36px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 390,
+      "selector": ".rewind-choice",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "transform": "none",
+        "lineHeight": "24px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 768,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "30.72px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "48px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 768,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "30px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 768,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "transform": "uppercase",
+        "lineHeight": "27px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 768,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "23.04px",
+        "weight": "400",
+        "transform": "uppercase",
+        "lineHeight": "25.344px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 768,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "transform": "none",
+        "lineHeight": "36px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 768,
+      "selector": ".rewind-choice",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "transform": "none",
+        "lineHeight": "24px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 1440,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "42px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "54.6px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 1440,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "30px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 1440,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "transform": "uppercase",
+        "lineHeight": "27px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 1440,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "36px",
+        "weight": "400",
+        "transform": "uppercase",
+        "lineHeight": "39.6px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 1440,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "transform": "none",
+        "lineHeight": "36px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "theme": "yuu",
+      "width": 1440,
+      "selector": ".rewind-choice",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "transform": "none",
+        "lineHeight": "24px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 390,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "28px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "48px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 390,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "30px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 390,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "transform": "uppercase",
+        "lineHeight": "27px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 390,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "22px",
+        "weight": "400",
+        "transform": "uppercase",
+        "lineHeight": "24.2px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 390,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "transform": "none",
+        "lineHeight": "36px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 390,
+      "selector": ".rewind-choice",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "transform": "none",
+        "lineHeight": "24px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 768,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "30.72px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "48px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 768,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "30px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 768,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "transform": "uppercase",
+        "lineHeight": "27px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 768,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "23.04px",
+        "weight": "400",
+        "transform": "uppercase",
+        "lineHeight": "25.344px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 768,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "transform": "none",
+        "lineHeight": "36px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 768,
+      "selector": ".rewind-choice",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "transform": "none",
+        "lineHeight": "24px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 1440,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "42px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "54.6px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 1440,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "transform": "none",
+        "lineHeight": "30px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 1440,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "transform": "uppercase",
+        "lineHeight": "27px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 1440,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "font": "\"League Spartan\", sans-serif",
+        "size": "36px",
+        "weight": "400",
+        "transform": "uppercase",
+        "lineHeight": "39.6px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "League Spartan Thin",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 1440,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "transform": "none",
+        "lineHeight": "36px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "theme": "pearl",
+      "width": 1440,
+      "selector": ".rewind-choice",
+      "computed": {
+        "font": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "transform": "none",
+        "lineHeight": "24px"
+      },
+      "renderedFonts": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    }
+  ]
+}

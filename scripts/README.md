@@ -58,3 +58,11 @@ só aceita tarefa Done com comentário de aceite, roda `make check`, incrementa 
 versão com `version.py`, cria a seção da versão no `CHANGELOG.md`, faz
 fast-forward no `main` e cria a tag; `DRY=1` simula e `PUSH=1` envia.
 `make issue.test` testa o fluxo em repositórios descartáveis.
+
+## Referência de interface (ISSUE-065)
+
+`make ui.reference OUT=/tmp/tunetrail-reference-new` exporta HTML/CSS/JS e assets de handlers reais com SQLite em memória e dados fictícios. O diretório deve ser novo; uma referência existente nunca é sobrescrita. Não lê `.env`, bancos ou sessões operacionais. O relógio das páginas públicas é fixo; a fixture agrega o interesse num intervalo fixo mantendo sua contagem real. Tokens CSRF/submissão/planos são mascarados só nos respectivos campos. A fixture da prévia usa os templates reais e células de calendário fixadas em 01/06/2024, sem alterar o relógio do runtime.
+
+`make ui.compare BASE=/tmp/base NEW=/tmp/nova` compara os bytes exportados: saída 0 = idênticos; 1 = só indentação entre tags diferente (não é aceite visual); 2 = diferença de conteúdo ou arquivo ausente/extra. Espaços inline, CSS e ordem das regras são preservados na comparação. Metadados de rota também participam. A suíte `python3 -m unittest discover -s scripts -p test_compare_ui_reference.py` verifica o comparador.
+
+Para capturar a referência exportada: `PLAYWRIGHT_MODULE=/caminho/node_modules/playwright node scripts/capture_ui_base.cjs /tmp/base /tmp/capturas`. Usa Chrome headless instalado (`CHROME_PATH` pode indicar outro Chromium), servidor efêmero em loopback, dados fictícios, seis larguras e dois temas. Não abre a instalação operacional. Requisições de fontes ao Google permanecem permitidas porque fazem parte do runtime atual; falhas são registradas. O manifesto inclui overflow e fontes efetivamente renderizadas via CDP, além dos estilos computados da retrospectiva em três larguras. Não confundir fallback por falha externa com o alvo de fontes locais da 070. Capturas não são teste automático de igualdade de pixels entre versões de navegador.

@@ -1,0 +1,16 @@
+/* Progressive form enhancements; ordinary GET/POST remains available without JavaScript. */
+(() => {
+ const section=new URLSearchParams(location.search).get('section');if(['keys','relay','import','export'].includes(section))requestAnimationFrame(()=>document.getElementById(section==='export'?'import':section)?.scrollIntoView());
+ const theme=document.querySelector('[data-admin-theme]');
+ if(theme){theme.value=document.documentElement.dataset.theme;theme.addEventListener('change',()=>window.TuneTrailTheme?.apply(theme.value));}
+ // Keep appearance settings available from the same navigation icon as public pages.
+ const settings=document.getElementById('admin-settings');
+ const settingsTrigger=document.querySelector('[data-admin-settings]');
+ if(settings&&settingsTrigger){settingsTrigger.addEventListener('click',()=>settings.showModal());settings.querySelector('[data-admin-close]')?.addEventListener('click',()=>settings.close());settings.addEventListener('close',()=>settingsTrigger.focus());document.addEventListener('keydown',event=>{if(event.key==='\\'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,textarea,select,[contenteditable=true]')&&!settings.open){event.preventDefault();settings.showModal();}});}
+ // Preserve a visible avatar when a profile image cannot be loaded.
+ document.querySelectorAll('[data-admin-avatar]').forEach(image=>{const fallback=image.parentElement.querySelector('[data-admin-avatar-fallback]');const fail=()=>{image.hidden=true;if(fallback)fallback.hidden=false;};image.addEventListener('error',fail);if(image.complete&&!image.naturalWidth)fail();});
+ document.addEventListener('submit',event=>{const form=event.target;if(!(form instanceof HTMLFormElement)||form.method.toLowerCase()!=='post')return;if(form.dataset.pending){event.preventDefault();return;}form.dataset.pending='1';setTimeout(()=>form.querySelectorAll('button').forEach(button=>button.disabled=true),0);});
+ addEventListener('pageshow',()=>document.querySelectorAll('form[data-pending]').forEach(form=>{delete form.dataset.pending;form.querySelectorAll('button').forEach(button=>button.disabled=false);}));
+ document.querySelectorAll('input[type=file][name=image]').forEach(input=>{const form=input.form;if(!form)return;form.addEventListener('dragover',event=>{event.preventDefault();form.dataset.dropActive='1';});form.addEventListener('dragleave',()=>delete form.dataset.dropActive);form.addEventListener('drop',event=>{event.preventDefault();delete form.dataset.dropActive;const files=event.dataTransfer?.files;if(files?.length===1){input.files=files;input.dispatchEvent(new Event('change',{bubbles:true}));input.focus();}});});
+ document.querySelectorAll('details code').forEach(code=>{const button=document.createElement('button');button.type='button';button.textContent=document.body.dataset.i18nCopy;button.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code.textContent);button.textContent=document.body.dataset.i18nCopied;}catch{const range=document.createRange();range.selectNodeContents(code);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);button.textContent=document.body.dataset.i18nCopyManual;}});code.after(button);});
+})();

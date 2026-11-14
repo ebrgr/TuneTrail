@@ -1,0 +1,16 @@
+{
+  "screenshots": 132,
+  "pages_html": 23,
+  "reference_files": 113,
+  "typography_entries": 36,
+  "overflow": 0,
+  "reference_comparison_exit": 0,
+  "make_check": "passed; 11/11 e2e",
+  "graph": "updated AST-only",
+  "image_validation": "PNG headers and dimensions verified; representative mobile/desktop Yuu/Pearl viewed",
+  "limits": [
+    "interest graph fixture uses fixed aggregate bucket",
+    "font network failures recorded; actual rendered fonts captured",
+    "screenshots cover 11 representative pages of 23 HTML pages"
+  ]
+}

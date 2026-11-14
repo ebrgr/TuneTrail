@@ -120,3 +120,18 @@ issue.publish:
 
 issue.test:
 	python3 -m unittest scripts/test_version.py scripts/test_issue.py
+
+# Export a new fixture reference; refuse to overwrite an existing baseline.
+.PHONY: ui.reference ui.compare
+ui.reference:
+	@test -n "$(OUT)" || (echo 'Use make ui.reference OUT=/absolute/new-directory'; exit 1)
+	TZ=UTC TUNETRAIL_UI_REFERENCE="$(abspath $(OUT))" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1
+
+ui.compare:
+	python3 scripts/compare_ui_reference.py "$(BASE)" "$(NEW)"
+
+.PHONY: ui.reference.test
+ui.reference.test:
+	python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
+
+ui.check: ui.reference.test
