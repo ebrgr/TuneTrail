@@ -96,7 +96,8 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.render(w, p)
 		return
 	}
-	if c, e := r.Cookie("koito-weekstart"); e == nil {
+	// Renamed from koito-weekstart in ISSUE-111; the browser rewrites it on the next visit.
+	if c, e := r.Cookie("tunetrail-weekstart"); e == nil {
 		if n, e := strconv.Atoi(c.Value); e == nil && n >= 0 && n <= 6 {
 			p.WeekStart = n
 		}

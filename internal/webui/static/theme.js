@@ -22,10 +22,10 @@
       if (name === 'custom') write('custom-theme', JSON.stringify(palette));
       write('bgcolor', getComputedStyle(root).getPropertyValue('--color-bg').trim());
     }
-    document.dispatchEvent(new CustomEvent('koito-theme-change'));
+    document.dispatchEvent(new CustomEvent('tunetrail-theme-change')); // ISSUE-111
     return true;
   }
   const saved = read('theme');
   apply(saved === 'custom' && custom ? 'custom' : names.includes(saved) ? saved : defaultTheme, custom, false);
-  window.KoitoTheme = {apply, valid, keys, getCustom: () => custom, reset: () => { apply(defaultTheme, null, false); write('theme', null); write('bgcolor', null); }};
+  window.TuneTrailTheme = {apply, valid, keys, getCustom: () => custom, reset: () => { apply(defaultTheme, null, false); write('theme', null); write('bgcolor', null); }};
 })();

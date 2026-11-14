@@ -45,7 +45,7 @@ func TestAdminMergeAPIContracts(t *testing.T) {
 			endpoint := base + "/2/merge"
 			require.Equal(t, 401, a.request("POST", endpoint, `{"merge_from_id":1}`, "first-key", false).Code)
 			req := httptest.NewRequest("POST", "http://koito.test"+endpoint, strings.NewReader(`{"merge_from_id":1}`))
-			req.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+			req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 			req.Header.Set("Origin", "https://other.invalid")
 			w := httptest.NewRecorder()
 			a.router.ServeHTTP(w, req)
@@ -99,7 +99,7 @@ func TestAdminSessionCookiesAndPrivileges(t *testing.T) {
 	session, e := a.store.SaveSession(context.Background(), user.ID, time.Now().Add(time.Hour), false)
 	require.NoError(t, e)
 	r := httptest.NewRequest("GET", "http://koito.test/apis/web/v1/user", nil)
-	r.AddCookie(&http.Cookie{Name: "koito_session", Value: session.ID.String()})
+	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: session.ID.String()})
 	w := httptest.NewRecorder()
 	a.router.ServeHTTP(w, r)
 	require.Equal(t, 403, w.Code)

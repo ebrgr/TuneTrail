@@ -26,7 +26,7 @@ function startup(stored = {}, unavailable = false) {
     getComputedStyle: () => ({getPropertyValue: key => vars.get(key) ?? palettes[root.dataset.theme]?.bg ?? ''}),
   };
   vm.runInNewContext(script, context);
-  return {api:context.window.KoitoTheme,root,vars,values};
+  return {api:context.window.TuneTrailTheme,root,vars,values};
 }
 
 test('unavailable storage and invalid saved JSON leave a usable default', () => {

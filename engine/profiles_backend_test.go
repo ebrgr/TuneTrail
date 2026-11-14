@@ -68,7 +68,7 @@ func (a *profileTestApp) request(method, url, body, key string, admin bool) *htt
 		r.Header.Set("Authorization", "Token "+key)
 	}
 	if admin {
-		r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	}
 	w := httptest.NewRecorder()
 	a.router.ServeHTTP(w, r)
@@ -165,7 +165,7 @@ func TestProfileBackendAdminAndSlugChanges(t *testing.T) {
 	require.Equal(t, 401, a.request("GET", "/apis/web/v1/profiles/default/export", "", "first-key", false).Code)
 	req := httptest.NewRequest("PATCH", "http://koito.test/apis/web/v1/profiles/default", strings.NewReader(`{"slug":"stolen"}`))
 	req.Header.Set("Origin", "https://evil.test")
-	req.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	w := httptest.NewRecorder()
 	a.router.ServeHTTP(w, req)
 	require.Equal(t, 403, w.Code)

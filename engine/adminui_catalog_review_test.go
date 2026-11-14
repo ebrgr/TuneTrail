@@ -35,7 +35,7 @@ func TestCatalogReviewStaleAndOneUse(t *testing.T) {
 			r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		}
 		if auth {
-			r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+			r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		}
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
@@ -60,7 +60,7 @@ func TestCatalogReviewStaleAndOneUse(t *testing.T) {
 	require.NoError(t, err)
 	foreign := httptest.NewRequest("POST", base+"/confirm", strings.NewReader(v.Encode()))
 	foreign.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	foreign.AddCookie(&http.Cookie{Name: "koito_session", Value: secondSession.ID.String()})
+	foreign.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: secondSession.ID.String()})
 	foreignW := httptest.NewRecorder()
 	h.ServeHTTP(foreignW, foreign)
 	require.Equal(t, 403, foreignW.Code)
@@ -105,7 +105,7 @@ func TestProfileReviewAndStaleCount(t *testing.T) {
 	h, err := adminui.New(a.store, adminui.Options{TempDir: t.TempDir()})
 	require.NoError(t, err)
 	r := httptest.NewRequest("GET", "/admin/profile/2/delete-review", nil)
-	r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, 200, w.Code)
@@ -116,14 +116,14 @@ func TestProfileReviewAndStaleCount(t *testing.T) {
 	v := url.Values{"csrf_token": {m[1]}, "profile_slug": {"second"}, "display_name": {"Second"}, "listen_count": {"1"}, "confirm": {"1"}}
 	r = httptest.NewRequest("POST", "/admin/profile/2/delete", strings.NewReader(v.Encode()))
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, 409, w.Code)
 	v.Set("listen_count", "0")
 	r = httptest.NewRequest("POST", "/admin/profile/2/delete", strings.NewReader(v.Encode()))
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, 303, w.Code)
@@ -140,7 +140,7 @@ func TestDeleteLastProfileKeepsAdministrator(t *testing.T) {
 		slug, name string
 	}{{1, "default", "administrator"}, {2, "second", "Second"}, {3, "empty", "Empty"}} {
 		r := httptest.NewRequest("GET", fmt.Sprintf("/admin/profile/%d/delete-review", p.id), nil)
-		r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		require.Equal(t, 200, w.Code)
@@ -149,7 +149,7 @@ func TestDeleteLastProfileKeepsAdministrator(t *testing.T) {
 		v := url.Values{"csrf_token": {match[1]}, "profile_slug": {p.slug}, "display_name": {p.name}, "listen_count": {"0"}, "confirm": {"1"}}
 		r = httptest.NewRequest("POST", fmt.Sprintf("/admin/profile/%d/delete", p.id), strings.NewReader(v.Encode()))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		w = httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		require.Equal(t, 303, w.Code, w.Body.String())
@@ -158,7 +158,7 @@ func TestDeleteLastProfileKeepsAdministrator(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, profiles)
 	r := httptest.NewRequest("GET", "/admin", nil)
-	r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, 200, w.Code)

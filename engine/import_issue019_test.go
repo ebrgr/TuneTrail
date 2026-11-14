@@ -39,7 +39,7 @@ func TestUploadClassifiesArchiveFailure(t *testing.T) {
 			require.NoError(t, mw.Close())
 			r := httptest.NewRequest("POST", "http://koito.test/apis/web/v1/profiles/archive-fail/import", &body)
 			r.Header.Set("Content-Type", mw.FormDataContentType())
-			r.Header.Set("Cookie", "koito_session="+a.cookie)
+			r.Header.Set("Cookie", "tunetrail_session="+a.cookie)
 			w := httptest.NewRecorder()
 			a.router.ServeHTTP(w, r)
 			require.Equal(t, tc.status, w.Code)

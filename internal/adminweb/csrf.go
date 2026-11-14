@@ -15,7 +15,9 @@ import (
 	"github.com/google/uuid"
 )
 
-const preauthCookie = "koito_preauth"
+// preauthCookie carries the login nonce for at most formTTL; renamed directly in
+// ISSUE-111 because a restart already invalidates every nonce (process-local key).
+const preauthCookie = "tunetrail_preauth"
 const formTTL = 30 * time.Minute
 
 // CSRF owns a process-local key: forms expire after a restart in this single-instance app.

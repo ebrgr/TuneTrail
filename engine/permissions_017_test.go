@@ -65,7 +65,7 @@ func TestSessionStoreFailureIsNotReportedAsInvalidOrSuccessful(t *testing.T) {
 		handlers.LogoutHandler(store),
 	} {
 		r := httptest.NewRequest("POST", "http://koito.test/apis/web/v1/user", nil)
-		r.AddCookie(&http.Cookie{Name: "koito_session", Value: uuid.NewString()})
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: uuid.NewString()})
 		w := httptest.NewRecorder()
 		handler.ServeHTTP(w, r)
 		require.Equal(t, 500, w.Code)
@@ -97,6 +97,7 @@ func TestTLSLoginCookieUsesSecureFlag(t *testing.T) {
 	defer resp.Body.Close()
 	require.Equal(t, http.StatusNoContent, resp.StatusCode)
 	require.Len(t, resp.Cookies(), 1)
+	require.Equal(t, "tunetrail_session", resp.Cookies()[0].Name)
 	require.True(t, resp.Cookies()[0].Secure)
 	require.True(t, resp.Cookies()[0].HttpOnly)
 	require.Equal(t, http.SameSiteStrictMode, resp.Cookies()[0].SameSite)
@@ -106,7 +107,7 @@ func TestTLSLoginCookieUsesSecureFlag(t *testing.T) {
 func TestAmbiguousLogoutDoesNotRevokeEitherSession(t *testing.T) {
 	for _, reverse := range []bool{false, true} {
 		a := newProfileTestApp(t)
-		pair := []string{"koito_session=" + a.cookie, "koito_session=invalid"}
+		pair := []string{"tunetrail_session=" + a.cookie, "tunetrail_session=invalid"}
 		if reverse {
 			pair[0], pair[1] = pair[1], pair[0]
 		}

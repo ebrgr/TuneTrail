@@ -8,6 +8,7 @@
 
 ### Changed
 
+- The administrative session cookie is now `tunetrail_session`; administrators sign in again once after upgrading (ISSUE-111).
 - TuneTrail now identifies itself as TuneTrail, with its own project contact, to MusicBrainz, Deezer, Last.fm and Subsonic servers (ISSUE-111).
 
 ## [0.9] - 2026-11-14

@@ -89,13 +89,15 @@ def run_mode(binary, root, mode):
             key = db.execute('SELECT key FROM api_keys WHERE profile_id=1 LIMIT 1').fetchone()[0]
         actors = [
             ('visitor', None, None, 401), ('key', None, key, 401), ('invalid-key', None, 'invalid-fixture-key', 401),
-            ('invalid-cookie', 'koito_session=invalid', None, 401),
-            ('duplicate-cookie', admin_cookie+'; koito_session=invalid', None, 401),
-            ('duplicate-cookie-reverse', 'koito_session=invalid; '+admin_cookie, None, 401),
-            ('expired', 'koito_session='+expired_session, None, 401),
-            ('revoked-session', 'koito_session='+str(uuid.uuid4()), None, 401),
+            ('invalid-cookie', 'tunetrail_session=invalid', None, 401),
+            # ISSUE-111: the legacy cookie name is ignored even with a valid session.
+            ('legacy-cookie-name', admin_cookie.replace('tunetrail_session', 'koito_session'), None, 401),
+            ('duplicate-cookie', admin_cookie+'; tunetrail_session=invalid', None, 401),
+            ('duplicate-cookie-reverse', 'tunetrail_session=invalid; '+admin_cookie, None, 401),
+            ('expired', 'tunetrail_session='+expired_session, None, 401),
+            ('revoked-session', 'tunetrail_session='+str(uuid.uuid4()), None, 401),
             ('other-profile-key', None, 'fixture-second-player', 401),
-            ('non-admin', 'koito_session='+nonadmin_session, None, 403),
+            ('non-admin', 'tunetrail_session='+nonadmin_session, None, 403),
         ]
         prefix = WEB+'/profiles/default'
         routes = [

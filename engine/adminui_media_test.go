@@ -36,7 +36,7 @@ func TestPreparedMediaFormsAndProfileContext(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		}
 		if auth {
-			req.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+			req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		}
 		out := httptest.NewRecorder()
 		h.ServeHTTP(out, req)

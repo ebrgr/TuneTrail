@@ -1,12 +1,12 @@
 (() => {
   let opener;
-  const theme = window.KoitoTheme;
+  const theme = window.TuneTrailTheme; // ISSUE-111
   const status = document.getElementById('theme-status');
   const text = document.body.dataset;
   const customInput = document.getElementById('custom-theme-input');
   const updateThemeButtons = () => document.querySelectorAll('[data-theme-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === document.documentElement.dataset.theme)));
   updateThemeButtons();
-  document.addEventListener('koito-theme-change', updateThemeButtons);
+  document.addEventListener('tunetrail-theme-change', updateThemeButtons);
   // The server sends only bundled demo palettes. No external calls are needed.
   const assets = document.body.dataset.assets || '/preview-assets';
   fetch(assets + '/themes.json').then(response => { if (!response.ok) throw Error(); return response.json(); }).then(palettes => {

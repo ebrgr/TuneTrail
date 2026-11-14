@@ -106,7 +106,7 @@ func Run(
 			return err
 		}
 	}
-	f, err := os.CreateTemp(cfg.ConfigDir(), ".koito_perm_check_*")
+	f, err := os.CreateTemp(cfg.ConfigDir(), ".tunetrail_perm_check_*")
 	if err != nil {
 		l.Fatal().Err(err).Msg("Engine: Config directory is not writable")
 		return err

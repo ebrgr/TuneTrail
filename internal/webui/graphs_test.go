@@ -193,7 +193,7 @@ func TestHomeAndMediaGraphsUseOnlyTheirOwnFiltersAndCounts(t *testing.T) {
 			path = "/alpha/" + kind + "/1?tz=UTC"
 		}
 		req := httptest.NewRequest("GET", path, nil)
-		req.Header.Set("Cookie", "koito-weekstart=1")
+		req.Header.Set("Cookie", "tunetrail-weekstart=1")
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, req)
 		if w.Code != 200 {

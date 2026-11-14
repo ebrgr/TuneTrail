@@ -13,9 +13,10 @@
     }
     let first = 0;
     try { first = new Intl.Locale(navigator.language).getWeekInfo().firstDay % 7; } catch {}
-    if (stored['koito-weekstart'] !== String(first)) {
-      document.cookie = `koito-weekstart=${first}; Path=/; Max-Age=31536000; SameSite=Lax`;
-      changed ||= cookies()['koito-weekstart'] === String(first);
+    // Renamed from koito-weekstart in ISSUE-111 (no fallback, user decision).
+    if (stored['tunetrail-weekstart'] !== String(first)) {
+      document.cookie = `tunetrail-weekstart=${first}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      changed ||= cookies()['tunetrail-weekstart'] === String(first);
     }
     if (body.dataset.section === 'home' && !query.has('period')) {
       const cached = localStorage.getItem(`period_selection_${body.dataset.profileId}:home`);

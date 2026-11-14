@@ -2,7 +2,7 @@
 (() => {
  const section=new URLSearchParams(location.search).get('section');if(['keys','relay','import','export'].includes(section))requestAnimationFrame(()=>document.getElementById(section==='export'?'import':section)?.scrollIntoView());
  const theme=document.querySelector('[data-admin-theme]');
- if(theme){theme.value=document.documentElement.dataset.theme;theme.addEventListener('change',()=>window.KoitoTheme?.apply(theme.value));}
+ if(theme){theme.value=document.documentElement.dataset.theme;theme.addEventListener('change',()=>window.TuneTrailTheme?.apply(theme.value));}
  // Keep appearance settings available from the same navigation icon as public pages.
  const settings=document.getElementById('admin-settings');
  const settingsTrigger=document.querySelector('[data-admin-settings]');

@@ -48,7 +48,7 @@ func LogoutHandler(store db.UserStore) http.HandlerFunc {
 		// Reject ambiguous session cookies before choosing or revoking any session.
 		count := 0
 		for _, cookie := range r.Cookies() {
-			if cookie.Name == "koito_session" {
+			if cookie.Name == adminweb.SessionCookie {
 				count++
 			}
 		}
@@ -56,7 +56,7 @@ func LogoutHandler(store db.UserStore) http.HandlerFunc {
 			utils.WriteError(w, "ambiguous session cookie", http.StatusBadRequest)
 			return
 		}
-		if cookie, err := r.Cookie("koito_session"); err == nil {
+		if cookie, err := r.Cookie(adminweb.SessionCookie); err == nil {
 			if id, err := uuid.Parse(cookie.Value); err == nil {
 				if err := admin.Logout(r.Context(), store, id); err != nil {
 					logger.FromContext(r.Context()).Err(err).Msg("Administrative logout failed")

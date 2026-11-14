@@ -21,7 +21,7 @@ func TestAdministrationLanguages(t *testing.T) {
 		r := httptest.NewRequest("GET", "http://koito.test"+path, nil)
 		r.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: language})
 		if authenticated {
-			r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+			r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		}
 		w := httptest.NewRecorder()
 		a.router.ServeHTTP(w, r)
@@ -57,7 +57,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	require.Contains(t, crossW.Body.String(), "solicitação não permitida")
 	csrf := httptest.NewRequest("POST", "http://koito.test/admin/profile/1/save", strings.NewReader(""))
 	csrf.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: "pt-BR"})
-	csrf.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	csrf.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	csrf.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	csrfW := httptest.NewRecorder()
 	a.router.ServeHTTP(csrfW, csrf)
@@ -75,7 +75,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	post := httptest.NewRequest("POST", "http://koito.test/admin/profile/1/save", strings.NewReader(values.Encode()))
 	post.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	post.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: "en"})
-	post.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	post.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	saved := httptest.NewRecorder()
 	a.router.ServeHTTP(saved, post)
 	require.Equal(t, 303, saved.Code)

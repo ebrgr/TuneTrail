@@ -49,7 +49,7 @@ func makeAuthRequest(t *testing.T, session, method, endpoint string, body io.Rea
 	req, err := http.NewRequest(method, host()+endpoint, body)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: session,
 	})
 	req.Header.Set("Content-Type", "application/json")
@@ -643,7 +643,7 @@ func TestAuth(t *testing.T) {
 	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/user", strings.NewReader(`{"username":"new","password":"supersecret"}`))
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -662,7 +662,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("GET", host()+"/apis/web/v1/user", nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -684,7 +684,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("PATCH", host()+"/apis/web/v1/user", strings.NewReader(`{"username":"`+cfg.DefaultUsername()+`","password":"`+cfg.DefaultPassword()+`"}`))
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -699,7 +699,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/user/apikeys", strings.NewReader(`{"label":"testing"}`))
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -745,7 +745,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/logout", nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -756,7 +756,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/user/apikeys", strings.NewReader(`{"label":"testing"}`))
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -844,7 +844,7 @@ func TestArtistReplaceImage(t *testing.T) {
 	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/artist/1/image", buf)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: session,
 	})
 	req.Header.Add("Content-Type", mpw.FormDataContentType())
@@ -881,7 +881,7 @@ func TestAlbumReplaceImage(t *testing.T) {
 	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/album/1/image", buf)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "tunetrail_session",
 		Value: session,
 	})
 	req.Header.Add("Content-Type", mpw.FormDataContentType())

@@ -43,7 +43,7 @@ func (a *profileTestApp) upload(t *testing.T, method, url string, fields map[str
 	r := httptest.NewRequest(method, "http://koito.test"+url, &body)
 	r.Header.Set("Content-Type", writer.FormDataContentType())
 	if admin {
-		r.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	}
 	w := httptest.NewRecorder()
 	a.router.ServeHTTP(w, r)
@@ -196,7 +196,7 @@ func TestProfileImportUpload(t *testing.T) {
 	// Other-origin cookie requests cannot upload or create profiles.
 	req := httptest.NewRequest("POST", "http://koito.test/apis/web/v1/profiles", io.NopCloser(strings.NewReader(`{}`)))
 	req.Header.Set("Origin", "http://external.test")
-	req.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	res := httptest.NewRecorder()
 	a.router.ServeHTTP(res, req)
 	require.Equal(t, 403, res.Code)

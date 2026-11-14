@@ -70,7 +70,7 @@ func TestAvatarAdmissionBeforeBody036(t *testing.T) {
 	defer cancel()
 	req := httptest.NewRequest("PUT", "http://koito.test/apis/web/v1/profiles/second/avatar", body).WithContext(ctx)
 	req.Header.Set("Content-Type", "multipart/form-data; boundary=fictional")
-	req.AddCookie(&http.Cookie{Name: "koito_session", Value: a.cookie})
+	req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	done := make(chan struct{})
 	go func() { a.router.ServeHTTP(httptest.NewRecorder(), req); close(done) }()
 	select {

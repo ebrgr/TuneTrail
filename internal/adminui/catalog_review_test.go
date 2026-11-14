@@ -35,7 +35,7 @@ func TestExpiredCatalogReviewCannotExecute(t *testing.T) {
 	v := url.Values{"csrf_token": {csrf}, "profile_id": {"1"}, "profile_slug": {"default"}, "plan": {token.String()}, "confirm": {"1"}}
 	r := httptest.NewRequest("POST", "/default/manage/track/42/confirm", strings.NewReader(v.Encode()))
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{Name: "koito_session", Value: session.ID.String()})
+	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: session.ID.String()})
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, http.StatusConflict, w.Code)
