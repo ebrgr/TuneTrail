@@ -3,152 +3,128 @@ id: doc-031
 title: Estudo — reorganização do CSS e dos templates HTML
 type: other
 created_date: '2026-11-13T23:46:00Z'
-updated_date: '2026-11-14T00:30:00Z'
+updated_date: '2026-11-14T14:21:00Z'
 tags:
   - estudo
 ---
+**Tarefa:** ISSUE-061 · **Atualizado:** 14/11/2026 · **Plano:** doc-032, Fase 1. Sem Tailwind (ISSUE-058 / decision-006).
 
-**Tarefa:** ISSUE-061 · **Substitui:** ISSUE-058 (Tailwind não será adotado, decision-006) · **Data:** 13/11/2026 · **Plano:** [ROADMAP — TuneTrail 1.0](<../roadmaps/doc-032 - ROADMAP-—-TuneTrail-1.0.md>), Fase 1
+## Decisão do usuário
 
-> Atualizado em 13/11/2026: pontos de quebra alinhados ao doc-010 (40, 64 e 90rem) e fases convertidas nas tarefas ISSUE-065 a ISSUE-070. Este estudo substitui a árvore `internal/webui/static/css/` do doc-010 §3.2.
+Em 14/11/2026 o usuário escolheu leitura do disco, fontes locais e incorporação no binário como opção futura. No esclarecimento sobre a localização, respondeu **“tudo em assets/”**, substituindo a proposta inicial de `templates/` na raiz.
 
-## Pergunta
+**Contrato adotado para o planejamento:** todos os arquivos web em `assets/` na raiz do repositório; HTML em `assets/templates/`; CSS, JavaScript, ícones, temas e fontes no mesmo root. O runtime lê essa distribuição do disco em produção e desenvolvimento. A opção de embutir esses arquivos no binário será planejada como extensão futura, sem implementação antecipada.
 
-Como deixar o CSS e os templates HTML legíveis e fáceis de manter, sem Tailwind e sem etapa de build, e se eles devem ficar em `/templates` e `/assets` na raiz do repositório.
+Esta é uma decisão de arquitetura do estudo. A implementação e a mudança de distribuição pertencem às tarefas seguintes; nenhum arquivo de runtime foi movido nesta revisão. O plano anterior de `web.go` com embed imediato e root `templates/` + `assets/` foi substituído.
 
-## Resposta curta
+## Situação atual confirmada
 
-- **Hoje os arquivos são compilados no binário.** `internal/webui/preview.go:21` embute `templates/*.html static palettes.json` e `internal/adminui/admin.go:35` embute `templates/*.html` com `go:embed`. Nada de CSS ou template é lido do disco em produção. Só os catálogos de tradução (`langs/`) são externos.
-- **O problema de legibilidade não é a localização, é a escrita.** Os templates estão em linhas únicas de até 2.261 caracteres; `admin.css` é uma linha só de 3.195; `ui.css` tem 1.199 linhas organizadas pela história dos roadmaps, não por função.
-- **Recomendação:** mover para `templates/` e `assets/` na raiz, **continuar embutindo no binário** (um pacote Go na raiz faz o `go:embed`), com uma variável de desenvolvimento para ler do disco sem recompilar. Depois, reformatar os templates e dividir o CSS em camadas, em fases verificáveis.
+Os templates e arquivos web hoje são embutidos: `internal/webui/preview.go:21`, `internal/adminui/admin.go:35`. O renderer público usa `ParseFS(files, "templates/*.html")` e lê SVGs do mesmo FS (`internal/webui/renderer.go`). Paletas também são carregadas do FS embutido. A imagem atual já copia `assets/`, mas os dois TTF desse diretório não são servidos como fontes web.
 
-## Situação atual (medida em 13/11/2026)
+A medição histórica de 13/11/2026 encontrou 12 templates / 36 blocos, linhas de até 2.261 caracteres, `ui.css` com 28 KB e 1.199 linhas, e 18 media queries com 13 pontos de quebra. São a motivação para legibilidade e organização; a ISSUE-065 deve gerar medidas e referências novas antes de mover arquivos.
 
-### Templates
-
-| Arquivo | Bytes | Linhas | Maior linha |
-| --- | ---: | ---: | ---: |
-| `internal/webui/templates/live.html` | 13.865 | 43 | 1.378 |
-| `internal/webui/templates/page.html` (prévia) | 12.951 | 61 | 904 |
-| `internal/webui/templates/dialogs.html` | 5.460 | 8 | 1.271 |
-| `internal/webui/templates/rewind.html` | 4.828 | 46 | 462 |
-| `internal/webui/templates/media.html` | 4.553 | 41 | 388 |
-| `internal/webui/templates/graphs.html` | 3.836 | 24 | 1.082 |
-| `internal/adminui/templates/manage.html` | 14.330 | 10 | 2.261 |
-| `internal/adminui/templates/admin.html` | 10.564 | 11 | 1.602 |
-| `internal/adminui/templates/catalog-review.html` | 6.294 | 5 | 1.554 |
-| `internal/adminui/templates/shell.html` | 6.250 | 10 | 1.543 |
-| `internal/adminui/templates/settings.html` | 4.214 | 23 | 385 |
-| `internal/adminui/templates/profile-review.html` | 1.871 | 1 | 1.870 |
-
-- 36 blocos `{{define}}` em 12 arquivos. `page.html` (prévia) e `live.html` (páginas reais) repetem o `<head>` e a barra lateral; `shell.html` repete o `<head>` da administração.
-- Os nomes dos blocos misturam convenções (`live-home`, `page.html`, `activity-grid`, `admin-head`).
-- Diffs de template são ilegíveis: qualquer mudança altera uma linha de mais de mil caracteres.
-
-### CSS
-
-- `ui.css` (28 KB, 1.199 linhas): comentários marcam fases ("Roadmap 1", "Differences found in the first React/Go screenshot pass"), não componentes. Regras de um mesmo componente ficam espalhadas.
-- `admin.css` (7 KB): praticamente uma linha.
-- 18 media queries com 13 pontos de quebra diferentes: `40rem`, `48rem`, `60rem`, `64rem`, `80rem`, `96rem` e `480`, `639`, `640`, `650`, `767`, `900px`, além de `calc(40rem - 1px)`.
-- Temas: `palettes.json` vira variáveis em `/web-assets/themes.css`, gerado pelo Go (`internal/webui/assets.go`). Isso funciona bem e deve ser mantido.
-
-### Outros achados
-
-- **Fontes externas.** `page.html`, `live.html` e `shell.html` carregam Jost, League Spartan e Inter do Google Fonts. Contraria o princípio de não depender de serviços externos em produção e vaza o IP do usuário para terceiros. `assets/Jost-Regular.ttf` e `assets/LeagueSpartan-Medium.ttf` existem, são copiados para a imagem Docker, mas nunca são servidos.
-- **Cache.** Arquivos do `embed.FS` não têm data de modificação, então `/web-assets/ui.css` sai sem `Last-Modified`/`ETag` nem versão na URL.
-- **Dependências de caminho** a ajustar numa mudança de lugar: `Makefile` (`node --check internal/webui/static/*.js`), `Dockerfile` (`COPY internal/` e `COPY assets/`), `scripts/validate_webui.py`, `scripts/capture_admin_webui.cjs`, `scripts/validate_admin_io_024.cjs`, `scripts/roadmap06_fixture.py`, `internal/i18n/catalog_ci_test.go`.
-- `assets/` na raiz hoje guarda imagens do README (`icon.png`, `koito-original.svg`), capturas e as fontes não usadas.
-
-## Onde os arquivos devem ficar
-
-| Opção | Como | Prós | Contras |
-| --- | --- | --- | --- |
-| A. Manter em `internal/*/` | Só reformatar | Nenhuma mudança de caminho | Templates e CSS continuam escondidos em dois pacotes; não atende ao pedido |
-| **B. Raiz, embutido** | `templates/` e `assets/` na raiz; um arquivo `web.go` (pacote `tunetrail`) na raiz com `//go:embed` | Lugar óbvio para quem edita front-end; continua um único executável; erro de template aparece nos testes, não em produção | Um arquivo Go na raiz; `Dockerfile` precisa copiar os dois diretórios na etapa de build |
-| C. Raiz, externo (como `langs/`) | Lidos do disco: `TUNETRAIL_WEB_DIR`, depois ao lado do executável, depois a raiz do checkout | Editar CSS sem recompilar; usuário poderia customizar | Binário deixa de ser autossuficiente; versão do template pode divergir da do binário e quebrar em tempo de execução, porque os templates dependem das estruturas Go; mais um diretório a instalar e atualizar |
-| **D. B + leitura do disco em desenvolvimento** | Igual a B; se `TUNETRAIL_WEB_DIR` estiver definida, lê do disco e recarrega a cada requisição | Edição ao vivo no `make ui.preview` e no `make api.dev` sem recompilar; produção igual a B | Um caminho de código a mais, só para desenvolvimento |
-
-`go:embed` só alcança arquivos no diretório do pacote ou abaixo dele. Por isso, para usar `/templates` e `/assets` na raiz, a diretiva precisa ficar num pacote Go na raiz. O módulo já é `github.com/ebrgr/TuneTrail`; `internal/webui` e `internal/adminui` passariam a importar esse `embed.FS`.
-
-**Recomendação: D.** Mantém o executável único, que é princípio do projeto, e dá a facilidade de editar sem recompilar durante o desenvolvimento.
-
-### Árvore proposta
+## Estrutura proposta
 
 ```text
-templates/
-  public/      base.html, home.html, artist.html, album.html, track.html,
-               listens.html, rewind.html, profiles.html
-  admin/       shell.html, admin.html, manage.html, settings.html,
-               catalog-review.html, profile-review.html
-  partials/    head.html, sidebar.html, cards.html, graphs.html,
-               dialogs.html, avatar.html
 assets/
-  css/         ordem das camadas descrita abaixo
-  js/          theme.js, ui.js, live.js, admin.js
-  icons/       SVGs Lucide + LICENSE
-  public/      favicon, manifest, ícones de app
-  themes/      palettes.json
-  fonts/       Jost, League Spartan, Inter (woff2) — fase opcional
-  brand/       icon.png, icon.svg, koito-original.svg (README; não embutidos)
+  templates/
+    public/       páginas públicas e prévia
+    admin/        páginas administrativas
+    partials/     head, navegação, cards, gráficos e diálogos
+  css/
+    00-layers.css
+    01-reset.css
+    02-tokens.css
+    03-base.css
+    04-layout.css
+    components/
+    pages/
+    admin.css
+    99-utilities.css
+  js/
+  icons/          SVGs e licença
+  fonts/          fontes web e respectivas licenças
+  public/         favicon e ícones de aplicativo
+  themes/         palettes.json
+  brand/          imagens da marca e do README
 ```
 
-Cuidados:
-- O `ParseFS` nomeia cada template pelo nome do arquivo, sem o diretório. Os nomes de arquivo precisam ser únicos entre `public/`, `admin/` e `partials/`.
-- `go:embed` de diretório ignora arquivos que começam com `_` ou `.`. Não usar `_partial.html` como convenção.
-- O `go:embed` lista só os subdiretórios de runtime (`assets/css assets/js assets/icons assets/public assets/themes`), para não embutir imagens do README nem capturas.
-- As URLs públicas (`/web-assets/ui.css`, `/web-assets/icons/...`) continuam iguais na fase de mudança de lugar.
+`assets/` é relativo à raiz do projeto, não um diretório obrigatório `/assets` na raiz do sistema operacional. Os catálogos externos de tradução continuam seguindo o contrato próprio de `langs/`.
 
-## Organização do CSS
+Nomes de arquivo/bloco devem evitar colisões no `html/template`. Só os diretórios estáticos explicitamente autorizados são publicados: `templates/`, arquivos Go, licenças internas não destinadas a rota e `brand/` não ganham exposição automática. Preservar as URLs `/web-assets/...` e desabilitar listagem de diretórios. Não usar um servidor estático irrestrito sobre todo `assets/`.
 
-Dividir por função, com `@layer` declarando a ordem:
+## Contrato da leitura do disco — ISSUE-066
 
-```text
-assets/css/
-  00-layers.css     @layer reset, tokens, base, layout, components, pages, utilities;
-  01-reset.css
-  02-tokens.css     espaços, raios, sombras, tipografia, larguras; cores vêm de themes.css
-  03-base.css       html, body, títulos, links, formulários
-  04-layout.css     shell, sidebar, grades de página
-  components/       card.css, rank.css, activity.css, dialog.css, forms.css, nav.css ...
-  pages/            home.css, media.css, rewind.css, listens.css
-  admin.css         reformatado, mesma divisão quando crescer
-  99-utilities.css  poucos utilitários próprios (visually-hidden, stack, cluster)
-```
+### Localização e validação
 
-Como servir sem etapa de build: o Go concatena os arquivos em ordem alfabética na inicialização e serve um único `/web-assets/ui.css`, com hash do conteúdo para cache longo (`ui.css?v=<hash>` ou `ui.<hash>.css`). São poucas linhas de Go, sem ferramenta nova. Alternativa descartada: vários `<link>` ou `@import`, que aumentam o número de requisições.
+- `TUNETRAIL_WEB_DIR` aponta para o root `assets/`, não apenas para os HTML. É proposta de configuração ainda não implementada.
+- Se o caminho for explícito e inválido, a partida falha com caminho/item ausente; não procurar outra cópia silenciosamente.
+- Sem configuração explícita, procurar `assets/` ao lado do executável real (resolvendo symlinks). Resolver e fixar o caminho absoluto uma única vez; não depender do diretório corrente.
+- `make api.dev`, `make ui.preview` e testes informam explicitamente o root do checkout/fixture, pois `go run` e Delve podem gerar executáveis temporários.
+- Validar parse de todos os templates usados e referências a CSS, JS, paletas, SVGs e, após a 070, fontes. Arquivo obrigatório ausente ou inválido impede a partida; itens opcionais só são exigidos quando a funcionalidade correspondente está habilitada.
 
-Pontos de quebra: reduzir os 13 a três (`40rem`, `64rem`, `90rem`, os mesmos do doc-010 §3.1; 90rem corresponde à captura de 1440px) e usar container queries nos cards e grades. Variáveis CSS não funcionam dentro de `@media`, então a escala é garantida por uma verificação automática (abaixo).
+### Consistência e atualização
 
-## Organização dos templates
+Produção lê o disco no startup e constrói **um snapshot em memória** contendo templates parseados, bytes dos assets servidos, paletas e hashes da mesma geração. O atendimento das requisições usa esse snapshot; não mantém CSS/JS/fontes sendo relidos de um diretório mutável enquanto templates e hashes ficam antigos. Isso continua sendo distribuição e leitura de arquivos externos, sem incorporação no executável.
 
-- Uma tag por linha nos blocos estruturais, indentação de 2 espaços, atributos longos quebrados em várias linhas.
-- Um arquivo por página e parciais compartilhadas: um único `head.html` para prévia, páginas reais e administração.
-- Nomes de bloco uniformes: `page/home`, `partial/sidebar`, `admin/settings`.
-- Usar `{{-` e `-}}` onde a quebra de linha mudaria o espaço entre elementos em linha.
-- Verificação automática em `make ui.check` (`scripts/check_web_style.py`): nenhuma linha acima de 160 caracteres em `templates/` e `assets/css/`, e `@media` só com os pontos de quebra permitidos. Impede a volta das linhas únicas.
+Atualizações distribuem binário + assets da mesma versão e reiniciam o processo. Usar diretórios de release imutáveis e troca controlada, sem editar arquivos parcialmente durante a partida. A implementação deve medir o volume carregado e limitar a carga ao manifesto de runtime conhecido.
 
-## Como verificar cada fase
+Em desenvolvimento, recarga é uma opção explícita: montar e validar um snapshot completo antes de trocá-lo atomicamente. Erros devem ficar visíveis sem servir uma mistura de gerações. Não adotar hot reload de produção implicitamente.
 
-1. **Antes de tudo (ISSUE-065):** um teste que renderiza todas as páginas da prévia e da administração com dados fictícios e grava o HTML como referência (`backlog/evidencias/reorganizacao-web/`).
-2. **Mudança de lugar:** HTML renderizado e CSS servido **idênticos byte a byte** à referência.
-3. **Reformatação dos templates:** HTML idêntico depois de normalizar espaços em branco, mais capturas em 320, 390, 768 e 1440 px nos temas Yuu e Pearl com os scripts de captura existentes.
-4. **Divisão do CSS:** o CSS concatenado é igual ao `ui.css` atual, salvo espaços e a ordem documentada.
-5. **Tokens e pontos de quebra:** muda o visual de propósito. Capturas antes/depois e aceite visual do usuário.
+A ISSUE-106 precisa definir retenção/revalidação das URLs com hash de gerações anteriores. O snapshot por processo não promete que um novo processo ainda servirá assets de um release antigo. Coordenar esse contrato com o cache e com as próximas alterações da ISSUE-068.
 
-## Fases propostas (cada uma vira uma tarefa)
+### Distribuição
 
-| Fase | Tarefa | Escopo | Visível ao usuário? |
-| --- | --- | --- | --- |
-| 1 | ISSUE-066 | Mover para `templates/` e `assets/` + `web.go` na raiz + `TUNETRAIL_WEB_DIR` para desenvolvimento; ajustar Dockerfile, Makefile e scripts | Não (HTML idêntico) |
-| 2 | ISSUE-067 | Reformatar templates e unificar o `<head>`/barra lateral | Não (HTML equivalente) |
-| 3 | ISSUE-068 | Dividir `ui.css`/`admin.css` em camadas, concatenação no Go, hash para cache | Não (CSS equivalente) |
-| 4 | ISSUE-069 | Tokens e três pontos de quebra, container queries | Sim (layout responsivo) |
-| 5 | ISSUE-070 | Fontes servidas pelo próprio TuneTrail, sem Google Fonts | Sim (privacidade, funciona offline) |
+O binário isolado deixa de ser uma distribuição completa da interface: o pacote deve incluir `tunetrail`, `assets/` e os catálogos exigidos pelo contrato de idiomas. O Dockerfile deve copiar os assets para a **imagem final** e indicar o root, além de ajustar a etapa de build se necessário. Manter esses arquivos separados do banco e de diretórios graváveis.
 
-A referência de renderização (ISSUE-065) vem antes de todas. As fases 1–3 não mudam o comportamento e podem ser verificadas por comparação. As fases 4 e 5 precisam de aceite visual.
+A ISSUE-066 muda instalação/execução e exige o ciclo funcional e publicação de versão, mesmo que HTML e CSS permaneçam iguais. A equivalência visual não torna essa alteração neutra em runtime.
 
-## Decisões para o usuário
+## Organização de CSS e templates
 
-1. Embutido com leitura do disco em desenvolvimento (D, recomendado) ou externo como `langs/` (C).
-2. Nomes `templates/` e `assets/` na raiz, movendo as imagens do README para `assets/brand/`.
-3. Incluir a fase 5 (fontes locais) neste plano ou tratá-la como tarefa separada.
+Na 067, separar páginas e parciais e compartilhar head/navegação quando a equivalência estiver comprovada. Usar indentação consistente e limitar linhas a 160 caracteres, tratando espaços entre elementos inline. Não misturar mudança tipográfica com reformatação.
+
+Na 068, dividir CSS por função em camadas `reset, tokens, base, layout, components, pages, utilities`; concatenação em ordem determinística pelo Go, sem ferramenta de build adicional. Preservar o comportamento da cascata e coordenar hashes com a 106.
+
+Na 069, alinhar pontos de quebra em 40, 64 e 90rem e usar container queries onde adequadas. Essa fase altera layout e exige comparação visual e aceite.
+
+## Fontes locais e retrospectiva — ISSUE-070
+
+Investigação reproduzível e fontes consultadas: `backlog/evidencias/issue-061/fontes-retrospectiva.md`.
+
+Já existem dois arquivos estáticos: Jost Regular 400 (61.524 bytes) e League Spartan Medium 500 (57.540 bytes), total 119.064 bytes. Não foram encontrados Inter, WOFF/WOFF2 ou textos OFL separados no projeto. Ambos os TTF declaram OFL 1.1 em metadados; incluir os documentos de licença na distribuição antes de reutilizá-los. Os arquivos atuais não cobrem sozinhos os pesos e estilos necessários.
+
+As páginas de referência e TuneTrail declaram Jost/League Spartan e obtêm fontes pelo Google Fonts. A diferença confirmada não depende de supor uma falha de carregamento: no TuneTrail, o vencedor herda de h3 peso 400 e uppercase; na referência usa peso 600 sem uppercase. O título tem 42 px contra 36 px e os rótulos 18 px / 600 contra 16 px / 400. O tamanho do álbum da referência também pode variar com a extensão do título.
+
+A implementação deve:
+
+1. Inventariar pesos/itálicos realmente utilizados nas páginas públicas, prévia e administração; obter arquivos locais com origem/hash/licença e cobertura de acentos portugueses. Preservar as famílias existentes (Jost, League Spartan e Inter como fallback usado) salvo decisão posterior.
+2. Preferir WOFF2, estático ou variável conforme os pesos utilizados, sem declarar o TTF Regular/Medium atual como variável. Definir `@font-face` com peso/estilo corretos e `font-display: swap` em `assets/css/fonts.css`; fontes e licenças em `assets/fonts/`.
+3. Remover links, preconnects e imports de Google Fonts de todos os heads/CSS, mantendo rotas locais coerentes com a 066/106.
+4. Corrigir especificamente os estilos da retrospectiva para o alvo observado, sem transformar todos os h3 do aplicativo. Confirmar a regra original para título de álbum longo, hierarquia, nomes, números, labels e controles. Só servir fontes locais não corrige peso, caixa e tamanho.
+5. Verificar fonte efetivamente renderizada, acentos e caracteres faltantes, ausência de negrito artificial e ausência de dependência de rede externa para fontes. Não anunciar que capas e integrações do aplicativo inteiro funcionam offline.
+6. Conferir consumidores dos TTF antes de convertê-los/movê-los/removê-los. O protótipo de geração de imagem está desativado e recebe bytes do chamador; qualquer reativação futura precisa considerar o novo caminho.
+
+## Sequência de execução e validação
+
+| Issue | Escopo atualizado | Verificação principal |
+| --- | --- | --- |
+| 065 | Referência do Go atual e alvo de tipografia da retrospectiva | HTML/CSS reproduzíveis, capturas em seis larguras e dois temas; referência e destino no mesmo tema/viewport/dados fictícios |
+| 066 | Root único `assets/`, leitura externa, snapshot e distribuição | Equivalência HTML/CSS; execução fora do cwd; root explícito inválido; arquivos ausentes; templates inválidos; symlinks; binário+assets e imagem final; gerações consistentes |
+| 067 | Templates/parciais legíveis | HTML equivalente após normalizar espaços e capturas |
+| 068 | CSS por função/camadas e concatenação | Ordem/cascata equivalentes e integração com cache |
+| 069 | Tokens, pontos de quebra e container queries | Capturas antes/depois e aceite visual |
+| 070 | Fontes locais e correção tipográfica da retrospectiva | Fontes/estilos/pesos/licenças; rede externa bloqueada para fontes; capturas antes/depois e teste de não regressão |
+
+Não aplicar a exigência de CSS byte a byte idêntico da mudança de lugar à correção visual deliberada da 070. A fonte local deve ser comparada após carregar, evitando medir um fallback transitório.
+
+## Opção futura: arquivos embutidos
+
+Preparar a fronteira de leitura com `fs.FS` e injeção da fonte de arquivos, usando o disco na implementação atual. Não adicionar provider embed, build tag, cópia duplicada de templates ou fallback silencioso agora.
+
+Quando essa opção for escolhida, criar uma tarefa específica que compare build selecionável (disco ou embed) e modo selecionável de distribuição, defina precedência e erros, incorpore somente arquivos de runtime e licenças e use a mesma suíte de renderização nos dois modos. Os bytes e os hashes servidos devem ter o mesmo contrato. O modo disco permanece disponível conforme decisão do usuário. Planejar também pacote standalone e Docker para cada modo, sem prometer hoje um executável autossuficiente.
+
+## Pareceres e limites
+
+A primeira chamada ao Claude Code CLI, dentro da sandbox, retornou `Not logged in`. Em 14/11/2026, a investigação da invocação confirmou que a mesma sessão é reconhecida fora da sandbox; o teste real ao Opus respondeu `ADVISOR_OK`. A revisão documental pelo Claude Code CLI / Opus (effort medium) foi então concluída: **REPROVADO COM RESSALVAS**, registrada em `backlog/evidencias/issue-061/parecer-claude-opus.md`. Os ajustes propostos nesse parecer ainda não foram aplicados ao desenho. A revisão anterior do Advisor @Sol aprovou o contrato de snapshot/root/deploy; o novo parecer acrescenta ressalvas de documentação, critérios de aceite e validação. O aceite continua reservado ao usuário.
+
+As duas páginas foram inspecionadas em modo somente leitura, com estilos computados e CSS obtidos por HTTP. Não se alterou o tema da instalação, não foram medidos glifos efetivamente renderizados e não foi executada uma nova matriz visual completa. Este estudo não altera runtime nem requer testes de aplicação; os testes e capturas estão discriminados nas tarefas de implementação.

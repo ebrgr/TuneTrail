@@ -14,7 +14,7 @@ documentation:
   - decision-007
 priority: medium
 type: chore
-ordinal: 59000
+ordinal: 66000
 ---
 
 ## Description

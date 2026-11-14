@@ -3,11 +3,10 @@ id: doc-032
 title: ROADMAP — TuneTrail 1.0
 type: specification
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-14T05:00:00Z'
+updated_date: '2026-11-14T14:23:00Z'
 tags:
   - roadmap
 ---
-
 # ROADMAP — TuneTrail 1.0
 
 **Criado em:** 13/11/2026, na versão **0.8** · **Substitui:** a lista de tarefas do [ROADMAP antigo](<doc-001 - ROADMAP.md>) para os itens 2, 4, 5, 7 e 8 e o plano de execução da [avaliação TuneTrail 1.0](<doc-010 - TuneTrail-1.0-—-avaliação-do-projeto-e-proposta-de-evolução.md>) §9.
@@ -25,7 +24,7 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 | ISSUE-111 (Koito → TuneTrail) | **Em andamento** na branch `feat/issue-111-…`: Fase A (identidade junto a MusicBrainz, Deezer, Last.fm e Subsonic) e B1 (variáveis `TUNETRAIL_*` com `KOITO_*` como alternativa, marca **(DEPRECATED)** na página de configurações) prontas; B2, B3 e as decisões da Fase C pendentes. Parecer do Advisor registrado |
 | ISSUE-112 (logs) | Criada na Fase 6: diagnóstico registrado; correções, buffer e tela `/admin/logs` planejados |
 | ISSUE-055 | Rebaixada a rascunho por engano e restaurada com o ID original |
-| ISSUE-061 | Aguardando aceite e três decisões; bloqueia 065–070 |
+| ISSUE-061 | Estudo revisado aguardando aceite; decisões tomadas: tudo em `assets/`, leitura do disco, fontes locais e embed como opção futura. Especificação: doc-031 |
 
 ## Como trabalhar este roadmap
 
@@ -40,15 +39,15 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 | --- | --- | --- | ---: | ---: | --- |
 | Identidade | `m-5` | ISSUE-111: TuneTrail na identidade enviada a terceiros, nas variáveis e no navegador | 1 | 1 | 0.10 |
 | 0 · Base | `m-9` | Registros reconciliados, suíte e2e no CI, recuperação testada, 049 corrigida | 4 | 1 | **concluída** (0.9) |
-| 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 21 | 14 | 0.24 |
-| 2 · Ingestão confiável | `m-11` | Nenhuma escuta perdida: eventos, deduplicação, outbox, saúde, SSE | 6 | 5 | 0.29 |
-| 3 · Integrações | `m-12` | ROADMAP item 4: fontes nativas e compatibilidade | 7 | 6 | 0.35 |
-| 4 · Insights | `m-13` | ROADMAP item 7 e novas análises | 7 | 6 | 0.41 |
-| 5 · Compartilhar | `m-14` | ROADMAP itens 2 e 5: cards sociais e perfis públicos/privados | 4 | 3 | 0.44 |
-| 6 · Operação | `m-15` | Container sem root, backup, observabilidade, logs, site | 5 | 4 | 0.48 |
+| 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 21 | 15 | 0.25 |
+| 2 · Ingestão confiável | `m-11` | Nenhuma escuta perdida: eventos, deduplicação, outbox, saúde, SSE | 6 | 5 | 0.30 |
+| 3 · Integrações | `m-12` | ROADMAP item 4: fontes nativas e compatibilidade | 7 | 6 | 0.36 |
+| 4 · Insights | `m-13` | ROADMAP item 7 e novas análises | 7 | 6 | 0.42 |
+| 5 · Compartilhar | `m-14` | ROADMAP itens 2 e 5: cards sociais e perfis públicos/privados | 4 | 3 | 0.45 |
+| 6 · Operação | `m-15` | Container sem root, backup, observabilidade, logs, site | 5 | 4 | 0.49 |
 | Marco 1.0 | `m-8` | Candidatura ao TuneTrail 1.0 | 1 | — | 1.0 (decisão do usuário) |
 
-\* Projeção pela [regra de versionamento](#versionamento), a partir da 0.9, na ordem das fases e contando a ISSUE-111 (marco Identidade, 1 versão) antes da Fase 1.
+\* Projeção pela [regra de versionamento](#versionamento), com a ISSUE-111 publicada na 0.10 e a mudança de distribuição da ISSUE-066 acrescentando uma versão à Fase 1 (decisão do estudo 061 em 14/11/2026).
 
 **Paralelismo:** a Fase 0 vem primeiro. Depois, as fases 1 e 2 podem correr juntas (camadas diferentes). A 3 depende da 2. A 4 começa pela ISSUE-092 assim que a fase 0 terminar; a 097 depende da 2. A 5 depende de partes da 1 (070, 074). A 6 pode começar a qualquer momento após 063/064.
 
@@ -79,15 +78,15 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 
 
 **Bloco A — estrutura sem mudança visual (prova por comparação)**
-1. **ISSUE-061** — aceite do estudo e três decisões: embutido + leitura do disco em desenvolvimento; nomes `templates/` e `assets/`; fontes locais nesta fase.
+1. **ISSUE-061** — aceite do estudo revisado: todos os arquivos web em `assets/` (HTML em `assets/templates/`), leitura do disco em produção/dev, fontes locais e embed só como opção futura.
 2. **ISSUE-065** — referência de HTML/CSS renderizados e capturas de base (320–1440px, Yuu e Pearl).
-3. **ISSUE-066** — mover para `templates/` e `assets/` na raiz com `go:embed` e `TUNETRAIL_WEB_DIR`. HTML idêntico byte a byte.
+3. **ISSUE-066** — reunir todos os arquivos web em `assets/` na raiz e ler do disco; root `TUNETRAIL_WEB_DIR`, snapshot validado e distribuição binário+assets. HTML/CSS equivalentes; mudança funcional de instalação/execução, com publicação de versão.
 4. **ISSUE-067** — reformatar templates, unificar head e barra lateral, limite de 160 caracteres por linha no `ui.check`.
 5. **ISSUE-068** — CSS em camadas (`@layer`), concatenado pelo Go com hash e cache imutável.
 
 **Bloco B — design responsivo (aceite visual)**
 6. **ISSUE-069** — tokens, pontos de quebra 40/64/90rem, container queries, fim das larguras fixas.
-7. **ISSUE-070** — fontes locais, sem Google Fonts.
+7. **ISSUE-070** — fontes locais, sem Google Fonts, e correção tipográfica da retrospectiva (pesos, caixa e tamanhos) conforme comparação registrada na ISSUE-061.
 8. **ISSUE-071** — navegação: barra inferior no celular (decisão do usuário), lateral de ícones e expansível.
 9. **ISSUE-072**, **ISSUE-073** e **ISSUE-074** — home com KPIs e heatmap rolável; listas e mídia compactas com menu `⋯`; administração em duas colunas, badge Admin e `/settings` (ROADMAP item 2, parte de layout). Podem andar em paralelo depois da 071.
 
@@ -125,7 +124,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | [ISSUE-056](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>) | Estudar interações mais dinâmicas na interface | spike | — | — | — | Aberta |
 | [ISSUE-061](<../../tasks/issue-061 - 061-—-Estudar-a-reorganização-do-CSS-e-dos-templates-HTML.md>) | Estudar a reorganização do CSS e dos templates HTML | spike | — | — | — | Aguardando aceite |
 | [ISSUE-065](<../../tasks/issue-065 - 065-—-Referência-de-renderização-e-capturas-de-base-da-interface.md>) | Referência de renderização e capturas de base da interface | chore | high | 061 | — | Aberta |
-| [ISSUE-066](<../../tasks/issue-066 - 066-—-Mover-templates-e-assets-para-templates-e-assets-na-raiz.md>) | Mover templates e assets para templates/ e assets/ na raiz | chore | high | 065 | — | Aberta |
+| [ISSUE-066](<../../tasks/issue-066 - 066-—-Mover-templates-e-assets-para-templates-e-assets-na-raiz.md>) | Reunir arquivos web em assets/ com leitura do disco | enhancement | high | 065 | +0.1 | Aberta |
 | [ISSUE-067](<../../tasks/issue-067 - 067-—-Reformatar-templates-e-unificar-head-barra-lateral-e-nomes-de-blocos.md>) | Reformatar templates e unificar head, barra lateral e nomes de blocos | chore | high | 066 | — | Aberta |
 | [ISSUE-068](<../../tasks/issue-068 - 068-—-Dividir-o-CSS-em-camadas-com-concatenação-e-cache-no-Go.md>) | Dividir o CSS em camadas com concatenação e cache no Go | chore | high | 067 | — | Aberta |
 | [ISSUE-069](<../../tasks/issue-069 - 069-—-Tokens-de-design-três-pontos-de-quebra-e-container-queries.md>) | Tokens de design, três pontos de quebra e container queries | enhancement | high | 068 | +0.1 | Aberta |
@@ -250,7 +249,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 
 | Decisão | Bloqueia | Recomendação |
 | --- | --- | --- |
-| Arquivos web embutidos ou externos; nomes `templates/` e `assets/`; fontes locais na fase 1 | 061 → 065–070 | Embutidos com `TUNETRAIL_WEB_DIR` em desenvolvimento; sim; sim |
+| Arquivos web e fontes — decisão tomada em 14/11/2026 | 061 → 065–070 | Tudo em `assets/`, incluindo `assets/templates/`; disco em produção/dev; fontes locais; embed opcional futuro. Estudo revisado aguarda aceite |
 | Barra de navegação inferior no celular | 071 | Aceitar (doc-010 §3.3) |
 | Retenção de `ingest_events` e guarda do payload bruto | 079 | 90 dias, payload redigido |
 | Spotify nativo ou somente coletor externo | 090 | Decidir depois da PoC (085) |
@@ -269,11 +268,11 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 
 | A tarefa… | Como entra no `main` | Exemplos |
 | --- | --- | --- |
-| muda o produto: comportamento, interface, dados, API ou forma de instalar e executar (`bug`, `feature`, `enhancement` e `chore` que altere imagem ou implantação) | **publica uma versão**: `make issue.publish ISSUE=N`, que sobe 0.x → 0.x+1, fecha `[Unreleased]` no CHANGELOG e cria a tag `v0.x` | 049 → 0.9; 106; 111; 102 |
-| não muda o produto: estudo (`spike`), documentação (`docs`), testes, ferramentas, CI e registros do backlog | **sem versão**: merge fast-forward no `main`, sem tag; uma entrada no CHANGELOG, se houver, espera a próxima versão publicada | 062, 063, 064; 061, 065–068, 078 |
+| muda o produto: comportamento, interface, dados, API ou forma de instalar e executar (`bug`, `feature`, `enhancement` e `chore` que altere imagem ou implantação) | **publica uma versão**: `make issue.publish ISSUE=N`, que sobe 0.x → 0.x+1, fecha `[Unreleased]` no CHANGELOG e cria a tag `v0.x` | 049 → 0.9; 066 (distribuição externa); 106; 111; 102 |
+| não muda o produto: estudo (`spike`), documentação (`docs`), testes, ferramentas, CI e registros do backlog | **sem versão**: merge fast-forward no `main`, sem tag; uma entrada no CHANGELOG, se houver, espera a próxima versão publicada | 062, 063, 064; 061, 065, 067, 068, 078 |
 
 - Uma tarefa que publica versão gera exatamente uma versão; tarefas não são agrupadas numa publicação.
 - O push e a tag dependem de autorização do usuário em cada publicação (`PUSH=1`); o push da tag publica a imagem Docker da versão e `latest`.
 - O CI exige versão não decrescente (`version.py --check-not-lower`); a publicação exige aumento estrito (`--check-parent`).
-- Projeção: das 52 tarefas abertas, **39 publicam versão**, levando de 0.9 a cerca de **0.48** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
+- Projeção: das 51 tarefas pendentes, **39 publicam versão**, levando de 0.10 a cerca de **0.49** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
 - Descartadas: uma versão por fase e versões de correção 0.x.y.

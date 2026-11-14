@@ -4,6 +4,7 @@ title: 106 — Cache dos arquivos estáticos e do botão Voltar
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:55:00Z'
+updated_date: '2026-11-14T15:00:00Z'
 labels:
   - ui
 milestone: m-10
@@ -39,3 +40,16 @@ A ISSUE-068 depois aplica o mesmo mecanismo ao CSS concatenado.
 - [ ] #3 Páginas públicas com private, no-cache; administração continua no-store
 - [ ] #4 Voltar de uma busca restaura a página do bfcache no Chrome e no Firefox
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T15:00:00Z
+
+---
+
+Requisito do parecer do Advisor na ISSUE-061 (item 4): o hash na URL vale também para arquivos referenciados por url() no CSS (fontes woff2, ícones), não só para os <link> e <script> dos templates. Com a decisão da 061 (assets servidos do disco), implementar sobre a estrutura da ISSUE-066.
+
+---
+<!-- COMMENTS:END -->

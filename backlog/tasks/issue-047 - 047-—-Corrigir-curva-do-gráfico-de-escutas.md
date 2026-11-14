@@ -8,9 +8,8 @@ labels:
   - ui
 milestone: m-6
 dependencies: []
-references: []
 type: bug
-ordinal: 47000
+ordinal: 113000
 ---
 
 ## Description

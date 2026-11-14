@@ -13,7 +13,7 @@ references:
   - scripts/issue.py
   - scripts/test_issue.py
 type: chore
-ordinal: 60000
+ordinal: 65000
 ---
 
 ## Description

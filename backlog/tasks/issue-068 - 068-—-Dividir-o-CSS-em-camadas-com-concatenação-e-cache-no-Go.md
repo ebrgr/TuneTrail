@@ -4,7 +4,7 @@ title: 068 — Dividir o CSS em camadas com concatenação e cache no Go
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T00:56:00Z'
+updated_date: '2026-11-14T15:00:00Z'
 labels:
   - ui
 milestone: m-10
@@ -44,6 +44,15 @@ created: 2026-11-14T00:56:00Z
 ---
 
 Usar a função de template asset e o cache imutável criados na ISSUE-106; aqui eles passam a valer para o CSS concatenado.
+
+---
+
+author: claude
+created: 2026-11-14T15:00:00Z
+
+---
+
+Requisito do parecer do Advisor na ISSUE-061 (item 4): ao concatenar o CSS com hash, reescrever também os url() internos (fontes da ISSUE-070, ícones) com o hash do arquivo referenciado, senão a troca de uma fonte não invalida o cache.
 
 ---
 <!-- COMMENTS:END -->

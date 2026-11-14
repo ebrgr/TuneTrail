@@ -4,7 +4,7 @@ title: 102 — Container sem root com migração de permissões
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-14T05:02:00Z'
+updated_date: '2026-11-14T15:00:00Z'
 labels:
   - operacao
 milestone: m-15
@@ -55,6 +55,15 @@ created: 2026-11-14T05:02:00Z
 ---
 
 Complemento registrado a pedido do usuário: troca da base Debian slim (188 MB) pela Alpine (~30 MB) junto com a execução sem root; healthcheck nativo, fusos embutidos no binário e smoke de CI adaptado. Medição em backlog/evidencias/container/imagem-base.md.
+
+---
+
+author: claude
+created: 2026-11-14T15:00:00Z
+
+---
+
+Coordenação com a ISSUE-066 (parecer do Advisor na ISSUE-061, item 7): na imagem sem root, o diretório assets/ deve pertencer ao root e ser só leitura para o usuário 65532, porque templates lidos do disco executam sobre os dados.
 
 ---
 <!-- COMMENTS:END -->
