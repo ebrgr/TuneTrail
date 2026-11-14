@@ -1,10 +1,10 @@
 ---
 id: ISSUE-061
 title: 061 — Estudar a reorganização do CSS e dos templates HTML
-status: Aguardando aceite
+status: Done
 assignee: []
 created_date: '2026-11-13T23:47:00Z'
-updated_date: '2026-11-14T15:00:00Z'
+updated_date: '2026-11-14T15:02:00Z'
 labels:
   - ui
 milestone: m-10
@@ -86,6 +86,15 @@ created: 2026-11-14T15:00:00Z
 ---
 
 Resolução do parecer do Advisor (Claude, 14/11/2026, com decisões do usuário): (1) dados da instalação na evidência — dispensado pelo usuário (endereço de rede local genérico); (2) alvo tipográfico — decisão do usuário: igualar o Koito nos pesos e estilos das fontes (família, peso, caixa, itálico); tamanhos só após a medição da 065 em três larguras e confirmação; registrado na ISSUE-070 (AC #4); (3) referência tipográfica e seção de origem na 065 — já resolvidos pelo Codex (AC #4 da 065, aceita). Requisitos 4–10 registrados: hash nos url() do CSS (068, 070, 106), manifesto por extensão com licenças fora das rotas, root só leitura (066, 102), confinamento de symlinks, gate de renderização no CI e templates público/admin separados, contrato de langs/ (066), Reserved Font Name da OFL (070). Item 11: a comparação de localizações (AC #3) que saiu do doc-031 reescrito permanece no histórico do Git, commit 8e772f3. Nenhuma ressalva bloqueia o aceite desta tarefa.
+
+---
+
+author: claude
+created: 2026-11-14T15:02:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026, com as ressalvas do Advisor resolvidas conforme o comentário anterior.
 
 ---
 <!-- COMMENTS:END -->
