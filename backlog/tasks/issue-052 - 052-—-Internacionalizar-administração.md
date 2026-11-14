@@ -1,15 +1,15 @@
 ---
 id: ISSUE-052
 title: 052 — Internacionalizar administração
-status: Aguardando aceite
+status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-13T23:39:00Z'
 labels:
   - i18n
 milestone: m-7
 dependencies:
   - ISSUE-050
-references: []
 type: feature
 ordinal: 52000
 ---
@@ -36,3 +36,16 @@ Traduzir o fluxo administrativo Go com os mesmos catálogos e escolha de idioma 
 
 Administração, mensagens e rótulos acessíveis usam os catálogos externos em `langs`. O idioma segue a preferência do navegador e a escolha nas configurações. [Validação e comparações](../evidencias/i18n/ISSUE_052.md). Datas e plurais permanecem na issue 053; a revisão visual ampla permanece na 054.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-11-13T23:39:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 13/11/2026, com instrução explícita para fechar a ISSUE-052. Encerramento baseado nas verificações e limitações já registradas; sem nova execução de testes nesta etapa.
+
+---
+<!-- COMMENTS:END -->

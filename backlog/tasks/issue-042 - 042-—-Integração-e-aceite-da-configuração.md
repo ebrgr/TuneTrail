@@ -1,9 +1,10 @@
 ---
 id: ISSUE-042
 title: 042 — Integração e aceite da configuração
-status: Aguardando aceite
+status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-13T23:39:00Z'
 labels:
   - config
 milestone: m-4
@@ -12,7 +13,6 @@ dependencies:
   - ISSUE-039
   - ISSUE-040
   - ISSUE-041
-references: []
 priority: high
 type: feature
 ordinal: 42000
@@ -56,3 +56,16 @@ Matriz de configuração, reinícios, recuperação offline, permissões, migra�
 
 Os campos controlados por ambiente ou `_FILE` ficam desabilitados e informam o nome da variável. A gravação não altera o valor existente no TOML e rejeita tentativas forjadas; o teste Subsonic usa o valor efetivo dos campos bloqueados. A precedência permanece inalterada.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-11-13T23:39:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 13/11/2026, com instrução explícita para fechar a ISSUE-042. Encerramento baseado nas verificações e limitações já registradas; sem nova execução de testes nesta etapa.
+
+---
+<!-- COMMENTS:END -->
