@@ -27,7 +27,7 @@ COPY --from=backend /tunetrail ./tunetrail
 COPY --from=backend --chown=0:0 /distribution-assets/ ./assets/
 COPY langs/ ./langs/
 # Image label only; kept in sync with VERSION by scripts/version.py.
-ARG TUNETRAIL_VERSION=0.11
+ARG TUNETRAIL_VERSION=0.12
 LABEL org.opencontainers.image.title="TuneTrail" \
       org.opencontainers.image.description="ListenBrainz-compatible scrobbling with simple public listening profiles" \
       org.opencontainers.image.source="https://github.com/ebrgr/TuneTrail" \

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T01:30:00Z'
+updated_date: '2026-11-14T22:40:00Z'
 labels:
   - ui
 milestone: m-10
@@ -147,6 +147,15 @@ created: 2026-11-15T01:30:00Z
 Sugestões finais do Reviewer aplicadas e referência regenerada para os novos hashes; make check (12/12) e make api.race aprovados.
 
 Aceite: aprovada pelo usuário em 14/11/2026 ("aceito as mudanças"). Publicação local autorizada na mensagem: "commite e publique". Push não solicitado.
+
+---
+
+author: ebrgr
+created: 2026-11-14T22:40:00Z
+
+---
+
+Publicação: versão 0.12 (tag `v0.12`), branch `feat/issue-106-cache-dos-arquivos-estaticos-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
