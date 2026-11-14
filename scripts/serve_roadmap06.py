@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start isolated Go and React servers with newly created fictional SQLite data."""
+"""Start an isolated Go server with newly created fictional SQLite data (for captures)."""
 
 import argparse
 import json
@@ -12,7 +12,7 @@ from validate_multiuser import Server, WEB
 
 
 def main():
-    """Create fixtures and keep only these two local servers until interrupted."""
+    """Create fixtures and keep only this local server until interrupted."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--work-dir", type=Path, required=True, help="new directory; never an existing configuration")
@@ -28,7 +28,8 @@ def main():
         for sig in (signal.SIGINT, signal.SIGTERM):
             old_handlers[sig] = signal.signal(sig, lambda *_: stop.set())
         report = {"schema": 3, "timezone": "America/Sao_Paulo", "fixture_version": 1, "modes": {}}
-        for mode in ("go", "react"):
+        # React was removed in ISSUE-030; only the Go interface remains to serve.
+        for mode in ("go",):
             server = Server(binary, root / mode, environment={"KOITO_WEB_UI": mode, "KOITO_FORCE_TZ": "America/Sao_Paulo"})
             servers.append(server)
             server.start()

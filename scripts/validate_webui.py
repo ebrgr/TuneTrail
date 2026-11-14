@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""Validate Go pages using real API processes and equivalent disposable SQLite v3 copies.
+"""Validate Go pages using a real API process and a disposable SQLite v3 database.
 
---serve keeps both processes for screenshots until Ctrl+C. Never loads the project's .env.
+--serve keeps the process for screenshots until Ctrl+C. Never loads the project's .env.
 """
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import re
-import shutil
 import signal
 import sqlite3
 import time
@@ -103,11 +101,12 @@ def validate(server, key):
     server.request('DELETE', target, admin=True, headers={'Origin': 'https://elsewhere.invalid'}, expected=403)
     server.request('DELETE', target, admin=True, expected=204)
     server.request('POST', WEB + '/profiles/mara/listens', {'track_id': listen['track']['id'], 'unix': timestamp, 'client': 'UI validation'}, admin=True, expected=201)
-    with sqlite3.connect(server.directory / 'koito.db') as conn:
+    # The application database is tunetrail.db since ISSUE-046; koito.db is only the legacy source.
+    with sqlite3.connect(server.directory / 'tunetrail.db') as conn:
         assert conn.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
         assert not conn.execute('PRAGMA foreign_key_check').fetchall()
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0] == 3
-    return {'profiles': 3, 'mara_listens': stats['listen_count'], 'history_page_2': 52, 'schema': 3, 'interest_totals': interest_totals, 'http_pages': pages, 'checks': ['scoping', 'API/HTML parity', 'invalid filters', 'interest intervals and bounds', 'React management aliases and Go media', 'admin authentication', 'same-origin mutations', 'SQLite integrity']}
+    return {'profiles': 3, 'mara_listens': stats['listen_count'], 'history_page_2': 52, 'schema': 3, 'interest_totals': interest_totals, 'http_pages': pages, 'checks': ['scoping', 'API/HTML parity', 'invalid filters', 'interest intervals and bounds', 'Go management links and media', 'admin authentication', 'same-origin mutations', 'SQLite integrity']}
 
 
 def main():
@@ -116,30 +115,14 @@ def main():
     parser.add_argument('--work-dir', type=Path, required=True, help='Must be a new directory')
     parser.add_argument('--serve', action='store_true')
     parser.add_argument('--go-port', type=int)
-    parser.add_argument('--react-port', type=int)
     args = parser.parse_args()
     root = args.work_dir.resolve(); root.mkdir(parents=True, exist_ok=False); root.chmod(0o700)
     binary = args.binary.resolve()
     go = Server(binary, root / 'go', environment={'KOITO_WEB_UI': 'go', 'KOITO_FORCE_TZ': 'America/Sao_Paulo'}, port=args.go_port)
-    react = Server(binary, root / 'react', environment={'KOITO_WEB_UI': 'react', 'KOITO_FORCE_TZ': 'America/Sao_Paulo'}, port=args.react_port)
     try:
-        go.start(); key = seed(go); report = validate(go, key); go.stop()
-        # SQLite's backup API includes committed WAL; source is an isolated test DB.
-        react.directory.mkdir()
-        with sqlite3.connect(f'file:{go.directory / "koito.db"}?mode=ro', uri=True) as src, sqlite3.connect(react.directory / 'koito.db') as dst:
-            src.backup(dst)
-        cache = go.directory / 'imagecache'
-        if cache.exists(): shutil.copytree(cache, react.directory / cache.name)
-        # Copy all generated image caches, whose names may vary between versions.
-        for path in go.directory.iterdir():
-            if path.is_dir() and not (react.directory / path.name).exists(): shutil.copytree(path, react.directory / path.name)
-        go.start(); react.start()
-        # The default React mode must still serve the SPA for the same pages.
-        assert react.request('GET', WEB + '/config')['web_ui'] == 'react'
-        for route in ['/mara/artist/1', '/mara/album/1', '/mara/track/1', '/mara/rewind']:
-            assert 'assets/' in react.request('GET', route).decode()
-        report['checks'].append('React mode retains SPA')
-        report.update(go_url=go.origin, react_url=react.origin)
+        # The React comparison server was removed with React itself (ISSUE-030).
+        go.start(); key = seed(go); report = validate(go, key)
+        report.update(go_url=go.origin)
         (root / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
         print(json.dumps(report), flush=True)
         if args.serve:
@@ -148,6 +131,6 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        go.stop(); react.stop()
+        go.stop()
 
 if __name__ == '__main__': main()
