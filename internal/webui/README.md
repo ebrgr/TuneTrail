@@ -13,7 +13,7 @@ make ui.preview
 ```
 
 A porta deve estar livre; não há troca automática. O comando aceita somente IPs
-literais de loopback. Encerre com Ctrl+C. Não carrega `.env`; variáveis `KOITO_*`
+literais de loopback. Encerre com Ctrl+C. Não carrega `.env`; variáveis `TUNETRAIL_*` e `KOITO_*`
 não escolhem banco nem credenciais nesta prévia.
 
 Rotas Go: `/` (seleção), `/demo` (histórico fictício), `/luna` e `/iara` (vazios).

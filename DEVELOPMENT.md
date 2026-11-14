@@ -22,7 +22,7 @@ O React foi removido. `KOITO_WEB_UI` pode ser omitida ou definida como `go`; o a
 
 ## Depuração
 
-No VS Code, instale a extensão Go e use **Koito: Desenvolvimento Go (localhost:4110)** com F5. O Delve inicia a aplicação e abre o navegador quando ela estiver pronta. Pare uma instância anterior se a porta estiver ocupada. `make api.debug` inicia o Delve no terminal. Reinicie o servidor após alterar código, templates ou assets incorporados.
+No VS Code, instale a extensão Go e use **TuneTrail: Desenvolvimento Go (localhost:4110)** com F5. O Delve inicia a aplicação e abre o navegador quando ela estiver pronta. Pare uma instância anterior se a porta estiver ocupada. `make api.debug` inicia o Delve no terminal. Reinicie o servidor após alterar código, templates ou assets incorporados.
 
 ## Estrutura e validação
 

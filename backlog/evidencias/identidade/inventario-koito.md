@@ -42,3 +42,21 @@ Levantamento com `git grep -i koito`, sem `backlog/` e `scripts/historico/`: **5
 ## D. Documentação do site — ISSUE-048
 
 `docs/src/content/docs` tem 109 ocorrências em 7 arquivos (44 "Koito" como nome do produto, 55 em `reference/configuration.md`, sobretudo nomes de variáveis) e `docs/astro.config.mjs` usa `site: "https://koito.io"`. Os nomes de variáveis acompanham a ISSUE-111; o texto e o endereço do site ficam com a ISSUE-048.
+
+## Estado após a ISSUE-111 (14/11/2026)
+
+**481 ocorrências em 97 arquivos** (antes: 597 em 110). Todas as restantes são intencionais:
+
+| Grupo | O que fica | Até quando |
+| --- | --- | --- |
+| Alternativa de configuração | constantes canônicas `KOITO_*` em `internal/cfg/cfg.go` (os nomes externos `TUNETRAIL_*` são derivados), leitura de `KOITO_*` com aviso, marca **(DEPRECATED)** na página de configurações, testes e smoke de CI legados | 2.0 (decisão do usuário) |
+| Interpolação do compose | `KOITO_DATA_DIR`, `KOITO_ADMIN_*`, `KOITO_IMAGE_TAG`, `KOITO_HOST_*`, `KOITO_TIMEZONE` no `deploy/.env` | 2.0 |
+| Caminho legado | `/etc/koito` usado quando contém o banco ou é o único volume montado, com aviso | 2.0 |
+| Chaves obsoletas | `KOITO_WEB_UI`, `KOITO_DATABASE_URL`, `KOITO_SQLITE_ENABLED`, `KOITO_ENABLE_FULL_IMAGE_CACHE` (só recusam valores antigos) | sem prazo |
+| Banco legado | `koito.db` e `koito.db.pre-tunetrail-*.bak` (origem da migração, nunca alterada) | permanente |
+| Formato de importação Koito | opção "Koito" e arquivos `koito*` aceitos ao lado de "TuneTrail" (mesmo esquema JSON); tipos Go `KoitoExport` mantidos para facilitar atualizações do upstream | permanente |
+| Créditos e histórico | README, rodapé, `koito-original.svg`, CHANGELOG antigo, `releases/`, `backlog/`, scripts históricos | permanente |
+| Testes | fixtures e testes que provam que os nomes antigos são recusados (cookies) ou aceitos com aviso (variáveis) | acompanham as regras |
+| Site de documentação | texto que ainda chama o produto de Koito e `site: https://koito.io` | ISSUE-048 |
+
+Trocado: User-Agent e cliente Subsonic; logs; modelo de bug report; variáveis (`TUNETRAIL_*`); cookies `tunetrail_session`, `tunetrail_preauth`, `tunetrail-weekstart`; `window.TuneTrailTheme`; diretório padrão `/etc/tunetrail`; projeto e serviço compose `tunetrail`; arquivo `tunetrail_export.json` e formato de importação TuneTrail; cliente "TuneTrail Web UI" nas escutas adicionadas pela interface; imagem sem variáveis fixas.

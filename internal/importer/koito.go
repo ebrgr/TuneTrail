@@ -24,7 +24,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 	profileID := db.ProfileID(ctx)
 	ctx = db.WithoutProfile(ctx)
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning Koito import on file: %s", filename)
+	l.Info().Msgf("Beginning TuneTrail/Koito import on file: %s", filename) // same JSON schema (ISSUE-111)
 	data := new(export.KoitoExport)
 	f, err := os.Open(importPath(ctx, filename))
 	if err != nil {
@@ -37,7 +37,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 	}
 
 	if data.Version != "1" {
-		return invalidFile(fmt.Errorf("unsupported Koito version"))
+		return invalidFile(fmt.Errorf("unsupported TuneTrail/Koito export version"))
 	}
 
 	if len(data.Listens) > MaxImportItems {
@@ -53,15 +53,15 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			return invalidFile(fmt.Errorf("invalid track duration"))
 		}
 		if len(item.Artists) == 0 || getPrimaryAliasFromAliasSlice(item.Track.Aliases) == "" || getPrimaryAliasFromAliasSlice(item.Album.Aliases) == "" {
-			return invalidFile(fmt.Errorf("invalid Koito export: artists, album and track required"))
+			return invalidFile(fmt.Errorf("invalid TuneTrail/Koito export: artists, album and track required"))
 		}
 		for _, artist := range item.Artists {
 			if getPrimaryAliasFromAliasSlice(artist.Aliases) == "" {
-				return invalidFile(fmt.Errorf("invalid Koito export: artist name required"))
+				return invalidFile(fmt.Errorf("invalid TuneTrail/Koito export: artist name required"))
 			}
 		}
 	}
-	l.Info().Msg("Beginning Koito data import")
+	l.Info().Msg("Beginning TuneTrail/Koito data import")
 
 	count := 0
 

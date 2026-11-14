@@ -140,7 +140,7 @@ migration runs again from that copy.
 ## Logs, health, and shutdown
 
 ```sh
-docker compose --env-file deploy/.env -f deploy/compose.yaml logs --tail=100 koito
+docker compose --env-file deploy/.env -f deploy/compose.yaml logs --tail=100 tunetrail
 curl --fail http://127.0.0.1:4110/apis/web/v1/health
 docker compose --env-file deploy/.env -f deploy/compose.yaml stop
 ```

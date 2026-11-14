@@ -76,7 +76,7 @@ func ManualListen(ctx context.Context, s interface {
 		return false, err
 	}
 	if client == "" {
-		client = "Koito Web UI"
+		client = "TuneTrail Web UI" // client recorded for listens added in the UI (ISSUE-111); existing rows keep theirs
 	}
 	opts := db.SaveListenOpts{ProfileID: profileID, TrackID: trackID, Time: at, Client: client}
 	if recorder, ok := s.(interface {
