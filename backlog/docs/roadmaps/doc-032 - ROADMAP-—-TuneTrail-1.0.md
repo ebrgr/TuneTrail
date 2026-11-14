@@ -3,7 +3,7 @@ id: doc-032
 title: ROADMAP — TuneTrail 1.0
 type: specification
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-14T14:23:00Z'
+updated_date: '2026-11-14T16:00:00Z'
 tags:
   - roadmap
 ---
@@ -18,13 +18,15 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 
 | Item | Situação |
 | --- | --- |
-| Versão publicada | **0.9** (`v0.9`, imagem GHCR `0.9` e `latest`): correção da ISSUE-049 e guia de recuperação da ISSUE-064 |
-| Fase 0 · Base | **Concluída**: 049 publicada na 0.9; 062, 063 e 064 integradas sem versão (suíte e2e no CI, testes de recuperação, registros reconciliados) |
+| Versão publicada | **0.10** (`v0.10`, imagem GHCR `0.10` e `latest`): troca de Koito por TuneTrail (ISSUE-111) e guia de recuperação (ISSUE-064). Antes: 0.9 com a correção da ISSUE-049 |
+| Fase 0 · Base | **Concluída**: 049 publicada na 0.9; 062, 063 e 064 integradas sem versão |
 | Regra de versão | Decidida (seção [Versionamento](#versionamento)) |
-| ISSUE-111 (Koito → TuneTrail) | **Em andamento** na branch `feat/issue-111-…`: Fase A (identidade junto a MusicBrainz, Deezer, Last.fm e Subsonic) e B1 (variáveis `TUNETRAIL_*` com `KOITO_*` como alternativa, marca **(DEPRECATED)** na página de configurações) prontas; B2, B3 e as decisões da Fase C pendentes. Parecer do Advisor registrado |
-| ISSUE-112 (logs) | Criada na Fase 6: diagnóstico registrado; correções, buffer e tela `/admin/logs` planejados |
-| ISSUE-055 | Rebaixada a rascunho por engano e restaurada com o ID original |
-| ISSUE-061 | Estudo revisado aguardando aceite; decisões tomadas: tudo em `assets/`, leitura do disco, fontes locais e embed como opção futura. Especificação: doc-031 |
+| ISSUE-111 (Koito → TuneTrail) | **Concluída e publicada na 0.10**: identidade junto a terceiros, `TUNETRAIL_*` com `KOITO_*` aceito até a 2.0, cookies novos, `/etc/tunetrail`, compose `tunetrail`, exportação `tunetrail_export.json` |
+| ISSUE-061 (CSS e templates) | **Concluída**: tudo em `assets/`, servido do disco, fontes locais, embed só no futuro; ressalvas do Advisor resolvidas e registradas em 066, 068, 070, 102 e 106 (doc-031) |
+| ISSUE-065 (referência da interface) | **Concluída**: HTML/CSS de referência e capturas de base |
+| ISSUE-056 (interações) | **Concluída** como estudo; recomendações nas 106–110, 075 e 084 |
+| ISSUE-112 (logs) | Aberta, na Fase 6: diagnóstico registrado |
+| Próxima tarefa da Fase 1 | ISSUE-066 (mover para `assets/`, publica versão) |
 
 ## Como trabalhar este roadmap
 
@@ -37,9 +39,9 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 
 | Fase | Marco | Objetivo | Tarefas | Versões | Versão ao final* |
 | --- | --- | --- | ---: | ---: | --- |
-| Identidade | `m-5` | ISSUE-111: TuneTrail na identidade enviada a terceiros, nas variáveis e no navegador | 1 | 1 | 0.10 |
+| Identidade | `m-5` | ISSUE-111: TuneTrail na identidade enviada a terceiros, nas variáveis e no navegador | 1 | 1 | **concluída** (0.10) |
 | 0 · Base | `m-9` | Registros reconciliados, suíte e2e no CI, recuperação testada, 049 corrigida | 4 | 1 | **concluída** (0.9) |
-| 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 21 | 15 | 0.25 |
+| 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 18 | 15 | 0.25 |
 | 2 · Ingestão confiável | `m-11` | Nenhuma escuta perdida: eventos, deduplicação, outbox, saúde, SSE | 6 | 5 | 0.30 |
 | 3 · Integrações | `m-12` | ROADMAP item 4: fontes nativas e compatibilidade | 7 | 6 | 0.36 |
 | 4 · Insights | `m-13` | ROADMAP item 7 e novas análises | 7 | 6 | 0.42 |
@@ -47,7 +49,7 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 | 6 · Operação | `m-15` | Container sem root, backup, observabilidade, logs, site | 5 | 4 | 0.49 |
 | Marco 1.0 | `m-8` | Candidatura ao TuneTrail 1.0 | 1 | — | 1.0 (decisão do usuário) |
 
-\* Projeção pela [regra de versionamento](#versionamento), com a ISSUE-111 publicada na 0.10 e a mudança de distribuição da ISSUE-066 acrescentando uma versão à Fase 1 (decisão do estudo 061 em 14/11/2026).
+\* Projeção pela [regra de versionamento](#versionamento), a partir da 0.10 publicada, na ordem das fases.
 
 **Paralelismo:** a Fase 0 vem primeiro. Depois, as fases 1 e 2 podem correr juntas (camadas diferentes). A 3 depende da 2. A 4 começa pela ISSUE-092 assim que a fase 0 terminar; a 097 depende da 2. A 5 depende de partes da 1 (070, 074). A 6 pode começar a qualquer momento após 063/064.
 
@@ -91,7 +93,7 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 9. **ISSUE-072**, **ISSUE-073** e **ISSUE-074** — home com KPIs e heatmap rolável; listas e mídia compactas com menu `⋯`; administração em duas colunas, badge Admin e `/settings` (ROADMAP item 2, parte de layout). Podem andar em paralelo depois da 071.
 
 **Bloco C — interações e fechamento**
-10. **ISSUE-075** — estende os fragmentos da 107 a rankings, histórico e mídia; View Transitions e Speculation Rules; encerra o estudo **ISSUE-056** (ROADMAP item 8).
+10. **ISSUE-075** — estende os fragmentos da 107 a rankings, histórico e mídia; View Transitions e Speculation Rules; implementa parte do estudo **ISSUE-056**, já encerrado (ROADMAP item 8).
 11. **ISSUE-076** (PWA) e **ISSUE-077** (curvas do gráfico) — baixa prioridade, quando houver espaço.
 12. **ISSUE-078** — auditoria WCAG 2.2 AA, metas de desempenho (CSS < 40 KB, JS < 25 KB, LCP < 1,5s) e aceite da fase.
 
@@ -119,12 +121,11 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 
 ### Fase 1 · UI responsiva (`m-10`)
 
+Concluídas: ISSUE-056, ISSUE-061, ISSUE-065.
+
 | Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ISSUE-056](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>) | Estudar interações mais dinâmicas na interface | spike | — | — | — | Aberta |
-| [ISSUE-061](<../../tasks/issue-061 - 061-—-Estudar-a-reorganização-do-CSS-e-dos-templates-HTML.md>) | Estudar a reorganização do CSS e dos templates HTML | spike | — | — | — | Aguardando aceite |
-| [ISSUE-065](<../../tasks/issue-065 - 065-—-Referência-de-renderização-e-capturas-de-base-da-interface.md>) | Referência de renderização e capturas de base da interface | chore | high | 061 | — | Aberta |
-| [ISSUE-066](<../../tasks/issue-066 - 066-—-Mover-templates-e-assets-para-templates-e-assets-na-raiz.md>) | Reunir arquivos web em assets/ com leitura do disco | enhancement | high | 065 | +0.1 | Aberta |
+| [ISSUE-066](<../../tasks/issue-066 - 066-—-Mover-templates-e-assets-para-templates-e-assets-na-raiz.md>) | Reunir arquivos web em assets/ com leitura do disco | enhancement | high | — | +0.1 | Aberta |
 | [ISSUE-067](<../../tasks/issue-067 - 067-—-Reformatar-templates-e-unificar-head-barra-lateral-e-nomes-de-blocos.md>) | Reformatar templates e unificar head, barra lateral e nomes de blocos | chore | high | 066 | — | Aberta |
 | [ISSUE-068](<../../tasks/issue-068 - 068-—-Dividir-o-CSS-em-camadas-com-concatenação-e-cache-no-Go.md>) | Dividir o CSS em camadas com concatenação e cache no Go | chore | high | 067 | — | Aberta |
 | [ISSUE-069](<../../tasks/issue-069 - 069-—-Tokens-de-design-três-pontos-de-quebra-e-container-queries.md>) | Tokens de design, três pontos de quebra e container queries | enhancement | high | 068 | +0.1 | Aberta |
@@ -133,7 +134,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | [ISSUE-072](<../../tasks/issue-072 - 072-—-Home-e-painel-KPIs-tocando-agora-heatmap-rolável-e-grade-de-destaques.md>) | Home e painel: KPIs, tocando agora, heatmap rolável e grade de destaques | feature | medium | 071 | +0.1 | Aberta |
 | [ISSUE-073](<../../tasks/issue-073 - 073-—-Listas-histórico-e-páginas-de-mídia-compactas-com-menu-de-ações.md>) | Listas, histórico e páginas de mídia compactas, com menu de ações | feature | medium | 071 | +0.1 | Aberta |
 | [ISSUE-074](<../../tasks/issue-074 - 074-—-Administração-em-duas-colunas-badge-de-admin-e-página-de-configurações.md>) | Administração em duas colunas, badge de admin e página de configurações | feature | medium | 071 | +0.1 | Aberta |
-| [ISSUE-075](<../../tasks/issue-075 - 075-—-Fragmentos-parciais-View-Transitions-Speculation-Rules-e-busca-com-sugestões.md>) | Fragmentos parciais, View Transitions e Speculation Rules | feature | medium | 073, 056, 107 | +0.1 | Aberta |
+| [ISSUE-075](<../../tasks/issue-075 - 075-—-Fragmentos-parciais-View-Transitions-Speculation-Rules-e-busca-com-sugestões.md>) | Fragmentos parciais, View Transitions e Speculation Rules | feature | medium | 073, 107 | +0.1 | Aberta |
 | [ISSUE-076](<../../tasks/issue-076 - 076-—-App-instalável-com-service-worker-mínimo-e-página-offline.md>) | App instalável com service worker mínimo e página offline | feature | low | 068, 070 | +0.1 | Aberta |
 | [ISSUE-077](<../../tasks/issue-077 - 077-—-Curvas-mais-suaves-no-gráfico-de-escutas-sem-ultrapassar-os-pontos.md>) | Curvas mais suaves no gráfico de escutas sem ultrapassar os pontos | enhancement | low | — | +0.1 | Aberta |
 | [ISSUE-078](<../../tasks/issue-078 - 078-—-Auditoria-de-acessibilidade-desempenho-e-aceite-da-UI-responsiva.md>) | Auditoria de acessibilidade, desempenho e aceite da UI responsiva | chore | high | 072, 073, 074, 075, 070 | — | Aberta |
@@ -197,13 +198,13 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | [ISSUE-104](<../../tasks/issue-104 - 104-—-OpenAPI-e-métricas-Prometheus.md>) | OpenAPI e métricas Prometheus | feature | low | 082 | +0.1 | Aberta |
 | [ISSUE-112](<../../tasks/issue-112 - 112-—-Logs-diagnóstico-correções-e-visualização-na-administração.md>) | Logs: diagnóstico, correções e visualização na administração | feature | medium | — | +0.1 | Aberta |
 
-### Identidade TuneTrail (`m-5`)
+### Identidade TuneTrail (`m-5`) — concluída
 
-| Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| [ISSUE-111](<../../tasks/issue-111 - 111-—-Trocar-Koito-por-TuneTrail-na-identidade-configuração-e-navegador.md>) | Trocar Koito por TuneTrail na identidade, configuração e navegador | enhancement | high | — | +0.1 | Em andamento (branch: A e B1 prontas) |
+ISSUE-111 publicada na 0.10 (14/11/2026).
 
 ### Marco TuneTrail 1.0 (`m-8`)
+
+Concluídas: ISSUE-058.
 
 | Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -219,7 +220,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | 4 | Escutas do Spotify, Deezer, Tidal e outros serviços | 085 (PoC externa; orientação Deezer/Tidal) · 086 (contrato de fontes) · 087 (ListenBrainz) · 088 (Subsonic/Navidrome) · 089 (Jellyfin/Plex) · 090 (Spotify) · 091 (Last.fm) — sobre a base da Fase 2 |
 | 5 | Imagens para redes sociais | 098 (especificação) · 099 (geração e download) |
 | 7 | Tags, gêneros e datas de lançamento | 055 (existente), coordenada com a migração v4 (079/080) |
-| 8 | Interações e funções dinâmicas | 056 (estudo existente) → 106 (cache e bfcache), 107 (busca instantânea e edição sem recarregar), 108 (barra de ações e edição por tarefa nas páginas de mídia), 075 (fragmentos e transições) e 084 (tocando agora por SSE) |
+| 8 | Interações e funções dinâmicas | 056 (estudo encerrado em 14/11/2026) → 106 (cache e bfcache), 107 (busca instantânea e edição sem recarregar), 108 (barra de ações e edição por tarefa nas páginas de mídia), 075 (fragmentos e transições) e 084 (tocando agora por SSE) |
 
 ### Pendências da revisão (doc-017) e da avaliação (doc-010 §1.3)
 
@@ -245,21 +246,34 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | Documentação e site (048) | 048 |
 | Calendários excepcionais (018), coordenação entre instâncias (037), teto global de memória (032/036) | Sem tarefa: condicionais, conforme o doc-017; abrir somente com demanda real |
 
-## Decisões pendentes do usuário
+## Decisões do usuário
+
+### Tomadas
+
+| Decisão | Tarefa | O que foi decidido |
+| --- | --- | --- |
+| Arquivos web e fontes | 061 | Tudo em `assets/` (inclusive `assets/templates/`), servido do disco em produção e desenvolvimento; fontes locais; embed só como opção futura |
+| Tipografia da retrospectiva | 070 | Igualar o Koito nos pesos e estilos das fontes (família, peso, caixa, itálico); tamanhos só após medição em três larguras e confirmação |
+| Diretório de dados no contêiner | 111 | `/etc/tunetrail`; `/etc/koito` continua usado até a 2.0 quando tem o banco ou é o único volume, com aviso |
+| Projeto e serviço do compose | 111 | Renomeados para `tunetrail` já na 0.10; procedimento no `DEPLOYMENT.md`; segundo servidor no mesmo diretório recusa iniciar |
+| Fim da alternativa `KOITO_*` | 111 | Aceita até a 2.0 (variáveis e interpolação do compose) |
+| Cookies antigos (`koito_session` e outros) | 111 | Sem alternativa: só os nomes novos; o administrador entra de novo uma vez |
+| "(DEPRECATED)" nos dois idiomas | 111 | Igual em inglês e português |
+| Imagem base do contêiner | 102 | Alpine, junto com a execução sem root |
+| Estudo de interações | 056 | Encerrado; recomendações nas 106–110, 075 e 084 |
+
+### Pendentes
 
 | Decisão | Bloqueia | Recomendação |
 | --- | --- | --- |
-| Arquivos web e fontes — decisão tomada em 14/11/2026 | 061 → 065–070 | Tudo em `assets/`, incluindo `assets/templates/`; disco em produção/dev; fontes locais; embed opcional futuro. Estudo revisado aguarda aceite |
+| Nova ordem da Fase 1 (106 após 066; 107, 108 e 109 após 067) | retrabalho na 106–110 | Aplicar |
+| Usuário do contêiner: UID fixo 65532 ou PUID/PGID configuráveis | 102 | PUID/PGID, pelo padrão do Unraid |
+| Arquivo de log em disco com rotação | 112 | Desligado por padrão; buffer em memória sempre |
+| Tamanhos da tipografia da retrospectiva | 070 | Após a medição em três larguras |
 | Barra de navegação inferior no celular | 071 | Aceitar (doc-010 §3.3) |
 | Retenção de `ingest_events` e guarda do payload bruto | 079 | 90 dias, payload redigido |
-| Spotify nativo ou somente coletor externo | 090 | Decidir depois da PoC (085) |
 | Semântica das médias | 092 | Documentar antes de mudar cálculos |
-| Diretório padrão `/etc/koito` dentro do contêiner | 111 (C) | Manter até o 1.0 |
-| Renomear projeto `koito-sum` e serviço `koito` do compose | 111 (C) | Não renomear antes do 1.0 (risco de dois contêineres no mesmo SQLite) |
-| Fim da alternativa `KOITO_*` | 111 (C) | No 1.0, `KOITO_*` passa a erro fatal com o nome novo indicado; nunca ignorar em silêncio |
-| Prazo do cookie `koito_session` como alternativa | 111 (C) | Remover na primeira versão publicada 30 dias ou mais após a B2 |
-| "(DEPRECATED)" traduzido ou igual nos dois idiomas | 111 | Igual, como pedido |
-| Arquivo de log em disco com rotação | 112 | Desligado por padrão; buffer em memória sempre |
+| Spotify nativo ou somente coletor externo | 090 | Decidir depois da PoC (085) |
 | Candidatura ao 1.0 | 105 | Reservada ao usuário |
 
 ## Versionamento
@@ -274,5 +288,5 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 - Uma tarefa que publica versão gera exatamente uma versão; tarefas não são agrupadas numa publicação.
 - O push e a tag dependem de autorização do usuário em cada publicação (`PUSH=1`); o push da tag publica a imagem Docker da versão e `latest`.
 - O CI exige versão não decrescente (`version.py --check-not-lower`); a publicação exige aumento estrito (`--check-parent`).
-- Projeção: das 51 tarefas pendentes, **39 publicam versão**, levando de 0.10 a cerca de **0.49** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
+- Projeção: das 48 tarefas abertas, **39 publicam versão**, levando de 0.10 a cerca de **0.49** antes do 1.0. A decisão do 1.0 continua reservada ao usuário (ISSUE-105).
 - Descartadas: uma versão por fase e versões de correção 0.x.y.

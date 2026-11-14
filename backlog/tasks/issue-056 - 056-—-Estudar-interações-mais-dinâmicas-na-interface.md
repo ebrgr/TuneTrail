@@ -1,10 +1,10 @@
 ---
 id: ISSUE-056
 title: 056 — Estudar interações mais dinâmicas na interface
-status: Aberta
+status: Done
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-14T00:56:00Z'
+updated_date: '2026-11-14T15:07:00Z'
 labels:
   - ui
 milestone: m-10
@@ -12,7 +12,7 @@ dependencies: []
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 type: spike
-ordinal: 56000
+ordinal: 1000
 ---
 
 ## Description
@@ -89,6 +89,24 @@ created: 2026-11-14T00:56:00Z
 ---
 
 Comparação com o Koito React em 127.0.0.1:4111 (13/11/2026): o servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem de busca e edição refazerem a página inteira, de arquivos estáticos sem cache e de no-store nas páginas públicas. Encaminhamento: ISSUE-106 (cache e bfcache) e ISSUE-107 (busca instantânea e edição sem recarregar), antecipadas na fase 1; ISSUE-075 generaliza os fragmentos.
+
+---
+
+author: claude
+created: 2026-11-14T15:07:00Z
+
+---
+
+Encerrada como estudo concluído (decisão do usuário, 14/11/2026). As recomendações viraram tarefas: ISSUE-106 (cache e botão Voltar), ISSUE-107 (busca instantânea e edição sem recarregar), ISSUE-108/109/110 (ações de mídia em diálogos, selo de admin, barra lateral), ISSUE-075 (fragmentos, transições, pré-carregamento) e ISSUE-084 (tocando agora por SSE). Evidência: backlog/evidencias/ui-responsiva/comparacao-koito-react.md.
+
+---
+
+author: claude
+created: 2026-11-14T15:07:00Z
+
+---
+
+Aceite: encerramento aprovado pelo usuário em 14/11/2026.
 
 ---
 <!-- COMMENTS:END -->
