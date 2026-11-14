@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8] - 2026-11-13
+
 ### Added
 
 - Localize displayed dates, numbers, relative times and plural quantities in English and Brazilian Portuguese.
