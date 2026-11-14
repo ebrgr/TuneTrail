@@ -1,11 +1,11 @@
 ---
 id: ISSUE-106
 title: 106 — Cache dos arquivos estáticos e do botão Voltar
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-14T21:51:00Z'
+updated_date: '2026-11-15T01:30:00Z'
 labels:
   - ui
 milestone: m-10
@@ -35,7 +35,7 @@ Preparar catálogo imutável por bytes finais, SHA-256 por arquivo, temas pré-g
 
 HTML público 200 usa private, no-cache e Vary apropriado. Erros, administração, login, ações e formulários/CSRF continuam no-store. Corrigir o AbortController do live.js, abortado em pagehide e reutilizado ao voltar; revalidar sessão/geração e evitar controles antigos. A 068 reutiliza o catálogo depois da concatenação; a 070 adiciona as fontes locais; 075/109 reutilizam o lifecycle e a consulta de papel sem duplicá-los.
 
-Implementação concluída e validada, com parecer final APROVADO do Reviewer. Evidências em backlog/evidencias/issue-106/implementacao.md. Aguardando aceite explícito do usuário; ainda sem publicação.
+Implementação concluída e validada, com parecer final APROVADO do Reviewer. Evidências em backlog/evidencias/issue-106/implementacao.md. Aceita pelo usuário em 14/11/2026; publicação pendente de autorização.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
@@ -136,6 +136,15 @@ created: 2026-11-14T21:51:00Z
 ---
 
 Verificação: Reviewer Claude Opus APROVADO; make check, api.race, Chrome/Firefox e proxy HTTPS aprovados; cache sem novas transferências CSS/JS/JSON e bfcache real; 276 comparações com texto/geometria preservados. Evidências em backlog/evidencias/issue-106/implementacao.md. Falta aceite explícito do usuário para publicar.
+
+---
+
+author: claude
+created: 2026-11-15T01:30:00Z
+
+---
+
+Sugestões finais do Reviewer aplicadas e referência regenerada para os novos hashes; make check (12/12) e make api.race aprovados. Aceite: aprovada pelo usuário em 14/11/2026 ("aceito as mudanças"). Publicação de versão, merge, tag e push não solicitados.
 
 ---
 <!-- COMMENTS:END -->
