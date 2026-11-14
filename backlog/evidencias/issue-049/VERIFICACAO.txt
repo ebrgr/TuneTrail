@@ -1,0 +1,53 @@
+CGO_ENABLED=0 go vet ./...
+CGO_ENABLED=0 go test ./... -timeout 60s
+ok  	github.com/ebrgr/TuneTrail/cmd/api	0.892s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	(cached)
+ok  	github.com/ebrgr/TuneTrail/engine	5.818s
+ok  	github.com/ebrgr/TuneTrail/engine/handlers	(cached)
+ok  	github.com/ebrgr/TuneTrail/engine/middleware	(cached)
+ok  	github.com/ebrgr/TuneTrail/imagecache	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/admin	1.515s
+ok  	github.com/ebrgr/TuneTrail/internal/adminui	0.557s
+ok  	github.com/ebrgr/TuneTrail/internal/adminweb	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/catalog	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/cfg	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/db	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/db/sqlite	3.348s
+ok  	github.com/ebrgr/TuneTrail/internal/export	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/i18n	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagefetch	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagepipeline	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/images	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/imagework	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/listening	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/memkv	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/relay	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/summary	1.055s
+ok  	github.com/ebrgr/TuneTrail/internal/utils	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/webui	1.551s
+ok  	github.com/ebrgr/TuneTrail/queue	(cached)
+CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+CGO_ENABLED=0 go test ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.588s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	(cached)
+ok  	github.com/ebrgr/TuneTrail/internal/listening	(cached)
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	(cached)
+node --check internal/webui/static/theme.js
+node --check internal/webui/static/ui.js
+node --check internal/webui/static/live.js
+node --check internal/webui/static/admin.js
+node --test internal/webui/theme.test.mjs
+CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
+python3 scripts/e2e.py --binary ./tunetrail
+PASS  multiuser      1.3s
+PASS  admin          2.1s
+PASS  public         0.4s
+PASS  permissions    0.8s
+PASS  isolation      2.2s
+PASS  migration      1.8s
+PASS  standalone     0.2s
+PASS  shutdown       0.8s
+PASS  vscode         0.0s
+PASS  tools          4.4s
+e2e: 10/10 journeys passed

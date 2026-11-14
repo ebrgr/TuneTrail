@@ -118,6 +118,8 @@ type UpdateUserOpts struct {
 }
 
 type AddArtistsToAlbumOpts struct {
+	// Derived indicates artists supplied by track ingestion rather than independent album credits.
+	Derived   bool
 	AlbumID   int32
 	ArtistIDs []int32
 }

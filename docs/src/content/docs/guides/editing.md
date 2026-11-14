@@ -93,3 +93,68 @@ and always read the review.
 A changed catalog/history requires a fresh review. Destination aliases, MBID and
 other metadata are retained; source aliases are removed. Track duplicate listens
 are consolidated only within the same profile and timestamp. No undo is provided.
+
+## Album participation after track edits
+
+Album artists include independent album credits and artists credited on any of
+its tracks. Adding or removing a track artist updates that participation
+immediately. Another track can still justify the same artist's participation.
+Selecting a participating artist as the album's primary artist creates an
+independent album credit that survives later track edits.
+
+This correction keeps SQLite schema v3. Existing album credits are preserved:
+older versions did not record whether a credit belonged to the album or came
+from a track. Consequently, an old mistaken association can remain visible after
+editing a track. There is no automatic cleanup of these ambiguous credits.
+
+### Reviewing an old mistaken association
+
+Album metadata is shared by all profiles. Review the artist and album together,
+including their other tracks and album credits, before deciding that an old
+association is wrong. Do not delete the artist, album or track to remove a credit.
+
+For an administrator familiar with SQLite, the following is an offline,
+**single-association** repair. Stop every application instance, back up the
+complete data directory (including SQLite sidecars), and first rehearse on a
+copy. Open the database with `sqlite3 tunetrail.db`, enable foreign keys and
+replace the example IDs with the pair you reviewed. This is not a bulk cleanup.
+
+```sql
+.bail on
+.parameter init
+.parameter set @artist 123
+.parameter set @album 456
+PRAGMA foreign_keys=ON;
+BEGIN IMMEDIATE;
+SELECT ar.artist_id, ar.release_id, ar.is_primary, aa.alias, ra.alias
+FROM artist_releases ar
+LEFT JOIN artist_aliases aa ON aa.artist_id=ar.artist_id AND aa.is_primary=1
+LEFT JOIN release_aliases ra ON ra.release_id=ar.release_id AND ra.is_primary=1
+WHERE ar.artist_id=@artist AND ar.release_id=@album;
+DELETE FROM artist_releases
+WHERE artist_id=@artist AND release_id=@album AND is_primary=0
+  AND NOT EXISTS (
+    SELECT 1 FROM artist_tracks a JOIN tracks t ON t.id=a.track_id
+    WHERE a.artist_id=@artist AND t.release_id=@album
+  )
+  AND EXISTS (
+    SELECT 1 FROM artist_releases other
+    WHERE other.release_id=@album AND other.artist_id<>@artist
+  );
+SELECT changes();
+PRAGMA foreign_key_check;
+PRAGMA integrity_check;
+```
+
+Before committing, confirm exactly one association changed, the foreign-key
+check has no rows, and the integrity check returns `ok`. Otherwise enter
+`ROLLBACK;`. Enter `COMMIT;` only after these checks. The guards refuse primary
+credits, credits supported by another track, and the last stored album credit;
+removing that last credit would activate the existing album-deletion trigger.
+A refused repair needs further review, not removal of the guards.
+
+Restart and verify the artist page in the affected profiles. To undo a committed
+repair, stop the application and restore the complete backup. Restoring an older
+backup also removes changes recorded since that backup; export newer listens
+before restoring if necessary. There is no database migration or downgrade in
+this procedure.

@@ -329,3 +329,41 @@ func TestMediaNoFirstListenAndTiedRanks(t *testing.T) {
 		}
 	}
 }
+
+// TestArtistAlbumsFollowTrackEdits checks rendered pages and rankings for both profiles on v3.
+func TestArtistAlbumsFollowTrackEdits(t *testing.T) {
+	s := pageStore(t)
+	h, err := NewHandler(s, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	if err := s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{2}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, slug := range []string{"alpha", "beta"} {
+		for _, path := range []string{"/" + slug + "/artist/2", "/" + slug + "/chart/top/albums?artist_id=2"} {
+			w := pageRequest(h, path)
+			if w.Code != 200 || !strings.Contains(w.Body.String(), `href="/`+slug+`/album/1"`) {
+				t.Fatalf("participation missing in %s: %d", path, w.Code)
+			}
+		}
+	}
+	if err := s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, RemoveArtists: []int32{2}}); err != nil {
+		t.Fatal(err)
+	}
+	for _, slug := range []string{"alpha", "beta"} {
+		for _, path := range []string{"/" + slug + "/artist/2", "/" + slug + "/chart/top/albums?artist_id=2"} {
+			w := pageRequest(h, path)
+			if slug == "alpha" && strings.Contains(path, "/artist/") {
+				if w.Code != 404 {
+					t.Fatalf("artist without profile listens: %d", w.Code)
+				}
+				continue
+			}
+			if w.Code != 200 || strings.Contains(w.Body.String(), `href="/`+slug+`/album/1"`) {
+				t.Fatalf("residual album in %s: %d", path, w.Code)
+			}
+		}
+	}
+}

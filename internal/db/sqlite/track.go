@@ -170,11 +170,7 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 			artistID, id, isPrimary); err != nil {
 			return nil, fmt.Errorf("SaveTrack: associate artist to track: %w", err)
 		}
-		if _, err := tx.ExecContext(ctx,
-			`INSERT OR IGNORE INTO artist_releases (artist_id, release_id, is_primary) VALUES (?,?,0)`,
-			artistID, opts.AlbumID); err != nil {
-			return nil, fmt.Errorf("SaveTrack: associate artist to release: %w", err)
-		}
+		// Album participation is derived from artist_tracks rather than persisted as an independent credit.
 	}
 
 	if _, err := tx.ExecContext(ctx,
@@ -285,14 +281,6 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 		}
 	}
 	if len(opts.AddArtists) > 0 {
-		var releaseID int32
-		err := tx.QueryRowContext(ctx, `SELECT release_id FROM tracks WHERE id=?`, opts.ID).Scan(&releaseID)
-		if errors.Is(err, sql.ErrNoRows) {
-			return db.ErrNotFound
-		}
-		if err != nil {
-			return fmt.Errorf("UpdateTrack: album: %w", err)
-		}
 		for _, artistID := range opts.AddArtists {
 			if artistID <= 0 {
 				return db.ErrInvalidInput
@@ -308,9 +296,7 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 			if _, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO artist_tracks(artist_id,track_id,is_primary) VALUES(?,?,0)`, artistID, opts.ID); err != nil {
 				return fmt.Errorf("UpdateTrack: add artist: %w", err)
 			}
-			if _, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO artist_releases(artist_id,release_id,is_primary) VALUES(?,?,0)`, artistID, releaseID); err != nil {
-				return fmt.Errorf("UpdateTrack: add album artist: %w", err)
-			}
+			// Album participation follows this track relationship and disappears with it.
 		}
 	}
 

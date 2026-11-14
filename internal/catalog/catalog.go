@@ -154,6 +154,7 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 
 	// ensure artists are associated with release group
 	if err := store.AddArtistsToAlbum(ctx, db.AddArtistsToAlbumOpts{
+		Derived:   true, // Track metadata must not promote an album credit to independent.
 		ArtistIDs: artistIDs,
 		AlbumID:   rg.ID,
 	}); err != nil {

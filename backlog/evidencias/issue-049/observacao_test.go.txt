@@ -1,0 +1,68 @@
+package sqlite
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/stretchr/testify/require"
+)
+
+// TestIssue049ObservationResidual records the existing defect, rather than the desired fixed behavior.
+func TestIssue049ObservationResidual(t *testing.T) {
+	s := mergeFixture(t)
+	ctx := context.Background()
+	require.NoError(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{2}}))
+	require.NoError(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, RemoveArtists: []int32{2}}))
+	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM artist_tracks WHERE track_id=1 AND artist_id=2`))
+	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM artist_releases WHERE release_id=1 AND artist_id=2`))
+	for _, profile := range []int32{1, 2} {
+		page, err := s.GetTopAlbumsPaginated(db.WithProfile(ctx, profile), db.GetItemsOpts{
+			ArtistID: 2, Page: 1, Limit: 10,
+			Timeframe: db.Timeframe{From: time.Unix(1, 0), To: time.Unix(200, 0)},
+		})
+		require.NoError(t, err)
+		found := false
+		for _, ranked := range page.Items {
+			if ranked.Item.ID == 1 {
+				found = true
+				require.EqualValues(t, 1, ranked.Item.ListenCount)
+			}
+		}
+		require.True(t, found, "residual album remains in artist ranking")
+		t.Logf("profile=%d: removed track artist; album 1 still ranks for artist 2", profile)
+	}
+	require.NoError(t, checkIntegrity(s.db))
+}
+
+// TestIssue049ObservationAmbiguousOrigin proves explicit and derived histories can have identical stored state.
+func TestIssue049ObservationAmbiguousOrigin(t *testing.T) {
+	derived, dual := mergeFixture(t), mergeFixture(t)
+	ctx := context.Background()
+	require.NoError(t, dual.AddArtistsToAlbum(ctx, db.AddArtistsToAlbumOpts{AlbumID: 1, ArtistIDs: []int32{2}}))
+	for _, store := range []*Sqlite{derived, dual} {
+		require.NoError(t, store.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{2}}))
+		require.NoError(t, store.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, RemoveArtists: []int32{2}}))
+	}
+	require.Equal(t, mergeSnapshot(t, derived), mergeSnapshot(t, dual))
+	t.Log("explicit album association plus track edit and track edit alone leave identical catalog/history snapshots")
+}
+
+// TestIssue049ObservationLastCreditDeletion demonstrates why unconditional relation cleanup is unsafe.
+func TestIssue049ObservationLastCreditDeletion(t *testing.T) {
+	s := mergeFixture(t)
+	ctx := context.Background()
+	require.NoError(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{2}}))
+	require.NoError(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, RemoveArtists: []int32{2}}))
+	// Make the residual relation the last album credit, using fictional data only.
+	require.NoError(t, s.Exec(`DELETE FROM artist_releases WHERE release_id=1 AND artist_id=1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=1`))
+	require.NoError(t, s.Exec(`DELETE FROM artist_releases WHERE release_id=1 AND artist_id=2`))
+	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM releases WHERE id=1`))
+	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM tracks WHERE id=1`))
+	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=2`))
+	require.NoError(t, checkIntegrity(s.db))
+	t.Log("deleting last album credit cascaded to album, track and both profiles' listens; unrelated album survived")
+}

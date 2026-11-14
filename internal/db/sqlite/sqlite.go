@@ -154,9 +154,14 @@ type catalogQuerier interface {
 
 // artistsForReleaseIn keeps merge reads on the same SQLite connection and snapshot.
 func artistsForReleaseIn(ctx context.Context, q catalogQuerier, releaseID int32) ([]models.SimpleArtist, error) {
+	return albumArtistsIn(ctx, q, releaseID, albumArtistRelations)
+}
+
+// albumArtistsIn selects live participation or persisted credits on the caller's snapshot.
+func albumArtistsIn(ctx context.Context, q catalogQuerier, releaseID int32, relation string) ([]models.SimpleArtist, error) {
 	rows, err := q.QueryContext(ctx, `
 		SELECT a.id, awn.name, ar.is_primary
-		FROM artist_releases ar
+		FROM `+relation+` ar
 		JOIN artists_with_name awn ON awn.id = ar.artist_id
 		JOIN artists a ON a.id = ar.artist_id
 		WHERE ar.release_id = ?
@@ -277,35 +282,6 @@ func parseNullableUUID(s sql.NullString) *uuid.UUID {
 		return nil
 	}
 	return &u
-}
-
-// cleanOrphanedEntries removes tracks with no listens, cleans artist_release
-// associations where the artist has no tracks in the release, and removes
-// artists with no tracks. Mirrors PG CleanOrphanedEntries + the orphan trigger.
-func cleanOrphanedEntries(ctx context.Context, tx *sql.Tx) error {
-	// delete tracks with no listens (e.g. the "from" track after a merge)
-	if _, err := tx.ExecContext(ctx,
-		`DELETE FROM tracks WHERE id NOT IN (SELECT DISTINCT track_id FROM listens)`); err != nil {
-		return err
-	}
-	// delete artist_releases where the artist has no tracks in that release;
-	// the trigger trg_delete_orphan_releases then removes fully-empty releases
-	if _, err := tx.ExecContext(ctx, `
-		DELETE FROM artist_releases
-		WHERE NOT EXISTS (
-			SELECT 1 FROM artist_tracks at2
-			JOIN tracks t ON at2.track_id = t.id
-			WHERE at2.artist_id = artist_releases.artist_id
-			  AND t.release_id = artist_releases.release_id
-		)`); err != nil {
-		return err
-	}
-	// delete artists with no remaining track associations
-	if _, err := tx.ExecContext(ctx,
-		`DELETE FROM artists WHERE id NOT IN (SELECT DISTINCT artist_id FROM artist_tracks)`); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *Sqlite) PurgeAllData(ctx context.Context) error {

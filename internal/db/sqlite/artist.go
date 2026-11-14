@@ -378,7 +378,7 @@ func (s *Sqlite) GetArtistsForAlbum(ctx context.Context, id int32) ([]*models.Ar
 
 	rows, err := s.queryContext(ctx, `
 		SELECT a.id, awn.name, a.musicbrainz_id, a.image, ar.is_primary
-		FROM artist_releases ar
+		FROM `+albumArtistRelations+` ar
 		JOIN artists_with_name awn ON awn.id = ar.artist_id
 		JOIN artists a ON a.id = ar.artist_id
 		WHERE ar.release_id = ?
@@ -542,6 +542,13 @@ func (s *Sqlite) setPrimaryRelation(ctx context.Context, table, target string, i
 		return err
 	}
 	defer tx.Rollback()
+	// An explicit album-primary selection turns existing track participation into an independent credit.
+	if table == "artist_releases" && value {
+		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO artist_releases(artist_id,release_id,is_primary)
+    SELECT ?,?,0 WHERE EXISTS(SELECT 1 FROM artist_tracks a JOIN tracks t ON t.id=a.track_id WHERE a.artist_id=? AND t.release_id=?)`, artistID, id, artistID, id); err != nil {
+			return err
+		}
+	}
 	var current int
 	err = tx.QueryRowContext(ctx, `SELECT is_primary FROM `+table+` WHERE `+target+`=? AND artist_id=?`, id, artistID).Scan(&current)
 	if errors.Is(err, sql.ErrNoRows) {

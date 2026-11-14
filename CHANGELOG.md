@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Removing a track artist now removes its derived album participation while preserving independent and legacy album credits, without a database migration (ISSUE-049).
+
 ### Added
 
 - Step-by-step guide to recover an interrupted or refused database migration and to roll back, in DEPLOYMENT.md (ISSUE-064).

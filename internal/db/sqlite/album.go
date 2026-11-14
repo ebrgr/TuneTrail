@@ -31,7 +31,7 @@ func (s *Sqlite) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Al
 		var id int32
 		err := s.queryRowContext(ctx, `
 			SELECT r.id FROM releases_with_title r
-			JOIN artist_releases ar ON r.id = ar.release_id
+			JOIN `+albumArtistRelations+` ar ON r.id = ar.release_id
 			WHERE r.title = ? AND ar.artist_id = ? LIMIT 1`,
 			opts.Title, opts.ArtistID).Scan(&id)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -137,7 +137,7 @@ func (s *Sqlite) releaseByArtistAndTitles(ctx context.Context, artistID int32, t
 	}
 	query := fmt.Sprintf(`
 		SELECT r.id FROM releases_with_title r
-		JOIN artist_releases ar ON r.id = ar.release_id
+		JOIN `+albumArtistRelations+` ar ON r.id = ar.release_id
 		WHERE r.title IN (%s) AND ar.artist_id = ?%s LIMIT 1`, placeholders, noMbz)
 
 	args := make([]any, len(titles)+1)
@@ -446,7 +446,11 @@ func (s *Sqlite) SetPrimaryAlbumAlias(ctx context.Context, id int32, alias strin
 	return tx.Commit()
 }
 
+// AddArtistsToAlbum persists independent credits; track ingestion is represented by artist_tracks.
 func (s *Sqlite) AddArtistsToAlbum(ctx context.Context, opts db.AddArtistsToAlbumOpts) error {
+	if opts.Derived {
+		return nil
+	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("AddArtistsToAlbum: BeginTx: %w", err)
@@ -478,7 +482,7 @@ func (s *Sqlite) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts
 				SELECT t.release_id, COUNT(*) AS listen_count
 				FROM listens l
 				JOIN tracks t ON l.track_id = t.id
-				JOIN artist_releases ar ON t.release_id = ar.release_id
+				JOIN ` + albumArtistRelations + ` ar ON t.release_id = ar.release_id
 				WHERE ar.artist_id = ? AND l.listened_at BETWEEN ? AND ?
 				GROUP BY t.release_id
 			),
@@ -634,8 +638,8 @@ func mergeAlbumsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replaceI
 		return err
 	}
 
-	// fetch artists from fromId before moving tracks (for re-association)
-	fromArtists, err := artistsForReleaseIn(ctx, tx, fromId)
+	// Move only independent credits; track participation follows the moved tracks automatically.
+	fromArtists, err := albumArtistsIn(ctx, tx, fromId, "artist_releases")
 	if err != nil {
 		return fmt.Errorf("MergeAlbums: fetch from artists: %w", err)
 	}

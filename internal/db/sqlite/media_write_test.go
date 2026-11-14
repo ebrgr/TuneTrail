@@ -9,16 +9,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestTrackArtistUpdateUsesOneTransaction checks atomic edits without materializing album credits.
 func TestTrackArtistUpdateUsesOneTransaction(t *testing.T) {
 	s := mergeFixture(t)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	require.NoError(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{2}}))
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM artist_tracks WHERE track_id=1 AND artist_id=2`))
-	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM artist_releases WHERE release_id=1 AND artist_id=2`))
+	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM artist_releases WHERE release_id=1 AND artist_id=2`))
 	require.ErrorIs(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{999}}), db.ErrNotFound)
 	require.NoError(t, s.Exec(`INSERT INTO artists(id) VALUES(3)`))
-	require.NoError(t, s.Exec(`CREATE TRIGGER fail_album_artist BEFORE INSERT ON artist_releases BEGIN SELECT RAISE(ABORT,'injected'); END`))
+	require.NoError(t, s.Exec(`CREATE TRIGGER fail_album_artist BEFORE INSERT ON artist_tracks BEGIN SELECT RAISE(ABORT,'injected'); END`))
 	require.Error(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 1, AddArtists: []int32{3}}))
 	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM artist_tracks WHERE track_id=1 AND artist_id=3`))
 }

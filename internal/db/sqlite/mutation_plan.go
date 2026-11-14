@@ -14,7 +14,8 @@ import (
 	sqlite3 "modernc.org/sqlite"
 )
 
-// catalogFingerprint conservatively covers the complete catalog and listening history.
+// catalogFingerprint covers both stored credits and the tracks underlying derived participation.
+// It conservatively covers the complete catalog and listening history.
 // This may cause an unrelated concurrent change to require a fresh confirmation.
 func catalogFingerprint(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (string, error) {
 	h := sha256.New()
@@ -151,7 +152,7 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 	getArtists := func(id int32) ([]db.CatalogImpactArtist, error) {
 		var rel, col string
 		if p.Kind == "album" {
-			rel, col = "artist_releases", "release_id"
+			rel, col = albumArtistRelations, "release_id"
 		} else if p.Kind == "track" {
 			rel, col = "artist_tracks", "track_id"
 		} else {
@@ -232,7 +233,7 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 	}
 	switch p.Kind {
 	case "artist":
-		p.SourceAlbums, err = count(`SELECT COUNT(*) FROM artist_releases WHERE artist_id=?`, p.From)
+		p.SourceAlbums, err = count(`SELECT COUNT(*) FROM `+albumArtistRelations+` WHERE artist_id=?`, p.From)
 	case "album":
 		p.SourceAlbums = 1
 	case "track":
