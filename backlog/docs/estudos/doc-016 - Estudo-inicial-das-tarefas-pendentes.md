@@ -3,11 +3,13 @@ id: doc-016
 title: Estudo inicial das tarefas pendentes
 type: other
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-12T23:39:00Z'
+updated_date: '2026-11-14T03:00:00Z'
 tags:
   - estudo
 ---
 > Importado de `docs-dev/ESTUDO_TAREFAS_PENDENTES.md`. Original removido em 12/11/2026; consulte o histórico do Git.
+
+> **Fotografia histórica (06/11/2026)** — reconciliado na ISSUE-062. Este estudo é anterior à transição de imagens sem CGO (031–037), à identidade TuneTrail (043–046), à configuração TOML (038–042) e à interface multilíngue (050–054), todas concluídas e publicadas até a versão 0.8. O texto foi preservado como registro. Estado atual: [ROADMAP — TuneTrail 1.0](<../roadmaps/doc-032 - ROADMAP-—-TuneTrail-1.0.md>) e [revisão de pendências](<doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>).
 
 # Estudo inicial das tarefas pendentes
 

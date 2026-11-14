@@ -1,9 +1,11 @@
 ---
 id: ISSUE-062
 title: 062 — Reconciliar registros do projeto e higiene do repositório
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
+updated_date: '2026-11-14T01:20:00Z'
 labels:
   - docs
   - processo
@@ -34,3 +36,16 @@ Passos:
 - [ ] #3 doc-010 §1 reflete o estado da versão 0.8
 - [ ] #4 git status limpo após build e testes locais (artefatos ignorados)
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-14T01:20:00Z
+
+---
+
+Início: branch `docs/issue-062-reconciliar-registros-do-projeto-e` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->

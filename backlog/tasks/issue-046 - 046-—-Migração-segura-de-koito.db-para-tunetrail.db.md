@@ -64,18 +64,20 @@ Definir e testar um mecanismo durável de reconhecimento da migração concluíd
 
 ## Critérios de aceite
 
-- [ ] Banco v2 legado migra para `tunetrail.db` v3; backup anterior preserva os dados e restaura corretamente.
-- [ ] Banco v3 consolidado recebe backup e é copiado sem alteração indevida; um novo diretório cria somente o banco novo em v3.
-- [ ] Dados confirmados ainda no WAL, contas e senhas, perfis, chaves, escutas, catálogo, relay e referências de imagens sobrevivem à migração e ao reinício.
-- [ ] O destino validado é reutilizado em reinícios; conflitos entre dois bancos independentes, versões desconhecidas e arquivos corrompidos falham sem sobrescrita.
-- [ ] Falhas de backup, migração e publicação, interrupção em cada fase e duas inicializações simultâneas não perdem dados nem deixam um banco parcial reconhecido como concluído.
-- [ ] `reset-password` usa o banco correto; backup, restauração e rollback são exercitados com fixtures descartáveis.
-- [ ] Integridade e chaves estrangeiras são verificadas; os testes Go, o workflow e `make multiuser.check` refletem o novo caminho. Testes usam dados fictícios e não acessam o banco real.
-- [ ] Documentação explica a parada do contêiner antigo, o volume persistente e como recuperar uma migração interrompida.
+- [x] Banco v2 legado migra para `tunetrail.db` v3; backup anterior preserva os dados e restaura corretamente. *(Evidência: `validate_migration_030.py` — backup restaurado em cópia isolada idêntico à origem; `TestBootstrapLegacy`, `TestBootstrapExistingV2`.)*
+- [x] Banco v3 consolidado recebe backup e é copiado sem alteração indevida; um novo diretório cria somente o banco novo em v3. *(Evidência: `TestBootstrapLegacy` v3, `TestBootstrapFresh`, `make multiuser.check` fresh.)*
+- [x] Dados confirmados ainda no WAL, contas e senhas, perfis, chaves, escutas, catálogo, relay e referências de imagens sobrevivem à migração e ao reinício. *(Evidência: `validate_migration_030.py` compara cada tabela legada antes/depois, valida token legado e roda jornada com reinício; caso `api-wal` com escuta só no WAL.)*
+- [ ] O destino validado é reutilizado em reinícios; conflitos entre dois bancos independentes, versões desconhecidas e arquivos corrompidos falham sem sobrescrita. *(Parcial: reinício, conflito e corrompido testados — `TestBootstrapConflicts`, `TestBootstrapCorruptLegacy`; versão desconhecida tem guarda em `bootstrap.go:124` mas nenhum teste. Lacuna na ISSUE-064.)*
+- [ ] Falhas de backup, migração e publicação, interrupção em cada fase e duas inicializações simultâneas não perdem dados nem deixam um banco parcial reconhecido como concluído. *(Parcial: concorrência e arquivos parciais testados — `TestBootstrapConcurrent`, `TestBootstrapPartialFilesNeverBecomeThePublishedDatabase`; injeção de falhas de I/O e interrupção em cada fase não realizadas. Lacuna na ISSUE-064.)*
+- [ ] `reset-password` usa o banco correto; backup, restauração e rollback são exercitados com fixtures descartáveis. *(Parcial: `reset-password` no banco existente (`cmd/api/config_integration_test.go`), backup e restauração em cópia isolada; rollback para a versão anterior não exercitado. Lacuna na ISSUE-064.)*
+- [x] Integridade e chaves estrangeiras são verificadas; os testes Go, o workflow e `make multiuser.check` refletem o novo caminho. Testes usam dados fictícios e não acessam o banco real. *(Evidência: `integrity_check`/`foreign_key_check` em `validate_migration_030.py`; `make multiuser.check` fresh e migrated-v2.)*
+- [ ] Documentação explica a parada do contêiner antigo, o volume persistente e como recuperar uma migração interrompida. *(Parcial: `DEPLOYMENT.md` cobre parada, volume e recusa conservadora; falta procedimento passo a passo de recuperação a partir do `.bak`. Lacuna na ISSUE-064.)*
 
 ## Parecer do Advisor
 
 **Reprovado com ressalvas para implementação sem contrato.** Os riscos principais são perda de transações no WAL, gravação posterior pelo processo antigo, confusão entre dois bancos e falha parcial que cria uma instalação vazia. O contrato e os critérios acima incorporam as recomendações; a implementação e seu aceite continuam pendentes.
+
+> *Nota de reconciliação (ISSUE-062, 13/11/2026):* este parecer é anterior à implementação. A revisão da versão corrigida e o aceite do usuário estão em "Implementação e resultados", abaixo.
 
 ## Implementação e resultados
 
@@ -98,4 +100,8 @@ caminho suportado: diretório confiável, filesystem local com lock/hard link e
 processos antigos parados. A verificação atual confere a presença dos triggers,
 não a equivalência integral de seus corpos; Lstat seguido de abertura não protege
 contra manipulação externa concorrente do diretório.
+
+## Reconciliação dos critérios (ISSUE-062, 13/11/2026)
+
+Critérios marcados somente com evidência reexecutada nesta data: 13 testes `TestBootstrap*` (`internal/db/sqlite`), `scripts/validate_migration_030.py` (3 migrações v2, incluindo WAL; backup restaurado idêntico; tabelas legadas preservadas; jornadas de administração e API com reinício; integridade e chaves estrangeiras) e `make multiuser.check` (fresh e migrated-v2), todos aprovados com o binário 0.8. Os critérios 4, 5, 6 e 8 permanecem parciais; as lacunas seguem na ISSUE-064.
 <!-- SECTION:DESCRIPTION:END -->

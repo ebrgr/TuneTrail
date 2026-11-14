@@ -4,6 +4,7 @@ title: 064 — Testes de recuperação de banco, migração e importação
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
+updated_date: '2026-11-14T01:22:00Z'
 labels:
   - banco
   - validacao
@@ -33,4 +34,20 @@ Passos:
 - [ ] #2 Testes de reinício e falha de disco durante importação, sem perda de escutas gravadas
 - [ ] #3 Ensaio de restauração documentado em backlog/evidencias
 - [ ] #4 Lacunas restantes registradas como tarefas ou limitações aceitas
+- [ ] #5 Teste de recusa de versão de esquema desconhecida (guarda em bootstrap.go:124 sem cobertura hoje)
+- [ ] #6 Rollback exercitado: versão anterior iniciada a partir do koito.db legado e do .bak com fixture descartável
+- [ ] #7 DEPLOYMENT.md com procedimento passo a passo para recuperar migração interrompida a partir do .bak
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T01:22:00Z
+
+---
+
+Lacunas da ISSUE-046 reconciliadas na ISSUE-062: critérios 4 (versão desconhecida sem teste), 5 (injeção de falhas e interrupção por fase), 6 (rollback não exercitado) e 8 (procedimento de recuperação). Os três primeiros critérios desta tarefa já cobrem a injeção de falhas; acrescentados critérios para os demais.
+
+---
+<!-- COMMENTS:END -->

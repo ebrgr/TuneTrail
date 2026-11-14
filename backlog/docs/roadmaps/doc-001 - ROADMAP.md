@@ -3,7 +3,7 @@ id: doc-001
 title: ROADMAP
 type: specification
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-14T00:45:00Z'
+updated_date: '2026-11-14T03:00:00Z'
 tags:
   - roadmap
 ---
@@ -11,13 +11,14 @@ tags:
 
 ROADMAP.md
 
-> **13/11/2026:** os itens 2, 4, 5, 7 e 8 e as pendências abaixo foram convertidos em tarefas no [ROADMAP — TuneTrail 1.0](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>) (ISSUE-062 a ISSUE-105). Este documento fica como registro histórico; a reconciliação completa é a ISSUE-062.
+> **13/11/2026:** os itens 2, 4, 5, 7 e 8 e as pendências abaixo foram convertidos em tarefas no [ROADMAP — TuneTrail 1.0](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>) (ISSUE-062 a ISSUE-105). Este documento fica como **registro histórico** (reconciliado na ISSUE-062): o texto original foi preservado e cada trecho desatualizado recebeu uma nota de estado atual. O plano vigente é o doc-032.
 
 ## TAREFAS
 
 1. Listar todas as variavies de ambiente que são passadas e podem ser usadas. Após começar a estudar a migração de todos estes valores para um arquivo `conf.toml` por examplo que mora no mesmo diretório do banco de dados.
    - Após fazer com que todos estes dados sejam possíveis de serem editados com a senha e usuário master
    - [Estudo, inventário e issues 038–042](<doc-004 - Estudo-—-configuração-em-TOML-e-administração-pelo-usuário-master.md>) — 038 retomada: [contrato dos dez campos, fuso, Subsonic e relay](<../design/doc-019 - Issue-038-—-contrato-e-plano-da-configuração-administrativa.md>) em planejamento; 039 fechada e aprovada; 040 fechada e aprovada; 041 fechada e aprovada; 042 implementada e aguardando aceite.
+   - *Estado em 13/11/2026:* 038–042 concluídas e aceitas; configuração TOML publicada na versão 0.8.
 
 2. Melhorar o layout de adiminstração e separar opções por usuários de forma mais efetiva, senha simples para cada usuário para deixar perfil público/privado
     - Colocar badge do lado do nome do usuário sempre que conta de administração estiver logada somente esta conta pode apagar dados e adicionar / deletar novos perfis.
@@ -25,6 +26,7 @@ ROADMAP.md
     - → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): ISSUE-074 (layout e badge) e ISSUE-100 (perfis públicos/privados).
 
 3. Desenvolver a interface multilíngue — [estudo e plano](<doc-006 - Estudo-—-interface-multilíngue-item-3-do-roadmap.md>), com [issues locais 050–054](<../historico/doc-025 - Índice-histórico-das-issues-locais-001–058.md>). Issue 050 fechada e aprovada; 051 fechada e aprovada; 052–054 implementadas e aguardando teste funcional e aceite. Catálogos externos em `langs`.
+   - *Estado em 13/11/2026:* 050–054 concluídas e aceitas; publicadas na versão 0.8.
 4. Integrar Escutas do spotify / deezer / tidal ou de outros serviços ao koito. → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): Fase 3, ISSUE-085 a ISSUE-091.
 5.  Gerar imagens que podem ser postadas em FEEDs de midias sociais como instagram → [Plano](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>): ISSUE-098 e ISSUE-099.
 6. Revisar a documentação e preparar o site oficial do TuneTrail: conteúdo, identidade, endereço, hospedagem, build e capturas. [Issue 048 — documentação e site](<../../tasks/issue-048 - 048-—-Documentação-e-site-oficial-do-TuneTrail.md>).
@@ -34,7 +36,9 @@ ROADMAP.md
 ## PENDENCIAS
 
 [Revisão das issues e pendências remanescentes](<../estudos/doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>).
-Estado atual: **47 issues fechadas e 10 abertas** — 038 (planejamento retomado), 042 (implementada, aguardando aceite),
+*Estado em 13/11/2026:* **56 tarefas concluídas e 54 abertas** (ISSUE-001 a ISSUE-110), indexadas no [ROADMAP — TuneTrail 1.0](<doc-032 - ROADMAP-—-TuneTrail-1.0.md>); as melhorias abaixo viraram tarefas (doc-032, seção Rastreabilidade).
+
+Estado em 12/11/2026 (histórico): **47 issues fechadas e 10 abertas** — 038 (planejamento retomado), 042 (implementada, aguardando aceite),
 048 (documentação e site), [049 (associação residual de artista e álbum)](<../../tasks/issue-049 - 049-—-Associação-residual-de-artista-em-álbum-após-edição-de-faixa.md>), 052–054 (interface multilíngue) [055 (metadados musicais)](<../../tasks/issue-055 - 055-—-Aproveitar-tags-e-datas-de-lançamento-das-músicas.md>) [056 (interações da UI)](<../../tasks/issue-056 - 056-—-Estudar-interações-mais-dinâmicas-na-interface.md>) e [057 (controles da retrospectiva)](<../../tasks/issue-057 - 057-—-Ajustar-controles-da-retrospectiva.md>). As issues 043–045 foram fechadas por aprovação do usuário.
 
 Melhorias registradas nas issues encerradas:
@@ -84,9 +88,9 @@ Os handlers HTML devem compartilhar serviços e consultas com a API, sem requisi
 
 Sequência de Tarefas Iniciais:
 
-1. Reproduzir layout, fontes, temas, barra lateral e cards. [Análise e plano](<doc-002 - Roadmap-1-—-layout-fontes-temas-barra-lateral-e-cards.md>) · [Prévia Go e screenshots comparativas](../../evidencias/roadmap-01/README.md) — primeira prévia implementada e validada; revisão completa de paridade pendente.
-2. Migrar seleção de perfis, home, rankings e histórico. [Análise e plano](<doc-003 - Roadmap-2-—-seleção-de-perfis-home-rankings-e-histórico.md>) — implementado e validado; issues locais 003–005 fechadas; modo Go opcional. [Comparação e evidências](../../evidencias/roadmap-02/README.md).
+1. Reproduzir layout, fontes, temas, barra lateral e cards. [Análise e plano](<doc-002 - Roadmap-1-—-layout-fontes-temas-barra-lateral-e-cards.md>) · [Prévia Go e screenshots comparativas](../../evidencias/roadmap-01/README.md) — primeira prévia implementada e validada; revisão completa de paridade pendente. *Estado em 13/11/2026:* concluída nas issues 022–030; a paridade com o Koito React volta a ser referência nas ISSUE-106 a ISSUE-110.
+2. Migrar seleção de perfis, home, rankings e histórico. [Análise e plano](<doc-003 - Roadmap-2-—-seleção-de-perfis-home-rankings-e-histórico.md>) — implementado e validado; issues locais 003–005 fechadas; modo Go opcional. *Estado em 13/11/2026:* não há mais modo opcional; o Go é a única interface desde a ISSUE-030. [Comparação e evidências](../../evidencias/roadmap-02/README.md).
 3. Migrar artistas, álbuns, faixas e retrospectiva. [Estudo e plano](<doc-005 - Roadmap-3-—-artistas-álbuns-faixas-e-retrospectiva.md>) — estudo concluído; núcleos 006–008 e integração 009 implementados; comparações visuais registradas; issues 006–009 encerradas por aceite do usuário em 05/11/2026.
-4. Migrar administração, importação, chaves, edição, deleção e mesclagem. [Estudo e plano](<doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>) — implementado no modo Go opcional; integração 015 validada, Advisor aprovado e 55 capturas registradas; issues 010–015 encerradas por aceite do usuário em 05/11/2026. [Entrega e comparações](../../evidencias/roadmap-04/ISSUE_015.md).
+4. Migrar administração, importação, chaves, edição, deleção e mesclagem. [Estudo e plano](<doc-007 - Roadmap-4-—-administração-importação-chaves-edição-deleção-e-mesclagem.md>) — implementado no modo Go opcional (*Estado em 13/11/2026:* Go exclusivo desde a ISSUE-030); integração 015 validada, Advisor aprovado e 55 capturas registradas; issues 010–015 encerradas por aceite do usuário em 05/11/2026. [Entrega e comparações](../../evidencias/roadmap-04/ISSUE_015.md).
 5. Validar comportamento, permissões, fusos e isolamento entre perfis. [Estudo e plano](<doc-008 - Roadmap-5-—-comportamento-permissões-fusos-e-isolamento-entre-perfis.md>) — estudo com Advisor concluído; issue 016 fechada e resolvida; 017 fechada e resolvida; 018 fechada e resolvida; 019 fechada e resolvida; 020 fechada e resolvida; 021 fechada e resolvida por aceite do usuário. [Evidências iniciais](../../evidencias/roadmap-05/README.md).
-6. Comparar capturas em desktop e celular antes de remover React. [Estudo e plano com Advisor](<doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>) — issues 022–025 resolvidas; issue 026 planejada; falha React na issue 028; Go é padrão; React exige seleção explícita.
+6. Comparar capturas em desktop e celular antes de remover React. [Estudo e plano com Advisor](<doc-009 - Roadmap-6-—-comparação-visual-e-decisão-sobre-React.md>) — issues 022–025 resolvidas; issue 026 planejada; falha React na issue 028; Go é padrão; React exige seleção explícita. *Estado em 13/11/2026:* 026–030 concluídas; React removido na ISSUE-030 (`KOITO_WEB_UI=react` impede a inicialização com mensagem explícita).

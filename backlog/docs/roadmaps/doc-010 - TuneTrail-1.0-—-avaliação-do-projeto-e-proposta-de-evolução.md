@@ -3,7 +3,7 @@ id: doc-010
 title: TuneTrail 1.0 — avaliação do projeto e proposta de evolução
 type: specification
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-14T00:30:00Z'
+updated_date: '2026-11-14T03:00:00Z'
 tags:
   - roadmap
 ---
@@ -23,6 +23,8 @@ tags:
 
 ## 1. Avaliação do estado atual
 
+> Reconciliado na ISSUE-062 (13/11/2026): o texto descreve a versão 0.6; as notas **0.8** indicam o estado depois da publicação da versão 0.8 (`v0.8`, 13/11/2026).
+
 ### 1.1 O que foi entregue com o Codex (resumo)
 
 | Bloco | Issues | Resultado |
@@ -31,11 +33,11 @@ tags:
 | Validação transversal | 016–021 | Permissões, CSRF/origem, fusos/DST, isolamento entre perfis, concorrência e falhas de I/O. |
 | Imagens sem CGO | 031–037 | `imaging` + `webp-go-pure`; publicação atômica, limites, cancelamento; binário sem libvips. |
 | Identidade e versão | 043–046 | Marca TuneTrail, versionamento 0.x, migração `koito.db` → `tunetrail.db`. |
-| Configuração TOML | 038–042 | Leitura com precedência de ambiente, gravação atômica com revisão, página de configuração. 042 aguarda aceite. |
-| Multilíngue | 050–054 | Catálogos externos `langs/en.json` e `pt-BR.json`; 052–054 aguardam aceite. |
-| Ajustes | 047, 057 | Curva sem overshoot; controles da retrospectiva (057 aguarda avaliação). |
+| Configuração TOML | 038–042 | Leitura com precedência de ambiente, gravação atômica com revisão, página de configuração. 042 aguarda aceite. **0.8:** 038–042 concluídas e aceitas. |
+| Multilíngue | 050–054 | Catálogos externos `langs/en.json` e `pt-BR.json`; 052–054 aguardam aceite. **0.8:** 050–054 concluídas e aceitas. |
+| Ajustes | 047, 057 | Curva sem overshoot; controles da retrospectiva (057 aguarda avaliação). **0.8:** 057 concluída e aceita. |
 
-**Placar local:** 47 issues fechadas, 10 abertas (038, 042, 048, 049, 052–057).
+**Placar local:** 47 issues fechadas, 10 abertas (038, 042, 048, 049, 052–057). **0.8:** 56 concluídas e 54 abertas (ISSUE-001 a ISSUE-110), planejadas no doc-032; das dez abertas originais seguem abertas 048, 049, 055 e 056; a 058 foi encerrada com a decisão de não adotar Tailwind.
 
 ### 1.2 Pontos fortes
 
@@ -49,16 +51,16 @@ tags:
 
 | Área | Evidência | Impacto |
 | --- | --- | --- |
-| **Trabalho não commitado** | 113 entradas em `git status` na `main` (config TOML, i18n, retrospectiva, docs). | Alto risco de perda e de revisão difícil. Primeira ação recomendada. |
-| **CSS difícil de manter** | `ui.css` com 1.199 linhas em dois estilos (expandido e linhas únicas minificadas); 40 larguras fixas em px (`350px`, `750px`, `385px`, `1000px`...); 9 breakpoints diferentes (480, 639, 640, 650, 767, 900px, 40/48/60/64/80/96rem). | Responsividade frágil: em celular, `.overview`, `.activity-card` e `.period-selector` ficam presos em 350–352px. |
-| **Templates em linha única** | `page.html`, `live.html`, `media.html` concentram muitas tags por linha. | Diffs ilegíveis, revisão visual cara. |
-| **Fontes externas** | `live.html` carrega Google Fonts, embora `assets/` já tenha Jost e League Spartan. | Contraria a proposta self-hosted/privacidade; falha offline. |
-| **Scripts de validação por issue** | 51 scripts em `scripts/`, 37 com sufixo de issue (`validate_*_0NN.py`). | Dívida de teste: verificações pontuais que não rodam no CI como suíte. |
-| **Arquivos soltos** | `agents - cópia.md`, diretório `soKz24cd/` (apenas `image_cache` e `.DS_Store`). | Ruído; limpar. |
-| **Entrega do relay** | Best-effort, sem fila durável; 429 não é repetido. | Bloqueia integrações confiáveis. |
-| **Container como root** | Dockerfile sem `USER`. | Risco operacional; já registrado na revisão. |
-| **Semântica de estatísticas** | Média combina contagem filtrada com dias ativos históricos (018). | Números confusos para o usuário. |
-| **Bug aberto de catálogo** | 049: relação artista–álbum residual após edição de faixa. | Página de artista mostra álbum indevido. |
+| **Trabalho não commitado** | 113 entradas em `git status` na `main` (config TOML, i18n, retrospectiva, docs). | Alto risco de perda e de revisão difícil. Primeira ação recomendada. **0.8:** resolvido; tudo commitado e publicado. |
+| **CSS difícil de manter** | `ui.css` com 1.199 linhas em dois estilos (expandido e linhas únicas minificadas); 40 larguras fixas em px (`350px`, `750px`, `385px`, `1000px`...); 9 breakpoints diferentes (480, 639, 640, 650, 767, 900px, 40/48/60/64/80/96rem). | Responsividade frágil: em celular, `.overview`, `.activity-card` e `.period-selector` ficam presos em 350–352px. **0.8:** doc-031 e ISSUE-069. |
+| **Templates em linha única** | `page.html`, `live.html`, `media.html` concentram muitas tags por linha. | Diffs ilegíveis, revisão visual cara. **0.8:** plano em doc-031, ISSUE-065 a ISSUE-068. |
+| **Fontes externas** | `live.html` carrega Google Fonts, embora `assets/` já tenha Jost e League Spartan. | Contraria a proposta self-hosted/privacidade; falha offline. **0.8:** ISSUE-070. |
+| **Scripts de validação por issue** | 51 scripts em `scripts/`, 37 com sufixo de issue (`validate_*_0NN.py`). | Dívida de teste: verificações pontuais que não rodam no CI como suíte. **0.8:** ISSUE-063. |
+| **Arquivos soltos** | `agents - cópia.md`, diretório `soKz24cd/` (apenas `image_cache` e `.DS_Store`). | Ruído; limpar. **0.8:** ambos removidos. |
+| **Entrega do relay** | Best-effort, sem fila durável; 429 não é repetido. | Bloqueia integrações confiáveis. **0.8:** ISSUE-082. |
+| **Container como root** | Dockerfile sem `USER`. | Risco operacional; já registrado na revisão. **0.8:** ISSUE-102. |
+| **Semântica de estatísticas** | Média combina contagem filtrada com dias ativos históricos (018). | Números confusos para o usuário. **0.8:** ISSUE-092. |
+| **Bug aberto de catálogo** | 049: relação artista–álbum residual após edição de faixa. | Página de artista mostra álbum indevido. **0.8:** ISSUE-049, Fase 0. |
 
 ### 1.4 UI atual vista nas capturas
 
