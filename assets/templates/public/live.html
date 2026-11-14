@@ -5,20 +5,22 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       <title>{{.Title}} - TuneTrail</title>
-      <link rel="icon" type="image/png" href="/public/favicon-96x96.png">
+      <link rel="icon" type="image/png" href="{{asset "public/favicon-96x96.png"}}">
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
       >
-      <link rel="stylesheet" href="/web-assets/themes.css">
-      <script src="/web-assets/theme.js"></script>
-      <link rel="stylesheet" href="/web-assets/ui.css">
-      <script defer src="/web-assets/ui.js"></script>
-      <script defer src="/web-assets/live.js"></script>
+      <link rel="stylesheet" href="{{asset "themes.css"}}">
+      <script src="{{asset "theme.js"}}"></script>
+      <link rel="stylesheet" href="{{asset "ui.css"}}">
+      <script defer src="{{asset "ui.js"}}"></script>
+      <script defer src="{{asset "live.js"}}"></script>
     </head>
     <body
+      data-themes-url="{{asset "themes.json"}}"
+      data-cover-fallback-url="{{asset "icons/Disc3.svg"}}"
       data-i18n-delete-label="{{tr "js.delete_label" "Delete listening record"}}"
       data-i18n-delete-confirm="{{tr "js.delete_confirm" "Delete this listening record?"}}"
       data-i18n-delete-error="{{tr "js.delete_error" "Unable to delete this listening record. Please retry."}}"
@@ -29,7 +31,9 @@
       data-i18n-theme-invalid-json="{{tr "js.theme_invalid_json" "Invalid JSON. No appearance changes were made."}}"
       data-i18n-theme-invalid-palette="{{tr "js.theme_invalid_palette" "Use exactly the 14 expected hexadecimal color properties."}}"
       data-assets="/web-assets"
+      data-ui-generation="{{uiGeneration}}"
       data-timezone="{{.Timezone}}"
+      data-week-start="{{.WeekStart}}"
       data-force-timezone="{{.ForcedTimezone}}"
       data-section="{{.Section}}"
       {{if .Profile}}data-profile-id="{{.Profile.ID}}"
@@ -81,7 +85,7 @@
               {{tr "footer.tagline" "Your music. Your journey."}}
               <br>
               <small>{{tr "footer.based_on" "A self-hosted listening history, based on"}} <img
-                src="/public/koito-original.svg"
+                src="{{asset "public/koito-original.svg"}}"
                 alt=""
                 width="16"
                 height="16"

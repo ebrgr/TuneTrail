@@ -39,8 +39,9 @@ type Pages struct {
 	templates *template.Template
 }
 
+// NewHandler binds templates and asset URLs to one validated external generation.
 func NewHandler(store ReadStore, options Options) (*Pages, error) {
-	tmpl, err := loadTemplates()
+	tmpl, err := loadTemplates("/web-assets")
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,10 @@ func NewHandler(store ReadStore, options Options) (*Pages, error) {
 	}
 	return &Pages{store, options, tmpl}, nil
 }
+
+// ServeHTTP defaults errors to no-store; successful documents select their private cache policy.
 func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
 	if r.Method != "GET" && r.Method != "HEAD" {
 		http.Error(w, "Method not allowed", 405)
 		return
@@ -211,7 +215,8 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.render(w, p)
 }
 func (h *Pages) render(w http.ResponseWriter, p LivePage) {
-	// Page titles are presentation labels; media titles and slugs stay untouched.
+	// Buffer localized documents and select cache policy by final status, never for admin forms.
+	w.Header().Set("Cache-Control", "no-store")
 	if p.Error != "" {
 		key := map[int]string{400: "error.bad_request", 404: "error.not_found", 500: "error.internal"}[p.Status]
 		if key != "" {
@@ -235,7 +240,20 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-store")
+	if p.Status == http.StatusOK {
+		generation, err := uiGeneration()
+		if err != nil {
+			http.Error(w, "Unable to render page", 500)
+			return
+		}
+		w.Header().Set("Cache-Control", "private, no-cache")
+		w.Header().Add("Vary", "Cookie")
+		w.Header().Set("X-TuneTrail-UI-Generation", generation)
+		if p.Profile != nil {
+			w.Header().Set("X-TuneTrail-Timezone", p.Timezone)
+			w.Header().Set("X-TuneTrail-Week-Start", strconv.Itoa(p.WeekStart))
+		}
+	}
 	w.WriteHeader(p.Status)
 	_, _ = b.WriteTo(w)
 }

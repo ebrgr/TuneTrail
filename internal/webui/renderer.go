@@ -12,12 +12,18 @@ import (
 )
 
 // loadTemplates validates external assets before parsing the public template set.
-func loadTemplates() (*template.Template, error) {
+func loadTemplates(prefix string) (*template.Template, error) {
+	asset, err := webassets.AssetFunc(prefix)
+	if err != nil {
+		return nil, err
+	}
 	if err := ensureAssets(); err != nil {
 		return nil, err
 	}
 	tmpl, err := template.New("page.html").Funcs(formatFuncs(nil)).Funcs(template.FuncMap{
-		"tr": func(_ string, fallback string) string { return fallback },
+		"asset":        asset,
+		"uiGeneration": uiGeneration,
+		"tr":           func(_ string, fallback string) string { return fallback },
 		"tr2": func(_ string, fallback, name1 string, value1 any, name2 string, value2 any) string {
 			return strings.NewReplacer("{{."+name1+"}}", fmt.Sprint(value1), "{{."+name2+"}}", fmt.Sprint(value2)).Replace(fallback)
 		},

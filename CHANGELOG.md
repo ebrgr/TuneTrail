@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Cache versioned interface assets by content and restore public history navigation while revalidating administrative controls and sessions (ISSUE-106).
+
 ## [0.11] - 2026-11-14
 
 ### Changed

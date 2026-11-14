@@ -9,7 +9,7 @@
   const cssName = key => '--color-' + key.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
   const valid = palette => palette && typeof palette === 'object' && !Array.isArray(palette) && Object.keys(palette).length === keys.length && keys.every(key => typeof palette[key] === 'string' && /^(#[0-9a-f]{3}|#[0-9a-f]{6}|#[0-9a-f]{8})$/i.test(palette[key]));
   let custom = null;
-  try { const parsed = JSON.parse(read('custom-theme')); if (parsed && typeof parsed === 'object') { const {name, ...colors} = parsed; if (valid(colors)) custom = colors; } } catch {}
+
   function apply(name, palette, persist = true) {
     if (name === 'custom' && !valid(palette)) return false;
     if (name !== 'custom' && !names.includes(name)) name = defaultTheme;
@@ -25,7 +25,19 @@
     document.dispatchEvent(new CustomEvent('tunetrail-theme-change')); // ISSUE-111
     return true;
   }
-  const saved = read('theme');
-  apply(saved === 'custom' && custom ? 'custom' : names.includes(saved) ? saved : defaultTheme, custom, false);
-  window.TuneTrailTheme = {apply, valid, keys, getCustom: () => custom, reset: () => { apply(defaultTheme, null, false); write('theme', null); write('bgcolor', null); }};
+  // Re-read appearance preferences when a suspended document becomes active again.
+  function refresh() {
+    custom = null;
+    try {
+      const parsed = JSON.parse(read('custom-theme'));
+      if (parsed && typeof parsed === 'object') {
+        const {name, ...colors} = parsed;
+        if (valid(colors)) custom = colors;
+      }
+    } catch {}
+    const saved = read('theme');
+    apply(saved === 'custom' && custom ? 'custom' : names.includes(saved) ? saved : defaultTheme, custom, false);
+  }
+  refresh();
+  window.TuneTrailTheme = {apply, refresh, valid, keys, getCustom: () => custom, reset: () => { apply(defaultTheme, null, false); write('theme', null); write('bgcolor', null); }};
 })();

@@ -187,16 +187,17 @@ func bindRoutes(
 		r.Post("/admin/*", administration.ServeHTTP)
 		r.Post("/{slug}/manage/{kind}/{id}/{action}", administration.ServeHTTP)
 		r.Handle("/web-assets/*", http.StripPrefix("/web-assets", webui.Assets()))
-		r.Handle("/favicon.svg", webui.Assets())
+		r.Handle("/favicon.svg", webui.LegacyAssets())
 		goPageServer(r, pages, administration)
 	}
 
-	publicServer(r, "/public", webui.PublicFiles())
+	publicServer(r, "/public", webui.PublicAssets())
 }
 
 // goPageServer routes Go documents and returns 404 for paths outside their scope.
 func goPageServer(r chi.Router, pages *webui.Pages, administration *adminui.Handler) {
 	r.Get("/*", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
 		if adminui.IsPage(req.URL.Path) || adminui.IsAction(req.URL.Path) {
 			administration.ServeHTTP(w, req)
 			return
@@ -212,14 +213,14 @@ func goPageServer(r chi.Router, pages *webui.Pages, administration *adminui.Hand
 	})
 }
 
-func publicServer(r chi.Router, path string, root http.FileSystem) {
+// publicServer mounts revalidatable legacy assets without exposing the underlying filesystem.
+func publicServer(r chi.Router, path string, handler http.Handler) {
 	if strings.ContainsAny(path, "{}*") {
 		panic("FileServer does not permit any URL parameters.")
 	}
-	fs := webui.StaticHandler(root)
 	r.Get(path+"*", func(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, path)
-		fs.ServeHTTP(w, r)
+		handler.ServeHTTP(w, r)
 	})
 }
 

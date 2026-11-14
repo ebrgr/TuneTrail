@@ -24,9 +24,10 @@ const maxTotalBytes = 32 << 20
 
 // Snapshot is a read-only generation; callers receive copies of bytes, never its backing map.
 type Snapshot struct {
-	files map[string][]byte
-	Hash  string
-	Bytes int
+	files  map[string][]byte
+	assets map[string]Asset
+	Hash   string
+	Bytes  int
 }
 
 var current struct {
@@ -151,6 +152,9 @@ func Load(ctx context.Context, source fs.FS) (*Snapshot, error) {
 		hash.Write(b)
 	}
 	s.Hash = hex.EncodeToString(hash.Sum(nil))
+	if err := s.buildCatalog(); err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 
@@ -268,6 +272,12 @@ func validEntry(key, name string) bool {
 	if strings.HasPrefix(key, "public/static/") {
 		for _, dir := range []string{"css/", "js/", "icons/", "public/", "preview/", "fonts/"} {
 			if strings.HasPrefix(name, dir) {
+				if path.Base(name) == "LICENSE" {
+					return path.Base(key) == "LICENSE"
+				}
+				if path.Ext(key) != path.Ext(name) {
+					return false
+				}
 				ext := path.Ext(name)
 				return strings.Contains("|.css|.js|.svg|.json|.png|.jpg|.webp|.ico|.webmanifest|.woff2|", "|"+ext+"|") || path.Base(name) == "LICENSE"
 			}

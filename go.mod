@@ -23,6 +23,8 @@ require (
 	modernc.org/sqlite v1.49.1
 )
 
+require github.com/tdewolff/parse/v2 v2.8.20
+
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/davecgh/go-spew v1.1.1 // indirect

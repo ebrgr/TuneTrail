@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
+	"io"
 	"io/fs"
 	"net/http"
 	"net/http/httptest"
@@ -97,7 +99,7 @@ func TestUIReference(t *testing.T) {
 		t.Fatal(err)
 	}
 	// The production preview clock is intentionally not injectable. Its test fixture pins calendar cells.
-	previewTemplates, err := loadTemplates()
+	previewTemplates, err := loadTemplates("/preview-assets")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,6 +190,16 @@ func TestUIReference(t *testing.T) {
 		b, e := files.ReadFile(p)
 		if e != nil {
 			return e
+		}
+		snapshot, err := webassets.Current()
+		if err != nil {
+			return err
+		}
+		if asset, ok := snapshot.Asset(strings.TrimPrefix(p, "static/")); ok {
+			b, err = io.ReadAll(asset.Reader())
+			if err != nil {
+				return err
+			}
 		}
 		write("web-assets/"+strings.TrimPrefix(p, "static/"), b)
 		if strings.HasPrefix(p, "static/public/") {

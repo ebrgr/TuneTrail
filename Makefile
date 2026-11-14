@@ -140,12 +140,12 @@ ui.reference.test:
 
 ui.check: ui.reference.test
 
-# Render real public/admin/preview fixtures and compare with the accepted ISSUE-065 baseline.
+# Render public/admin/preview fixtures against the content-addressed ISSUE-106 reference.
 .PHONY: ui.reference.check
 ui.reference.check:
 	@task_reference_dir=$$(mktemp -d); trap 'rm -rf "$$task_reference_dir"' EXIT; \
 	TZ=UTC TUNETRAIL_UI_REFERENCE="$$task_reference_dir/candidate" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1 && \
-	python3 scripts/compare_ui_reference.py backlog/evidencias/ui-responsiva/base/reference "$$task_reference_dir/candidate" --html-baseline backlog/evidencias/issue-066/html-formatado
+	python3 scripts/compare_ui_reference.py backlog/evidencias/issue-106/reference "$$task_reference_dir/candidate"
 
 ui.check: ui.reference.check
 
@@ -154,3 +154,11 @@ ui.check: ui.reference.check
 package: api.build
 	@test -n "$(OUT)" || (echo 'Use make package OUT=/path/new-archive.tar.gz'; exit 1)
 	python3 scripts/package_release.py --binary ./tunetrail --output "$(OUT)"
+
+# Browser proofs use installed browsers and fictional disposable data; no route interception.
+.PHONY: web.cache.check
+web.cache.check: api.build
+	@task_cache_dir=$$(mktemp -d); trap 'rm -rf "$$task_cache_dir"' EXIT; \
+	python3 scripts/validate_web_cache.py --binary ./tunetrail --output "$$task_cache_dir/chrome" --browser chrome && \
+	python3 scripts/validate_web_cache.py --binary ./tunetrail --output "$$task_cache_dir/firefox" --browser firefox && \
+	python3 scripts/validate_web_cache.py --binary ./tunetrail --output "$$task_cache_dir/https" --browser https

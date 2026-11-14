@@ -1,0 +1,326 @@
+[
+  {
+    "file": "1024-pearl-public-artist.html-0.png",
+    "pixels": 52,
+    "total": 1848320,
+    "maxChannelDelta": 14,
+    "bbox": [
+      98,
+      263,
+      647,
+      1571
+    ]
+  },
+  {
+    "file": "1024-pearl-public-rewind-year.html-0.png",
+    "pixels": 43,
+    "total": 1481728,
+    "maxChannelDelta": 2,
+    "bbox": [
+      372,
+      113,
+      999,
+      1222
+    ]
+  },
+  {
+    "file": "1024-pearl-public-track.html-0.png",
+    "pixels": 12,
+    "total": 1547264,
+    "maxChannelDelta": 1,
+    "bbox": [
+      104,
+      263,
+      419,
+      646
+    ]
+  },
+  {
+    "file": "1024-yuu-preview-profiles.html-0.png",
+    "pixels": 418,
+    "total": 937984,
+    "maxChannelDelta": 12,
+    "bbox": [
+      719,
+      419,
+      772,
+      464
+    ]
+  },
+  {
+    "file": "1440-pearl-public-album.html-0.png",
+    "pixels": 71,
+    "total": 1867680,
+    "maxChannelDelta": 14,
+    "bbox": [
+      98,
+      263,
+      1238,
+      1016
+    ]
+  },
+  {
+    "file": "1440-pearl-public-artist.html-0.png",
+    "pixels": 86,
+    "total": 2162880,
+    "maxChannelDelta": 14,
+    "bbox": [
+      98,
+      263,
+      1238,
+      1265
+    ]
+  },
+  {
+    "file": "1440-pearl-public-track.html-0.png",
+    "pixels": 10,
+    "total": 1739520,
+    "maxChannelDelta": 1,
+    "bbox": [
+      104,
+      263,
+      155,
+      634
+    ]
+  },
+  {
+    "file": "1440-yuu-preview-profiles.html-0.png",
+    "pixels": 418,
+    "total": 1319040,
+    "maxChannelDelta": 12,
+    "bbox": [
+      927,
+      419,
+      980,
+      464
+    ]
+  },
+  {
+    "file": "1440-yuu-public-album.html-0.png",
+    "pixels": 1059,
+    "total": 1867680,
+    "maxChannelDelta": 16,
+    "bbox": [
+      98,
+      635,
+      1238,
+      1016
+    ]
+  },
+  {
+    "file": "1440-yuu-public-home.html-0.png",
+    "pixels": 35937,
+    "total": 2226240,
+    "maxChannelDelta": 7,
+    "bbox": [
+      380,
+      144,
+      1199,
+      1093
+    ]
+  },
+  {
+    "file": "320-pearl-preview-profiles.html-0.png",
+    "pixels": 421,
+    "total": 314240,
+    "maxChannelDelta": 12,
+    "bbox": [
+      50,
+      599,
+      103,
+      642
+    ]
+  },
+  {
+    "file": "320-pearl-public-artist.html-0.png",
+    "pixels": 15,
+    "total": 697920,
+    "maxChannelDelta": 2,
+    "bbox": [
+      21,
+      262,
+      295,
+      1936
+    ]
+  },
+  {
+    "file": "320-yuu-admin-profiles.html-0.png",
+    "pixels": 9,
+    "total": 918080,
+    "maxChannelDelta": 8,
+    "bbox": [
+      34,
+      598,
+      285,
+      732
+    ]
+  },
+  {
+    "file": "320-yuu-preview-home.html-0.png",
+    "pixels": 66447,
+    "total": 1640320,
+    "maxChannelDelta": 6,
+    "bbox": [
+      16,
+      460,
+      313,
+      4826
+    ]
+  },
+  {
+    "file": "360-yuu-public-home.html-0.png",
+    "pixels": 30699,
+    "total": 768960,
+    "maxChannelDelta": 8,
+    "bbox": [
+      16,
+      412,
+      343,
+      1919
+    ]
+  },
+  {
+    "file": "390-pearl-preview-home.html-0.png",
+    "pixels": 80108,
+    "total": 2028780,
+    "maxChannelDelta": 12,
+    "bbox": [
+      16,
+      20,
+      370,
+      4805
+    ]
+  },
+  {
+    "file": "390-pearl-public-empty.html-0.png",
+    "pixels": 10,
+    "total": 519870,
+    "maxChannelDelta": 7,
+    "bbox": [
+      20,
+      412,
+      369,
+      416
+    ]
+  },
+  {
+    "file": "390-yuu-preview-profiles.html-0.png",
+    "pixels": 418,
+    "total": 376350,
+    "maxChannelDelta": 12,
+    "bbox": [
+      50,
+      573,
+      103,
+      618
+    ]
+  },
+  {
+    "file": "390-yuu-public-artist.html-0.png",
+    "pixels": 4,
+    "total": 831480,
+    "maxChannelDelta": 2,
+    "bbox": [
+      45,
+      1053,
+      47,
+      1117
+    ]
+  },
+  {
+    "file": "390-yuu-public-profiles.html-0.png",
+    "pixels": 10,
+    "total": 416130,
+    "maxChannelDelta": 2,
+    "bbox": [
+      24,
+      769,
+      365,
+      773
+    ]
+  },
+  {
+    "file": "390-yuu-public-track.html-0.png",
+    "pixels": 4,
+    "total": 655980,
+    "maxChannelDelta": 2,
+    "bbox": [
+      45,
+      869,
+      365,
+      1425
+    ]
+  },
+  {
+    "file": "768-pearl-preview-home.html-0.png",
+    "pixels": 72905,
+    "total": 4037376,
+    "maxChannelDelta": 11,
+    "bbox": [
+      98,
+      415,
+      688,
+      4857
+    ]
+  },
+  {
+    "file": "768-pearl-preview-profiles.html-0.png",
+    "pixels": 420,
+    "total": 703488,
+    "maxChannelDelta": 12,
+    "bbox": [
+      108,
+      388,
+      161,
+      431
+    ]
+  },
+  {
+    "file": "768-pearl-public-empty.html-0.png",
+    "pixels": 20,
+    "total": 1067520,
+    "maxChannelDelta": 8,
+    "bbox": [
+      137,
+      415,
+      688,
+      725
+    ]
+  },
+  {
+    "file": "768-pearl-public-track.html-0.png",
+    "pixels": 12,
+    "total": 1160448,
+    "maxChannelDelta": 1,
+    "bbox": [
+      104,
+      263,
+      419,
+      646
+    ]
+  },
+  {
+    "file": "768-yuu-preview-home.html-0.png",
+    "pixels": 73967,
+    "total": 4037376,
+    "maxChannelDelta": 8,
+    "bbox": [
+      98,
+      415,
+      688,
+      4857
+    ]
+  },
+  {
+    "file": "768-yuu-public-album.html-0.png",
+    "pixels": 1036,
+    "total": 1396992,
+    "maxChannelDelta": 4,
+    "bbox": [
+      98,
+      501,
+      648,
+      1537
+    ]
+  }
+]

@@ -1,0 +1,220 @@
+{
+  "mode": "firefox",
+  "browser": "147.0",
+  "fixtureOnly": true,
+  "checks": [
+    "second navigation reuses CSS/JS/JSON without body transfer",
+    "failed artwork uses a functioning versioned local SVG fallback",
+    "actual bfcache document, query and scroll restored",
+    "profile selection ignores unresolved week preference and preserves bfcache",
+    "unknown timezone preference uses the server fallback without restore loops",
+    "two bfcache cycles restore one administrative control per row",
+    "logout while away removes restored mutation controls",
+    "server-side expiry without client cookie change removes controls",
+    "DELETE works after restoration with a fresh controller",
+    "restored locale mismatch reloads with the current HttpOnly language preference",
+    "administrative history revalidates expired session and does not reuse forms"
+  ],
+  "cache": {
+    "first": [
+      {
+        "url": "/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4",
+        "transfer": 0,
+        "bytes": 4423
+      },
+      {
+        "url": "/web-assets/theme.js?v=c72525520a208c95c15396384dc2d061319423c1f3132313fae8f7c86f5220a0",
+        "transfer": 0,
+        "bytes": 2563
+      },
+      {
+        "url": "/web-assets/ui.css?v=65e367f987cbf45b9398eb5d9f2db76ba5b24406a1eef0d8175e8283ec5ff83e",
+        "transfer": 0,
+        "bytes": 28634
+      },
+      {
+        "url": "/web-assets/ui.js?v=46e247a68ae2f16c839037353a8010027f84bbf5b368214d69cc7775c5cd1673",
+        "transfer": 0,
+        "bytes": 4813
+      },
+      {
+        "url": "/web-assets/live.js?v=24fe3c535163fc79c2b6b519dfffc4d775710bf9216597ffe56c996af33267f7",
+        "transfer": 0,
+        "bytes": 7188
+      },
+      {
+        "url": "/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5",
+        "transfer": 0,
+        "bytes": 4618
+      }
+    ],
+    "second": [
+      {
+        "url": "/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4",
+        "transfer": 0,
+        "bytes": 4423
+      },
+      {
+        "url": "/web-assets/theme.js?v=c72525520a208c95c15396384dc2d061319423c1f3132313fae8f7c86f5220a0",
+        "transfer": 0,
+        "bytes": 2563
+      },
+      {
+        "url": "/web-assets/ui.css?v=65e367f987cbf45b9398eb5d9f2db76ba5b24406a1eef0d8175e8283ec5ff83e",
+        "transfer": 0,
+        "bytes": 28634
+      },
+      {
+        "url": "/web-assets/ui.js?v=46e247a68ae2f16c839037353a8010027f84bbf5b368214d69cc7775c5cd1673",
+        "transfer": 0,
+        "bytes": 4813
+      },
+      {
+        "url": "/web-assets/live.js?v=24fe3c535163fc79c2b6b519dfffc4d775710bf9216597ffe56c996af33267f7",
+        "transfer": 0,
+        "bytes": 7188
+      },
+      {
+        "url": "/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5",
+        "transfer": 0,
+        "bytes": 4618
+      }
+    ],
+    "originRequests": [
+      {
+        "phase": "first",
+        "url": "/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4",
+        "bytes": 4423,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/theme.js?v=c72525520a208c95c15396384dc2d061319423c1f3132313fae8f7c86f5220a0",
+        "bytes": 2563,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/ui.css?v=65e367f987cbf45b9398eb5d9f2db76ba5b24406a1eef0d8175e8283ec5ff83e",
+        "bytes": 28634,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/ui.js?v=46e247a68ae2f16c839037353a8010027f84bbf5b368214d69cc7775c5cd1673",
+        "bytes": 4813,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/live.js?v=24fe3c535163fc79c2b6b519dfffc4d775710bf9216597ffe56c996af33267f7",
+        "bytes": 7188,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5",
+        "bytes": 4618,
+        "status": 200
+      }
+    ]
+  },
+  "history": [
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/",
+      "persisted": false
+    },
+    {
+      "path": "/",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/admin",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/admin",
+      "persisted": false
+    }
+  ]
+}

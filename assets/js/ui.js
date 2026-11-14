@@ -7,9 +7,9 @@
   const updateThemeButtons = () => document.querySelectorAll('[data-theme-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === document.documentElement.dataset.theme)));
   updateThemeButtons();
   document.addEventListener('tunetrail-theme-change', updateThemeButtons);
-  // The server sends only bundled demo palettes. No external calls are needed.
-  const assets = document.body.dataset.assets || '/preview-assets';
-  fetch(assets + '/themes.json').then(response => { if (!response.ok) throw Error(); return response.json(); }).then(palettes => {
+  // The server supplies the full content-addressed palette URL from the same generation.
+  const themesURL = text.themesUrl;
+  fetch(themesURL).then(response => { if (!response.ok) throw Error(); return response.json(); }).then(palettes => {
     customInput.value = JSON.stringify(theme.getCustom() || palettes.yuu, null, 2);
   }).catch(() => { status.textContent = text.i18nThemeLoadError; });
   function openDialog(id, button) {
@@ -79,7 +79,7 @@
     } else {
       image.classList.add('cover-failed');
       image.removeAttribute('srcset');
-      image.src = assets + '/icons/Disc3.svg';
+      image.src = text.coverFallbackUrl;
     }
   };
   document.querySelectorAll('img[data-cover],img[data-avatar-image]').forEach(image => {

@@ -37,7 +37,7 @@ func TestGraphLocalizationPreservesMachineData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	base, err := loadTemplates()
+	base, err := loadTemplates("/web-assets")
 	if err != nil {
 		t.Fatal(err)
 	}

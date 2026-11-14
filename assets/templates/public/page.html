@@ -5,19 +5,21 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       <title>TuneTrail · Go visual preview</title>
-      <link rel="icon" href="/preview-assets/public/favicon-96x96.png" type="image/png">
+      <link rel="icon" href="{{asset "public/favicon-96x96.png"}}" type="image/png">
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
       >
-      <link rel="stylesheet" href="/preview-assets/themes.css">
-      <script src="/preview-assets/theme.js"></script>
-      <link rel="stylesheet" href="/preview-assets/ui.css">
-      <script defer src="/preview-assets/ui.js"></script>
+      <link rel="stylesheet" href="{{asset "themes.css"}}">
+      <script src="{{asset "theme.js"}}"></script>
+      <link rel="stylesheet" href="{{asset "ui.css"}}">
+      <script defer src="{{asset "ui.js"}}"></script>
     </head>
     <body
+      data-themes-url="{{asset "themes.json"}}"
+      data-cover-fallback-url="{{asset "icons/Disc3.svg"}}"
       data-i18n-delete-label="{{tr "js.delete_label" "Delete listening record"}}"
       data-i18n-delete-confirm="{{tr "js.delete_confirm" "Delete this listening record?"}}"
       data-i18n-delete-error="{{tr "js.delete_error" "Unable to delete this listening record. Please retry."}}"

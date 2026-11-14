@@ -63,9 +63,14 @@ def main():
                     raise AssertionError('distribution readiness timeout')
                 with urllib.request.urlopen(origin+'/web-assets/ui.css') as response:
                     before = response.read()
+                    old_etag = response.headers['ETag']
                     assert response.headers['X-Content-Type-Options'] == 'nosniff'
                     assert response.headers.get('Last-Modified') is None
-                    assert response.headers.get('Cache-Control') is None
+                    assert response.headers.get('Cache-Control') == 'no-cache'
+                    assert response.headers.get('ETag')
+                with urllib.request.urlopen(origin+'/') as response:
+                    old_generation = response.headers['X-TuneTrail-UI-Generation']
+                    assert response.headers['Cache-Control'] == 'private, no-cache'
                 css = package/'assets/css/ui.css'
                 original_css = css.read_bytes()
                 css.write_text('changed after startup')
@@ -86,6 +91,37 @@ def main():
                 except subprocess.TimeoutExpired:
                     process.kill()
                     process.wait()
+        # A fresh process must reject an old URL instead of serving new bytes as immutable.
+        css.write_bytes(original_css+b'\n/* fictional next release */\n')
+        with (root/'restart.log').open('w') as log:
+            process = subprocess.Popen([str(link)], cwd='/', env=env, stdout=log, stderr=log)
+            try:
+                for _ in range(100):
+                    try:
+                        with urllib.request.urlopen(origin+'/', timeout=1) as response:
+                            assert response.headers['X-TuneTrail-UI-Generation'] != old_generation
+                        break
+                    except OSError:
+                        time.sleep(.1)
+                else:
+                    raise AssertionError('restart readiness timeout')
+                try:
+                    urllib.request.urlopen(origin+'/web-assets/ui.css?v='+old_etag.strip('"'))
+                except urllib.error.HTTPError as error:
+                    assert error.code == 404 and error.headers['Cache-Control'] == 'no-store'
+                else:
+                    raise AssertionError('old hash served after restart')
+                with urllib.request.urlopen(origin+'/web-assets/ui.css') as response:
+                    assert response.headers['ETag'] != old_etag
+                    assert b'fictional next release' in response.read()
+            finally:
+                process.terminate()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait()
+        css.write_bytes(original_css)
         # Every following failure runs in a fresh process and cannot reuse a cached snapshot.
         isolated = root/'isolated'
         isolated.mkdir()
@@ -100,10 +136,20 @@ def main():
             assert result.returncode != 0 and b'assets' in result.stderr
             assert not Path(settings['TUNETRAIL_CONFIG_DIR']).exists(), 'assets failure touched data directory'
         template = package/'assets/templates/public/live.html'
+        original_template = template.read_bytes()
         template.write_text('{{invalid-template')
         result = subprocess.run([str(target)], cwd='/', env=environment(root/'bad-template-data'), capture_output=True, timeout=10)
         assert result.returncode != 0, 'invalid template accepted'
-    print('PASS external web distribution: adjacent root via symlink, cwd /, snapshot, exposure, missing/invalid roots and template failure')
+        template.write_bytes(original_template)
+        css.write_text('@import "ui.css";')
+        settings = environment(root/'bad-css-data')
+        result = subprocess.run([str(target)], cwd='/', env=settings, capture_output=True, timeout=10)
+        assert result.returncode != 0 and not Path(settings['TUNETRAIL_CONFIG_DIR']).exists()
+        css.write_bytes(original_css)
+        template.write_bytes(b'{{define "invalid-asset"}}{{if false}}{{asset "missing.css"}}{{end}}{{end}}'+original_template)
+        result = subprocess.run([str(target)], cwd='/', env=environment(root/'bad-asset-data'), capture_output=True, timeout=10)
+        assert result.returncode != 0 and b'unknown public asset' in result.stderr
+    print('PASS external web distribution: adjacent root via symlink, cwd /, snapshot, exposure, missing/invalid roots and template/CSS/asset failure, hash rejection across restarts')
 
 
 if __name__ == '__main__':

@@ -79,7 +79,7 @@ func TestMediaHeadersMatchAPIAndKeepProfileScope(t *testing.T) {
 			if strings.Contains(w.Body.String(), "<script>alert(1)</script>") || strings.Contains(w.Body.String(), "ZgotmplZ") {
 				t.Fatal("unsafe rendering")
 			}
-			if w.Header().Get("Cache-Control") != "no-store" {
+			if w.Header().Get("Cache-Control") != "private, no-cache" {
 				t.Fatal("public media must not be cached across profiles")
 			}
 		}

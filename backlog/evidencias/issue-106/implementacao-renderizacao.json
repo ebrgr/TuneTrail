@@ -1,0 +1,1937 @@
+{
+  "fontPolicy": "external fonts blocked equally in both generations; existing local fallback only",
+  "entries": [
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "preview/home.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "yuu",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/artist.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 320,
+      "theme": "pearl",
+      "page": "preview/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/home.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "yuu",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 360,
+      "theme": "pearl",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/artist.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/track.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "yuu",
+      "page": "preview/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/empty.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "preview/home.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 390,
+      "theme": "pearl",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/album.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "preview/home.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "yuu",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/empty.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/track.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "preview/home.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 768,
+      "theme": "pearl",
+      "page": "preview/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "yuu",
+      "page": "preview/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/artist.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/track.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1024,
+      "theme": "pearl",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/album.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/home.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "yuu",
+      "page": "preview/profiles.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/account.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/album.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/artist.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/delete.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/login.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/merge.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/settings.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "admin/track.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/album.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/albums.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/artist.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/artists.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/empty.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/listens.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/rewind-year.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/rewind.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/track.html",
+      "pixelsEqual": false,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "public/tracks.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "preview/home.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    },
+    {
+      "width": 1440,
+      "theme": "pearl",
+      "page": "preview/profiles.html",
+      "pixelsEqual": true,
+      "contentAndGeometryEqual": true
+    }
+  ]
+}

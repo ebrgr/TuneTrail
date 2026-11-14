@@ -6,10 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/webassets"
-	"io/fs"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -17,13 +14,14 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/version"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
 var files = webassets.FS{Prefix: "public"}
 
-type Palette map[string]string
+type Palette = webassets.Palette
 
-var themeNames = []string{"yuu", "varia", "midnight", "catppuccin", "autumn", "black", "wine", "pearl", "rosebud", "urim", "match", "lemon"}
+var themeNames = webassets.ThemeNames()
 
 // Palettes are initialized once from the same immutable generation as templates and icons.
 var palettes map[string]Palette
@@ -182,27 +180,23 @@ func activityCount(t time.Time) int {
 	}
 	return (n*17)%100 + 1
 }
-func cssKey(s string) string {
-	var b strings.Builder
-	for _, c := range s {
-		if c >= 'A' && c <= 'Z' {
-			b.WriteByte('-')
-			c += 32
-		}
-		b.WriteRune(c)
-	}
-	return b.String()
-}
 
+// NewPreview binds external resources to the preview mount without changing production URLs.
 func NewPreview() (http.Handler, error) {
-	tmpl, err := loadTemplates()
+	tmpl, err := loadTemplates("/preview-assets")
 	if err != nil {
 		return nil, err
 	}
 
 	mux := http.NewServeMux()
 	bindAssets(mux)
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, "method not allowed", 405)
+			return
+		}
 		if r.URL.Path != "/" && findProfile(strings.TrimPrefix(r.URL.Path, "/")) == nil {
 			http.NotFound(w, r)
 			return
@@ -223,34 +217,17 @@ func NewPreview() (http.Handler, error) {
 	})
 	return mux, nil
 }
+
+// bindAssets keeps generated demonstration imagery separate from the versioned catalog.
 func bindAssets(mux *http.ServeMux) {
 	mux.HandleFunc("GET /image/preview-photo/128x128.webp", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/webp")
 		data, _ := files.ReadFile("static/avatar.webp")
 		_, _ = w.Write(data)
 	})
-	sub, _ := fs.Sub(files, "static")
-	mux.Handle("GET /preview-assets/", http.StripPrefix("/preview-assets/", StaticHandler(staticFiles{http.FS(sub)})))
-	mux.HandleFunc("GET /preview-assets/themes.json", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		data, _ := files.ReadFile("palettes.json")
-		_, _ = w.Write(data)
-	})
-	mux.HandleFunc("GET /preview-assets/themes.css", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/css; charset=utf-8")
-		for _, name := range themeNames {
-			fmt.Fprintf(w, "[data-theme=%q]{", name)
-			keys := make([]string, 0, 14)
-			for key := range palettes[name] {
-				keys = append(keys, key)
-			}
-			sort.Strings(keys)
-			for _, key := range keys {
-				fmt.Fprintf(w, "--color-%s:%s;", cssKey(key), palettes[name][key])
-			}
-			fmt.Fprintln(w, "}")
-		}
-	})
+	// Static preview resources share the same catalog and final CSS bytes as production.
+	mux.Handle("/preview-assets/", http.StripPrefix("/preview-assets", Assets()))
+
 	mux.HandleFunc("GET /preview-assets/cover/{id}", func(w http.ResponseWriter, r *http.Request) {
 		n, err := strconv.Atoi(strings.TrimSuffix(r.PathValue("id"), ".svg"))
 		if err != nil || n < 0 || n > 4 {
