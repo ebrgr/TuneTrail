@@ -3,7 +3,7 @@ id: doc-032
 title: ROADMAP — TuneTrail 1.0
 type: specification
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-14T03:30:00Z'
+updated_date: '2026-11-14T05:00:00Z'
 tags:
   - roadmap
 ---
@@ -14,6 +14,18 @@ tags:
 **Fontes:** ROADMAP (doc-001) itens 2, 4, 5, 7 e 8 · avaliação TuneTrail 1.0 (doc-010) · [estudo do CSS e templates](<../estudos/doc-031 - Estudo-—-reorganização-do-CSS-e-dos-templates-HTML.md>) (doc-031) · [revisão de pendências](<../estudos/doc-017 - Revisão-das-issues-e-pendências-remanescentes.md>) (doc-017).
 
 Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critérios de aceite e dependências. Este documento é o índice; o detalhe vive na tarefa. Consultas: `backlog task list -m m-10 --plain` (por fase), `backlog task list --ready --plain` (sem dependências pendentes), `backlog board`.
+
+## Estado em 14/11/2026
+
+| Item | Situação |
+| --- | --- |
+| Versão publicada | **0.9** (`v0.9`, imagem GHCR `0.9` e `latest`): correção da ISSUE-049 e guia de recuperação da ISSUE-064 |
+| Fase 0 · Base | **Concluída**: 049 publicada na 0.9; 062, 063 e 064 integradas sem versão (suíte e2e no CI, testes de recuperação, registros reconciliados) |
+| Regra de versão | Decidida (seção [Versionamento](#versionamento)) |
+| ISSUE-111 (Koito → TuneTrail) | **Em andamento** na branch `feat/issue-111-…`: Fase A (identidade junto a MusicBrainz, Deezer, Last.fm e Subsonic) e B1 (variáveis `TUNETRAIL_*` com `KOITO_*` como alternativa, marca **(DEPRECATED)** na página de configurações) prontas; B2, B3 e as decisões da Fase C pendentes. Parecer do Advisor registrado |
+| ISSUE-112 (logs) | Criada na Fase 6: diagnóstico registrado; correções, buffer e tela `/admin/logs` planejados |
+| ISSUE-055 | Rebaixada a rascunho por engano e restaurada com o ID original |
+| ISSUE-061 | Aguardando aceite e três decisões; bloqueia 065–070 |
 
 ## Como trabalhar este roadmap
 
@@ -26,6 +38,7 @@ Cada linha abaixo é uma tarefa do Backlog.md com descrição, passos, critério
 
 | Fase | Marco | Objetivo | Tarefas | Versões | Versão ao final* |
 | --- | --- | --- | ---: | ---: | --- |
+| Identidade | `m-5` | ISSUE-111: TuneTrail na identidade enviada a terceiros, nas variáveis e no navegador | 1 | 1 | 0.10 |
 | 0 · Base | `m-9` | Registros reconciliados, suíte e2e no CI, recuperação testada, 049 corrigida | 4 | 1 | **concluída** (0.9) |
 | 1 · UI responsiva | `m-10` | Interações rápidas, ações de mídia como no Koito, sessão de admin visível, barra lateral reorganizada, CSS e templates legíveis, design mobile-first e acessibilidade | 21 | 14 | 0.24 |
 | 2 · Ingestão confiável | `m-11` | Nenhuma escuta perdida: eventos, deduplicação, outbox, saúde, SSE | 6 | 5 | 0.29 |
@@ -84,6 +97,20 @@ O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem d
 12. **ISSUE-078** — auditoria WCAG 2.2 AA, metas de desempenho (CSS < 40 KB, JS < 25 KB, LCP < 1,5s) e aceite da fase.
 
 **Saída da fase:** critérios do doc-010 §3.6 cumpridos e aceitos pelo usuário.
+
+## Plano detalhado — ISSUE-111 · Koito → TuneTrail
+
+Inventário: `backlog/evidencias/identidade/inventario-koito.md`. Parecer do Advisor (@Opus) registrado na tarefa: aprovado com ressalvas; o plano abaixo já incorpora as correções.
+
+| Etapa | Conteúdo | Situação |
+| --- | --- | --- |
+| A | User-Agent `TuneTrail/<versão> ( https://github.com/ebrgr/TuneTrail )` para MusicBrainz, Deezer e Last.fm; cliente Subsonic `c=tunetrail`; logs e modelo de bug report | **Pronta** |
+| B1 | Variáveis: `TUNETRAIL_*` e `_FILE` para as 30 chaves ativas, `KOITO_*` como alternativa com aviso na partida; valores divergentes recusam a partida sem revelar valores; página de configurações mostra o nome usado e marca `KOITO_*` como **(DEPRECATED)** com borda e fundo na cor de alerta do tema; testes limpam os dois prefixos | **Pronta** |
+| B2 | Navegador: `tunetrail_session` com `koito_session` como alternativa (login grava o novo e expira o antigo; logout revoga os dois), `tunetrail_preauth`, `tunetrail-weekstart` sem recarga extra, `window.TuneTrailTheme` e evento `tunetrail-theme-change` | Pendente |
+| B3 | Infraestrutura e docs: remover as `ENV KOITO_*` fixas da imagem, `ARG` de versão e workflow juntos, compose com interpolação compatível com o `deploy/.env` atual, exemplos e referência com nomes novos, e2e com `TUNETRAIL_*` e jornada/smoke legados | Pendente; depende da B1 |
+| C | Decisões do usuário (tabela abaixo) | Pendente |
+
+A tarefa publica uma versão ao terminar (0.10 na projeção).
 
 ## Tarefas por fase
 
@@ -175,7 +202,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 
 | Tarefa | Título | Tipo | Prioridade | Depende de | Versão | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [ISSUE-111](<../../tasks/issue-111 - 111-—-Trocar-Koito-por-TuneTrail-na-identidade-configuração-e-navegador.md>) | Trocar Koito por TuneTrail na identidade, configuração e navegador | enhancement | high | — | +0.1 | Aberta |
+| [ISSUE-111](<../../tasks/issue-111 - 111-—-Trocar-Koito-por-TuneTrail-na-identidade-configuração-e-navegador.md>) | Trocar Koito por TuneTrail na identidade, configuração e navegador | enhancement | high | — | +0.1 | Em andamento (branch: A e B1 prontas) |
 
 ### Marco TuneTrail 1.0 (`m-8`)
 
@@ -206,6 +233,7 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | CSS difícil de manter, templates em linha única, 13 pontos de quebra | 061, 065–069 |
 | Fontes externas (Google Fonts) | 070 |
 | Busca e edição lentas em relação ao Koito React; estáticos sem cache; `no-store` nas páginas públicas | 106, 107 |
+| User-Agent com o contato do Koito, variáveis e cookies `KOITO_*` | 111 |
 | Logs só na saída do contêiner, senha do reset-password no log, sem visualização na interface | 112 |
 | Página de mídia sem ícones de ação; link de gestão visível a visitantes; página de gestão misturando todas as tarefas | 108, 073 |
 | Nenhum sinal de sessão de administrador; ícone Info só com link; configurações em modal com abas | 109, 110 |
@@ -227,6 +255,12 @@ ISSUE-049 publicada na 0.9; ISSUE-062, ISSUE-063 e ISSUE-064 integradas sem vers
 | Retenção de `ingest_events` e guarda do payload bruto | 079 | 90 dias, payload redigido |
 | Spotify nativo ou somente coletor externo | 090 | Decidir depois da PoC (085) |
 | Semântica das médias | 092 | Documentar antes de mudar cálculos |
+| Diretório padrão `/etc/koito` dentro do contêiner | 111 (C) | Manter até o 1.0 |
+| Renomear projeto `koito-sum` e serviço `koito` do compose | 111 (C) | Não renomear antes do 1.0 (risco de dois contêineres no mesmo SQLite) |
+| Fim da alternativa `KOITO_*` | 111 (C) | No 1.0, `KOITO_*` passa a erro fatal com o nome novo indicado; nunca ignorar em silêncio |
+| Prazo do cookie `koito_session` como alternativa | 111 (C) | Remover na primeira versão publicada 30 dias ou mais após a B2 |
+| "(DEPRECATED)" traduzido ou igual nos dois idiomas | 111 | Igual, como pedido |
+| Arquivo de log em disco com rotação | 112 | Desligado por padrão; buffer em memória sempre |
 | Candidatura ao 1.0 | 105 | Reservada ao usuário |
 
 ## Versionamento
