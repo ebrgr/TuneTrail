@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.14] - 2026-11-14
+
 ### Fixed
 
 - Accept an IPv6 bind address such as `::` or `[::]` (Koito #74; ISSUE-115).

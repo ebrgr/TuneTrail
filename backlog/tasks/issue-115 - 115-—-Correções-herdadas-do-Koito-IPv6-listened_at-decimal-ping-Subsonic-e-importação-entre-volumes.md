@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-14T23:43:00Z'
+updated_date: '2026-11-14T23:44:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -62,6 +62,15 @@ created: 2026-11-14T23:43:00Z
 ---
 
 Aceite: aprovada pelo usuário em 14/11/2026. Publicação local autorizada na mensagem: "aceito, publique". Push não solicitado.
+
+---
+
+author: ebrgr
+created: 2026-11-14T23:44:00Z
+
+---
+
+Publicação: versão 0.14 (tag `v0.14`), branch `fix/issue-115-tarefa` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
