@@ -4,12 +4,14 @@ title: 109 — Indicador de sessão de administrador no cabeçalho do perfil
 status: Aberta
 assignee: []
 created_date: '2026-11-14T01:12:00Z'
+updated_date: '2026-11-14T15:10:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-106
+  - ISSUE-067
 priority: high
 type: feature
 ordinal: 109000
@@ -53,3 +55,16 @@ A ISSUE-108 reutiliza a detecção do passo 1 para mostrar a barra de ações.
 - [ ] #5 Respostas com Vary: Cookie e cache privado
 - [ ] #6 Capturas nos temas Yuu e Pearl e aceite visual do usuário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-14T15:10:00Z
+
+---
+
+Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos.
+
+---
+<!-- COMMENTS:END -->

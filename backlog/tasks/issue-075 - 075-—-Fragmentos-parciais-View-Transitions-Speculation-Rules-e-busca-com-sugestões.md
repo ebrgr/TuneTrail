@@ -4,13 +4,12 @@ title: 075 — Fragmentos parciais, View Transitions e Speculation Rules
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T00:56:00Z'
+updated_date: '2026-11-14T15:10:00Z'
 labels:
   - ui
 milestone: m-10
 dependencies:
   - ISSUE-073
-  - ISSUE-056
   - ISSUE-107
 priority: medium
 type: feature
@@ -45,6 +44,15 @@ created: 2026-11-14T00:56:00Z
 ---
 
 Busca com sugestões (passo e critério 3) movida para a ISSUE-107, após a comparação com o Koito React (backlog/evidencias/ui-responsiva/comparacao-koito-react.md). Esta tarefa passa a depender da 107 para reaproveitar o mecanismo de fragmentos.
+
+---
+
+author: claude
+created: 2026-11-14T15:10:00Z
+
+---
+
+ISSUE-056 encerrada como estudo; dependência retirada.
 
 ---
 <!-- COMMENTS:END -->

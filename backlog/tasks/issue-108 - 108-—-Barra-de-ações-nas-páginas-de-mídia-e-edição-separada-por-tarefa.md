@@ -4,7 +4,7 @@ title: 108 — Barra de ações nas páginas de mídia e edição separada por t
 status: Aberta
 assignee: []
 created_date: '2026-11-14T01:06:00Z'
-updated_date: '2026-11-14T01:12:00Z'
+updated_date: '2026-11-14T15:10:00Z'
 labels:
   - ui
   - admin
@@ -12,6 +12,7 @@ milestone: m-10
 dependencies:
   - ISSUE-107
   - ISSUE-109
+  - ISSUE-067
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 priority: high
@@ -60,6 +61,15 @@ created: 2026-11-14T01:12:00Z
 ---
 
 A detecção da sessão de administrador no servidor (passo 2) passa a vir da ISSUE-109; esta tarefa reaproveita o sinal .Admin para mostrar a barra de ações.
+
+---
+
+author: claude
+created: 2026-11-14T15:10:00Z
+
+---
+
+Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos.
 
 ---
 <!-- COMMENTS:END -->

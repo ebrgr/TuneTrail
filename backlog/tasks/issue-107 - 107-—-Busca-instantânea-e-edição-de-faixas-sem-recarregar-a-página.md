@@ -4,13 +4,14 @@ title: 107 — Busca instantânea e edição de faixas sem recarregar a página
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-14T01:06:00Z'
+updated_date: '2026-11-14T15:10:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-106
+  - ISSUE-067
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 priority: high
@@ -63,6 +64,15 @@ created: 2026-11-14T01:06:00Z
 ---
 
 A edição sem recarregar é consumida pelos diálogos da ISSUE-108 (barra de ações nas páginas de mídia): esta tarefa entrega o mecanismo de fragmentos e o envio de formulários por seção; a 108 divide a página de gestão por tarefa e abre cada uma em diálogo.
+
+---
+
+author: claude
+created: 2026-11-14T15:10:00Z
+
+---
+
+Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos.
 
 ---
 <!-- COMMENTS:END -->

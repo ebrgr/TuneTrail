@@ -66,36 +66,37 @@ Ordem sugerida, uma tarefa por vez:
 
 ## Plano detalhado — Fase 1 · UI responsiva
 
-Quatro blocos, nesta ordem:
+Ordem aprovada pelo usuário em 14/11/2026. Como a ISSUE-061 decidiu servir os arquivos do disco a partir de `assets/`, as tarefas de fluidez vêm depois da reorganização: a 106 calcula os hashes sobre a estrutura da 066, e a 107, a 108 e a 109 editam templates já reformatados pela 067, em vez das linhas únicas atuais (até 2.261 caracteres).
 
-**Bloco 0 — responsividade imediata (antecipado após a [comparação com o Koito React](<../../evidencias/ui-responsiva/comparacao-koito-react.md>))**
+Concluídas: **ISSUE-061** (estudo), **ISSUE-065** (referência de HTML/CSS e capturas de base) e **ISSUE-056** (estudo de interações).
 
-O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem de busca e edição refazerem a página inteira e de arquivos estáticos sem cache. A página de mídia, por sua vez, não tem os ícones de ação do original e leva a uma página de gestão que mistura todas as tarefas. Estas cinco tarefas não dependem do redesign. Ordem: **106 → 109 → 107 → 108**, e a **110** logo depois da 109:
+**Bloco A — estrutura sem mudança visual (prova por comparação com a referência da 065)**
+1. **ISSUE-066** — todos os arquivos web em `assets/` (HTML em `assets/templates/`), lidos do disco; root `TUNETRAIL_WEB_DIR`, snapshot validado, manifesto por extensão, root só leitura e gate de renderização no CI. Publica versão.
+2. **ISSUE-106** — cache imutável dos arquivos estáticos com hash na URL (inclusive os `url()` do CSS) e `private, no-cache` nas páginas públicas, liberando o botão Voltar.
+3. **ISSUE-067** — reformatar templates, unificar head e barra lateral, limite de 160 caracteres por linha no `ui.check`.
 
-- **ISSUE-106** — cache imutável dos arquivos estáticos com hash na URL e `private, no-cache` nas páginas públicas, liberando o botão Voltar (bfcache).
-- **ISSUE-109** — selo ShieldCheck no avatar do cabeçalho quando a sessão de administrador está ativa, com a sessão detectada no servidor (base para a 108 e a 110).
-- **ISSUE-107** — busca enquanto digita no diálogo e edição de faixa que atualiza só a seção alterada, com fragmentos HTML do servidor e um script pequeno; sem JavaScript, tudo continua funcionando e as ações voltam à âncora da seção.
-- **ISSUE-108** — barra de ícones no topo das páginas de faixa, álbum e artista, como no Koito (MusicBrainz, adicionar escuta, editar, trocar imagem, mesclar, excluir), só para administradores; cada ícone abre um diálogo com uma única tarefa, e a página de gestão misturada é dividida por tarefa.
-- **ISSUE-110** — barra lateral: o penúltimo ícone vira Palette e abre um modal só com tema e idioma; o último (engrenagem) abre um submenu com Administração, Configuração do servidor, Conta e Sobre.
+**Bloco 0 — fluidez, a implementação da ISSUE-056 ([comparação com o Koito React](<../../evidencias/ui-responsiva/comparacao-koito-react.md>))**
 
+O servidor Go responde em 1–4 ms, como o do Koito; a lentidão percebida vem de busca e edição refazerem a página inteira. Ordem: **109 → 107 → 108**, e a **110** logo depois da 109.
 
-**Bloco A — estrutura sem mudança visual (prova por comparação)**
-1. **ISSUE-061** — aceite do estudo revisado: todos os arquivos web em `assets/` (HTML em `assets/templates/`), leitura do disco em produção/dev, fontes locais e embed só como opção futura.
-2. **ISSUE-065** — referência de HTML/CSS renderizados e capturas de base (320–1440px, Yuu e Pearl).
-3. **ISSUE-066** — reunir todos os arquivos web em `assets/` na raiz e ler do disco; root `TUNETRAIL_WEB_DIR`, snapshot validado e distribuição binário+assets. HTML/CSS equivalentes; mudança funcional de instalação/execução, com publicação de versão.
-4. **ISSUE-067** — reformatar templates, unificar head e barra lateral, limite de 160 caracteres por linha no `ui.check`.
-5. **ISSUE-068** — CSS em camadas (`@layer`), concatenado pelo Go com hash e cache imutável.
+4. **ISSUE-109** — selo ShieldCheck no avatar quando a sessão de administrador está ativa, detectada no servidor (base para a 108 e a 110).
+5. **ISSUE-107** — busca enquanto digita e edição de faixa que atualiza só a seção alterada, com fragmentos HTML do servidor e um script pequeno; sem JavaScript tudo continua funcionando.
+6. **ISSUE-108** — barra de ícones nas páginas de faixa, álbum e artista, como no Koito; cada ícone abre um diálogo com uma única tarefa, e a página de gestão misturada é dividida por tarefa.
+7. **ISSUE-110** — barra lateral: Palette abre um modal só com tema e idioma; a engrenagem abre um submenu de administração.
 
 **Bloco B — design responsivo (aceite visual)**
-6. **ISSUE-069** — tokens, pontos de quebra 40/64/90rem, container queries, fim das larguras fixas.
-7. **ISSUE-070** — fontes locais, sem Google Fonts, e correção tipográfica da retrospectiva (pesos, caixa e tamanhos) conforme comparação registrada na ISSUE-061.
-8. **ISSUE-071** — navegação: barra inferior no celular (decisão do usuário), lateral de ícones e expansível.
-9. **ISSUE-072**, **ISSUE-073** e **ISSUE-074** — home com KPIs e heatmap rolável; listas e mídia compactas com menu `⋯`; administração em duas colunas, badge Admin e `/settings` (ROADMAP item 2, parte de layout). Podem andar em paralelo depois da 071.
+8. **ISSUE-068** — CSS em camadas (`@layer`), concatenado com hash e `url()` internos reescritos.
+9. **ISSUE-069** — tokens, pontos de quebra 40/64/90rem, container queries, fim das larguras fixas.
+10. **ISSUE-070** — fontes locais, sem Google Fonts; retrospectiva com pesos e estilos iguais ao Koito (tamanhos após medição e confirmação).
+11. **ISSUE-071** — navegação: barra inferior no celular (decisão pendente), lateral de ícones e expansível.
+12. **ISSUE-072**, **ISSUE-073** e **ISSUE-074** — home, listas e mídia, administração em duas colunas e `/settings`. Podem andar em paralelo depois da 071.
 
 **Bloco C — interações e fechamento**
-10. **ISSUE-075** — estende os fragmentos da 107 a rankings, histórico e mídia; View Transitions e Speculation Rules; implementa parte do estudo **ISSUE-056**, já encerrado (ROADMAP item 8).
-11. **ISSUE-076** (PWA) e **ISSUE-077** (curvas do gráfico) — baixa prioridade, quando houver espaço.
-12. **ISSUE-078** — auditoria WCAG 2.2 AA, metas de desempenho (CSS < 40 KB, JS < 25 KB, LCP < 1,5s) e aceite da fase.
+13. **ISSUE-075** — estende os fragmentos da 107 a rankings, histórico e mídia; View Transitions e Speculation Rules.
+14. **ISSUE-076** (PWA) e **ISSUE-077** (curvas do gráfico) — baixa prioridade.
+15. **ISSUE-078** — auditoria WCAG 2.2 AA, metas de desempenho (CSS < 40 KB, JS < 25 KB, LCP < 1,5s) e aceite da fase.
+
+Em paralelo, sem conflito com a Fase 1: **ISSUE-112** (Etapa 1, senha fora do log) e **ISSUE-102** (Alpine e contêiner sem root).
 
 **Saída da fase:** critérios do doc-010 §3.6 cumpridos e aceitos pelo usuário.
 
@@ -138,10 +139,10 @@ Concluídas: ISSUE-056, ISSUE-061, ISSUE-065.
 | [ISSUE-076](<../../tasks/issue-076 - 076-—-App-instalável-com-service-worker-mínimo-e-página-offline.md>) | App instalável com service worker mínimo e página offline | feature | low | 068, 070 | +0.1 | Aberta |
 | [ISSUE-077](<../../tasks/issue-077 - 077-—-Curvas-mais-suaves-no-gráfico-de-escutas-sem-ultrapassar-os-pontos.md>) | Curvas mais suaves no gráfico de escutas sem ultrapassar os pontos | enhancement | low | — | +0.1 | Aberta |
 | [ISSUE-078](<../../tasks/issue-078 - 078-—-Auditoria-de-acessibilidade-desempenho-e-aceite-da-UI-responsiva.md>) | Auditoria de acessibilidade, desempenho e aceite da UI responsiva | chore | high | 072, 073, 074, 075, 070 | — | Aberta |
-| [ISSUE-106](<../../tasks/issue-106 - 106-—-Cache-dos-arquivos-estáticos-e-do-botão-Voltar.md>) | Cache dos arquivos estáticos e do botão Voltar | enhancement | high | — | +0.1 | Aberta |
-| [ISSUE-107](<../../tasks/issue-107 - 107-—-Busca-instantânea-e-edição-de-faixas-sem-recarregar-a-página.md>) | Busca instantânea e edição de faixas sem recarregar a página | feature | high | 106 | +0.1 | Aberta |
-| [ISSUE-108](<../../tasks/issue-108 - 108-—-Barra-de-ações-nas-páginas-de-mídia-e-edição-separada-por-tarefa.md>) | Barra de ações nas páginas de mídia e edição separada por tarefa | feature | high | 107, 109 | +0.1 | Aberta |
-| [ISSUE-109](<../../tasks/issue-109 - 109-—-Indicador-de-sessão-de-administrador-no-cabeçalho-do-perfil.md>) | Indicador de sessão de administrador no cabeçalho do perfil | feature | high | 106 | +0.1 | Aberta |
+| [ISSUE-106](<../../tasks/issue-106 - 106-—-Cache-dos-arquivos-estáticos-e-do-botão-Voltar.md>) | Cache dos arquivos estáticos e do botão Voltar | enhancement | high | 066 | +0.1 | Aberta |
+| [ISSUE-107](<../../tasks/issue-107 - 107-—-Busca-instantânea-e-edição-de-faixas-sem-recarregar-a-página.md>) | Busca instantânea e edição de faixas sem recarregar a página | feature | high | 106, 067 | +0.1 | Aberta |
+| [ISSUE-108](<../../tasks/issue-108 - 108-—-Barra-de-ações-nas-páginas-de-mídia-e-edição-separada-por-tarefa.md>) | Barra de ações nas páginas de mídia e edição separada por tarefa | feature | high | 107, 109, 067 | +0.1 | Aberta |
+| [ISSUE-109](<../../tasks/issue-109 - 109-—-Indicador-de-sessão-de-administrador-no-cabeçalho-do-perfil.md>) | Indicador de sessão de administrador no cabeçalho do perfil | feature | high | 106, 067 | +0.1 | Aberta |
 | [ISSUE-110](<../../tasks/issue-110 - 110-—-Barra-lateral-ícone-de-tema-com-modal-simples-e-menu-de-administração.md>) | Barra lateral: ícone de tema com modal simples e menu de administração | feature | high | 109 | +0.1 | Aberta |
 
 ### Fase 2 · Ingestão confiável (`m-11`)
@@ -261,12 +262,12 @@ Concluídas: ISSUE-058.
 | "(DEPRECATED)" nos dois idiomas | 111 | Igual em inglês e português |
 | Imagem base do contêiner | 102 | Alpine, junto com a execução sem root |
 | Estudo de interações | 056 | Encerrado; recomendações nas 106–110, 075 e 084 |
+| Ordem da Fase 1 | 106–110 | 066 → 106 → 067 → 109 → 107 → 108 → 110, antes do redesign visual (068 em diante) |
 
 ### Pendentes
 
 | Decisão | Bloqueia | Recomendação |
 | --- | --- | --- |
-| Nova ordem da Fase 1 (106 após 066; 107, 108 e 109 após 067) | retrabalho na 106–110 | Aplicar |
 | Usuário do contêiner: UID fixo 65532 ou PUID/PGID configuráveis | 102 | PUID/PGID, pelo padrão do Unraid |
 | Arquivo de log em disco com rotação | 112 | Desligado por padrão; buffer em memória sempre |
 | Tamanhos da tipografia da retrospectiva | 070 | Após a medição em três larguras |

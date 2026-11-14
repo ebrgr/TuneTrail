@@ -4,11 +4,12 @@ title: 106 — Cache dos arquivos estáticos e do botão Voltar
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-14T15:00:00Z'
+updated_date: '2026-11-14T15:10:00Z'
 labels:
   - ui
 milestone: m-10
-dependencies: []
+dependencies:
+  - ISSUE-066
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 priority: high
@@ -50,6 +51,15 @@ created: 2026-11-14T15:00:00Z
 ---
 
 Requisito do parecer do Advisor na ISSUE-061 (item 4): o hash na URL vale também para arquivos referenciados por url() no CSS (fontes woff2, ícones), não só para os <link> e <script> dos templates. Com a decisão da 061 (assets servidos do disco), implementar sobre a estrutura da ISSUE-066.
+
+---
+
+author: claude
+created: 2026-11-14T15:10:00Z
+
+---
+
+Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos. Esta tarefa calcula hashes sobre a estrutura nova da 066.
 
 ---
 <!-- COMMENTS:END -->
