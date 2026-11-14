@@ -1,0 +1,1013 @@
+{
+ "source": "https://github.com/gabehf/Koito",
+ "collected": "2026-11-14",
+ "issues": [
+  {
+   "number": 6,
+   "title": "[Improvement] Being able to select multiple albums when merging",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-06-15"
+  },
+  {
+   "number": 11,
+   "title": "[Low Prio] Multi-user Support",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-06-16"
+  },
+  {
+   "number": 16,
+   "title": "[Enhancement] Create more charts/information using the listening time data.",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-06-17"
+  },
+  {
+   "number": 34,
+   "title": "[Enhancement] Distinguish between the same songs from different albums.",
+   "labels": [
+    "enhancement",
+    "help wanted",
+    "planned"
+   ],
+   "created": "2025-06-25"
+  },
+  {
+   "number": 55,
+   "title": "[Feature] Allow image search via wikipedia, last.fm, etc",
+   "labels": [],
+   "created": "2025-07-27"
+  },
+  {
+   "number": 63,
+   "title": "Webpage/HTML customization",
+   "labels": [],
+   "created": "2025-08-12"
+  },
+  {
+   "number": 65,
+   "title": "Is it possible to update the scrobbler with the duration of the tracks?",
+   "labels": [],
+   "created": "2025-08-18"
+  },
+  {
+   "number": 69,
+   "title": "Ignore specific artists / albums / tracks for statistics",
+   "labels": [],
+   "created": "2025-09-01"
+  },
+  {
+   "number": 74,
+   "title": "Documentation: Listening on IPv6 addresses requires square brackets",
+   "labels": [],
+   "created": "2025-09-20"
+  },
+  {
+   "number": 78,
+   "title": "[Feature Request] Charts from ListenBrainz or Last.fm",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2025-10-04"
+  },
+  {
+   "number": 82,
+   "title": "[Feature Request] Delete a single scrobble on mobile",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-10-23"
+  },
+  {
+   "number": 103,
+   "title": "[Enhancement] last.fm-compatible API endpoint // last.fm proxy",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-12-03"
+  },
+  {
+   "number": 104,
+   "title": "[Enhancement] Loving tracks",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2025-12-03"
+  },
+  {
+   "number": 110,
+   "title": "[Enhancement] More compllete Listenbrainz API",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-12-11"
+  },
+  {
+   "number": 113,
+   "title": "[Enhancement] Move source of truth for themes to server",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2025-12-19"
+  },
+  {
+   "number": 143,
+   "title": "[Enhancement] Subpage",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-01-15"
+  },
+  {
+   "number": 152,
+   "title": "[Enhancement] Ability to change date format",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-01-16"
+  },
+  {
+   "number": 185,
+   "title": "[Bug] Moving imported files fails when paths are different filesystems",
+   "labels": [
+    "bug",
+    "planned"
+   ],
+   "created": "2026-01-26"
+  },
+  {
+   "number": 186,
+   "title": "[Enhancement] Delete all images",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2026-01-28"
+  },
+  {
+   "number": 196,
+   "title": "[Bug] Deleting track scrobble sticks",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-02-08"
+  },
+  {
+   "number": 197,
+   "title": "[Bug] Custom Themes don't persist",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-02-09"
+  },
+  {
+   "number": 200,
+   "title": "[Enhancement] Support Vietnamese",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-02-18"
+  },
+  {
+   "number": 203,
+   "title": "[Bug] LOGIN_GATE=true blocks my IP",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-02-25"
+  },
+  {
+   "number": 205,
+   "title": "[Bug] Import discrepancy between your_spotify and koito",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-02-27"
+  },
+  {
+   "number": 208,
+   "title": "[Bug] Koito not storing track_mbid after MS last update",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-03"
+  },
+  {
+   "number": 210,
+   "title": "[Bug] Error on importing LastFM JSON possibly due to {} characters",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-05"
+  },
+  {
+   "number": 211,
+   "title": "[Bug] Better support for lms using the Subsonic API",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-05"
+  },
+  {
+   "number": 214,
+   "title": "[Bug] Tracks with duplicate names from different albums are not split when importing from LastFM JSON",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-06"
+  },
+  {
+   "number": 215,
+   "title": "[Bug] Cannot update from V0.1.4 to any later version when using binary",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-08"
+  },
+  {
+   "number": 217,
+   "title": "[Bug] Same track from same artists registered as two different songs",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-09"
+  },
+  {
+   "number": 220,
+   "title": "[Enhancement] Improve identify tracks/albums while merging",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-03-11"
+  },
+  {
+   "number": 221,
+   "title": "[Bug] Spotify import does not report errors when data format is incorrect",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-03-12"
+  },
+  {
+   "number": 222,
+   "title": "Long artist names don't get tracked.",
+   "labels": [],
+   "created": "2026-03-13"
+  },
+  {
+   "number": 225,
+   "title": "[Enhancement] Keep track of and use genre tags",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2026-03-18"
+  },
+  {
+   "number": 269,
+   "title": "[Enhancement] Change time units (Minutes/Hours/Days) in All time stats",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-05-14"
+  },
+  {
+   "number": 284,
+   "title": "[Meta] Roadmap",
+   "labels": [],
+   "created": "2026-05-26"
+  },
+  {
+   "number": 295,
+   "title": "[Enhancement] Period-over-period comparison on Listening Activity chart",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-05-28"
+  },
+  {
+   "number": 298,
+   "title": "[Bug] Low quality images on search page on mobile",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-05-28"
+  },
+  {
+   "number": 301,
+   "title": "[Bug] All time stats fails with Error: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-06-02"
+  },
+  {
+   "number": 303,
+   "title": "Spotify cover priority or manual artwork override",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-06-05"
+  },
+  {
+   "number": 304,
+   "title": "[Enhancement] Click on cell in activity grid to list that day's listens",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2026-06-08"
+  },
+  {
+   "number": 306,
+   "title": "[Bug] Not fetching majority of Artist or Album images",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-06-08"
+  },
+  {
+   "number": 307,
+   "title": "[Enhancement] Reduce Docker image size",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-06-11"
+  },
+  {
+   "number": 308,
+   "title": "[Enhancement] Add a way to Apple Container",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-06-13"
+  },
+  {
+   "number": 309,
+   "title": "[Bug] Long names without spaces don't have breaks, and out of bounds of div",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-06-14"
+  },
+  {
+   "number": 310,
+   "title": "[Bug] \"White-over-Graphic\" legibility problems for top artists/albums when title is long",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-06-15"
+  },
+  {
+   "number": 311,
+   "title": "[Enhancement] Fetched or user-set artist biographies",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2026-06-15"
+  },
+  {
+   "number": 312,
+   "title": "[Enhancement] liked/heart/favorite tracks",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-06-16"
+  },
+  {
+   "number": 314,
+   "title": "[Enhancement] Page counter and/or jumping more than one page",
+   "labels": [
+    "enhancement",
+    "planned"
+   ],
+   "created": "2026-06-19"
+  },
+  {
+   "number": 319,
+   "title": "[Enhancement] Last played as a column next to top tracks",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-06-30"
+  },
+  {
+   "number": 321,
+   "title": "[Bug] Many, many hours of artwork and duration backfill activity at every startup",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-07-01"
+  },
+  {
+   "number": 324,
+   "title": "[Enhancement] Listened timed based rankings",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-07-07"
+  },
+  {
+   "number": 325,
+   "title": "[Enhancement] Track duration from last.fm",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-07-11"
+  },
+  {
+   "number": 327,
+   "title": "[Enhancement] Use track titles and cover art from Jellyfin",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-07-19"
+  },
+  {
+   "number": 330,
+   "title": "[Bug] Cannot delete individual scrobbles",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-07-20"
+  },
+  {
+   "number": 333,
+   "title": "[Enhancement] An action to force re-fetch media cover arts",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-08-01"
+  },
+  {
+   "number": 338,
+   "title": "Better matching when searching in the merge list",
+   "labels": [],
+   "created": "2026-08-07"
+  },
+  {
+   "number": 339,
+   "title": "[Enhancement] Allow for disabling login system",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-08-08"
+  },
+  {
+   "number": 340,
+   "title": "[Enhancement] When merging albums auto merge the tracks contained",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-08-08"
+  },
+  {
+   "number": 341,
+   "title": "[Bug] MusicBrainz alias overriding artist name even with KOITO_DISABLE_MUSICBRAINZ set to true",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-08-12"
+  },
+  {
+   "number": 343,
+   "title": "API routes return static HTML instead of JSON (blank page in browser)",
+   "labels": [],
+   "created": "2026-08-18"
+  },
+  {
+   "number": 344,
+   "title": "[Enhancement] Way to search for albums/artists lacking an image",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-08-19"
+  },
+  {
+   "number": 346,
+   "title": "[Enhancement] YTD Option on home page",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-08-21"
+  },
+  {
+   "number": 350,
+   "title": "[Bug] Relay to listenbrainz fails",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-08-25"
+  },
+  {
+   "number": 354,
+   "title": "[Enhancement] Support ListenBrainz `duration_played`",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-05"
+  },
+  {
+   "number": 356,
+   "title": "[Enhancement] sqlite db backups",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-06"
+  },
+  {
+   "number": 359,
+   "title": "[Enhancement] Case-sensitivity toggle for entries",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-11"
+  },
+  {
+   "number": 360,
+   "title": "[Enhancement] Regex merging toggle (\"Remaster\"/\"Deluxe\" recognition)",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-11"
+  },
+  {
+   "number": 361,
+   "title": "[Enhancement] Preservation of source metadata; toggle for database GUI tags",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-11"
+  },
+  {
+   "number": 362,
+   "title": "[Enhancement] Being able to convert to minutes",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-19"
+  },
+  {
+   "number": 363,
+   "title": "[Enhancement] Currently playing top banner",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-20"
+  },
+  {
+   "number": 364,
+   "title": "[Enhancement] Add curl in the image so that healthchecks can be performed",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-22"
+  },
+  {
+   "number": 365,
+   "title": "[Bug]  [accessibility] increasing the system font size on android breaks the interface in firefox mobile",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-09-22"
+  },
+  {
+   "number": 366,
+   "title": "[Enhancement] ListenBrainz user history export via API request",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-09-24"
+  },
+  {
+   "number": 368,
+   "title": "More Stats and Charts [Enhancement]",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-10-06"
+  },
+  {
+   "number": 369,
+   "title": "[Bug] Secondary track aliases are not used when adding listens by artist and title",
+   "labels": [
+    "bug"
+   ],
+   "created": "2026-10-06"
+  },
+  {
+   "number": 371,
+   "title": "[Enhancement] Add comma or delimiter to our numbers.",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-10-12"
+  },
+  {
+   "number": 375,
+   "title": "[Enhancement] Import from Deezer, Apple Music, and Navidrome itself",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-11-02"
+  },
+  {
+   "number": 377,
+   "title": "[Enhancement] Option to display remote artwork without storing it locally",
+   "labels": [
+    "enhancement"
+   ],
+   "created": "2026-11-05"
+  }
+ ],
+ "pulls": [
+  {
+   "number": 219,
+   "title": "Include `listen_type` in the coalescing key used during listen submission",
+   "draft": false,
+   "created": "2026-03-10",
+   "files": [
+    "engine/handlers/lbz_submit_listen.go"
+   ]
+  },
+  {
+   "number": 300,
+   "title": "Feat; Add KOITO_DATE_FORMAT, KOITO_CLOCK_FORMAT and KOITO_WEEK_START configuration options",
+   "draft": false,
+   "created": "2026-05-30",
+   "files": [
+    "client/api/api.ts",
+    "client/app/components/ActivityGrid.tsx",
+    "client/app/components/ListensTable.tsx",
+    "client/app/providers/AppProvider.tsx",
+    "client/app/routes/MediaItems/MediaLayout.tsx",
+    "client/app/utils/utils.ts",
+    "docs/src/content/docs/reference/configuration.md",
+    "engine/handlers/server_cfg.go",
+    "internal/cfg/cfg.go",
+    "internal/cfg/cfg_test.go",
+    "internal/cfg/getters.go"
+   ]
+  },
+  {
+   "number": 305,
+   "title": "feat: add axes and tooltip to interest over time graph",
+   "draft": false,
+   "created": "2026-06-08",
+   "files": [
+    "client/app/components/InterestGraph.tsx"
+   ]
+  },
+  {
+   "number": 315,
+   "title": "fix: Distinguish between tracks with the same title but different",
+   "draft": false,
+   "created": "2026-06-19",
+   "files": [
+    "internal/catalog/associate_track.go"
+   ]
+  },
+  {
+   "number": 323,
+   "title": "fix: split listenbrainz spotify artist credits",
+   "draft": false,
+   "created": "2026-07-05",
+   "files": [
+    "engine/handlers/lbz_submit_listen.go",
+    "internal/catalog/catalog.go",
+    "internal/catalog/catalog_test.go",
+    "internal/importer/listenbrainz.go"
+   ]
+  },
+  {
+   "number": 328,
+   "title": "feat: implement listenbrainz's feedback api (#110)",
+   "draft": false,
+   "created": "2026-07-19",
+   "files": [
+    "client/api/api.ts",
+    "client/app/routes/MediaItems/MediaLayout.tsx",
+    "db/migrations_sqlite/003_recording_feedback.sql",
+    "engine/handlers/get_track.go",
+    "engine/handlers/lbz_get_feedback.go",
+    "engine/handlers/lbz_submit_recording_feedback.go",
+    "engine/handlers/post_track.go",
+    "engine/routes.go",
+    "internal/db/db.go",
+    "internal/db/opts.go",
+    "internal/db/sqlite/feedback.go",
+    "internal/db/sqlite/sqlite.go",
+    "internal/db/sqlite/track.go",
+    "internal/db/types.go"
+   ]
+  },
+  {
+   "number": 329,
+   "title": "feat: add jellyfin image source",
+   "draft": false,
+   "created": "2026-07-19",
+   "files": [
+    "cmd/api/main.go",
+    "docs/astro.config.mjs",
+    "docs/src/content/docs/quickstart/jellyfin.md",
+    "docs/src/content/docs/reference/configuration.md",
+    "engine/engine.go",
+    "internal/cfg/cfg.go",
+    "internal/cfg/getters.go",
+    "internal/db/sqlite/exports.go",
+    "internal/images/imagesrc.go",
+    "internal/images/jellyfin.go",
+    "shell.nix"
+   ]
+  },
+  {
+   "number": 332,
+   "title": "feat: add option to exclude artists/albums from global top lists",
+   "draft": false,
+   "created": "2026-07-25",
+   "files": [
+    "client/api/api.ts",
+    "client/app/components/modals/EditModal/EditModal.tsx",
+    "client/app/components/modals/EditModal/SetExcludeFromTopLists.tsx",
+    "client/app/components/modals/EditModal/SetVariousArtist.tsx",
+    "db/migrations_sqlite/003_exclude_from_top_lists.sql",
+    "engine/handlers/patch_album.go",
+    "engine/handlers/patch_artist.go",
+    "internal/catalog/top_lists_test.go",
+    "internal/db/opts.go",
+    "internal/db/sqlite/album.go",
+    "internal/db/sqlite/artist.go",
+    "internal/db/sqlite/sqlite.go",
+    "internal/db/sqlite/track.go",
+    "internal/models/album.go",
+    "internal/models/artist.go"
+   ]
+  },
+  {
+   "number": 334,
+   "title": "fix: use sqlite in NORMAL synchronous mode",
+   "draft": false,
+   "created": "2026-08-02",
+   "files": [
+    "internal/db/sqlite/sqlite.go"
+   ]
+  },
+  {
+   "number": 335,
+   "title": "fix: improve import speed",
+   "draft": false,
+   "created": "2026-08-02",
+   "files": [
+    "docs/src/content/docs/reference/configuration.md",
+    "engine/engine.go",
+    "internal/catalog/associate_album.go",
+    "internal/catalog/associate_artists.go",
+    "internal/catalog/catalog.go",
+    "internal/cfg/cfg.go",
+    "internal/cfg/getters.go",
+    "internal/importer/lastfm.go",
+    "internal/importer/listenbrainz.go",
+    "internal/importer/maloja.go",
+    "internal/importer/spotify.go"
+   ]
+  },
+  {
+   "number": 336,
+   "title": "fix: use uuid.Nil consistently",
+   "draft": false,
+   "created": "2026-08-02",
+   "files": [
+    "internal/catalog/associate_album.go",
+    "internal/catalog/images.go",
+    "internal/images/imagesrc.go",
+    "internal/images/lastfm.go",
+    "internal/images/subsonic.go"
+   ]
+  },
+  {
+   "number": 342,
+   "title": "feat: locale-aware number formatting in all time stats",
+   "draft": false,
+   "created": "2026-08-14",
+   "files": [
+    "client/app/components/AllTimeStats.tsx"
+   ]
+  },
+  {
+   "number": 345,
+   "title": "Updated example in note of scrobble.md",
+   "draft": false,
+   "created": "2026-08-20",
+   "files": [
+    "docs/src/content/docs/guides/scrobbler.md"
+   ]
+  },
+  {
+   "number": 347,
+   "title": "Add YTD (year-to-date) period to home page period picker",
+   "draft": false,
+   "created": "2026-08-21",
+   "files": [
+    "client/app/components/PeriodSelector.tsx",
+    "internal/db/period.go"
+   ]
+  },
+  {
+   "number": 349,
+   "title": "fix: proper version format for subsonic ping",
+   "draft": false,
+   "created": "2026-08-25",
+   "files": [
+    "engine/engine.go"
+   ]
+  },
+  {
+   "number": 358,
+   "title": "Feat: Add KOITO_CALENDAR_PERIODS env var to use calendar based top charts",
+   "draft": false,
+   "created": "2026-09-09",
+   "files": [
+    "client/app/root.tsx",
+    "client/app/weekStart.ts",
+    "docs/src/content/docs/reference/configuration.md",
+    "engine/handlers/handlers.go",
+    "internal/cfg/cfg.go",
+    "internal/cfg/getters.go",
+    "internal/db/period.go",
+    "internal/db/period_test.go",
+    "internal/db/timeframe.go"
+   ]
+  },
+  {
+   "number": 370,
+   "title": "Make startup media backfill configurable",
+   "draft": false,
+   "created": "2026-10-10",
+   "files": [
+    "docs/src/content/docs/reference/configuration.md",
+    "engine/engine.go",
+    "internal/cfg/cfg.go",
+    "internal/cfg/getters.go"
+   ]
+  },
+  {
+   "number": 373,
+   "title": "fix: listenbrainz import",
+   "draft": false,
+   "created": "2026-10-24",
+   "files": [
+    "engine/handlers/lbz_submit_listen.go",
+    "internal/importer/listenbrainz.go"
+   ]
+  },
+  {
+   "number": 374,
+   "title": "Simple User Management (SUM)",
+   "draft": true,
+   "created": "2026-11-01",
+   "files": [
+    ".github/workflows/test.yml",
+    ".gitignore",
+    "Makefile",
+    "README.md",
+    "client/api/admin.ts",
+    "client/api/api.ts",
+    "client/api/profile-paths.ts",
+    "client/app/components/ActivityGrid.tsx",
+    "client/app/components/ActivityOptsSelector.tsx",
+    "client/app/components/AdminProfiles.tsx",
+    "client/app/components/AdministrationPanel.tsx",
+    "client/app/components/AlbumDisplay.tsx",
+    "client/app/components/AllTimeStats.tsx",
+    "client/app/components/AppShell.tsx",
+    "client/app/components/ArtistAlbums.tsx",
+    "client/app/components/ArtistLinks.tsx",
+    "client/app/components/ComboBox.tsx",
+    "client/app/components/InterestGraph.tsx",
+    "client/app/components/LastPlayed.tsx",
+    "client/app/components/ListensTable.tsx",
+    "client/app/components/PeriodSelector.tsx",
+    "client/app/components/ProfileAvatar.tsx",
+    "client/app/components/ProfileLink.tsx",
+    "client/app/components/ProfileRelayEditor.tsx",
+    "client/app/components/SearchResultItem.tsx",
+    "client/app/components/TopAlbums.tsx",
+    "client/app/components/TopAlbumsCard.tsx",
+    "client/app/components/TopArtists.tsx",
+    "client/app/components/TopArtistsCard.tsx",
+    "client/app/components/TopItemList.tsx",
+    "client/app/components/TopThreeAlbums.tsx",
+    "client/app/components/TopTracks.tsx",
+    "client/app/components/modals/Account.tsx",
+    "client/app/components/modals/AddListenModal.tsx",
+    "client/app/components/modals/ApiKeysModal.tsx",
+    "client/app/components/modals/EditModal/AliasManager.tsx",
+    "client/app/components/modals/EditModal/ArtistManager.tsx",
+    "client/app/components/modals/EditModal/SetVariousArtist.tsx",
+    "client/app/components/modals/ExportModal.tsx",
+    "client/app/components/modals/ImageReplaceModal.tsx",
+    "client/app/components/modals/LoginForm.tsx",
+    "client/app/components/modals/MergeModal.tsx",
+    "client/app/components/modals/Modal.tsx",
+    "client/app/components/modals/SearchModal/SearchModal.tsx",
+    "client/app/components/modals/SettingsModal.tsx",
+    "client/app/components/primitives/CardHeader.tsx",
+    "client/app/components/primitives/MediaItem.tsx",
+    "client/app/components/primitives/SubHeader.tsx",
+    "client/app/components/sidebar/ProfileSelector.tsx",
+    "client/app/components/sidebar/Sidebar.tsx",
+    "client/app/components/sidebar/SidebarItem.tsx",
+    "client/app/providers/AppProvider.tsx",
+    "client/app/providers/ProfileProvider.tsx",
+    "client/app/root.tsx",
+    "client/app/routes.ts",
+    "client/app/routes/Admin.tsx",
+    "client/app/routes/Charts/AlbumChart.tsx",
+    "client/app/routes/Charts/ArtistChart.tsx",
+    "client/app/routes/Charts/ChartLayout.tsx",
+    "client/app/routes/Charts/Listens.tsx",
+    "client/app/routes/Charts/TrackChart.tsx",
+    "client/app/routes/Home.tsx",
+    "client/app/routes/LegacyRedirect.tsx",
+    "client/app/routes/MediaItems/Album.tsx",
+    "client/app/routes/MediaItems/Artist.tsx",
+    "client/app/routes/MediaItems/MediaLayout.tsx",
+    "client/app/routes/MediaItems/Track.tsx",
+    "client/app/routes/ProfileLayout.tsx",
+    "client/app/routes/Profiles.tsx",
+    "client/app/routes/RewindPage.tsx",
+    "client/package.json",
+    "client/tests/profile-navigation.test.mjs",
+    "client/tests/typescript.mjs",
+    "client/tsconfig.json",
+    "client/yarn.lock",
+    "db/migrations_sqlite/003_listening_profiles.sql",
+    "docs/astro.config.mjs",
+    "docs/screenshots/multiuser/01-profile-selection.png",
+    "docs/screenshots/multiuser/02-profile-dashboard.png",
+    "docs/screenshots/multiuser/03-profile-selector.png",
+    "docs/screenshots/multiuser/04-profile-administration.png",
+    "docs/screenshots/multiuser/05-profile-forwarding.png",
+    "docs/screenshots/multiuser/README.md",
+    "docs/src/content/docs/guides/editing.md",
+    "docs/src/content/docs/guides/importing.md",
+    "docs/src/content/docs/guides/installation.md",
+    "docs/src/content/docs/guides/profiles.md",
+    "docs/src/content/docs/guides/scrobbler.md",
+    "docs/src/content/docs/quickstart/navidrome.md",
+    "docs/src/content/docs/reference/configuration.md",
+    "engine/engine.go",
+    "engine/handlers/apikeys.go",
+    "engine/handlers/auth.go",
+    "engine/handlers/export.go",
+    "engine/handlers/get_first_activity.go",
+    "engine/handlers/get_summary.go",
+    "engine/handlers/handlers.go",
+    "engine/handlers/lbz_submit_listen.go",
+    "engine/handlers/lbz_validate.go",
+    "engine/handlers/now_playing.go"
+   ]
+  },
+  {
+   "number": 376,
+   "title": "Import from Deezer data export file",
+   "draft": false,
+   "created": "2026-11-04",
+   "files": [
+    "Dockerfile",
+    "README.md",
+    "engine/engine.go",
+    "engine/import_test.go",
+    "go.mod",
+    "go.sum",
+    "internal/importer/deezer.go",
+    "test_assets/deezer_import_test.xlsx"
+   ]
+  },
+  {
+   "number": 378,
+   "title": "Add Apple Music import support",
+   "draft": false,
+   "created": "2026-11-10",
+   "files": [
+    "README.md",
+    "engine/engine.go",
+    "engine/import_test.go",
+    "internal/importer/apple_music.go",
+    "internal/importer/apple_music_test.go",
+    "internal/mbz/mbz.go",
+    "internal/mbz/mock.go",
+    "internal/mbz/search.go",
+    "test_assets/apple_music_library_tracks_test.json",
+    "test_assets/apple_music_play_activity_test.csv"
+   ]
+  }
+ ]
+}
