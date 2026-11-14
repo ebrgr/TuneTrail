@@ -122,6 +122,19 @@ func Load(getenv func(string) string, version string) error {
 			loadErr = err
 			return
 		}
+		// Without an explicit *_CONFIG_DIR, choose between /etc/tunetrail and the
+		// legacy /etc/koito once, so conf.toml and the database use the same path.
+		if dir, _ := reader.get(CONFIG_DIR_ENV); dir == "" {
+			dir, notice, err := resolveDefaultConfigDir(DefaultConfigDir, LegacyConfigDir)
+			if err != nil {
+				loadErr = err
+				return
+			}
+			reader.cache[CONFIG_DIR_ENV] = envValue{value: dir, origin: OriginDefault}
+			if notice != "" {
+				reader.notices = append(reader.notices, notice)
+			}
+		}
 		document, effective, err := prepareTOML(reader)
 		if err != nil {
 			loadErr = err
@@ -251,7 +264,7 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 
 	cfg.configDir = getenv(CONFIG_DIR_ENV)
 	if cfg.configDir == "" {
-		cfg.configDir = "/etc/koito"
+		cfg.configDir = DefaultConfigDir
 	}
 
 	rawHosts := getenv(ALLOWED_HOSTS_ENV)

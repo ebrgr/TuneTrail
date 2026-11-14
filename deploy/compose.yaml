@@ -1,13 +1,16 @@
-name: koito-sum
+# Project and service renamed from koito-sum/koito (ISSUE-111): stop the old
+# project first, see DEPLOYMENT.md. A second server on the same data directory
+# refuses to start.
+name: tunetrail
 
 services:
-  koito:
+  tunetrail:
     image: ghcr.io/ebrgr/tunetrail:${KOITO_IMAGE_TAG:-0.9}
     restart: unless-stopped
     ports:
       - "${KOITO_HOST_BIND:-127.0.0.1}:${KOITO_HOST_PORT:-4110}:4110"
     # Application variables use the TUNETRAIL_ prefix (ISSUE-111). The ${KOITO_*}
-    # names below are read from deploy/.env and stay as they are until 1.0, so an
+    # names below are read from deploy/.env and stay as they are until 2.0, so an
     # existing deploy/.env keeps pointing at the same data directory.
     environment:
       TUNETRAIL_DEFAULT_USERNAME: ${KOITO_ADMIN_USERNAME:-admin}
@@ -15,6 +18,6 @@ services:
       TUNETRAIL_SKIP_IMPORT: "true"
       TZ: ${KOITO_TIMEZONE:-Etc/UTC}
     volumes:
-      # /etc/koito is the default configuration and data directory inside the image.
-      - ${KOITO_DATA_DIR:-./data}:/etc/koito
+      # /etc/tunetrail is the default configuration and data directory inside the image.
+      - ${KOITO_DATA_DIR:-./data}:/etc/tunetrail
     stop_grace_period: 30s

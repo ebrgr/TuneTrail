@@ -43,7 +43,7 @@ def main():
     try:
         docker('volume', 'create', volume); created_volume = True
         docker('run', '-d', '--name', container, '--health-interval=2s', '--health-start-period=0s',
-               '--health-retries=15', '-p', '127.0.0.1::4110', '-v', f'{volume}:/etc/koito',
+               '--health-retries=15', '-p', '127.0.0.1::4110', '-v', f'{volume}:/etc/tunetrail',
                '-e', 'TUNETRAIL_DEFAULT_USERNAME=validation-admin', '-e', 'TUNETRAIL_DEFAULT_PASSWORD=fictional-validation-password',
                '-e', 'TUNETRAIL_FORCE_TZ=America/Sao_Paulo', '-e', 'TUNETRAIL_SKIP_IMPORT=true',
                '-e', 'TUNETRAIL_DISABLE_MUSICBRAINZ=true', '-e', 'TUNETRAIL_DISABLE_DEEZER=true',
@@ -95,7 +95,7 @@ def main():
             raise RuntimeError(f'SIGTERM exit code {code}')
         with tempfile.TemporaryDirectory(prefix='koito034-sqlite-') as temporary:
             database = Path(temporary) / 'copy.db'
-            docker('cp', f'{container}:/etc/koito/tunetrail.db', database)
+            docker('cp', f'{container}:/etc/tunetrail/tunetrail.db', database)
             with sqlite3.connect(database) as conn:
                 if conn.execute('PRAGMA integrity_check').fetchall() != [('ok',)] or conn.execute('PRAGMA foreign_key_check').fetchall():
                     raise AssertionError('database integrity')

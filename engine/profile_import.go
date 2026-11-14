@@ -30,7 +30,8 @@ func importProfileFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCal
 		return importer.ImportLastFMFile(ctx, store, mbzc, filename)
 	case strings.Contains(filename, "listenbrainz"):
 		return importer.ImportListenBrainzExport(ctx, store, mbzc, filename)
-	case strings.Contains(filename, "koito"):
+	// TuneTrail exports keep the Koito JSON schema; both names are accepted (ISSUE-111).
+	case strings.Contains(filename, "tunetrail"), strings.Contains(filename, "koito"):
 		return importer.ImportKoitoFile(ctx, store, filename)
 	default:
 		return fmt.Errorf("%w: unrecognized import format", importer.ErrInvalidFile)
@@ -139,7 +140,7 @@ func uploadProfileImport(w http.ResponseWriter, r *http.Request, store db.DB, mb
 		return
 	}
 	defer r.MultipartForm.RemoveAll()
-	formats := map[string]string{"koito": "koito.json", "listenbrainz": "listenbrainz.zip", "spotify": "Streaming_History_Audio.json", "lastfm": "recenttracks.json", "maloja": "maloja.json"}
+	formats := map[string]string{"tunetrail": "tunetrail.json", "koito": "koito.json", "listenbrainz": "listenbrainz.zip", "spotify": "Streaming_History_Audio.json", "lastfm": "recenttracks.json", "maloja": "maloja.json"}
 	suffix, ok := formats[r.FormValue("format")]
 	if !ok {
 		utils.WriteError(w, "select a supported import format", 400)

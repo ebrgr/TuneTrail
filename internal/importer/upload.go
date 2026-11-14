@@ -50,7 +50,7 @@ func (s countingStore) SaveListen(ctx context.Context, o db.SaveListenOpts) erro
 	return nil
 }
 
-var suffixes = map[string]string{"koito": "koito.json", "spotify": "Streaming_History_Audio.json", "maloja": "maloja.json", "lastfm": "recenttracks.json", "listenbrainz": "listenbrainz.zip"}
+var suffixes = map[string]string{"tunetrail": "tunetrail.json", "koito": "koito.json", "spotify": "Streaming_History_Audio.json", "maloja": "maloja.json", "lastfm": "recenttracks.json", "listenbrainz": "listenbrainz.zip"}
 
 // Upload executes synchronously against the selected profile; staged files are never boot inputs.
 func Upload(ctx context.Context, store UploadStore, mbzc mbz.MusicBrainzCaller, profileID int32, format, stagedPath string) (result Result, err error) {
@@ -105,7 +105,7 @@ func Upload(ctx context.Context, store UploadStore, mbzc mbz.MusicBrainzCaller, 
 	ctx = db.WithProfile(WithUploadSource(context.WithValue(ctx, resultKey{}, &result), stagePath), profileID)
 	tracked := countingStore{store, &result}
 	switch format {
-	case "koito":
+	case "tunetrail", "koito": // same JSON schema (ISSUE-111)
 		err = ImportKoitoFile(ctx, tracked, filename)
 	case "spotify":
 		err = ImportSpotifyFile(ctx, tracked, mbzc, filename)

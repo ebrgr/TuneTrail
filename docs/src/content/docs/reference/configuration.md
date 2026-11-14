@@ -9,7 +9,7 @@ TuneTrail supports environment variables and an optional `conf.toml` for the set
 
 Since version 0.10 the variables use the `TUNETRAIL_` prefix, and each one also
 accepts a `_FILE` form whose file content is used as the value (for secrets).
-The earlier `KOITO_` names still work during the 0.x series:
+The earlier `KOITO_` names keep working until version 2.0, to ease upgrades:
 
 - Only the `KOITO_` name set: it is used, and the startup log and the
   Administration → Settings page mark it as deprecated with the new name.
@@ -22,13 +22,14 @@ The earlier `KOITO_` names still work during the 0.x series:
 settings from older versions and keep their names. The variables read by the
 supplied `deploy/compose.yaml` from `deploy/.env` (`KOITO_DATA_DIR`,
 `KOITO_ADMIN_PASSWORD`, `KOITO_IMAGE_TAG` and similar) belong to Docker
-Compose, not to TuneTrail, and also keep their names until 1.0.
+Compose, not to TuneTrail, and also keep their names until 2.0.
 
 ## Optional `conf.toml`
 
 Place `conf.toml` in the configured data directory, next to `tunetrail.db`. The
 directory is selected by `TUNETRAIL_CONFIG_DIR` or `TUNETRAIL_CONFIG_DIR_FILE` before the
-file is read; its default is `/etc/koito`. An absent file preserves the existing
+file is read; its default is `/etc/tunetrail` (see `TUNETRAIL_CONFIG_DIR` below for
+installations that still use `/etc/koito`). An absent file preserves the existing
 environment-based configuration. Neither the file nor values are created automatically.
 
 The supported schema is version 1. The repository also provides a fictional `deploy/conf.example.toml`; copy it to `conf.toml` in the data directory before adapting it. Use a subset of these settings as needed:
@@ -76,7 +77,7 @@ relay settings remain on each profile's administration page.
 ### Deployment, upgrades and offline recovery
 
 With the supplied Docker Compose file, `KOITO_DATA_DIR` is mounted at
-`/etc/koito`. Place `conf.toml` inside that host directory; it persists across
+`/etc/tunetrail`. Place `conf.toml` inside that host directory; it persists across
 container replacement along with `tunetrail.db`. Compose supplies `TZ` through
 `KOITO_TIMEZONE`; it does not set `TUNETRAIL_FORCE_TZ`. The application setting
 `time.force_tz` overrides the browser preference where a forced timezone is used.
@@ -200,8 +201,14 @@ If the environment variable is defined without **and** with the suffix at the sa
 
 ##### TUNETRAIL_CONFIG_DIR
 
-- Default: `/etc/koito`
-- Description: The location where import folders and image caches are stored.
+- Default: `/etc/tunetrail`
+- Description: The location of the database, `conf.toml`, import folders and image caches.
+- Upgrades from `/etc/koito`: when no `*_CONFIG_DIR` variable is set, TuneTrail
+  keeps using `/etc/koito` if it holds the database (`tunetrail.db` or
+  `koito.db`), or if a volume is mounted there and not at `/etc/tunetrail`, and
+  logs a notice to move the mount. If both directories hold a database it
+  refuses to start; set `TUNETRAIL_CONFIG_DIR` or remove one of them. The old
+  path keeps working until 2.0.
 
 Automatic image downloads are limited to 10 MiB per image and 10 seconds per
 request, with at most three redirects. Image-provider and MusicBrainz JSON

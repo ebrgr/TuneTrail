@@ -35,6 +35,8 @@ func TestPreparedUploadsCountAndScope(t *testing.T) {
 		"lastfm":       []byte(`[{"track":[{"artist":{"#text":"Fictional Artist F"},"album":{"#text":"Fictional Album F"},"name":"Fictional Track F","date":{"uts":"1700000000"}}]}]`),
 		"koito":        []byte(`{"version":"1","user":"unrelated","listens":[{"listened_at":"2023-11-14T22:13:20Z","track":{"aliases":[{"alias":"Fictional Track K","is_primary":true}]},"album":{"aliases":[{"alias":"Fictional Album K","is_primary":true}]},"artists":[{"aliases":[{"alias":"Fictional Artist K","is_primary":true}]}]}]}`),
 		"listenbrainz": z.Bytes(),
+		// ISSUE-111: TuneTrail exports keep the Koito JSON schema under the new name.
+		"tunetrail": []byte(`{"version":"1","user":"unrelated","listens":[{"listened_at":"2023-11-14T22:13:20Z","track":{"aliases":[{"alias":"Fictional Track T","is_primary":true}]},"album":{"aliases":[{"alias":"Fictional Album T","is_primary":true}]},"artists":[{"aliases":[{"alias":"Fictional Artist T","is_primary":true}]}]}]}`),
 	}
 	for format, content := range cases {
 		t.Run(format, func(t *testing.T) {
@@ -63,12 +65,12 @@ func TestPreparedUploadsCountAndScope(t *testing.T) {
 	require.NoError(t, export.ExportData(ctx, profile, a.store, &output))
 	var doc export.KoitoExport
 	require.NoError(t, json.Unmarshal(output.Bytes(), &doc))
-	require.Len(t, doc.Listens, 1012)
+	require.Len(t, doc.Listens, 1013) // six formats (tunetrail added in ISSUE-111) plus 1007 inserted
 	require.Equal(t, int64(-100), doc.Listens[0].ListenedAt.Unix())
 	require.Equal(t, int64(-100), doc.Listens[1].ListenedAt.Unix())
 	count, err := a.store.ProfileListenCount(ctx, 2)
 	require.NoError(t, err)
-	require.EqualValues(t, 1012, count)
+	require.EqualValues(t, 1013, count)
 	count, err = a.store.ProfileListenCount(ctx, 3)
 	require.NoError(t, err)
 	require.Zero(t, count)

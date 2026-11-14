@@ -18,7 +18,7 @@ cp deploy/.env.example deploy/.env
 ```
 
 Edit `deploy/.env`. Its `KOITO_*` names are read by Docker Compose and stay as
-they are until 1.0; inside the container TuneTrail uses `TUNETRAIL_*` variables
+they are until 2.0; inside the container TuneTrail uses `TUNETRAIL_*` variables
 (see the configuration reference). Set `KOITO_ADMIN_PASSWORD` to a unique password of at least
 eight characters. `KOITO_ADMIN_USERNAME` defaults to `admin`. These settings
 create the administrator only when the database has no users.
@@ -31,13 +31,34 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml ps
 
 Open <http://localhost:4110>. Choose a public profile, or use
 **Settings → Administration** to sign in and create/edit profiles and API keys.
-The initial data directory is `deploy/data` and is mounted at `/etc/koito`.
+The initial data directory is `deploy/data` and is mounted at `/etc/tunetrail`.
 Keep `deploy/.env` and the data directory outside version control.
 
 The published host port binds to `127.0.0.1` by default. For remote access, use
 your reverse proxy with HTTPS or explicitly set `KOITO_HOST_BIND` to the host
 address you intend to expose. The container's internal API binds to all container
 interfaces, independently of this host setting.
+
+## Upgrade from the `koito-sum` compose project
+
+Since 0.10 the compose project and service are named `tunetrail`, the data is
+mounted at `/etc/tunetrail` and variables use the `TUNETRAIL_` prefix. Keep your
+`deploy/.env`: its `KOITO_*` names are unchanged, so it still points at the same
+host data directory.
+
+1. With the **old** `deploy/compose.yaml` still in place, stop the old project:
+   `docker compose --env-file deploy/.env -f deploy/compose.yaml down` (or, if the
+   file was already replaced, `docker compose -p koito-sum down`). Do not use `-v`.
+2. Replace `deploy/compose.yaml` with the new one.
+3. Start: `docker compose --env-file deploy/.env -f deploy/compose.yaml up -d --remove-orphans`.
+4. Check that only the `tunetrail` container runs: `docker ps`.
+
+If the old container is still running on the same data directory, the new one
+refuses to start ("another TuneTrail server is already using this data
+directory"). Installations with their own compose file or an Unraid template
+that mount `/etc/koito` keep working without changes until 2.0; the log asks to
+move the mount to `/etc/tunetrail`. The administrator signs in again once,
+because the session cookie was renamed.
 
 ## Upgrade an existing SQLite v2 installation
 

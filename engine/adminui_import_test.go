@@ -64,6 +64,7 @@ func TestAdminUIImportExport(t *testing.T) {
 	require.Equal(t, 200, out.Code)
 	require.Contains(t, out.Header().Get("Cache-Control"), "no-store")
 	require.Contains(t, out.Header().Get("Content-Disposition"), "attachment")
+	require.Contains(t, out.Header().Get("Content-Disposition"), "tunetrail_export.json") // ISSUE-111
 	var doc export.KoitoExport
 	require.NoError(t, json.Unmarshal(out.Body.Bytes(), &doc))
 	require.Len(t, doc.Listens, 1)

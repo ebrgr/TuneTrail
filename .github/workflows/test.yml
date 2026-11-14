@@ -83,14 +83,14 @@ jobs:
             docker stop --time 20 "$1" >/dev/null
             test "$(docker inspect --format '{{.State.ExitCode}}' "$1")" = 0
           }
-          trap 'docker rm -f tunetrail-ci tunetrail-ci-legacy >/dev/null 2>&1; docker volume rm -f tunetrail-ci-legacy >/dev/null 2>&1' EXIT
+          trap 'docker rm -f tunetrail-ci tunetrail-ci-legacy tunetrail-ci-oldpath >/dev/null 2>&1; docker volume rm -f tunetrail-ci-legacy tunetrail-ci-oldpath >/dev/null 2>&1' EXIT
           # Current TUNETRAIL_* names (ISSUE-111).
           smoke tunetrail-ci \
             -e TUNETRAIL_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
             -e TUNETRAIL_LOG_LEVEL=warn -e TUNETRAIL_SKIP_IMPORT=true \
             -e TUNETRAIL_DISABLE_MUSICBRAINZ=true -e TUNETRAIL_DISABLE_DEEZER=true \
             -e TUNETRAIL_DISABLE_COVER_ART_ARCHIVE=true
-          docker exec tunetrail-ci sh -c '! dpkg-query -W libvips42 >/dev/null 2>&1 && test -s /etc/ssl/certs/ca-certificates.crt && test -f /usr/share/zoneinfo/America/Sao_Paulo && test -f /etc/koito/tunetrail.db'
+          docker exec tunetrail-ci sh -c '! dpkg-query -W libvips42 >/dev/null 2>&1 && test -s /etc/ssl/certs/ca-certificates.crt && test -f /usr/share/zoneinfo/America/Sao_Paulo && test -f /etc/tunetrail/tunetrail.db'
           # Read logs first: grep -q closing the pipe early would fail under pipefail.
           logs=$(docker logs tunetrail-ci 2>&1)
           ! grep -q 'is deprecated' <<<"$logs"
@@ -103,7 +103,18 @@ jobs:
             -e KOITO_LOG_LEVEL=warn -e KOITO_SKIP_IMPORT=true \
             -e KOITO_DISABLE_MUSICBRAINZ=true -e KOITO_DISABLE_DEEZER=true \
             -e KOITO_DISABLE_COVER_ART_ARCHIVE=true
-          docker exec tunetrail-ci-legacy sh -c 'test -f /data/tunetrail.db && test ! -e /etc/koito/tunetrail.db'
+          docker exec tunetrail-ci-legacy sh -c 'test -f /data/tunetrail.db && test ! -e /etc/tunetrail/tunetrail.db'
           logs=$(docker logs tunetrail-ci-legacy 2>&1)
           grep -q 'KOITO_CONFIG_DIR is deprecated' <<<"$logs"
           stop tunetrail-ci-legacy
+          # Volume still mounted at the old /etc/koito with no *_CONFIG_DIR, as an old
+          # template would run the new image: data must stay on that volume (ISSUE-111).
+          smoke tunetrail-ci-oldpath -v tunetrail-ci-oldpath:/etc/koito \
+            -e TUNETRAIL_DEFAULT_PASSWORD="$(openssl rand -hex 24)" \
+            -e TUNETRAIL_LOG_LEVEL=warn -e TUNETRAIL_SKIP_IMPORT=true \
+            -e TUNETRAIL_DISABLE_MUSICBRAINZ=true -e TUNETRAIL_DISABLE_DEEZER=true \
+            -e TUNETRAIL_DISABLE_COVER_ART_ARCHIVE=true
+          docker exec tunetrail-ci-oldpath sh -c 'test -f /etc/koito/tunetrail.db && test ! -e /etc/tunetrail/tunetrail.db'
+          logs=$(docker logs tunetrail-ci-oldpath 2>&1)
+          grep -q 'using the legacy data directory /etc/koito' <<<"$logs"
+          stop tunetrail-ci-oldpath

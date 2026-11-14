@@ -30,7 +30,7 @@ LABEL org.opencontainers.image.title="TuneTrail" \
       org.opencontainers.image.source="https://github.com/ebrgr/TuneTrail" \
       org.opencontainers.image.version=$TUNETRAIL_VERSION
 # No configuration variables are fixed in the image (ISSUE-111): the defaults are
-# /etc/koito, all interfaces and port 4110, and a fixed value would conflict
+# /etc/tunetrail (or a legacy /etc/koito mount), all interfaces and port 4110, and a fixed value would conflict
 # with a user's own KOITO_* or TUNETRAIL_* setting.
 ENV TUNETRAIL_LANGS_DIR=/app/langs
 EXPOSE 4110

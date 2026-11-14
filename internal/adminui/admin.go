@@ -279,7 +279,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Content-Disposition", `attachment; filename="koito_export.json"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="tunetrail_export.json"`)
 		if err := export.ExportData(r.Context(), profile, h.store, w); err != nil {
 			logger.FromContext(r.Context()).Error().Err(err).Msg("Administrative export interrupted")
 		}

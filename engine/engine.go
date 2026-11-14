@@ -114,6 +114,10 @@ func Run(
 	f.Close()
 	os.Remove(f.Name())
 	l.Info().Msgf("Engine: Using config directory: %s", cfg.ConfigDir())
+	// Refuse to start when another server holds the same data directory (ISSUE-111).
+	if instanceLock, err = acquireInstanceLock(cfg.ConfigDir()); err != nil {
+		return err
+	}
 
 	l.Debug().Msgf("Engine: Checking import directory: %s", path.Join(cfg.ConfigDir(), "import"))
 	_, err = os.Stat(path.Join(cfg.ConfigDir(), "import"))

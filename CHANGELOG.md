@@ -8,6 +8,9 @@
 
 ### Changed
 
+- The default data directory is `/etc/tunetrail`; installations that still mount `/etc/koito` keep using it with a log notice until 2.0, and TuneTrail refuses to start if both hold a database (ISSUE-111).
+- The supplied compose project and service are renamed to `tunetrail`; stop the old `koito-sum` project before starting the new one (see DEPLOYMENT.md). A second server on the same data directory now refuses to start (ISSUE-111).
+- Exports are named `tunetrail_export.json` and the import page offers the TuneTrail format; Koito exports are still accepted (ISSUE-111).
 - The container image no longer presets configuration variables and the supplied compose file passes `TUNETRAIL_` names; an existing `deploy/.env` keeps working unchanged (ISSUE-111).
 - The administrative session cookie is now `tunetrail_session`; administrators sign in again once after upgrading (ISSUE-111).
 - TuneTrail now identifies itself as TuneTrail, with its own project contact, to MusicBrainz, Deezer, Last.fm and Subsonic servers (ISSUE-111).

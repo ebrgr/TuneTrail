@@ -237,7 +237,7 @@ func prepareTOML(r *envReader) (*Document, map[string]string, error) {
 		return nil, nil, r.err
 	}
 	if dir == "" {
-		dir = "/etc/koito"
+		dir = DefaultConfigDir
 	}
 	path := filepath.Join(dir, "conf.toml")
 	parsed, raw, present, err := readTOML(path)

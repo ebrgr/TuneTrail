@@ -15,7 +15,7 @@ services:
     ports:
       - "4110:4110"
     volumes:
-      - ./koito:/etc/koito
+      - ./tunetrail:/etc/tunetrail
     restart: unless-stopped
 ```
 
