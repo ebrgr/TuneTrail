@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:53:00Z'
-updated_date: '2026-11-14T04:28:00Z'
+updated_date: '2026-11-14T04:35:00Z'
 labels:
   - config
   - operacao
@@ -57,7 +57,7 @@ Pode ser dividida: a Fase A é pequena e independente e pode ser publicada antes
 - [x] #3 Valores diferentes entre prefixos (inclusive combinações com _FILE e chaves não lidas) recusam a partida com mensagem que não contém valores (teste)
 - [x] #4 Somente tunetrail_session autentica; koito_session é ignorado (decisão do usuário: sem alternativa) e o login grava só o novo; CHANGELOG avisa que o administrador entra de novo uma vez
 - [x] #5 Cookie de início da semana, preauth e nomes JS (TuneTrailTheme, tunetrail-theme-change) renomeados sem alternativa; uma recarga no primeiro acesso é aceitável
-- [ ] #6 Imagem sem ENV KOITO_* fixas; compose mantém a interpolação compatível com deploy/.env existente; exemplos, CI e referência usam os nomes novos; e2e roda com TUNETRAIL_* e uma jornada e um smoke de contêiner confirmam KOITO_* com diretório personalizado
+- [x] #6 Imagem sem ENV KOITO_* fixas; compose mantém a interpolação compatível com deploy/.env existente; exemplos, CI e referência usam os nomes novos; e2e roda com TUNETRAIL_* e uma jornada e um smoke de contêiner confirmam KOITO_* com diretório personalizado
 - [ ] #7 Decisões da Fase C registradas (diretório padrão, nome do projeto compose, KOITO_* vira erro fatal no 1.0)
 - [ ] #8 koito.db, formato e arquivo de exportação koito, créditos e histórico intactos; inventário atualizado ao final
 <!-- AC:END -->
@@ -107,6 +107,15 @@ created: 2026-11-14T04:28:00Z
 ---
 
 Fase B2 concluída. Decisão do usuário (14/11/2026): só os nomes novos, sem cookies antigos como alternativa. tunetrail_session, tunetrail_preauth e tunetrail-weekstart substituem koito_*; window.TuneTrailTheme e tunetrail-theme-change substituem os nomes JS; temporário .tunetrail_perm_check_*. Consequência registrada no CHANGELOG: o administrador entra de novo uma vez após atualizar. A transição com fallback chegou a ser implementada e foi retirada a pedido. Verificação: testes confirmam que koito_session não autentica e que o login grava só tunetrail_session; validate_permissions.py com caso legacy-cookie-name; testes atualizados para os nomes novos; make ui.check e make check verdes (10/10 e2e). Critérios 4 e 5 reescritos conforme a decisão; o prazo do cookie antigo deixa de existir na Fase C.
+
+---
+
+author: claude
+created: 2026-11-14T04:35:00Z
+
+---
+
+Fase B3 concluída (commits c3097ac e 29806a4). Imagem sem ENV de configuração (padrões equivalentes) e sem -X main.Version (versão embutida); ARG TUNETRAIL_VERSION só para o rótulo, com docker.yml no mesmo commit. Compose com TUNETRAIL_* no environment e interpolação ${KOITO_*} do deploy/.env inalterada. CI: smoke do contêiner com TUNETRAIL_* (sem aviso) e com KOITO_* + KOITO_CONFIG_DIR=/data em volume próprio (banco em /data, aviso no log). Scripts: Server com legacy_env; jornada e2e legacy-env. Docs: seção 'Variable names' na referência, 30 variáveis com nomes novos, guias e âncoras; DEPLOYMENT explica o deploy/.env. Verificação local: docker build + script de smoke do CI (achado e corrigido SIGPIPE de grep -q com pipefail), validate_container com a imagem nova, validate_rollback contra a 0.5 com nomes legados, docker compose config, YAML dos workflows, make check com 11/11 jornadas. Restam: decisões da Fase C (critério 7) e conferência final com inventário atualizado (critério 8).
 
 ---
 <!-- COMMENTS:END -->
