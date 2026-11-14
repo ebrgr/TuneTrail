@@ -4,13 +4,13 @@ title: 048 — Documentação e site oficial do TuneTrail
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-14T00:39:00Z'
+updated_date: '2026-11-14T02:13:00Z'
 labels:
   - docs
 milestone: m-15
 dependencies: []
 type: docs
-ordinal: 48000
+ordinal: 112000
 ---
 
 ## Description
@@ -101,6 +101,15 @@ created: 2026-11-14T00:39:00Z
 ---
 
 Plano TuneTrail 1.0 (doc-032): Fase 6 · Operação; requisito da candidatura ao 1.0 (ISSUE-105).
+
+---
+
+author: claude
+created: 2026-11-14T01:53:00Z
+
+---
+
+Do inventário de 'Koito' (backlog/evidencias/identidade/inventario-koito.md): o texto do site (44 menções ao produto como Koito em docs/src/content/docs) e o endereço site: https://koito.io em docs/astro.config.mjs ficam com esta tarefa; os nomes de variáveis em reference/configuration.md acompanham a ISSUE-111.
 
 ---
 <!-- COMMENTS:END -->
