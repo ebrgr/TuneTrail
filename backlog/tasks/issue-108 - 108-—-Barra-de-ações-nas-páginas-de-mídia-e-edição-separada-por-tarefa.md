@@ -4,15 +4,13 @@ title: 108 — Barra de ações nas páginas de mídia e edição separada por t
 status: Aberta
 assignee: []
 created_date: '2026-11-14T01:06:00Z'
-updated_date: '2026-11-14T15:10:00Z'
+updated_date: '2026-11-15T02:15:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
-  - ISSUE-107
-  - ISSUE-109
-  - ISSUE-067
+  - ISSUE-124
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 priority: high

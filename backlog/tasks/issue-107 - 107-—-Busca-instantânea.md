@@ -1,11 +1,11 @@
 ---
 id: ISSUE-107
-title: 107 — Busca instantânea e edição de faixas sem recarregar a página
+title: 107 — Busca instantânea
 status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T02:14:00Z'
+updated_date: '2026-11-15T02:15:00Z'
 labels:
   - ui
   - admin
@@ -50,11 +50,10 @@ Recomendação de ordem: depois da ISSUE-106. Pode vir antes da reorganização 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Busca mostra resultados enquanto digita, sem recarregar, descartando respostas antigas
-- [ ] #2 Busca utilizável só por teclado e anunciada por leitor de tela
-- [ ] #3 Adicionar/remover apelido ou artista atualiza só a seção, sem perder rolagem e foco
-- [ ] #4 Sem JavaScript, as ações voltam à âncora da seção editada
-- [ ] #5 Fragmentos respeitam sessão, CSRF, token de uso único, permissões e perfil (testes)
-- [ ] #6 JS novo abaixo de 4 KB comprimido; tempos antes/depois registrados em backlog/evidencias/ui-responsiva
+- [ ] #2 Busca utilizável só por teclado (combobox) e anunciada por leitor de tela
+- [ ] #3 Até 5 itens por tipo e link "ver todos" para a página completa; sem JavaScript a busca funciona como hoje
+- [ ] #4 Fragmento respeita perfil e sessão, recusa pedido fora de contexto e usa cache privado (testes)
+- [ ] #5 JS novo abaixo de 4 KB comprimido; tempos antes/depois registrados em backlog/evidencias/ui-responsiva
 <!-- AC:END -->
 
 ## Comments
@@ -93,6 +92,15 @@ created: 2026-11-15T02:14:00Z
 ---
 
 Parecer do Advisor (Opus, medium): REPROVADO COM RESSALVAS — token de uso único por página, limite global de tickets, serialização de envios, nome no cabeçalho em alias-primary e aviso consumido no fragmento; recomenda dividir em busca (107a) e edição (107b). Aguardando decisões do usuário.
+
+---
+
+author: claude
+created: 2026-11-15T02:15:00Z
+
+---
+
+Decisões do usuário em 14/11/2026: dividir conforme o Advisor — a 107 fica só com a busca instantânea (5 itens por tipo + ver todos); a edição sem recarregar vai para a ISSUE-124 (envio de capa continua recarregando); a ISSUE-108 passa a depender da 124.
 
 ---
 <!-- COMMENTS:END -->
