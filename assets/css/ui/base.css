@@ -1,0 +1,120 @@
+/* Base: element typography, focus, text colours, cards and native controls. */
+@layer base {
+html,body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  transition: background-color .3s ease
+}
+body {
+  min-height: 100vh
+}
+h1,h2,h3,h4,h5,.header-font {
+  font-family: 'League Spartan',sans-serif
+}
+h1 {
+  font-size: var(--header-xl);
+  font-weight: 600;
+  line-height: var(--header-line-height)
+}
+h2 {
+  font-size: var(--header-lg);
+  font-weight: 600
+}
+h3 {
+  font-size: 18px;
+  text-transform: uppercase;
+  font-weight: 400
+}
+h4 {
+  font-size: 16px;
+  font-weight: 600
+}
+a,div {
+  transition: color .1s ease
+}
+a:hover,button.media-title:hover {
+  color: var(--color-fg-secondary)
+}
+:is(a,button,input,select,textarea):focus-visible {
+  outline: 1px solid var(--color-fg-tertiary);
+  outline-offset: 2px
+}
+.primary {
+  color: var(--color-primary)
+}
+.secondary {
+  color: var(--color-fg-secondary)
+}
+.error {
+  color: var(--color-error)
+}
+.card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px
+}
+.offset {
+  margin-left: 24px
+}
+summary {
+  cursor: pointer
+}
+.noscript {
+  padding: 16px;
+  text-align: center
+}
+textarea {
+  resize: vertical;
+  background: var(--color-bg);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 6px;
+  width: 300px;
+  max-width: 100%;
+  height: 450px;
+  padding: 20px
+}
+button.large-button {
+  padding: .8rem 2rem;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px;
+  background: var(--color-bg)
+}
+button.large-button:hover {
+  background: var(--color-bg-tertiary)
+}
+body:has(dialog[open]) {
+  overflow: hidden
+}
+.cover-failed {
+  background: var(--color-bg-tertiary);
+  object-fit: contain!important
+}
+@media(prefers-reduced-motion:reduce) {
+  *,::before,::after {
+    animation: none!important;
+    transition: none!important
+  }
+}
+
+/* Keep dropdown arrows inset consistently while retaining native select behavior. */
+select:not([multiple]):not([size]) {
+  --select-arrow: linear-gradient(45deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%), linear-gradient(135deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%);
+  appearance: none;
+  background-image: var(--select-arrow);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+@media (forced-colors: active) {
+  select:not([multiple]):not([size]) { appearance: auto; background-image: none; }
+}
+}

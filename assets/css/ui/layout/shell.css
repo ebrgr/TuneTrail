@@ -1,0 +1,169 @@
+/* Layout: application shell, sidebars, navigation and footer. */
+@layer layout {
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh
+}
+.app-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto
+}
+.sidebar {
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px 0;
+  background: var(--color-bg);
+  color: var(--color-fg-secondary);
+  border-bottom: 1px solid var(--color-bg-tertiary)
+}
+/* ISSUE-123: second sidebar. On narrow screens it is a row below the first one. */
+.sidebar-secondary[hidden] {
+  display: none
+}
+/* Overlay mode starts closed; hide the server-open bar until nav.js applies that state. */
+html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
+  display: none
+}
+.nav-disabled {
+  opacity: .55;
+  cursor: default
+}
+.nav-group {
+  display: flex;
+  gap: 16px
+}
+.nav-spacer {
+  display: none
+}
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color .1s,color .1s
+}
+.nav-button>svg {
+  width: 18px;
+  height: 18px
+}
+.nav-button:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-fg)
+}
+footer {
+  margin: 0 auto;
+  padding: 80px 16px 40px;
+  text-align: center;
+  color: var(--color-fg-tertiary);
+  font-size: 14px
+}
+footer svg {
+  display: inline-block;
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+  margin-bottom: 4px
+}
+footer a:hover {
+  text-decoration: underline
+}
+.preview-tools {
+  margin-top: 16px;
+  max-width: 650px;
+  font-size: 12px
+}
+.preview-tools nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px
+}
+.preview-tools p {
+  margin: 12px 0
+}
+.nav-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+.nav-layout legend {
+  padding: 0 4px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .app-shell {
+    flex-direction: row
+  }
+  .app-content {
+    margin-left: 58px
+  }
+  /* Second sidebar beside the first: pushes the content by default, or opens over it
+     when the browser preference (theme panel) is "overlay". */
+  .sidebar.sidebar-secondary {
+    left: 58px;
+    z-index: 49
+  }
+  body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: 116px
+  }
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: 58px
+  }
+  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary {
+    z-index: 60;
+    box-shadow: 4px 0 16px rgb(0 0 0/.35)
+  }
+  body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
+    left: calc(100% + 80px)
+  }
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: auto;
+    padding: 40px 12px;
+    border-bottom: 0;
+    border-right: 1px solid var(--color-bg-tertiary);
+    flex-direction: column
+  }
+  .nav-group {
+    flex-direction: column
+  }
+  .nav-spacer {
+    display: flex
+  }
+  .nav-button[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: calc(100% + 22px);
+    bottom: 4px;
+    white-space: nowrap;
+    padding: 8px 12px;
+    border: 1px solid var(--color-bg-tertiary);
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .1s
+  }
+  .nav-button:hover::after,.nav-button:focus-visible::after {
+    opacity: 1
+  }
+}
+@media(max-width:calc(40rem - 1px)) {
+  .sidebar {
+    padding-bottom: 6px
+  }
+}
+}

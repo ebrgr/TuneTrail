@@ -1,0 +1,119 @@
+/* Components: theme panel popover, swatches and custom theme form. */
+@layer components {
+/* ISSUE-110: theme panel as a native popover. Older browsers ignore :popover-open and drop
+   that rule, so the panel stays hidden instead of showing inline. */
+.theme-panel[popover] {
+  display: none
+}
+.theme-panel[popover]:popover-open {
+  display: block
+}
+.theme-panel {
+  margin: auto;
+  color: var(--color-fg);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px;
+  padding: 24px;
+  width: calc(100% - 16px);
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: auto
+}
+.theme-panel::backdrop {
+  background: rgb(0 0 0/.6)
+}
+/* ISSUE-123: colors, sidebar layout and language as bordered sections, like .card. */
+.theme-panel h2 {
+  margin: 0 0 4px
+}
+.panel-section {
+  margin: 16px 0 0;
+  padding: 16px;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px
+}
+.panel-section h3 {
+  margin: 0;
+  font-size: 16px
+}
+.panel-section .language-picker {
+  margin: 0
+}
+.custom-theme-details {
+  margin-top: 20px
+}
+.custom-theme-details summary {
+  cursor: pointer;
+  color: var(--color-fg-secondary)
+}
+.theme-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px
+}
+.reset-theme {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px
+}
+.reset-theme:hover {
+  background: var(--color-bg-tertiary)
+}
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px
+}
+.theme-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 12px
+}
+.theme-option>span:first-child {
+  text-transform: capitalize
+}
+.theme-option[aria-pressed=true] {
+  outline: 1px solid var(--color-primary);
+  outline-offset: 1px
+}
+.swatches {
+  display: flex;
+  gap: 8px;
+  width: 100%
+}
+.swatches i {
+  width: 28.57%;
+  max-width: 50px;
+  height: 30px;
+  border-radius: 6px
+}
+.custom-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  margin-top: 12px;
+  border-radius: 8px;
+  background: var(--color-bg-secondary)
+}
+.theme-status {
+  font-size: 14px
+}
+@media(min-width:40rem) {
+  .theme-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr))
+  }
+  .theme-option {
+    padding: 20px;
+    font-size: 14px
+  }
+}
+}

@@ -117,9 +117,15 @@ func Load(ctx context.Context, source fs.FS) (*Snapshot, error) {
 	if err != nil {
 		return nil, err
 	}
-	var manifest map[string]string
-	if err = json.Unmarshal(data, &manifest); err != nil {
+	var raw map[string]json.RawMessage
+	if err = json.Unmarshal(data, &raw); err != nil {
 		return nil, fmt.Errorf("manifest: %w", err)
+	}
+	manifest := make(map[string][]string, len(raw))
+	for key, value := range raw {
+		if manifest[key], err = manifestSources(key, value); err != nil {
+			return nil, err
+		}
 	}
 	for _, key := range []string{"public/templates/live.html", "public/templates/page.html", "public/templates/rewind.html", "admin/templates/admin.html", "admin/templates/nav.html", "public/static/ui.css", "public/static/admin.css", "public/static/theme.js", "public/static/ui.js", "public/static/live.js", "public/static/admin.js", "public/palettes.json"} {
 		if _, ok := manifest[key]; !ok {
@@ -134,13 +140,23 @@ func Load(ctx context.Context, source fs.FS) (*Snapshot, error) {
 	sort.Strings(keys)
 	hash := sha256.New()
 	for _, key := range keys {
-		name := manifest[key]
-		if !validEntry(key, name) {
-			return nil, fmt.Errorf("invalid manifest path %s", key)
-		}
-		b, err := read(name)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", name, err)
+		// A CSS bundle concatenates its parts in manifest order (ISSUE-068); other keys have one part.
+		var b []byte
+		for _, name := range manifest[key] {
+			if !validEntry(key, name) {
+				return nil, fmt.Errorf("invalid manifest path %s", key)
+			}
+			part, err := read(name)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", name, err)
+			}
+			if len(b) > 0 && b[len(b)-1] != '\n' {
+				b = append(b, '\n')
+			}
+			b = append(b, part...)
+			if len(b) > maxFileBytes {
+				return nil, fmt.Errorf("%s exceeds asset size limit", key)
+			}
 		}
 		s.Bytes += len(b)
 		if s.Bytes > maxTotalBytes {
@@ -254,6 +270,29 @@ func (f *file) ReadDir(n int) ([]fs.DirEntry, error) {
 	out := f.entries[f.offset:end]
 	f.offset = end
 	return out, nil
+}
+
+// manifestSources accepts one path, or an ordered non-empty list of CSS parts for a public stylesheet bundle (ISSUE-068).
+func manifestSources(key string, value json.RawMessage) ([]string, error) {
+	var name string
+	if err := json.Unmarshal(value, &name); err == nil {
+		return []string{name}, nil
+	}
+	var parts []string
+	if err := json.Unmarshal(value, &parts); err != nil {
+		return nil, fmt.Errorf("manifest %s: want a path or a list of CSS paths", key)
+	}
+	if len(parts) == 0 || !strings.HasPrefix(key, "public/static/") || path.Ext(key) != ".css" {
+		return nil, fmt.Errorf("manifest %s: only public stylesheets may list parts", key)
+	}
+	seen := map[string]bool{}
+	for _, part := range parts {
+		if seen[part] {
+			return nil, fmt.Errorf("manifest %s: duplicate part %s", key, part)
+		}
+		seen[part] = true
+	}
+	return parts, nil
 }
 
 // validEntry separates private templates, runtime files and non-served distribution material.

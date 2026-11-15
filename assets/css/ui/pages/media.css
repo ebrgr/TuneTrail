@@ -1,0 +1,44 @@
+/* Pages: artist, album and track pages with their graphs. */
+@layer pages {
+/* Scoped media reading pages; graphs and management are integrated separately. */
+.media-detail { width:100%; padding:48px 40px; min-width:0; }
+.media-heading { display:flex; flex-wrap:wrap; gap:32px; align-items:start; }
+.media-cover { width:385px; height:385px; max-width:100%; object-fit:cover; border:1px solid var(--color-border); border-radius:var(--border-radius); }
+.media-heading-text { flex:1; min-width:0; }
+.media-type { font-size:24px; margin-bottom:8px; }
+.media-heading h1 { font-size:clamp(32px,5vw,72px); line-height:1.1; overflow-wrap:anywhere; margin:16px 0; }
+.media-overall-rank { color:var(--color-fg-secondary); font-size:20px; font-weight:500; white-space:nowrap; }
+.media-heading-text p { margin-bottom:6px; }
+.media-heading-text .media-artist { font-size:inherit; }
+.media-mbz { display:inline-flex; gap:6px; align-items:center; margin-top:16px; }
+.media-mbz svg { width:16px; height:16px; }
+.media-reading-blocks { display:flex; flex-wrap:wrap; align-items:start; gap:40px 80px; margin-top:48px; max-width:1400px; }
+.media-top-tracks { width:450px; max-width:100%; }
+.media-history { flex:1; min-width:min(350px,100%); max-width:100%; }
+.media-top-tracks .section-title,.media-history .section-title { margin-bottom:24px; }
+.media-albums { margin-top:56px; }
+.media-album-grid { display:flex; flex-wrap:wrap; gap:32px; margin-top:32px; }
+.media-album-grid>.media { width:330px; max-width:100%; }
+@media(max-width:767px) {
+  .media-detail { padding:24px 16px; }
+  .media-cover { width:280px; height:280px; }
+  .media-heading-text { flex-basis:100%; }
+  .media-heading h1 { font-size:32px; }
+  .media-type { font-size:20px; }
+  .media-history .listens { font-size:12px; }
+}
+/* Graphs share numeric data with the API and expose values without JavaScript. */
+.media-graphs { display:flex; flex-wrap:wrap; gap:40px; align-items:start; margin-top:40px; }
+.media-graphs>section { min-width:0; max-width:100%; }
+.media-graphs .section-title { margin-bottom:20px; }
+.media-interest { width:550px; }
+.interest-card { padding:24px; }
+.interest-svg { display:block; width:100%; height:120px; overflow:hidden; }
+.graph-values { margin-top:12px; font-size:12px; color:var(--color-fg-secondary); }
+.graph-values summary { cursor:pointer; padding:8px 0; }
+.graph-values summary:focus-visible { outline:2px solid var(--color-primary); outline-offset:3px; }
+.graph-table-scroll { max-width:100%; overflow-x:auto; }
+.graph-values table { width:100%; border-collapse:collapse; }
+.graph-values caption { text-align:left; margin:8px 0; }
+.graph-values th,.graph-values td { padding:6px 8px; text-align:left; border-bottom:1px solid var(--color-border); }
+}

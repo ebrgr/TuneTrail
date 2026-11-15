@@ -14,7 +14,7 @@ func TestCatalogTracksDependencies(t *testing.T) {
 	dir := distribution(t)
 	// The shipped stylesheets no longer reference icons (ISSUE-122 removed the admin avatar
 	// masks), so give admin.css a relative dependency to exercise invalidation.
-	css := filepath.Join(dir, "css/admin.css")
+	css := filepath.Join(dir, "css/admin/admin.css")
 	source, err := os.ReadFile(css)
 	if err != nil {
 		t.Fatal(err)
@@ -143,7 +143,7 @@ func TestDerivedCSSBudget(t *testing.T) {
 	dir := distribution(t)
 	rule := `a{mask:url(icons/Music2.svg)}`
 	source := strings.Repeat(rule, maxFileBytes/len(rule))
-	if err := os.WriteFile(filepath.Join(dir, "css/admin.css"), []byte(source), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "css/admin/admin.css"), []byte(source), 0644); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := Open(t.Context(), dir); err == nil {

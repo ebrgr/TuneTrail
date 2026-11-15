@@ -1,0 +1,53 @@
+/* Components: section titles, section links and the period selector. */
+@layer components {
+.section-title {
+  color: var(--color-fg-secondary)
+}
+.section-link:hover {
+  color: var(--color-fg)
+}
+.section-link>span {
+  opacity: 0;
+  transition: opacity .1s
+}
+.section-link:hover>span,.section-link:focus-visible>span {
+  opacity: 1
+}
+.period-selector {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  max-width: 100%
+}
+.period-selector a {
+  text-transform: uppercase;
+  color: var(--color-fg-tertiary);
+  white-space: nowrap
+}
+.period-selector a:not(:last-child) {
+  padding-right: clamp(8px,4vw,32px)
+}
+.period-selector a[aria-current],.period-selector a:hover {
+  color: var(--color-fg)
+}
+@media(min-width:40rem) {
+  .section-title {
+    margin-bottom: 4px
+  }
+  .period-selector {
+    font-size: 16px;
+    padding: 8px 24px
+  }
+}
+@media(max-width:calc(40rem - 1px)) {
+  .period-selector {
+    width: 352px;
+    justify-content: space-between;
+    gap: 0
+  }
+  .period-selector a:not(:last-child) {
+    padding-right: 0
+  }
+}
+}

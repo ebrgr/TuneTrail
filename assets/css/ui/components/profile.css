@@ -1,0 +1,102 @@
+/* Components: avatar, profile header, identity and administrator badge. */
+@layer components {
+.nav-button .avatar {
+  width: 18px;
+  height: 18px;
+  min-width: 18px
+}
+.nav-button .avatar svg {
+  width: 9px;
+  height: 9px
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  font-size: 12px
+}
+.avatar svg {
+  width: 50%;
+  height: 50%
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+.profile-header {
+  width: 100%;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-border)
+}
+/* ISSUE-109: administrator session badge. The link pads the 32px avatar to a 44px
+   touch target without moving the header; the badge keeps 3:1 against the background. */
+.admin-avatar-link {
+  position: relative;
+  display: inline-flex;
+  padding: 6px;
+  margin: -6px;
+  border-radius: 50%;
+  color: inherit
+}
+.admin-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  box-shadow: 0 0 0 2px var(--color-bg)
+}
+.admin-badge svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.5
+}
+/* Pearl's primary blue is under 3:1 on its background; its darker info blue keeps 4.33:1. */
+[data-theme="pearl"] .admin-badge {
+  background: var(--color-info)
+}
+.profile-identity {
+  min-width: 0;
+  display: block
+}
+.profile-identity strong,.profile-identity>span {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis
+}
+.profile-identity strong {
+  font-weight: 600
+}
+.profile-identity>span {
+  font-size: 12px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .profile-header {
+    padding-left: 40px;
+    padding-right: 40px
+  }
+}
+.profile-header .profile-identity>span {
+  line-height: 16px
+}
+}

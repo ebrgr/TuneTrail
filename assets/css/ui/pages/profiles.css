@@ -1,0 +1,71 @@
+/* Pages: profile selection. */
+@layer pages {
+.profile-selection {
+  width: 100%;
+  max-width: 56rem;
+  padding: 48px 24px;
+  min-height: 80vh
+}
+.eyebrow {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--color-fg-secondary)
+}
+.profile-selection h1 {
+  margin-top: 12px
+}
+.intro {
+  margin-top: 12px;
+  margin-bottom: 40px;
+  color: var(--color-fg-secondary)
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px
+}
+.profile-card {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0
+}
+.profile-card:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-fg)
+}
+.profile-card .avatar {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  font-size: 18px
+}
+.profile-card .profile-identity>span {
+  font-size: 14px
+}
+.text-link {
+  text-decoration: underline
+}
+.admin-entry {
+  display: inline-block;
+  margin-top: 40px;
+  font-size: 14px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .profile-selection {
+    padding-top: 80px;
+    padding-bottom: 80px
+  }
+  .profile-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr))
+  }
+}
+@media(min-width:64rem) {
+  .profile-grid {
+    grid-template-columns: repeat(3,minmax(0,1fr))
+  }
+}
+}

@@ -1,0 +1,17 @@
+/* Tokens: layout custom properties; theme colours come from themes.css. */
+@layer tokens {
+:root {
+  --border-radius: 8px;
+  --color-border: var(--color-bg-tertiary);
+  --header-xl: 36px;
+  --header-lg: 28px;
+  --header-line-height: 3rem
+}
+@media(min-width:60rem) {
+  :root {
+    --header-xl: 78px;
+    --header-lg: 36px;
+    --header-line-height: 1.3em
+  }
+}
+}

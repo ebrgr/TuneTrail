@@ -1,0 +1,148 @@
+/* Pages: home overview, hero and highlight blocks. */
+@layer pages {
+.home {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  padding-bottom: 16px;
+  width: 100%
+}
+.home-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  min-height: 0;
+  min-width: 0;
+  margin: 32px 16px 0
+}
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 100%
+}
+.stats-columns {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px
+}
+.stats b {
+  font-family: 'League Spartan',sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px
+}
+.stats-columns>div {
+  min-width: 0
+}
+.home-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 100%
+}
+.feature-section {
+  width: 350px;
+  max-width: 100%
+}
+.feature-card {
+  max-width: 350px
+}
+.hero {
+  position: relative
+}
+.hero>img {
+  width: 350px;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 8px 8px 0 0
+}
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px 8px 0 0;
+  background-image: linear-gradient(to top,
+    var(--color-bg-secondary) 0%,
+    color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,
+    color-mix(in srgb,var(--color-bg-secondary) 95%,transparent) 12%,
+    color-mix(in srgb,var(--color-bg-secondary) 86%,transparent) 20%,
+    color-mix(in srgb,var(--color-bg-secondary) 72%,transparent) 28%,
+    color-mix(in srgb,var(--color-bg-secondary) 55%,transparent) 36%,
+    color-mix(in srgb,var(--color-bg-secondary) 37%,transparent) 44%,
+    color-mix(in srgb,var(--color-bg-secondary) 22%,transparent) 51%,
+    color-mix(in srgb,var(--color-bg-secondary) 11%,transparent) 57%,
+    color-mix(in srgb,var(--color-bg-secondary) 4%,transparent) 61%,
+    color-mix(in srgb,var(--color-bg-secondary) 1%,transparent) 63.5%,
+    transparent 65%)
+}
+.hero-caption {
+  position: absolute;
+  bottom: 32px;
+  left: 20px;
+  right: 16px
+}
+.hero-caption h5 {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 2px #0004
+}
+@media(min-width:40rem) {
+  .home-inner {
+    margin: 40px 40px 0
+  }
+}
+@media(min-width:48rem) {
+  .home-inner {
+    gap: 48px
+  }
+  .overview {
+    gap: 80px
+  }
+}
+@media(min-width:64rem) {
+  .overview {
+    flex-direction: row
+  }
+}
+/* Match Tailwind's container maximums used on Home, without keeping its compiler. */
+@media(min-width:40rem) {
+  .home-blocks {
+    max-width: 640px
+  }
+}
+@media(min-width:48rem) {
+  .home-blocks {
+    max-width: 768px
+  }
+}
+@media(min-width:64rem) {
+  .home-blocks {
+    max-width: 1024px
+  }
+}
+@media(min-width:80rem) {
+  .home-blocks {
+    max-width: 1280px
+  }
+}
+@media(min-width:96rem) {
+  .home-blocks {
+    max-width: 1536px
+  }
+}
+@media(max-width:calc(40rem - 1px)) {
+  .overview {
+    width: 350px
+  }
+}
+}

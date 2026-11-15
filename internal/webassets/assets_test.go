@@ -22,12 +22,19 @@ func distribution(t *testing.T) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var manifest map[string]string
+	var manifest map[string]json.RawMessage
 	if err = json.Unmarshal(b, &manifest); err != nil {
 		t.Fatal(err)
 	}
-	manifest["manifest"] = "manifest.json"
-	for _, name := range manifest {
+	names := []string{"manifest.json"}
+	for key, value := range manifest {
+		parts, err := manifestSources(key, value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		names = append(names, parts...)
+	}
+	for _, name := range names {
 		data, err := os.ReadFile(filepath.Join(root, name))
 		if err != nil {
 			t.Fatal(err)
@@ -54,7 +61,7 @@ func TestSnapshotKeepsGeneration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = os.WriteFile(filepath.Join(dir, "css/ui.css"), []byte("changed"), 0644); err != nil {
+	if err = os.WriteFile(filepath.Join(dir, "css/ui/base.css"), []byte("changed"), 0644); err != nil {
 		t.Fatal(err)
 	}
 	after, err := s.read("public/static/ui.css")
@@ -83,7 +90,7 @@ func TestSnapshotRejectsBrokenDistribution(t *testing.T) {
 	for _, mode := range []string{"missing", "directory", "oversize", "escape", "manifest"} {
 		t.Run(mode, func(t *testing.T) {
 			dir := distribution(t)
-			p := filepath.Join(dir, "css/ui.css")
+			p := filepath.Join(dir, "css/ui/base.css")
 			switch mode {
 			case "missing":
 				if err := os.Remove(p); err != nil {
@@ -164,7 +171,7 @@ func TestManifestCategories(t *testing.T) {
 // TestInternalSymlinkCannotExposePrivateTemplate checks category isolation inside the root.
 func TestInternalSymlinkCannotExposePrivateTemplate(t *testing.T) {
 	dir := distribution(t)
-	p := filepath.Join(dir, "css/ui.css")
+	p := filepath.Join(dir, "css/ui/base.css")
 	if err := os.Remove(p); err != nil {
 		t.Fatal(err)
 	}

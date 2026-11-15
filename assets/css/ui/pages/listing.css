@@ -1,0 +1,39 @@
+/* Pages: listings, filters, pagination and the search page. */
+@layer pages {
+/* Real profile pages; all links remain ordinary document navigation. */
+.listing { width: calc(100% - 32px); max-width: 1000px; margin: 32px auto; min-height: 65vh; }
+.listing h1 { margin-bottom: 24px; }
+.date-range { margin-top: 8px; color: var(--color-fg-secondary); font-size: 14px; }
+.pagination { display:flex; justify-content:center; align-items:center; gap:40px; margin:24px 0; }
+.pagination [aria-disabled] { color:var(--color-fg-tertiary); }
+.listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:24px 0; }
+.listing-filters label { display:flex; flex-direction:column; font-size:14px; }
+.listing-filters input,.listing-filters select {
+  background:var(--color-bg);
+  color:var(--color-fg);
+  border:1px solid var(--color-border);
+  border-radius:6px;
+  padding:8px;
+  max-width:110px;
+}
+/* ISSUE-107: the full search page field fills the row; the button stays at its side. */
+.search-page-form {
+  flex-wrap: nowrap
+}
+.search-page-form label {
+  flex: 1;
+  min-width: 0
+}
+.search-page-form input {
+  width: 100%;
+  max-width: none;
+  padding: 12px
+}
+.see-more { display:block; text-align:center; margin-top:8px; color:var(--color-fg-secondary); }
+@media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
+.delete-listen { color:var(--color-fg-tertiary); padding:8px; }
+.delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
+
+/* History actions remain accessible through normal navigation without JavaScript. */
+.listen-manage{display:block;font-size:11px;color:var(--color-fg-tertiary);margin-top:2px}
+}

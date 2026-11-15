@@ -34,6 +34,18 @@ class WebStyleTests(unittest.TestCase):
         found = [(str(p), n) for p, n, _ in check.offenders(root)]
         self.assertEqual(found, [('assets/templates/public/a.html', 1), ('assets/css/a.css', 1)])
 
+    def test_checks_nested_stylesheets(self):
+        root = self.tree('')
+        (root / 'assets/css/ui/pages').mkdir(parents=True)
+        (root / 'assets/css/ui/pages/b.css').write_text('.b{' + 'color:red;' * 20 + '}')
+        self.assertEqual([str(p) for p, _, _ in check.offenders(root)], ['assets/css/ui/pages/b.css'])
+
+    def test_stylesheet_line_limit(self):
+        root = self.tree('', 'a{}\n' * check.CSS_LINES)
+        self.assertEqual(list(check.long_stylesheets(root)), [])
+        (root / 'assets/css/a.css').write_text('a{}\n' * (check.CSS_LINES + 1))
+        self.assertEqual([(str(p), n) for p, n in check.long_stylesheets(root)], [('assets/css/a.css', check.CSS_LINES + 1)])
+
     def test_script_budget(self):
         root = self.tree('')
         (root / 'assets/js').mkdir(parents=True)

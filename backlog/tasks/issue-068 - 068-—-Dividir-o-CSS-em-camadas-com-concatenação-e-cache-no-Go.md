@@ -1,10 +1,11 @@
 ---
 id: ISSUE-068
 title: 068 — Dividir o CSS em camadas com concatenação e cache no Go
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T15:00:00Z'
+updated_date: '2026-11-15T17:04:00Z'
 labels:
   - ui
 milestone: m-10
@@ -53,6 +54,15 @@ created: 2026-11-14T15:00:00Z
 ---
 
 Requisito do parecer do Advisor na ISSUE-061 (item 4): ao concatenar o CSS com hash, reescrever também os url() internos (fontes da ISSUE-070, ícones) com o hash do arquivo referenciado, senão a troca de uma fonte não invalida o cache.
+
+---
+
+author: ebrgr
+created: 2026-11-15T17:04:00Z
+
+---
+
+Início: branch `chore/issue-068-dividir-o-css-em-camadas` criada a partir de `main`.
 
 ---
 <!-- COMMENTS:END -->

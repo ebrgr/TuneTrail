@@ -71,7 +71,7 @@ def main():
                 with urllib.request.urlopen(origin+'/') as response:
                     old_generation = response.headers['X-TuneTrail-UI-Generation']
                     assert response.headers['Cache-Control'] == 'private, no-cache'
-                css = package/'assets/css/ui.css'
+                css = package/'assets/css/ui/base.css'
                 original_css = css.read_bytes()
                 css.write_text('changed after startup')
                 with urllib.request.urlopen(origin+'/web-assets/ui.css') as response:

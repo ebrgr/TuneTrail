@@ -1,3 +1,7 @@
+/* Reset: browser defaults normalised like the original Tailwind preflight. */
+/* Cascade order for the whole bundle; later layers win regardless of specificity. */
+@layer reset, tokens, base, layout, components, pages, utilities;
+@layer reset {
 /* Roadmap 1: explicit equivalents of the existing app's CSS/Tailwind rules. */
 *,::before,::after {
   box-sizing: border-box;
@@ -40,9 +44,13 @@ ol,ul {
   padding: 0;
   list-style: none
 }
-[hidden] {
-  display: none!important
+/* Differences found in the first React/Go screenshot pass. */
+button {
+  text-transform: inherit
 }
+}
+/* Tokens: layout custom properties; theme colours come from themes.css. */
+@layer tokens {
 :root {
   --border-radius: 8px;
   --color-border: var(--color-bg-tertiary);
@@ -50,6 +58,16 @@ ol,ul {
   --header-lg: 28px;
   --header-line-height: 3rem
 }
+@media(min-width:60rem) {
+  :root {
+    --header-xl: 78px;
+    --header-lg: 36px;
+    --header-line-height: 1.3em
+  }
+}
+}
+/* Base: element typography, focus, text colours, cards and native controls. */
+@layer base {
 html,body {
   background: var(--color-bg);
   color: var(--color-fg);
@@ -106,14 +124,70 @@ a:hover,button.media-title:hover {
 .offset {
   margin-left: 24px
 }
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap
+summary {
+  cursor: pointer
 }
+.noscript {
+  padding: 16px;
+  text-align: center
+}
+textarea {
+  resize: vertical;
+  background: var(--color-bg);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 6px;
+  width: 300px;
+  max-width: 100%;
+  height: 450px;
+  padding: 20px
+}
+button.large-button {
+  padding: .8rem 2rem;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px;
+  background: var(--color-bg)
+}
+button.large-button:hover {
+  background: var(--color-bg-tertiary)
+}
+body:has(dialog[open]) {
+  overflow: hidden
+}
+.cover-failed {
+  background: var(--color-bg-tertiary);
+  object-fit: contain!important
+}
+@media(prefers-reduced-motion:reduce) {
+  *,::before,::after {
+    animation: none!important;
+    transition: none!important
+  }
+}
+
+/* Keep dropdown arrows inset consistently while retaining native select behavior. */
+select:not([multiple]):not([size]) {
+  --select-arrow: linear-gradient(45deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%), linear-gradient(135deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%);
+  appearance: none;
+  background-image: var(--select-arrow);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+@media (forced-colors: active) {
+  select:not([multiple]):not([size]) { appearance: auto; background-image: none; }
+}
+}
+/* Layout: application shell, sidebars, navigation and footer. */
+@layer layout {
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -173,6 +247,116 @@ html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
   background: var(--color-bg-tertiary);
   color: var(--color-fg)
 }
+footer {
+  margin: 0 auto;
+  padding: 80px 16px 40px;
+  text-align: center;
+  color: var(--color-fg-tertiary);
+  font-size: 14px
+}
+footer svg {
+  display: inline-block;
+  vertical-align: middle;
+  width: 14px;
+  height: 14px;
+  margin-bottom: 4px
+}
+footer a:hover {
+  text-decoration: underline
+}
+.preview-tools {
+  margin-top: 16px;
+  max-width: 650px;
+  font-size: 12px
+}
+.preview-tools nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px
+}
+.preview-tools p {
+  margin: 12px 0
+}
+.nav-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+.nav-layout legend {
+  padding: 0 4px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .app-shell {
+    flex-direction: row
+  }
+  .app-content {
+    margin-left: 58px
+  }
+  /* Second sidebar beside the first: pushes the content by default, or opens over it
+     when the browser preference (theme panel) is "overlay". */
+  .sidebar.sidebar-secondary {
+    left: 58px;
+    z-index: 49
+  }
+  body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: 116px
+  }
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: 58px
+  }
+  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary {
+    z-index: 60;
+    box-shadow: 4px 0 16px rgb(0 0 0/.35)
+  }
+  body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
+    left: calc(100% + 80px)
+  }
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: auto;
+    padding: 40px 12px;
+    border-bottom: 0;
+    border-right: 1px solid var(--color-bg-tertiary);
+    flex-direction: column
+  }
+  .nav-group {
+    flex-direction: column
+  }
+  .nav-spacer {
+    display: flex
+  }
+  .nav-button[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    left: calc(100% + 22px);
+    bottom: 4px;
+    white-space: nowrap;
+    padding: 8px 12px;
+    border: 1px solid var(--color-bg-tertiary);
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .1s
+  }
+  .nav-button:hover::after,.nav-button:focus-visible::after {
+    opacity: 1
+  }
+}
+@media(max-width:calc(40rem - 1px)) {
+  .sidebar {
+    padding-bottom: 6px
+  }
+}
+}
+/* Components: avatar, profile header, identity and administrator badge. */
+@layer components {
 .nav-button .avatar {
   width: 18px;
   height: 18px;
@@ -263,43 +447,18 @@ html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
   font-size: 12px;
   color: var(--color-fg-secondary)
 }
-.home {
-  display: flex;
-  flex-grow: 1;
-  justify-content: center;
-  padding-bottom: 16px;
-  width: 100%
+@media(min-width:40rem) {
+  .profile-header {
+    padding-left: 40px;
+    padding-right: 40px
+  }
 }
-.home-inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-  min-height: 0;
-  min-width: 0;
-  margin: 32px 16px 0
+.profile-header .profile-identity>span {
+  line-height: 16px
 }
-.overview {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  max-width: 100%
 }
-.stats-columns {
-  display: flex;
-  gap: 24px;
-  margin-top: 24px
-}
-.stats b {
-  font-family: 'League Spartan',sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  line-height: 28px
-}
-.stats-columns>div {
-  min-width: 0
-}
+/* Components: section titles, section links and the period selector. */
+@layer components {
 .section-title {
   color: var(--color-fg-secondary)
 }
@@ -331,65 +490,28 @@ html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
 .period-selector a[aria-current],.period-selector a:hover {
   color: var(--color-fg)
 }
-.home-blocks {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 40px;
-  width: 100%;
-  max-width: 100%
+@media(min-width:40rem) {
+  .section-title {
+    margin-bottom: 4px
+  }
+  .period-selector {
+    font-size: 16px;
+    padding: 8px 24px
+  }
 }
-.feature-section {
-  width: 350px;
-  max-width: 100%
+@media(max-width:calc(40rem - 1px)) {
+  .period-selector {
+    width: 352px;
+    justify-content: space-between;
+    gap: 0
+  }
+  .period-selector a:not(:last-child) {
+    padding-right: 0
+  }
 }
-.feature-card {
-  max-width: 350px
 }
-.hero {
-  position: relative
-}
-.hero>img {
-  width: 350px;
-  height: auto;
-  aspect-ratio: 1;
-  border-radius: 8px 8px 0 0
-}
-.hero-gradient {
-  position: absolute;
-  inset: 0;
-  border-radius: 8px 8px 0 0;
-  background-image: linear-gradient(to top,
-    var(--color-bg-secondary) 0%,
-    color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,
-    color-mix(in srgb,var(--color-bg-secondary) 95%,transparent) 12%,
-    color-mix(in srgb,var(--color-bg-secondary) 86%,transparent) 20%,
-    color-mix(in srgb,var(--color-bg-secondary) 72%,transparent) 28%,
-    color-mix(in srgb,var(--color-bg-secondary) 55%,transparent) 36%,
-    color-mix(in srgb,var(--color-bg-secondary) 37%,transparent) 44%,
-    color-mix(in srgb,var(--color-bg-secondary) 22%,transparent) 51%,
-    color-mix(in srgb,var(--color-bg-secondary) 11%,transparent) 57%,
-    color-mix(in srgb,var(--color-bg-secondary) 4%,transparent) 61%,
-    color-mix(in srgb,var(--color-bg-secondary) 1%,transparent) 63.5%,
-    transparent 65%)
-}
-.hero-caption {
-  position: absolute;
-  bottom: 32px;
-  left: 20px;
-  right: 16px
-}
-.hero-caption h5 {
-  font-size: 30px;
-  line-height: 36px;
-  font-weight: 600;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  text-shadow: 0 1px 2px #0004
-}
+/* Components: media items, ranked lists and listen tables. */
+@layer components {
 .feature-list {
   display: flex;
   flex-direction: column;
@@ -536,6 +658,34 @@ html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
   vertical-align: middle;
   margin-right: 8px
 }
+@media(min-width:40rem) {
+  .media-meta,.media-artist {
+    font-size: 14px
+  }
+  .ranked-list li,.last-played {
+    font-size: 15px
+  }
+  .listens td:first-child {
+    min-width: 44px
+  }
+  .listens td.listen-time {
+    padding-right: 16px;
+    font-size: 14px
+  }
+}
+@media(min-width:64rem) {
+  .last-played {
+    max-width: 1200px
+  }
+}
+@media(min-width:96rem) {
+  .tracks {
+    max-width: 450px
+  }
+}
+}
+/* Components: activity heatmap and its legend. */
+@layer components {
 .activity {
   max-width: 100%
 }
@@ -616,98 +766,50 @@ html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
     display: none
   }
 }
-.profile-selection {
-  width: 100%;
-  max-width: 56rem;
-  padding: 48px 24px;
-  min-height: 80vh
+@media(min-width:40rem) {
+  .activity-card {
+    min-width: 350px;
+    height: 175px;
+    padding: 24px 28px 20px
+  }
+  .day-labels,.activity-cells {
+    grid-template-rows: repeat(7,10px)
+  }
+  .activity-cells {
+    grid-auto-columns: 10px
+  }
+  .activity-slot,.activity-cell {
+    width: 10px;
+    height: 10px
+  }
+  .day-labels span {
+    font-size: 11px
+  }
+  .legend i {
+    width: 9px;
+    height: 9px
+  }
 }
-.eyebrow {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--color-fg-secondary)
+@media(min-width:48rem) {
+  .day-labels,.activity-cells {
+    gap: 3px
+  }
 }
-.profile-selection h1 {
-  margin-top: 12px
+.day-labels span {
+  margin-top: 0;
+  transform: translateY(8px)
 }
-.intro {
-  margin-top: 12px;
-  margin-bottom: 40px;
-  color: var(--color-fg-secondary)
+@media(max-width:calc(40rem - 1px)) {
+  .activity-card {
+    width: 350px
+  }
 }
-.profile-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px
+.activity-cell {
+  transform: translateY(8px)
 }
-.profile-card {
-  padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0
 }
-.profile-card:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-fg)
-}
-.profile-card .avatar {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  font-size: 18px
-}
-.profile-card .profile-identity>span {
-  font-size: 14px
-}
-.text-link {
-  text-decoration: underline
-}
-.admin-entry {
-  display: inline-block;
-  margin-top: 40px;
-  font-size: 14px;
-  color: var(--color-fg-secondary)
-}
-footer {
-  margin: 0 auto;
-  padding: 80px 16px 40px;
-  text-align: center;
-  color: var(--color-fg-tertiary);
-  font-size: 14px
-}
-footer svg {
-  display: inline-block;
-  vertical-align: middle;
-  width: 14px;
-  height: 14px;
-  margin-bottom: 4px
-}
-footer a:hover {
-  text-decoration: underline
-}
-.preview-tools {
-  margin-top: 16px;
-  max-width: 650px;
-  font-size: 12px
-}
-.preview-tools nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px
-}
-.preview-tools p {
-  margin: 12px 0
-}
-summary {
-  cursor: pointer
-}
-.noscript {
-  padding: 16px;
-  text-align: center
-}
+/* Components: native dialogs and the profile switcher. */
+@layer components {
 dialog {
   margin: auto;
   color: var(--color-fg);
@@ -777,6 +879,25 @@ dialog h2 {
   margin-top: 24px;
   font-size: 14px
 }
+@media(min-width:40rem) {
+  .close-dialog {
+    top: 12px;
+    right: 16px
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(.95)
+  }
+  to {
+    opacity: 1;
+    transform: scale(1)
+  }
+}
+}
+/* Components: theme panel popover, swatches and custom theme form. */
+@layer components {
 /* ISSUE-110: theme panel as a native popover. Older browsers ignore :popover-open and drop
    that rule, so the panel stays hidden instead of showing inline. */
 .theme-panel[popover] {
@@ -813,15 +934,6 @@ dialog h2 {
 .panel-section h3 {
   margin: 0;
   font-size: 16px
-}
-.nav-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 8px
-}
-.nav-layout legend {
-  padding: 0 4px;
-  color: var(--color-fg-secondary)
 }
 .panel-section .language-picker {
   margin: 0
@@ -890,156 +1002,10 @@ dialog h2 {
   border-radius: 8px;
   background: var(--color-bg-secondary)
 }
-textarea {
-  resize: vertical;
-  background: var(--color-bg);
-  border: 1px solid var(--color-bg-tertiary);
-  border-radius: 6px;
-  width: 300px;
-  max-width: 100%;
-  height: 450px;
-  padding: 20px
-}
-button.large-button {
-  padding: .8rem 2rem;
-  border: 1px solid var(--color-bg-tertiary);
-  border-radius: 8px;
-  background: var(--color-bg)
-}
-button.large-button:hover {
-  background: var(--color-bg-tertiary)
-}
 .theme-status {
   font-size: 14px
 }
-body:has(dialog[open]) {
-  overflow: hidden
-}
-.cover-failed {
-  background: var(--color-bg-tertiary);
-  object-fit: contain!important
-}
 @media(min-width:40rem) {
-  .app-shell {
-    flex-direction: row
-  }
-  .app-content {
-    margin-left: 58px
-  }
-  /* Second sidebar beside the first: pushes the content by default, or opens over it
-     when the browser preference (theme panel) is "overlay". */
-  .sidebar.sidebar-secondary {
-    left: 58px;
-    z-index: 49
-  }
-  body:has(#nav-admin:not([hidden])) .app-content {
-    margin-left: 116px
-  }
-  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
-    margin-left: 58px
-  }
-  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary {
-    z-index: 60;
-    box-shadow: 4px 0 16px rgb(0 0 0/.35)
-  }
-  body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
-    left: calc(100% + 80px)
-  }
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    width: auto;
-    padding: 40px 12px;
-    border-bottom: 0;
-    border-right: 1px solid var(--color-bg-tertiary);
-    flex-direction: column
-  }
-  .nav-group {
-    flex-direction: column
-  }
-  .nav-spacer {
-    display: flex
-  }
-  .nav-button[data-tip]::after {
-    content: attr(data-tip);
-    position: absolute;
-    left: calc(100% + 22px);
-    bottom: 4px;
-    white-space: nowrap;
-    padding: 8px 12px;
-    border: 1px solid var(--color-bg-tertiary);
-    border-radius: 8px;
-    background: var(--color-bg);
-    color: var(--color-fg);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .1s
-  }
-  .nav-button:hover::after,.nav-button:focus-visible::after {
-    opacity: 1
-  }
-  .profile-header {
-    padding-left: 40px;
-    padding-right: 40px
-  }
-  .home-inner {
-    margin: 40px 40px 0
-  }
-  .section-title {
-    margin-bottom: 4px
-  }
-  .period-selector {
-    font-size: 16px;
-    padding: 8px 24px
-  }
-  .media-meta,.media-artist {
-    font-size: 14px
-  }
-  .ranked-list li,.last-played {
-    font-size: 15px
-  }
-  .listens td:first-child {
-    min-width: 44px
-  }
-  .listens td.listen-time {
-    padding-right: 16px;
-    font-size: 14px
-  }
-  .activity-card {
-    min-width: 350px;
-    height: 175px;
-    padding: 24px 28px 20px
-  }
-  .day-labels,.activity-cells {
-    grid-template-rows: repeat(7,10px)
-  }
-  .activity-cells {
-    grid-auto-columns: 10px
-  }
-  .activity-slot,.activity-cell {
-    width: 10px;
-    height: 10px
-  }
-  .day-labels span {
-    font-size: 11px
-  }
-  .legend i {
-    width: 9px;
-    height: 9px
-  }
-  .profile-selection {
-    padding-top: 80px;
-    padding-bottom: 80px
-  }
-  .profile-grid {
-    grid-template-columns: repeat(2,minmax(0,1fr))
-  }
-  .close-dialog {
-    top: 12px;
-    right: 16px
-  }
   .theme-grid {
     grid-template-columns: repeat(2,minmax(0,1fr))
   }
@@ -1048,148 +1014,9 @@ body:has(dialog[open]) {
     font-size: 14px
   }
 }
-@media(min-width:48rem) {
-  .home-inner {
-    gap: 48px
-  }
-  .overview {
-    gap: 80px
-  }
-  .day-labels,.activity-cells {
-    gap: 3px
-  }
 }
-@media(min-width:60rem) {
-  :root {
-    --header-xl: 78px;
-    --header-lg: 36px;
-    --header-line-height: 1.3em
-  }
-}
-@media(min-width:64rem) {
-  .overview {
-    flex-direction: row
-  }
-  .last-played {
-    max-width: 1200px
-  }
-  .profile-grid {
-    grid-template-columns: repeat(3,minmax(0,1fr))
-  }
-}
-@media(min-width:96rem) {
-  .tracks {
-    max-width: 450px
-  }
-}
-/* Match Tailwind's container maximums used on Home, without keeping its compiler. */
-@media(min-width:40rem) {
-  .home-blocks {
-    max-width: 640px
-  }
-}
-@media(min-width:48rem) {
-  .home-blocks {
-    max-width: 768px
-  }
-}
-@media(min-width:64rem) {
-  .home-blocks {
-    max-width: 1024px
-  }
-}
-@media(min-width:80rem) {
-  .home-blocks {
-    max-width: 1280px
-  }
-}
-@media(min-width:96rem) {
-  .home-blocks {
-    max-width: 1536px
-  }
-}
-@keyframes dialog-in {
-  from {
-    opacity: 0;
-    transform: scale(.95)
-  }
-  to {
-    opacity: 1;
-    transform: scale(1)
-  }
-}
-@media(prefers-reduced-motion:reduce) {
-  *,::before,::after {
-    animation: none!important;
-    transition: none!important
-  }
-}
-/* Differences found in the first React/Go screenshot pass. */
-button {
-  text-transform: inherit
-}
-.profile-header .profile-identity>span {
-  line-height: 16px
-}
-.day-labels span {
-  margin-top: 0;
-  transform: translateY(8px)
-}
-@media(max-width:calc(40rem - 1px)) {
-  .sidebar {
-    padding-bottom: 6px
-  }
-  .overview {
-    width: 350px
-  }
-  .activity-card {
-    width: 350px
-  }
-  .period-selector {
-    width: 352px;
-    justify-content: space-between;
-    gap: 0
-  }
-  .period-selector a:not(:last-child) {
-    padding-right: 0
-  }
-}
-.activity-cell {
-  transform: translateY(8px)
-}
-/* Real profile pages; all links remain ordinary document navigation. */
-.listing { width: calc(100% - 32px); max-width: 1000px; margin: 32px auto; min-height: 65vh; }
-.listing h1 { margin-bottom: 24px; }
-.date-range { margin-top: 8px; color: var(--color-fg-secondary); font-size: 14px; }
-.pagination { display:flex; justify-content:center; align-items:center; gap:40px; margin:24px 0; }
-.pagination [aria-disabled] { color:var(--color-fg-tertiary); }
-.listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:24px 0; }
-.listing-filters label { display:flex; flex-direction:column; font-size:14px; }
-.listing-filters input,.listing-filters select {
-  background:var(--color-bg);
-  color:var(--color-fg);
-  border:1px solid var(--color-border);
-  border-radius:6px;
-  padding:8px;
-  max-width:110px;
-}
-/* ISSUE-107: the full search page field fills the row; the button stays at its side. */
-.search-page-form {
-  flex-wrap: nowrap
-}
-.search-page-form label {
-  flex: 1;
-  min-width: 0
-}
-.search-page-form input {
-  width: 100%;
-  max-width: none;
-  padding: 12px
-}
-.see-more { display:block; text-align:center; margin-top:8px; color:var(--color-fg-secondary); }
-@media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
-.delete-listen { color:var(--color-fg-tertiary); padding:8px; }
-.delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
+/* Components: instant search dialog and result cards. */
+@layer components {
 /* ISSUE-107: search dialog anchored to the top like the original Koito; the heading and
    field stay in place (sticky) while the titled result cards grow and scroll below. */
 .search-dialog {
@@ -1340,6 +1167,282 @@ h2.search-section-title,
   padding: 0 24px 16px;
   color: var(--color-fg-secondary)
 }
+}
+/* Components: language picker form. */
+@layer components {
+/* A native form keeps language selection available without JavaScript. */
+.language-picker{display:flex;align-items:end;justify-content:flex-start;flex-wrap:wrap;gap:.65rem;margin:1.5rem 0;color:var(--color-fg-secondary)}
+.language-picker label{display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.language-picker select,.language-picker button {
+  min-height:44px;
+  border:1px solid var(--color-bg-tertiary);
+  border-radius:7px;
+  background-color:var(--color-bg-secondary);
+  color:var(--color-fg);
+  padding:8px 12px
+}
+.language-picker select{padding-right:2.5rem}.language-picker button{cursor:pointer}
+}
+/* Pages: home overview, hero and highlight blocks. */
+@layer pages {
+.home {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  padding-bottom: 16px;
+  width: 100%
+}
+.home-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  min-height: 0;
+  min-width: 0;
+  margin: 32px 16px 0
+}
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 100%
+}
+.stats-columns {
+  display: flex;
+  gap: 24px;
+  margin-top: 24px
+}
+.stats b {
+  font-family: 'League Spartan',sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px
+}
+.stats-columns>div {
+  min-width: 0
+}
+.home-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 100%
+}
+.feature-section {
+  width: 350px;
+  max-width: 100%
+}
+.feature-card {
+  max-width: 350px
+}
+.hero {
+  position: relative
+}
+.hero>img {
+  width: 350px;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 8px 8px 0 0
+}
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px 8px 0 0;
+  background-image: linear-gradient(to top,
+    var(--color-bg-secondary) 0%,
+    color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,
+    color-mix(in srgb,var(--color-bg-secondary) 95%,transparent) 12%,
+    color-mix(in srgb,var(--color-bg-secondary) 86%,transparent) 20%,
+    color-mix(in srgb,var(--color-bg-secondary) 72%,transparent) 28%,
+    color-mix(in srgb,var(--color-bg-secondary) 55%,transparent) 36%,
+    color-mix(in srgb,var(--color-bg-secondary) 37%,transparent) 44%,
+    color-mix(in srgb,var(--color-bg-secondary) 22%,transparent) 51%,
+    color-mix(in srgb,var(--color-bg-secondary) 11%,transparent) 57%,
+    color-mix(in srgb,var(--color-bg-secondary) 4%,transparent) 61%,
+    color-mix(in srgb,var(--color-bg-secondary) 1%,transparent) 63.5%,
+    transparent 65%)
+}
+.hero-caption {
+  position: absolute;
+  bottom: 32px;
+  left: 20px;
+  right: 16px
+}
+.hero-caption h5 {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 2px #0004
+}
+@media(min-width:40rem) {
+  .home-inner {
+    margin: 40px 40px 0
+  }
+}
+@media(min-width:48rem) {
+  .home-inner {
+    gap: 48px
+  }
+  .overview {
+    gap: 80px
+  }
+}
+@media(min-width:64rem) {
+  .overview {
+    flex-direction: row
+  }
+}
+/* Match Tailwind's container maximums used on Home, without keeping its compiler. */
+@media(min-width:40rem) {
+  .home-blocks {
+    max-width: 640px
+  }
+}
+@media(min-width:48rem) {
+  .home-blocks {
+    max-width: 768px
+  }
+}
+@media(min-width:64rem) {
+  .home-blocks {
+    max-width: 1024px
+  }
+}
+@media(min-width:80rem) {
+  .home-blocks {
+    max-width: 1280px
+  }
+}
+@media(min-width:96rem) {
+  .home-blocks {
+    max-width: 1536px
+  }
+}
+@media(max-width:calc(40rem - 1px)) {
+  .overview {
+    width: 350px
+  }
+}
+}
+/* Pages: profile selection. */
+@layer pages {
+.profile-selection {
+  width: 100%;
+  max-width: 56rem;
+  padding: 48px 24px;
+  min-height: 80vh
+}
+.eyebrow {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--color-fg-secondary)
+}
+.profile-selection h1 {
+  margin-top: 12px
+}
+.intro {
+  margin-top: 12px;
+  margin-bottom: 40px;
+  color: var(--color-fg-secondary)
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px
+}
+.profile-card {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0
+}
+.profile-card:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-fg)
+}
+.profile-card .avatar {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  font-size: 18px
+}
+.profile-card .profile-identity>span {
+  font-size: 14px
+}
+.text-link {
+  text-decoration: underline
+}
+.admin-entry {
+  display: inline-block;
+  margin-top: 40px;
+  font-size: 14px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .profile-selection {
+    padding-top: 80px;
+    padding-bottom: 80px
+  }
+  .profile-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr))
+  }
+}
+@media(min-width:64rem) {
+  .profile-grid {
+    grid-template-columns: repeat(3,minmax(0,1fr))
+  }
+}
+}
+/* Pages: listings, filters, pagination and the search page. */
+@layer pages {
+/* Real profile pages; all links remain ordinary document navigation. */
+.listing { width: calc(100% - 32px); max-width: 1000px; margin: 32px auto; min-height: 65vh; }
+.listing h1 { margin-bottom: 24px; }
+.date-range { margin-top: 8px; color: var(--color-fg-secondary); font-size: 14px; }
+.pagination { display:flex; justify-content:center; align-items:center; gap:40px; margin:24px 0; }
+.pagination [aria-disabled] { color:var(--color-fg-tertiary); }
+.listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:24px 0; }
+.listing-filters label { display:flex; flex-direction:column; font-size:14px; }
+.listing-filters input,.listing-filters select {
+  background:var(--color-bg);
+  color:var(--color-fg);
+  border:1px solid var(--color-border);
+  border-radius:6px;
+  padding:8px;
+  max-width:110px;
+}
+/* ISSUE-107: the full search page field fills the row; the button stays at its side. */
+.search-page-form {
+  flex-wrap: nowrap
+}
+.search-page-form label {
+  flex: 1;
+  min-width: 0
+}
+.search-page-form input {
+  width: 100%;
+  max-width: none;
+  padding: 12px
+}
+.see-more { display:block; text-align:center; margin-top:8px; color:var(--color-fg-secondary); }
+@media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
+.delete-listen { color:var(--color-fg-tertiary); padding:8px; }
+.delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
+
+/* History actions remain accessible through normal navigation without JavaScript. */
+.listen-manage{display:block;font-size:11px;color:var(--color-fg-tertiary);margin-top:2px}
+}
+/* Pages: artist, album and track pages with their graphs. */
+@layer pages {
 /* Scoped media reading pages; graphs and management are integrated separately. */
 .media-detail { width:100%; padding:48px 40px; min-width:0; }
 .media-heading { display:flex; flex-wrap:wrap; gap:32px; align-items:start; }
@@ -1381,6 +1484,9 @@ h2.search-section-title,
 .graph-values table { width:100%; border-collapse:collapse; }
 .graph-values caption { text-align:left; margin:8px 0; }
 .graph-values th,.graph-values td { padding:6px 8px; text-align:left; border-bottom:1px solid var(--color-border); }
+}
+/* Pages: rewind. */
+@layer pages {
 /* Rewind uses links and a GET form so selection also works without JavaScript. */
 .rewind-layout { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:40px; margin:40px auto; width:min(95%,1200px); }
 .rewind-controls { width:250px; max-width:100%; }
@@ -1443,41 +1549,18 @@ h2.search-section-title,
 }
 
 @media(max-width:480px) { .rewind-group-content { flex-direction:column; } .rewind-group-items { flex-basis:auto; } }
-
-/* History actions remain accessible through normal navigation without JavaScript. */
-.listen-manage{display:block;font-size:11px;color:var(--color-fg-tertiary);margin-top:2px}
-
-/* Keep dropdown arrows inset consistently while retaining native select behavior. */
-select:not([multiple]):not([size]) {
-  --select-arrow: linear-gradient(45deg,
-    transparent 40%,
-    currentColor 40%,
-    currentColor 60%,
-    transparent 60%), linear-gradient(135deg,
-    transparent 40%,
-    currentColor 40%,
-    currentColor 60%,
-    transparent 60%);
-  appearance: none;
-  background-image: var(--select-arrow);
-  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 2.5rem;
 }
-@media (forced-colors: active) {
-  select:not([multiple]):not([size]) { appearance: auto; background-image: none; }
+/* Utilities: always win over components (hidden, screen-reader only). */
+@layer utilities {
+[hidden] {
+  display: none!important
 }
-
-/* A native form keeps language selection available without JavaScript. */
-.language-picker{display:flex;align-items:end;justify-content:flex-start;flex-wrap:wrap;gap:.65rem;margin:1.5rem 0;color:var(--color-fg-secondary)}
-.language-picker label{display:flex;flex-direction:column;gap:.4rem;min-width:0}
-.language-picker select,.language-picker button {
-  min-height:44px;
-  border:1px solid var(--color-bg-tertiary);
-  border-radius:7px;
-  background-color:var(--color-bg-secondary);
-  color:var(--color-fg);
-  padding:8px 12px
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap
 }
-.language-picker select{padding-right:2.5rem}.language-picker button{cursor:pointer}
+}
