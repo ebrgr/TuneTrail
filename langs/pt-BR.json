@@ -1,4 +1,7 @@
 {
+  "admin.manage.edit_task": "Editar apelidos, artistas e metadados",
+  "admin.manage.listens_task": "Gerenciar escutas",
+  "admin.manage.merge_task": "Mesclar {{.Kind}}",
   "language.label": "Idioma",
   "language.auto": "Usar idioma do navegador",
   "language.save": "Aplicar idioma",

@@ -139,7 +139,10 @@ def validate(server):
     assert server.request('GET',WEB+'/profiles/luna/stats')['listen_count']==5
     tracks=server.request('GET',WEB+'/profiles/mara/top/tracks?period=all_time')['items'];track=tracks[0]['item'];tid=track['id']
     manage=f'/mara/manage/track/{tid}'
-    mt=f.token(manage);mc={'csrf_token':mt,'profile_id':str(p['id']),'profile_slug':'mara'}
+    # Task pages own their forms; the old address remains a link index.
+    index,_=f.request('GET',manage);assert b'name="csrf_token"' not in index
+    assert (manage+'/edit').encode() in index and (manage+'/image').encode() in index
+    mt=f.token(manage+'/edit');mc={'csrf_token':mt,'profile_id':str(p['id']),'profile_slug':'mara'}
     f.request('HEAD',manage)
     f.request('HEAD',manage+'/review?action=delete')
     f.request('POST',manage+'/alias-add',dict(mc,alias='Fictional Unicode 音'),expected=303)
@@ -149,18 +152,22 @@ def validate(server):
     f.request('POST',manage+'/listen-add',dict(mc,local_time='2024-11-03T01:30',timezone='America/New_York',offset='-04:00'),expected=303)
     back='/mara/listens?year=2024&week=44&page=2&limit=1&track_id='+str(tid)
     selected=manage+'?listen_at=1730611800&history_return='+urllib.parse.quote(back,safe='')
-    focused,_=f.request('GET',selected);assert b'id="selected-listen"' in focused
+    _,redirect=f.request('GET',selected,expected=303)
+    assert urllib.parse.urlsplit(redirect['Location']).path==manage+'/listen'
+    focused,_=f.request('GET',redirect['Location']);assert b'id="selected-listen"' in focused
     _,returned=f.request('POST',manage+'/listen-delete',dict(mc,unix='1730611800',confirm='1',return_to=back),expected=303)
     params=urllib.parse.parse_qs(urllib.parse.urlsplit(returned['Location']).query);assert params['week']==['44'] and params['page']==['1'] and params['track_id']==[str(tid)]
     # Source/destination review, stale plan and final confirmation.
-    searched,_=f.request('GET',manage+'?merge_query=Track');assert b'Review merge into' in searched
+    _,redirect=f.request('GET',manage+'?merge_query=Track',expected=303)
+    searched,_=f.request('GET',redirect['Location']);assert b'Review merge into' in searched
     dest=tracks[1]['item']['id'];review=manage+f'/review?action=merge&to={dest}'
     body,_=f.request('GET',review);assert b'Destination and surviving ID' in body
     plan=re.search(rb'name="plan" value="([^"]+)"',body)[1].decode();confirm=dict(mc,csrf_token=csrf(body),plan=plan,confirm='1')
     f.request('POST',manage+'/alias-add',dict(mc,alias='Change after review'),expected=303)
     f.request('POST',manage+'/confirm',confirm,expected=409)
     body,_=f.request('GET',review);confirm.update(plan=re.search(rb'name="plan" value="([^"]+)"',body)[1].decode(),csrf_token=csrf(body))
-    f.request('POST',manage+'/confirm',confirm,expected=303)
+    _,merged=f.request('POST',manage+'/confirm',confirm,expected=303)
+    assert merged['Location']==f'/mara/track/{dest}'
     f.request('POST',manage+'/confirm',confirm,expected=409)
     # All profiles may be deleted while the administrator and its session survive.
     for profile in server.request('GET',WEB+'/profiles'):

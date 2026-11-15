@@ -46,8 +46,11 @@ type mediaView struct {
 	AlbumID                         int32
 	Listens                         []*models.Listen
 	Values                          url.Values
+	Query                           url.Values
 	// Section is set when only one section is rendered as a fragment (ISSUE-124).
-	Section string
+	Section   string
+	Task      string
+	TaskQuery string
 }
 
 // actionSection names the section an enhanced action updates; "" keeps a full reload
@@ -149,7 +152,7 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		h.mediaAction(w, r, identity, profile, kind, id, parts[4])
 		return
 	}
-	if r.Method != "GET" || len(parts) != 4 {
+	if r.Method != "GET" || (len(parts) != 4 && !adminweb.MediaTaskAllowed(kind, parts[4])) {
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
@@ -159,13 +162,13 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		if !adminweb.FragmentRequested(r) {
 			q := r.URL.Query()
 			q.Del("partial")
-			http.Redirect(w, r, (&url.URL{Path: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(profile.Slug), kind, id), RawQuery: q.Encode()}).RequestURI(), http.StatusSeeOther)
+			http.Redirect(w, r, (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).RequestURI(), http.StatusSeeOther)
 			return
 		}
 		switch {
-		case r.URL.Query().Has("artist_query") && kind == "track":
+		case r.URL.Query().Has("artist_query") && kind == "track" && (len(parts) == 4 || parts[4] == "edit"):
 			section = "artists"
-		case r.URL.Query().Has("merge_query"):
+		case r.URL.Query().Has("merge_query") && (len(parts) == 4 || parts[4] == "merge"):
 			section = "merge"
 		default:
 			h.fail(w, db.ErrInvalidInput)
@@ -185,20 +188,30 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 		h.fail(w, err)
 		return
 	}
-	var ticket string
-	if section != "" && r.Method == "GET" {
-		// Search fragments never mint tickets (the store is bounded for all sessions); their
-		// forms reuse the page's current ticket, which is validated again on submission.
-		if raw, e := uuid.Parse(r.Header.Get("X-TuneTrail-Submission")); e == nil {
-			ticket = raw.String()
-		}
-	} else if ticket, err = h.newSubmission(identity.SessionID); err != nil {
-		h.fail(w, err)
-		return
-	}
 	ctx := db.WithoutProfile(r.Context())
 	effectiveZone := webquery.Timezone(r)
-	v := mediaView{Submission: ticket, Profile: profile, Kind: kind, ID: id, CSRF: token, Timezone: effectiveZone.String(), Location: effectiveZone}
+	task := ""
+	if r.Method == "GET" {
+		parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+		if len(parts) == 5 {
+			task = parts[4]
+		}
+	} else {
+		task = actionTask(action)
+		// Legacy section requests keep their existing composition.
+		if section != "" {
+			task = ""
+		}
+		if form != nil {
+			if u, e := url.Parse(adminweb.SafeReturn(form.SingleValue("return_to"))); e == nil {
+				parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+				if len(parts) == 5 {
+					task = parts[4]
+				}
+			}
+		}
+	}
+	v := mediaView{Task: task, Profile: profile, Kind: kind, ID: id, CSRF: token, Timezone: effectiveZone.String(), Location: effectiveZone}
 	// Notices are written by listen actions; other fragments must not consume them.
 	if section == "" || section == "listens" {
 		v.Notice = h.takeNotice(identity.SessionID, profile.ID, i18n.ViewOf(w))
@@ -207,11 +220,18 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	if r.Method == "POST" && form != nil {
 		if saved := adminweb.SafeReturn(form.SingleValue("return_to")); saved != "" {
 			if parsed, e := url.Parse(saved); e == nil {
-				query = parsed.Query()
+				// Public history filters remain in ReturnTo; only management context populates this view.
+				query = url.Values{}
+				savedQuery := parsed.Query()
+				for _, key := range []string{"tz", "artist_query", "merge_query", "listen_at", "history_return"} {
+					if values, ok := savedQuery[key]; ok {
+						query[key] = values
+					}
+				}
 			}
 		}
 	}
-	if kind == "track" && query.Get("tz") != "" {
+	if query.Get("tz") != "" {
 		if _, err = time.LoadLocation(query.Get("tz")); err != nil {
 			h.fail(w, db.ErrInvalidInput)
 			return
@@ -273,7 +293,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			if err == nil {
 				v.Artists, err = h.store.GetArtistsForTrack(ctx, id)
 			}
-			if err == nil && (section == "" || section == "listens") {
+			if err == nil && (task == "listens" || section == "listens" && task != "add-listen") {
 				var page *db.PaginatedResponse[*models.Listen]
 				page, err = h.store.GetListensPaginated(db.WithProfile(r.Context(), profile.ID), db.GetItemsOpts{TrackID: int(id), Page: 1, Limit: 25, Timeframe: db.Timeframe{Period: db.PeriodAllTime}})
 				if err == nil {
@@ -282,8 +302,12 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			}
 		}
 	}
-	if err == nil && r.Method == "GET" {
-		q, qe := url.ParseQuery(r.URL.RawQuery)
+	if err == nil {
+		rawQuery := query.Encode()
+		if r.Method == "GET" {
+			rawQuery = r.URL.RawQuery
+		}
+		q, qe := url.ParseQuery(rawQuery)
 		if qe != nil {
 			err = db.ErrInvalidInput
 		} else {
@@ -293,7 +317,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 					break
 				}
 			}
-			if err == nil && len(q.Get("merge_query")) > 100 {
+			if err == nil && (len(q.Get("merge_query")) > 100 || len(q.Get("artist_query")) > 100) {
 				err = db.ErrInvalidInput
 			}
 			if err == nil {
@@ -327,6 +351,14 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 					}
 				}
 			}
+			if task == "listen" && !q.Has("listen_at") {
+				err = db.ErrInvalidInput
+			}
+			for _, key := range []string{"listen_at", "history_return", "tz"} {
+				if q.Has(key) && q.Get(key) == "" {
+					err = db.ErrInvalidInput
+				}
+			}
 			if err == nil && q.Get("listen_at") != "" {
 				if kind != "track" {
 					err = db.ErrInvalidInput
@@ -334,7 +366,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 					stamp, e := strconv.ParseInt(q.Get("listen_at"), 10, 64)
 					if e != nil {
 						err = db.ErrInvalidInput
-					} else {
+					} else if task == "listen" || task == "" {
 						at := time.Unix(stamp, 0)
 						var found *db.PaginatedResponse[*models.Listen]
 						found, err = h.store.GetListensPaginated(db.WithProfile(r.Context(), profile.ID), db.GetItemsOpts{TrackID: int(id), Page: 1, Limit: 1, Timeframe: db.Timeframe{Resolved: true, From: at, To: at}})
@@ -349,14 +381,9 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 				}
 			}
 			if err == nil && q.Get("history_return") != "" {
-				v.HistoryReturn = adminweb.SafeReturn(q.Get("history_return"))
+				v.HistoryReturn = adminweb.SafeHistoryReturn(q.Get("history_return"), profile.Slug)
 				if v.HistoryReturn == "" {
 					err = db.ErrInvalidInput
-				} else {
-					back, _ := url.Parse(v.HistoryReturn)
-					if back.Path != "/"+profile.Slug+"/listens" && back.Path != "/"+profile.Slug {
-						err = db.ErrInvalidInput
-					}
 				}
 			}
 			if err == nil {
@@ -368,13 +395,6 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 					}
 				}
 			}
-		}
-	}
-	if err == nil && r.Method == "POST" && section == "artists" && v.ArtistQuery != "" {
-		// Keep the search results after adding or removing an artist, as the full reload did.
-		v.ArtistResults, err = h.store.SearchArtists(ctx, v.ArtistQuery)
-		if len(v.ArtistResults) > 50 {
-			v.ArtistResults = v.ArtistResults[:50]
 		}
 	}
 	if err != nil {
@@ -395,6 +415,49 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	if v.ReturnTo == "" {
 		v.ReturnTo = base
 	}
+	// Legacy query addresses select the corresponding task after validation.
+	if task == "" && section == "" && r.Method == "GET" {
+		switch {
+		case query.Has("listen_at"):
+			task = "listen"
+		case query.Has("artist_query"):
+			task = "edit"
+		case query.Has("merge_query"):
+			task = "merge"
+		case query.Has("tz") && kind == "track":
+			task = "listens"
+		}
+		if task != "" {
+			http.Redirect(w, r, base+"/"+task+"?"+query.Encode(), http.StatusSeeOther)
+			return
+		}
+	}
+	var ticket string
+	if section != "" && r.Method == "GET" {
+		// Search fragments never mint tickets (the store is bounded for all sessions); their
+		// forms reuse the page's current ticket, which is validated again on submission.
+		if raw, e := uuid.Parse(r.Header.Get("X-TuneTrail-Submission")); e == nil {
+			ticket = raw.String()
+		}
+	} else if task != "" && task != "merge" && task != "delete" || section != "" {
+		ticket, err = h.newSubmission(identity.SessionID)
+		if err != nil {
+			h.fail(w, err)
+			return
+		}
+	}
+	v.Submission = ticket
+	// Task links keep all validated navigation context, without the fragment marker.
+	linkQuery := url.Values{}
+	for key, values := range query {
+		linkQuery[key] = append([]string(nil), values...)
+	}
+	linkQuery.Del("partial")
+	if len(linkQuery) > 0 {
+		v.TaskQuery = "?" + linkQuery.Encode()
+	}
+	v.Task = task
+	v.Query = linkQuery
 	if form != nil {
 		v.Values = form.Values
 	}
@@ -444,9 +507,13 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 	}
 	returnTo := adminweb.SafeReturn(f.SingleValue("return_to"))
 	expected := fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id)
+	if f.SingleValue("return_to") != "" && returnTo == "" {
+		h.fail(w, db.ErrInvalidInput)
+		return
+	}
 	if returnTo != "" {
 		parsed, e := url.Parse(returnTo)
-		if e != nil || (parsed.Path != expected && !(action == "listen-delete" && (parsed.Path == "/"+p.Slug+"/listens" || parsed.Path == "/"+p.Slug))) {
+		if e != nil || (parsed.Path != expected && !(strings.HasPrefix(parsed.Path, expected+"/") && adminweb.MediaTaskAllowed(kind, strings.TrimPrefix(parsed.Path, expected+"/"))) && !(action == "listen-delete" && adminweb.SafeHistoryReturn(returnTo, p.Slug) != "")) {
 			h.fail(w, db.ErrInvalidInput)
 			return
 		}
@@ -581,9 +648,14 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 		h.mediaPage(w, r, identity, p, kind, id, f, "", nil, section)
 		return
 	}
-	target := expected
+	target := expected + "/" + actionTask(action)
 	if returnTo != "" {
 		target = returnTo
+		backTask, _ := url.Parse(target)
+		if backTask.Path == expected {
+			backTask.Path += "/" + actionTask(action)
+			target = backTask.String()
+		}
 		if action == "listen-delete" {
 			back, _ := url.Parse(returnTo)
 			if back.Path == "/"+p.Slug+"/listens" {
@@ -608,12 +680,42 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 			}
 		}
 	}
+	// A removed selected listen no longer has a detail page; return to its personal list.
+	if action == "listen-delete" {
+		u, e := url.Parse(target)
+		if e == nil && strings.HasPrefix(u.Path, expected+"/") {
+			if u.Path == expected+"/listen" {
+				u.Path = expected + "/listens"
+			}
+			q := u.Query()
+			q.Del("listen_at")
+			u.RawQuery = q.Encode()
+			target = u.String()
+		}
+	}
+	if action == "listen-delete" {
+		target = h.historyMediaDestination(r.Context(), p, target)
+	}
 	// Without JavaScript, come back to the edited section instead of the top (ISSUE-124).
 	if anchor := actionSection(action); anchor != "" {
-		if u, e := url.Parse(target); e == nil && u.Path == expected {
+		if u, e := url.Parse(target); e == nil && strings.HasPrefix(u.Path, expected+"/") {
 			u.Fragment = anchor
 			target = u.String()
 		}
 	}
 	http.Redirect(w, r, target, http.StatusSeeOther)
+}
+
+// actionTask preserves old mutation endpoints while selecting their full-page destination.
+func actionTask(action string) string {
+	switch action {
+	case "listen-add":
+		return "add-listen"
+	case "listen-delete":
+		return "listens"
+	case "artwork":
+		return "image"
+	default:
+		return "edit"
+	}
 }

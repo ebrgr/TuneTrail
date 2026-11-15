@@ -1,4 +1,7 @@
 {
+  "admin.manage.edit_task": "Edit aliases, artists and metadata",
+  "admin.manage.listens_task": "Manage listens",
+  "admin.manage.merge_task": "Merge this {{.Kind}}",
   "language.label": "Language",
   "language.auto": "Use browser language",
   "language.save": "Apply language",

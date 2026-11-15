@@ -51,7 +51,7 @@ func TestMediaSectionsWithoutReload(t *testing.T) {
 	}
 	partial := map[string]string{"X-TuneTrail-Partial": "1"}
 	base := "/second/manage/track/12"
-	page := call("GET", base, nil, nil).Body.String()
+	page := call("GET", base+"/edit", nil, nil).Body.String()
 	csrf, ticket := field(page, "csrf_token"), field(page, "submission_token")
 	form := func(extra url.Values) url.Values {
 		v := url.Values{"csrf_token": {csrf}, "submission_token": {ticket}, "profile_id": {"2"}, "profile_slug": {"second"}}
@@ -64,10 +64,10 @@ func TestMediaSectionsWithoutReload(t *testing.T) {
 	// Without JavaScript the redirect returns to the edited section.
 	out := call("POST", base+"/alias-add", form(url.Values{"alias": {"First Alias"}}), nil)
 	require.Equal(t, http.StatusSeeOther, out.Code)
-	require.Equal(t, base+"#aliases", out.Header().Get("Location"))
+	require.Equal(t, base+"/edit#aliases", out.Header().Get("Location"))
 
 	// With JavaScript: only the section, plus a fresh ticket that the next action can use.
-	ticket = field(call("GET", base, nil, nil).Body.String(), "submission_token")
+	ticket = field(call("GET", base+"/edit", nil, nil).Body.String(), "submission_token")
 	out = call("POST", base+"/alias-add", form(url.Values{"alias": {"Second Alias"}}), partial)
 	require.Equal(t, http.StatusOK, out.Code, out.Body.String())
 	require.Equal(t, "aliases", out.Header().Get("X-TuneTrail-Fragment"))

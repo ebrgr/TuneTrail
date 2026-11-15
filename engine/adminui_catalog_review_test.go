@@ -85,7 +85,8 @@ func TestCatalogReviewStaleAndOneUse(t *testing.T) {
 	v.Set("csrf_token", extract(w, "csrf_token"))
 	w = call("POST", base+"/confirm", v, true)
 	require.Equal(t, 303, w.Code, w.Body.String())
-	require.Equal(t, "/second", w.Header().Get("Location"))
+	// The reviewed destination survives the merge and becomes the navigation target.
+	require.Equal(t, "/second/track/13", w.Header().Get("Location"))
 	_, playing := memkv.Store.Get("now-playing:2")
 	require.False(t, playing)
 	_, playing = memkv.Store.Get("now-playing:3")

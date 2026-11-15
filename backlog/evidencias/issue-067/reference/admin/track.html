@@ -401,197 +401,24 @@
           <p>Changes to the catalog affect all profiles. Context: Fictional Alpha (alpha, ID 1).</p>
           <p class="sr-only" role="status" aria-live="polite" data-enhance-status></p>
           
-  
-  <div
-    id="aliases"
-    class="manage-section"
-    data-section
-    data-heading="Manage track: Alpha Track"
-    data-back="Back to Alpha Track"
-  >
+            
+  <ul>
+    <li id="aliases">
+      <a href="/alpha/manage/track/1/edit">Edit aliases, artists and metadata</a>
+      <span id="metadata"></span><span id="artists"></span>
+    </li>
     
-          <h2>Aliases</h2>
-          <ul>
-            
-              <li>
-                Alpha Track
-                
-                  (primary)
-                
-              </li>
-            
-          </ul>
-          <form method="post" data-enhance action="/alpha/manage/track/1/alias-add">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            
-              <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            
-            <input type="hidden" name="profile_id" value="1">
-            <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-            <input type="hidden" name="profile_slug" value="alpha">
-            <label>New alias <input name="alias" value="" required></label>
-            <button>Add alias</button>
-          </form>
-  </div>
+      <li id="listens"><a href="/alpha/manage/track/1/listens">Manage listens</a></li>
+      <li id="add-listen"><a href="/alpha/manage/track/1/add-listen">Add listen</a></li>
+    
+    <li id="artwork"><a href="/alpha/manage/track/1/image">Artwork</a></li>
+    <li id="merge">
+      <a href="/alpha/manage/track/1/merge">Merge this track</a>
+    </li>
+    <li id="delete"><a href="/alpha/manage/track/1/delete">Review deletion</a></li>
+  </ul>
 
           
-  <div id="metadata" class="manage-section" data-section>
-    
-          <h2>Metadata</h2>
-          <form method="post" data-enhance action="/alpha/manage/track/1/metadata">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            
-              <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            
-            <input type="hidden" name="profile_id" value="1">
-            <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-            <input type="hidden" name="profile_slug" value="alpha">
-            <label>MusicBrainz ID <input name="mbid" value=""></label>
-            <p>Leave blank to keep the current ID.</p>
-            
-            <button>Save metadata</button>
-          </form>
-  </div>
-
-          
-  <div id="artists" class="manage-section" data-section>
-    
-          
-            <h2>Artists</h2>
-            
-              <form method="post" data-enhance action="/alpha/manage/track/1/primary-artist">
-                <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-                <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-                <input type="hidden" name="profile_id" value="1">
-                <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-                <input type="hidden" name="profile_slug" value="alpha">
-                <input type="hidden" name="artist_id" value="1">
-                <span>Shared Artist (primary)</span>
-                <button name="primary" value="0">Unset primary</button>
-              </form>
-            
-          
-          
-            <h2>Track artists</h2>
-            <form method="get" data-enhance action="/alpha/manage/track/1">
-              <input type="hidden" name="tz" value="UTC">
-              <label>Search shared artists <input name="artist_query" value="" maxlength="100"></label>
-              <button>Search</button>
-            </form>
-            
-            <form method="post" data-enhance action="/alpha/manage/track/1/artist-add">
-              <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-              
-                <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-              
-              <input type="hidden" name="profile_id" value="1">
-              <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-              <input type="hidden" name="profile_slug" value="alpha">
-              <label>Existing artist ID <input name="artist_id" value="" type="number" min="1"
-                required></label>
-              <button>Add artist</button>
-            </form>
-            
-              
-            
-          
-  </div>
-
-          
-  <div id="listens" class="manage-section" data-section>
-    
-          
-            <h2>Recent listens for Fictional Alpha</h2>
-            <form method="get" action="/alpha/manage/track/1">
-              <input type="hidden" name="artist_query" value="">
-              <label>Time zone <input name="tz" value="UTC" required></label>
-              <button>Apply</button>
-            </form>
-            
-              <form method="post" data-enhance action="/alpha/manage/track/1/listen-delete">
-                <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-                <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-                <input type="hidden" name="profile_id" value="1">
-                <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-                <input type="hidden" name="profile_slug" value="alpha">
-                <input type="hidden" name="unix" value="1714564800">
-                <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time>
-                <label><input type="checkbox" name="confirm" value="1" required> Confirm removal of this listen</label>
-                <button>Delete listen</button>
-              </form>
-            
-          
-          
-            <h2>Add a listen for Fictional Alpha</h2>
-            <form method="post" data-enhance action="/alpha/manage/track/1/listen-add">
-              <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-              
-                <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-              
-              <input type="hidden" name="profile_id" value="1">
-              <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-              <input type="hidden" name="profile_slug" value="alpha">
-              <label>Local date and time <input type="datetime-local" name="local_time" value="" required></label>
-              <label>Time zone (IANA) <input
-                name="timezone"
-                value="UTC"
-                placeholder="America/Sao_Paulo"
-                required
-              ></label>
-              <label>UTC offset for ambiguous time <input name="offset" value=""
-                placeholder="-03:00"></label>
-              <button>Add listen</button>
-            </form>
-          
-  </div>
-
-          
-          
-  <div id="merge" class="manage-section" data-section>
-    
-          <h2>Delete or merge this track</h2>
-          <p>These operations affect the shared catalog. Review the impact before confirming.</p>
-          <form method="get" action="/alpha/manage/track/1/review">
-            <input type="hidden" name="action" value="delete">
-            <button>Review deletion</button>
-          </form>
-          <form method="get" data-enhance action="/alpha/manage/track/1">
-            <label>Search merge destination <input name="merge_query" value=""
-              maxlength="100"></label>
-            <button>Search destinations</button>
-          </form>
-          
-          <form method="get" action="/alpha/manage/track/1/review">
-            <input type="hidden" name="action" value="merge">
-            <label>Other track ID <input name="to" type="number" min="1" required></label>
-            <label><input type="checkbox" name="reverse" value="1"> Reverse direction</label>
-            
-            <button>Review merge</button>
-          </form>
-  </div>
-
-          <h2>Artwork</h2>
-          
-          
-            <p>This changes the album artwork (album ID 1).</p>
-          
-          <form
-            method="post"
-            enctype="multipart/form-data"
-            action="/alpha/manage/track/1/artwork"
-          >
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            
-              <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            
-            <input type="hidden" name="profile_id" value="1">
-            <input type="hidden" name="return_to" value="/alpha/manage/track/1">
-            <input type="hidden" name="profile_slug" value="alpha">
-            <label>Image <input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
-            <small>JPEG, PNG or static WebP.</small>
-            <label>Or image URL <input name="image_url" value="" type="url"></label>
-            <button>Replace artwork</button>
-          </form>
         </main>
         <footer class="admin-footer">
           TuneTrail ·

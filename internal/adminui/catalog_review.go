@@ -98,7 +98,7 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 	}
 	h.catalogPlans[token] = pendingCatalogPlan{Session: identity.SessionID, ProfileID: p.ID, ProfileSlug: p.Slug, RouteID: id, Kind: kind, Plan: plan, Expires: now.Add(10 * time.Minute)}
 	h.mu.Unlock()
-	view := catalogReviewView{Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id)}
+	view := catalogReviewView{Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id) + "/" + request.Action}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder
 	tmpl, err := h.adminTemplate(view.Locale)
@@ -153,6 +153,10 @@ func (h *Handler) confirmCatalog(w http.ResponseWriter, r *http.Request, identit
 		h.fail(w, err)
 		return
 	}
-	// The profile home is always a valid personal destination, even for an unplayed survivor.
-	http.Redirect(w, r, "/"+url.PathEscape(p.Slug), http.StatusSeeOther)
+	// A merge keeps its reviewed destination, including when the direction was reversed.
+	target := "/" + url.PathEscape(p.Slug)
+	if review.Plan.Action == "merge" {
+		target = h.mediaDestination(r.Context(), p, kind, review.Plan.To)
+	}
+	http.Redirect(w, r, target, http.StatusSeeOther)
 }

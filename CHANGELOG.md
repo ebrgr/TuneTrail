@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Media management now has separate task pages, preserves old addresses, and returns confirmed merges to the surviving item (ISSUE-139).
+
 ## [0.20] - 2026-11-15
 
 ### Changed

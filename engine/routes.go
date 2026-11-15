@@ -194,7 +194,7 @@ func bindRoutes(
 	publicServer(r, "/public", webui.PublicAssets())
 }
 
-// goPageServer routes Go documents and returns 404 for paths outside their scope.
+// goPageServer uses the shared task allowlist for GET and HEAD documents; POST contracts remain separate.
 func goPageServer(r chi.Router, pages *webui.Pages, administration *adminui.Handler) {
 	r.Get("/*", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")

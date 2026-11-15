@@ -43,9 +43,10 @@ func TestPreparedMediaFormsAndProfileContext(t *testing.T) {
 		return out
 	}
 	base := "/second/manage/track/12"
-	page := call("GET", base, nil, true)
+	// Editing and artwork now use separate task documents.
+	page := call("GET", base+"/edit", nil, true)
 	require.Equal(t, 200, page.Code, page.Body.String())
-	require.Contains(t, page.Body.String(), "album ID 11")
+	require.Contains(t, call("GET", base+"/image", nil, true).Body.String(), "album ID 11")
 	require.Contains(t, page.Header().Get("Cache-Control"), "no-store")
 	match := regexp.MustCompile(`name="csrf_token" value="([^"]+)"`).FindStringSubmatch(page.Body.String())
 	require.Len(t, match, 2)

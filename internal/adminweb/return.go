@@ -49,7 +49,7 @@ func SafeReturn(raw string) string {
 		if len(p) == 3 && (p[1] == "artist" || p[1] == "album" || p[1] == "track") {
 			valid = positive(p[2], 2147483647)
 		}
-		if len(p) == 4 && p[1] == "manage" && (p[2] == "artist" || p[2] == "album" || p[2] == "track") {
+		if (len(p) == 4 || len(p) == 5 && MediaTaskAllowed(p[2], p[4])) && p[1] == "manage" && (p[2] == "artist" || p[2] == "album" || p[2] == "track") {
 			valid = positive(p[3], 2147483647)
 		}
 		if !valid {
@@ -57,12 +57,21 @@ func SafeReturn(raw string) string {
 		}
 	}
 	mediaParts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
-	trackManage := len(mediaParts) == 4 && mediaParts[1] == "manage" && mediaParts[2] == "track"
+	mediaManage := (len(mediaParts) == 4 || len(mediaParts) == 5) && mediaParts[1] == "manage"
+	trackManage := mediaManage && mediaParts[2] == "track"
 	for k, values := range q {
 		if len(values) != 1 {
 			return ""
 		}
 		v := values[0]
+		// Management returns accept the same context keys as the task document.
+		if mediaManage {
+			switch k {
+			case "merge_query", "artist_query", "listen_at", "history_return", "tz":
+			default:
+				return ""
+			}
+		}
 		if adminPage {
 			switch k {
 			case "profile":
@@ -82,7 +91,7 @@ func SafeReturn(raw string) string {
 		}
 		switch k {
 		case "merge_query":
-			if len(mediaParts) != 4 || mediaParts[1] != "manage" || len(v) > 100 {
+			if (len(mediaParts) != 4 && len(mediaParts) != 5) || mediaParts[1] != "manage" || len(v) > 100 {
 				return ""
 			}
 		case "listen_at":
@@ -96,11 +105,7 @@ func SafeReturn(raw string) string {
 			if !trackManage || len(v) > 2048 {
 				return ""
 			}
-			back, e := url.Parse(v)
-			if e != nil || (back.Path != "/"+mediaParts[0] && back.Path != "/"+mediaParts[0]+"/listens") {
-				return ""
-			}
-			if SafeReturn(v) == "" {
+			if SafeHistoryReturn(v, mediaParts[0]) == "" {
 				return ""
 			}
 		case "artist_query":
@@ -146,4 +151,35 @@ func SafeReturn(raw string) string {
 		}
 	}
 	return u.String()
+}
+
+// MediaTaskAllowed is shared by routing and return validation so their read surfaces agree.
+func MediaTaskAllowed(kind, task string) bool {
+	if kind != "artist" && kind != "album" && kind != "track" {
+		return false
+	}
+	switch task {
+	case "edit", "image", "merge", "delete":
+		return true
+	case "add-listen", "listens", "listen":
+		return kind == "track"
+	}
+	return false
+}
+
+// SafeHistoryReturn keeps personal history navigation within the route's profile.
+func SafeHistoryReturn(raw, slug string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return ""
+	}
+	parts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
+	valid := u.Path == "/"+slug || u.Path == "/"+slug+"/listens"
+	if len(parts) == 3 && parts[0] == slug && (parts[1] == "artist" || parts[1] == "album" || parts[1] == "track") {
+		valid = true
+	}
+	if !valid {
+		return ""
+	}
+	return SafeReturn(raw)
 }
