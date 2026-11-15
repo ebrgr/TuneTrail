@@ -4,6 +4,7 @@ title: '110 — Barra lateral: ícone de tema com modal simples e menu de admini
 status: Aberta
 assignee: []
 created_date: '2026-11-14T01:12:00Z'
+updated_date: '2026-11-15T00:03:00Z'
 labels:
   - ui
   - i18n
@@ -47,3 +48,16 @@ Comum:
 - [ ] #5 Selo de administrador no ícone de administração quando a sessão está ativa
 - [ ] #6 Traduções em inglês e português; capturas desktop e celular com aceite visual
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-15T00:03:00Z
+
+---
+
+Herdado da ISSUE-067 (decisão do usuário em 14/11/2026): unificar a barra lateral nesta tarefa. Hoje existem duas: partial/sidebar (público e prévia, em assets/templates/public/page.html) e admin/sidebar (assets/templates/admin/shell.html). Diferem na busca (diálogo × link), nos ícones (função icon × SVG no template), nos campos do avatar e no diálogo de configurações. Critério a cumprir aqui: barra lateral definida uma única vez, como já foi feito com o head em templates/shared/head.html; verificar com capturas antes/depois e aceite visual. Ver doc-035.
+
+---
+<!-- COMMENTS:END -->

@@ -1,11 +1,11 @@
 ---
 id: ISSUE-067
 title: 067 — Reformatar templates e unificar head, barra lateral e nomes de blocos
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T23:56:00Z'
+updated_date: '2026-11-15T00:03:00Z'
 labels:
   - ui
 milestone: m-10
@@ -37,7 +37,7 @@ Passos:
 <!-- AC:BEGIN -->
 - [x] #1 HTML renderizado equivalente à referência após normalizar espaços
 - [x] #2 Nenhuma linha acima de 160 caracteres em templates/ (verificado no ui.check)
-- [ ] #3 Head e barra lateral definidos uma única vez
+- [x] #3 Head e barra lateral definidos uma única vez
 - [x] #4 Capturas sem diferença visual nas seis larguras
 <!-- AC:END -->
 
@@ -68,6 +68,17 @@ created: 2026-11-14T23:56:00Z
 ---
 
 Implementação: head único em templates/shared/head.html (live, preview, admin), blocos page/partial/admin, linhas ≤160 com check_web_style.py no ui.check e referência nova em backlog/evidencias/issue-067/reference. Comparação estrita da quebra de linhas: 0 diferenças; capturas 138/138 idênticas; make check 12/12; Reviewer APROVADO. AC #3 parcial: head único feito; barra lateral aguarda decisão do usuário (proposta: mover para a ISSUE-110).
+
+---
+
+author: ebrgr
+created: 2026-11-15T00:03:00Z
+
+---
+
+Barra lateral: por decisão do usuário, a unificação passa para a ISSUE-110 (observação registrada lá); o critério 3 fica atendido no que cabe à 067 (head único).
+
+Aceite: aprovada pelo usuário em 14/11/2026 ("1, aceito a 067, faça o merge"). Tarefa chore sem versão: merge fast-forward no main, sem tag.
 
 ---
 <!-- COMMENTS:END -->
