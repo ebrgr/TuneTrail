@@ -16,7 +16,7 @@ Merge confirmado vai ao sobrevivente efetivo do plano, inclusive na direção in
 
 ## Verificação
 
-- `make check`: aprovado, incluindo vet, testes Go, testes de interface/estilo, referência HTML e **12/12 jornadas E2E** em dados descartáveis e portas efêmeras. O gate é repetido pelo comando obrigatório `make issue.review` sobre o diff final.
+- `make check`: aprovado, incluindo vet, testes Go, testes de interface/estilo, referência HTML e **12/12 jornadas E2E** em dados descartáveis e portas efêmeras. O gate foi repetido com sucesso por `make issue.review ISSUE=139` após o commit da implementação, novamente com 12/12 E2E.
 - `engine/adminui_tasks_139_test.go`: testa pelo roteador principal real, que instancia `RequireSubmissionToken: true`; separação por tarefa/tipo, índice e âncoras, consultas antigas, GET/HEAD, login completo com retorno, visitante e sessão inválida, origem estrangeira/Fetch Metadata, CSRF ausente/incorreto/duplicado, ticket ausente/incorreto/reutilizado/de outra sessão, IDs/slugs forjados, retorno externo/protocol-relative/de outro item ou perfil e erro com valores/ticket novo.
 - Os testes também cobrem catálogo global sem escutas no perfil, dois perfis com a mesma faixa e instante, exclusão pessoal isolada, retorno a mídia, fragmentos de busca/POST com marcadores e rotação da ISSUE-124, merge normal/invertido e exclusão sem sobrevivente.
 - Testes anteriores de gestão/CSRF/fragmentos foram atualizados para a navegação por tarefa; a jornada E2E administrativa e a migração verificam os redirecionamentos antigos e o sobrevivente do merge.
@@ -39,3 +39,7 @@ Parecer do Claude Code CLI, modelo Opus com esforço medium, solicitado conforme
 A mesma política de sobrevivente é aplicada ao retorno a uma mídia após excluir sua última escuta pessoal: se a leitura pública deixar de existir para o perfil, o retorno usa a gestão protegida e conserva o fuso. Filtros do histórico público são descartados nesse fallback porque não se aplicam ao índice administrativo.
 
 O retorno legado de `listen-delete` retira `listen_at` em qualquer tarefa administrativa do mesmo item, incluindo base convertida em `/listens`; assim o destino não tenta carregar a escuta recém-excluída. Revisão final após as correções em `reviewer-final.md`: **APROVADO, sem itens obrigatórios**. A primeira sugestão dessa revisão também foi corrigida: erros de POST com retorno ao histórico público filtrado agora mantêm o formulário, a mensagem, o ticket renovado e o retorno original; filtros públicos não são tratados como parâmetros da gestão. Teste `TestManagementListenErrorReturn139` pelo roteador principal; auditoria desse delta em `reviewer-complementar.md`: **APROVADO, sem itens obrigatórios**. O teste foi executado e aprovado pelo implementador.
+
+## Entrega
+
+Implementação commitada em `83f52c5` (`ISSUE-139: Separa a gestão de mídia em páginas por tarefa`). A tarefa está em **Aguardando aceite**, com os quatro critérios marcados e referências ao relatório e aos pareceres. Falta o aceite do usuário; nenhuma publicação foi executada. Revisão sugerida ao usuário: índice/âncoras antigas, tarefas de imagem da faixa e escuta, retornos após exclusão e fallback para gestão do sobrevivente sem escutas no perfil.

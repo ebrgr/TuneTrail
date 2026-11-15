@@ -1,11 +1,11 @@
 ---
 id: ISSUE-139
 title: 139 — Páginas de gestão por tarefa e compatibilidade dos endereços antigos
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T20:38:00Z'
+updated_date: '2026-11-15T20:39:00Z'
 labels:
   - admin
 milestone: m-10
@@ -71,6 +71,15 @@ created: 2026-11-15T20:38:00Z
 ---
 
 Reviewer: Claude Code Opus, esforço medium, aprovou o diff final sem itens obrigatórios (reviewer-final.md); correção adicional da sugestão sobre erro POST com retorno filtrado também APROVADA (reviewer-complementar.md). make check final aprovado, incluindo 12/12 E2E; graphify atualizado pelo script AST oficial.
+
+---
+
+author: ebrgr
+created: 2026-11-15T20:39:00Z
+
+---
+
+Verificação: critérios 1–4 verificados pelo roteador principal com tickets obrigatórios; páginas por tarefa, compatibilidade de URLs e POST, login e retornos seguros, isolamento de perfis, merge normal/invertido e sobrevivente não ouvido; make check aprovado com 12/12 E2E, Reviewer Opus APROVADO sem itens obrigatórios e graphify atualizado; evidências em backlog/evidencias/issue-139/relatorio.md
 
 ---
 <!-- COMMENTS:END -->
