@@ -126,29 +126,11 @@ func New(store Store, opts Options) (*Handler, error) {
 	if opts.DefaultTheme == "" {
 		opts.DefaultTheme = "yuu"
 	}
-	// Render profile initials using the same two-word rule as public navigation.
-	initials := func(name string) string {
-		var letters []rune
-		for _, word := range strings.Fields(name) {
-			letters = append(letters, []rune(word)[0])
-			if len(letters) == 2 {
-				break
-			}
-		}
-		return strings.ToUpper(string(letters))
-	}
-	// Limit avatar classes to the same known icons as the public renderer.
-	avatarIcon := func(icon *string) string {
-		if icon == nil {
-			return ""
-		}
-		return map[string]string{"music": "music", "headphones": "headphones", "disc": "disc", "radio": "radio", "user": "user"}[*icon]
-	}
 	asset, err := webassets.AssetFunc("/web-assets")
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": initials, "avatarIcon": avatarIcon}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "nav": adminNav}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}
@@ -538,4 +520,19 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 		return nil, nil
 	}
 	return os.Open(u.Path)
+}
+
+// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122).
+func adminNav(p *models.ListeningProfile) webassets.Nav {
+	nav := webassets.Nav{Kind: "admin"}
+	if p != nil {
+		nav.Profile = &webassets.NavProfile{Name: p.DisplayName, Slug: p.Slug}
+		if p.AvatarImageID != nil {
+			nav.Profile.Image = *p.AvatarImageID
+		}
+		if p.AvatarIcon != nil {
+			nav.Profile.Icon = *p.AvatarIcon
+		}
+	}
+	return nav
 }

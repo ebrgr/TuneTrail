@@ -235,3 +235,14 @@ func TestUIReference(t *testing.T) {
 	}
 	write("routes.json", data)
 }
+
+// TestPageNavKind keeps public pages on dialogs and the preview on its feature dialog (ISSUE-122).
+func TestPageNavKind(t *testing.T) {
+	if (Page{Live: true}).Nav().Kind != "live" || (Page{}).Nav().Kind != "preview" {
+		t.Fatal("unexpected nav kind")
+	}
+	nav := LivePage{Page: Page{Live: true, Profile: &Profile{Name: "Mara", Slug: "mara", Icon: "music"}}}.Nav()
+	if nav.Profile == nil || nav.Profile.Name != "Mara" || nav.Profile.Icon != "music" {
+		t.Fatalf("profile: %+v", nav.Profile)
+	}
+}

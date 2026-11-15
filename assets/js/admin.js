@@ -7,8 +7,8 @@
  const settings=document.getElementById('admin-settings');
  const settingsTrigger=document.querySelector('[data-admin-settings]');
  if(settings&&settingsTrigger){settingsTrigger.addEventListener('click',()=>settings.showModal());settings.querySelector('[data-admin-close]')?.addEventListener('click',()=>settings.close());settings.addEventListener('close',()=>settingsTrigger.focus());document.addEventListener('keydown',event=>{if(event.key==='\\'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,textarea,select,[contenteditable=true]')&&!settings.open){event.preventDefault();settings.showModal();}});}
- // Preserve a visible avatar when a profile image cannot be loaded.
- document.querySelectorAll('[data-admin-avatar]').forEach(image=>{const fallback=image.parentElement.querySelector('[data-admin-avatar-fallback]');const fail=()=>{image.hidden=true;if(fallback)fallback.hidden=false;};image.addEventListener('error',fail);if(image.complete&&!image.naturalWidth)fail();});
+ // Preserve a visible avatar when a profile image cannot be loaded (shared sidebar avatar, ISSUE-122).
+ document.querySelectorAll('[data-avatar-image]').forEach(image=>{const fallback=image.parentElement.querySelector('[data-avatar-fallback]');const fail=()=>{image.hidden=true;if(fallback)fallback.hidden=false;};image.addEventListener('error',fail);if(image.complete&&!image.naturalWidth)fail();});
  document.addEventListener('submit',event=>{const form=event.target;if(!(form instanceof HTMLFormElement)||form.method.toLowerCase()!=='post')return;if(form.dataset.pending){event.preventDefault();return;}form.dataset.pending='1';setTimeout(()=>form.querySelectorAll('button').forEach(button=>button.disabled=true),0);});
  // Do not restore expired sessions or old CSRF/submission forms from the browser heap.
  addEventListener('pagehide', () => { document.body.hidden = true; });

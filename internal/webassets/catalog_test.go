@@ -12,6 +12,16 @@ import (
 // TestCatalogTracksDependencies verifies content identity and dependency-specific invalidation.
 func TestCatalogTracksDependencies(t *testing.T) {
 	dir := distribution(t)
+	// The shipped stylesheets no longer reference icons (ISSUE-122 removed the admin avatar
+	// masks), so give admin.css a relative dependency to exercise invalidation.
+	css := filepath.Join(dir, "css/admin.css")
+	source, err := os.ReadFile(css)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(css, append(source, []byte("\n.dependency{mask-image:url('icons/Music2.svg')}\n")...), 0644); err != nil {
+		t.Fatal(err)
+	}
 	first, err := Open(t.Context(), dir)
 	if err != nil {
 		t.Fatal(err)

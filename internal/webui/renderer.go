@@ -31,16 +31,9 @@ func loadTemplates(prefix string) (*template.Template, error) {
 		"tr1": func(_ string, fallback string, name string, value any) string {
 			return strings.ReplaceAll(fallback, "{{."+name+"}}", fmt.Sprint(value))
 		},
-		"avatarIcon": func(name string) string {
-			return map[string]string{"music": "Music2", "headphones": "Headphones", "disc": "Disc3", "radio": "Radio", "user": "UserRound"}[name]
-		},
-		"icon": func(name string) template.HTML {
-			data, err := files.ReadFile("static/icons/" + name + ".svg")
-			if err != nil {
-				return ""
-			}
-			return template.HTML(data)
-		}, // Only bundled, reviewed SVGs; never catalog/user HTML.
+		// Shared with the administration set so the single sidebar renders the same (ISSUE-122).
+		"avatarIcon": webassets.AvatarIcon,
+		"icon":       webassets.Icon,
 		"tail": func(items []Media) []Media {
 			if len(items) < 2 {
 				return nil
@@ -53,16 +46,7 @@ func loadTemplates(prefix string) (*template.Template, error) {
 			}
 			return items[0]
 		},
-		"initials": func(s string) string {
-			var letters []rune
-			for _, word := range strings.Fields(s) {
-				letters = append(letters, []rune(word)[0])
-				if len(letters) == 2 {
-					break
-				}
-			}
-			return strings.ToUpper(string(letters))
-		},
+		"initials":     webassets.Initials,
 		"rank":         func(i int) string { return fmt.Sprintf("%02d", i+1) },
 		"splitPeriods": func() []string { return []string{"day", "week", "month", "year", "all_time"} },
 		"ago": func(i int) string {

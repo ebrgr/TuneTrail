@@ -1,0 +1,124 @@
+{{/* The single sidebar for public pages, the visual preview and administration (ISSUE-122).
+     Called with a webassets.Nav: public pages pass .Nav, administration passes (nav .Profile). */}}
+{{define "partial/avatar"}}
+  <span class="avatar" aria-hidden="true">{{if .Image}}<img src="/image/{{.Image}}/128x128.webp" alt="" data-avatar-image>
+    {{- /**/}}<span hidden data-avatar-fallback>{{initials .Name}}</span>{{else if avatarIcon .Icon}}{{icon (avatarIcon .Icon)}}
+    {{- else}}{{initials .Name}}{{end}}</span>
+{{end}}
+
+{{define "partial/sidebar"}}
+  {{$admin := eq .Kind "admin"}}
+  <nav class="sidebar" aria-label="{{tr "ui.main_navigation" "Main navigation"}}">
+    <div class="nav-group">
+      {{if $admin}}
+        {{/* Administration has no profile or search dialogs: both controls are links. */}}
+        <a
+          class="nav-button"
+          href="/"
+          aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}{{if .Profile}}: {{.Profile.Name}}{{end}}"
+          data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+        >{{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}</a>
+        {{if .Profile}}
+          <a
+            class="nav-button"
+            href="/{{.Profile.Slug}}/search"
+            aria-label="{{tr "ui.search" "Search"}}"
+            data-tip="{{tr "ui.search" "Search"}}"
+          >{{icon "Search"}}</a>
+        {{end}}
+      {{else}}
+        {{/* Provide essential document navigation when dialog scripts are unavailable. */}}
+        <noscript>
+          <style>.sidebar button[data-dialog]{display:none}</style>
+          <a
+            class="nav-button"
+            href="/"
+            aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+            data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+          >{{icon "UsersRound"}}</a>
+          {{if and (eq .Kind "live") .Profile}}
+            <a
+              class="nav-button"
+              href="/{{.Profile.Slug}}/search"
+              aria-label="{{tr "ui.search" "Search"}}"
+              data-tip="{{tr "ui.search" "Search"}}"
+            >{{icon "Search"}}</a>
+          {{end}}
+        </noscript>
+        <button
+          class="nav-button"
+          data-dialog="profiles-dialog"
+          aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}{{if .Profile}}: {{.Profile.Name}}{{end}}"
+          data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+        >{{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}</button>
+        {{if .Profile}}
+          <button
+            class="nav-button"
+            data-dialog="search-dialog"
+            aria-label="{{tr "ui.search" "Search"}}"
+            data-tip="{{tr "ui.search" "Search"}} /"
+          >{{icon "Search"}}</button>
+        {{end}}
+      {{end}}
+      <span class="nav-spacer"></span>
+      <a
+        class="nav-button"
+        href="{{if .Profile}}/{{.Profile.Slug}}{{else}}/{{end}}"
+        aria-label="{{tr "ui.home" "Home"}}"
+        data-tip="{{tr "ui.home" "Home"}}"
+      >{{icon "House"}}</a>
+      {{if .Profile}}
+        {{if eq .Kind "preview"}}
+          <button
+            class="nav-button"
+            data-dialog="feature-dialog"
+            aria-label="{{tr "ui.rewind" "Rewind"}}"
+            data-tip="{{tr "ui.rewind" "Rewind"}}"
+          >{{icon "History"}}</button>
+        {{else}}
+          <a
+            class="nav-button"
+            href="/{{.Profile.Slug}}/rewind"
+            aria-label="{{tr "ui.rewind" "Rewind"}}"
+            data-tip="{{tr "ui.rewind" "Rewind"}}"
+          >{{icon "History"}}</a>
+        {{end}}
+      {{end}}
+    </div>
+    <div class="nav-group">
+      <a
+        class="nav-button"
+        href="https://github.com/ebrgr/TuneTrail"
+        target="_blank"
+        rel="noopener"
+        aria-label="{{tr "ui.about" "About"}}"
+        data-tip="{{tr "ui.about" "About"}} ↗"
+      >{{icon "Info"}}</a>
+      {{if $admin}}
+        <button
+          class="nav-button admin-settings-trigger"
+          type="button"
+          data-admin-settings
+          aria-label="{{tr "ui.settings" "Settings"}}"
+          data-tip="{{tr "ui.settings" "Settings"}}"
+        >{{icon "Settings2"}}</button>
+        <noscript>
+          <a
+            class="nav-button"
+            href="/admin?section=account"
+            aria-label="{{tr "admin.text.administrator_account" "Administrator account"}}"
+            data-tip="{{tr "admin.text.account" "Account"}}"
+          >⚙</a>
+          <style>.admin-settings-trigger{display:none}</style>
+        </noscript>
+      {{else}}
+        <button
+          class="nav-button"
+          data-dialog="settings-dialog"
+          aria-label="{{tr "ui.settings" "Settings"}}"
+          data-tip="{{tr "ui.settings" "Settings"}} \"
+        >{{icon "Settings2"}}</button>
+      {{end}}
+    </div>
+  </nav>
+{{end}}

@@ -244,22 +244,6 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 
 /* Match the public navigation: top bar on mobile, fixed rail on desktop. */
 .admin-shell{max-width:1180px;margin:0 auto;padding:48px 44px 24px;min-height:100vh}
-.admin-avatar-icon{width:9px;height:9px;background:currentColor;mask-size:contain;mask-repeat:no-repeat;mask-position:center}
-.admin-avatar-icon.music {
-  mask-image:url("icons/Music2.svg?v=abfa8cd369103e998177f8f66d1f650c288dae7988586b3eb7d2d91e4c026295")
-}
-.admin-avatar-icon.headphones {
-  mask-image:url("icons/Headphones.svg?v=ab45b740595c8896e03e61bfe378e3a0add92a3ab6aab5e751741039a2339bdd")
-}
-.admin-avatar-icon.disc {
-  mask-image:url("icons/Disc3.svg?v=7126dd36422a0ef86efa8d2a4bac38ba04df0dd92a3b33be1a4310558017aa15")
-}
-.admin-avatar-icon.radio {
-  mask-image:url("icons/Radio.svg?v=032133ef2ae05a99411ff07cb0c25be96f61848d17e8b13f7808cf74c78a2dc5")
-}
-.admin-avatar-icon.user {
-  mask-image:url("icons/UserRound.svg?v=2c45df45df251eeae3d31997b539f3c6fb733c0e745f8719089b9b0bb9e3a12a")
-}
 #admin-settings {
   position:fixed;
   margin:auto;

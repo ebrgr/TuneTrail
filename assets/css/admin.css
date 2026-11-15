@@ -244,22 +244,6 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 
 /* Match the public navigation: top bar on mobile, fixed rail on desktop. */
 .admin-shell{max-width:1180px;margin:0 auto;padding:48px 44px 24px;min-height:100vh}
-.admin-avatar-icon{width:9px;height:9px;background:currentColor;mask-size:contain;mask-repeat:no-repeat;mask-position:center}
-.admin-avatar-icon.music {
-  mask-image:url('/web-assets/icons/Music2.svg')
-}
-.admin-avatar-icon.headphones {
-  mask-image:url('/web-assets/icons/Headphones.svg')
-}
-.admin-avatar-icon.disc {
-  mask-image:url('/web-assets/icons/Disc3.svg')
-}
-.admin-avatar-icon.radio {
-  mask-image:url('/web-assets/icons/Radio.svg')
-}
-.admin-avatar-icon.user {
-  mask-image:url('/web-assets/icons/UserRound.svg')
-}
 #admin-settings {
   position:fixed;
   margin:auto;

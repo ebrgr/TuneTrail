@@ -2,6 +2,7 @@
   "admin/templates/admin.html": "templates/admin/admin.html",
   "admin/templates/catalog-review.html": "templates/admin/catalog-review.html",
   "admin/templates/head.html": "templates/shared/head.html",
+  "admin/templates/nav.html": "templates/shared/nav.html",
   "admin/templates/manage.html": "templates/admin/manage.html",
   "admin/templates/profile-review.html": "templates/admin/profile-review.html",
   "admin/templates/settings.html": "templates/admin/settings.html",
@@ -47,6 +48,7 @@
   "public/templates/head.html": "templates/shared/head.html",
   "public/templates/live.html": "templates/public/live.html",
   "public/templates/media.html": "templates/public/media.html",
+  "public/templates/nav.html": "templates/shared/nav.html",
   "public/templates/page.html": "templates/public/page.html",
   "public/templates/rewind.html": "templates/public/rewind.html"
 }

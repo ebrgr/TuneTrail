@@ -85,6 +85,18 @@ type Page struct {
 	Selection                     bool
 }
 
+// Nav adapts public and preview pages to the shared sidebar (ISSUE-122).
+func (p Page) Nav() webassets.Nav {
+	nav := webassets.Nav{Kind: "preview"}
+	if p.Live {
+		nav.Kind = "live"
+	}
+	if p.Profile != nil {
+		nav.Profile = &webassets.NavProfile{Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon}
+	}
+	return nav
+}
+
 var profiles = []Profile{{1, "demo", "Mara Silva", "headphones", ""}, {2, "luna", "Luna Paz", "", ""}, {3, "iara", "Iara Costa", "", "preview-photo"}}
 
 func findProfile(slug string) *Profile {
