@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.17] - 2026-11-15
+
 ### Added
 
 - Add a second sidebar opened from the administration icon: Sign in for visitors; Account, Profiles and Server configuration for administrators; and About. It opens beside the first sidebar on wide screens, below it on phones, and stays open in administration (ISSUE-123).

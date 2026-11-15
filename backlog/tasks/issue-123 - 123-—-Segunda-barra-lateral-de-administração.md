@@ -91,4 +91,13 @@ created: 2026-11-15T02:09:00Z
 Aceite: aprovada pelo usuário em 14/11/2026, incluindo o aceite visual ("aceito a 123, publique"). Push não solicitado.
 
 ---
+
+author: ebrgr
+created: 2026-11-15T02:09:00Z
+
+---
+
+Publicação: versão 0.17 (tag `v0.17`), branch `feat/issue-123-segunda-barra-lateral-de-administracao` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->
