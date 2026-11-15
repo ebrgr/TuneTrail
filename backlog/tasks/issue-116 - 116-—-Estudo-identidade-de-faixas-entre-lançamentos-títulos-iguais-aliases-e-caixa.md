@@ -3,11 +3,11 @@ id: ISSUE-116
 title: >-
   116 — Estudo: identidade de faixas entre lançamentos, títulos iguais, aliases
   e caixa
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-15T15:54:00Z'
+updated_date: '2026-11-15T16:42:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -60,6 +60,24 @@ created: 2026-11-15T15:54:00Z
 ---
 
 Verificação final: make issue.review ISSUE=116 executado com sucesso; make check aprovado (vet, testes Go, UI/JS/Python/estilo e 12/12 jornadas E2E). Estudo doc-036 revisado; somente documentação e este registro alterados, teste temporário removido. ISSUE-116 em Aguardando aceite do usuário; sem aceite, publicação, push ou merge.
+
+---
+
+author: claude
+created: 2026-11-15T16:42:00Z
+
+---
+
+Decisões do usuário registradas no doc-036: (1) ranking de faixas com chave na interface 'por gravação' / 'por lançamento', padrão por gravação; (2) maiúsculas e minúsculas associadas automaticamente quando há uma única candidata e nenhum conflito de MBID, preservando a grafia original, com registro e desfazer; (3) remaster/deluxe com agrupamento por perfil e também fusão global com prévia na administração, escolhidos por configuração (novo recorte 8).
+
+---
+
+author: claude
+created: 2026-11-15T16:42:00Z
+
+---
+
+Aceite do usuário em 15/11/2026. Integração por fast-forward na main, sem versão (estudo sem mudança no produto). Primeiro estudo feito por um worker Codex numa worktree do Orca (piloto da ISSUE-129).
 
 ---
 <!-- COMMENTS:END -->

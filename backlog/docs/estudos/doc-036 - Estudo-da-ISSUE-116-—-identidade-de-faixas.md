@@ -3,8 +3,9 @@ id: doc-036
 title: Estudo da ISSUE-116 — identidade de faixas
 type: other
 created_date: '2026-11-15T16:00:00Z'
-updated_date: '2026-11-15T16:00:00Z'
-tags: [estudo]
+updated_date: '2026-11-15T16:42:00Z'
+tags:
+  - estudo
 ---
 **Tarefa:** ISSUE-116 · **Base examinada:** `097885c`, branch `spike/issue-116-estudo-identidade-de-faixas-entre` · **Data:** 15/11/2026.
 
@@ -112,11 +113,15 @@ Propostas apenas; nenhum registro novo criado no backlog.
 | 6 | Normalização de caixa com prévia | Preservar grafia; candidatos Unicode determinísticos em versão de regra conhecida; colisões/MBIDs conflitantes não fundidos; ativar/desativar preferência não muda dados brutos nem outro perfil. |
 | 7 | Grupos opcionais de remaster/deluxe | Prévia e desfazer por perfil; lançamentos/IDs originais preservados; bônus de deluxe e gravação ao vivo não entram automaticamente; totais brutos invariantes; rankings com/sem grupo testados, em coerência com a 096. |
 
-## Perguntas que dependem do usuário
+## Decisões do usuário (15/11/2026)
 
-1. No ranking padrão de faixas, prefere reunir a mesma **gravação** de single/álbum/coletânea (recomendado), mantendo o detalhamento por lançamento, ou mostrar cada ocorrência separada?
-2. Para caixa, prefere sugerir agrupamentos para revisão (recomendado inicialmente) ou associar automaticamente candidatos únicos sem conflito de MBID, preservando a grafia original?
-3. Remaster/deluxe deve ser apenas agrupamento reversível por perfil, desligado por padrão (recomendado), ou também deseja uma operação separada de fusão global com prévia dos perfis afetados?
+1. **Ranking de faixas: escolha na interface.** A tela de faixas mais ouvidas ganha uma chave "por gravação" / "por lançamento". Por gravação, 'Song X' com 10 escutas no single e 30 no álbum aparece numa linha com 40; por lançamento, em duas linhas. O padrão é por gravação. Como o modelo guarda gravação e ocorrência, as duas leituras saem das mesmas escutas, sem dado duplicado. Isso entra no recorte 5, com teste de que a soma por lançamento é igual ao total por gravação.
+2. **Maiúsculas e minúsculas: associação automática.** Na ingestão, uma grafia que difere só por caixa (regra Unicode determinística e versionada) é associada sozinha à entidade existente quando há **uma única candidata** e **nenhum conflito de MusicBrainz ID**. A grafia original de cada escuta é preservada, a associação fica registrada com a versão da regra e pode ser desfeita. Ambiguidades (várias candidatas, MBIDs diferentes) continuam indo para revisão. Isso muda o recorte 6: de "sugestão com prévia" para "associação automática com registro e desfazer". Ao contrário dos agrupamentos de exibição, essa associação é uma decisão de identidade do catálogo, que é compartilhado, e por isso vale para todos os perfis.
+3. **Remaster e deluxe: as duas formas, escolhidas por configuração.** Continua existindo o agrupamento reversível por perfil, desligado por padrão (recorte 7), e entra uma **fusão global** na administração, com prévia dos perfis e totais afetados e backup antes de aplicar (novo recorte 8). Uma configuração do servidor define quais formas ficam disponíveis; os totais brutos de escutas nunca mudam em nenhuma das duas.
+
+| Ordem | Recorte | Critérios de aceite verificáveis |
+| --- | --- | --- |
+| 8 | Fusão global de remaster/deluxe na administração | Prévia lista perfis, lançamentos e totais afetados antes de aplicar; backup comprovado; total bruto de escutas por perfil idêntico antes e depois; bônus de deluxe e gravação ao vivo não entram sem confirmação; a opção some quando a configuração a desliga. |
 
 ## Validação de entrega
 
