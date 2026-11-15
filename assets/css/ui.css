@@ -230,9 +230,9 @@ a:hover,button.media-title:hover {
   height: 11px;
   stroke-width: 2.5
 }
-/* Pearl's accent colors stay under 3:1 on its background; use the text color there. */
+/* Pearl's primary blue is under 3:1 on its background; its darker info blue keeps 4.33:1. */
 [data-theme="pearl"] .admin-badge {
-  background: var(--color-fg)
+  background: var(--color-info)
 }
 .profile-identity {
   min-width: 0;

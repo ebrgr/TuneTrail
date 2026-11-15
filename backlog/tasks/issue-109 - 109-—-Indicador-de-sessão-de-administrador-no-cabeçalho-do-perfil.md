@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T00:13:00Z'
+updated_date: '2026-11-15T00:22:00Z'
 labels:
   - ui
   - admin
@@ -87,6 +87,15 @@ created: 2026-11-15T00:13:00Z
 ---
 
 Verificação: make check 12/12 e referência sem diferenças; validador real de cache/histórico PASS em Chrome 157, Firefox 147 e HTTPS; roteiro sem bfcache: selo mantido sem recarga com sessão ativa e ausente após logout; testes de visitante, cookie inválido, duplicado, papel não admin e logout; contraste do selo ≥ 5,0 em 11 temas e 17,9 no Pearl; Reviewer com o item obrigatório corrigido. Falta o aceite visual (capturas Yuu e Pearl em backlog/evidencias/issue-109/).
+
+---
+
+author: claude
+created: 2026-11-15T00:22:00Z
+
+---
+
+Ajuste pedido pelo usuário: no Pearl o selo passa de preto (fg) para azul. Como o azul primary do Pearl tem 2,69:1 sobre o fundo, usa-se o azul info (#0E7DB8, 4,33:1). Capturas do Pearl atualizadas; make check 12/12.
 
 ---
 <!-- COMMENTS:END -->
