@@ -1,11 +1,11 @@
 ---
 id: ISSUE-110
 title: 110 — Ícone de tema com modal simples de tema e idioma
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T01:40:00Z'
+updated_date: '2026-11-15T01:44:00Z'
 labels:
   - ui
   - i18n
@@ -41,7 +41,7 @@ Origem: pedido do usuário em 13–14/11/2026; escopo revisto em 14/11/2026 depo
 - [x] #2 Modal de tema abre por clique, teclado e pela tecla \; foco devolvido ao ícone ao fechar
 - [x] #3 Troca de tema funciona nas páginas públicas, na prévia e na administração (theme-picker.js compartilhado)
 - [x] #4 settings-dialog, #admin-settings e ícone Info removidos; último ícone leva a /admin, sem selo (o selo de sessão fica só no avatar do perfil)
-- [ ] #5 Traduções em inglês e português; testes e capturas desktop e celular com aceite visual
+- [x] #5 Traduções em inglês e português; testes e capturas desktop e celular com aceite visual
 <!-- AC:END -->
 
 ## Comments
@@ -116,6 +116,15 @@ created: 2026-11-15T01:40:00Z
 ---
 
 Ajuste pedido pelo usuário antes do aceite: o selo de sessão sai do ícone de administração da barra e fica só no avatar do perfil (ISSUE-109). Nav.Admin, LivePage.Nav e o parâmetro de sessão de adminNav removidos; ISSUE-123 atualizada (sem selo no gatilho nem em Conta).
+
+---
+
+author: ebrgr
+created: 2026-11-15T01:44:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026, incluindo o aceite visual ("aceito a 110, publique"). Push não solicitado.
 
 ---
 <!-- COMMENTS:END -->
