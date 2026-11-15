@@ -158,18 +158,6 @@
 .admin-sidebar>span {
   flex:1
 }
-.admin-theme {
-  font-size:.7rem;
-  width:60px
-}
-.admin-theme select {
-  width:60px;
-  background:var(--color-bg);
-  color:var(--color-fg);
-  padding:6px 2px;
-  border-radius:4px;
-  font-size:.7rem
-}
 .admin-footer {
   margin-top:48px;
   color:var(--color-fg-tertiary);
@@ -202,9 +190,6 @@
   .admin-sidebar {
     width:58px;
     padding:18px 5px
-  }
-  .admin-theme,.admin-theme select {
-    width:48px
   }
   .admin-main h1 {
     font-size:1.75rem
@@ -244,22 +229,6 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 
 /* Match the public navigation: top bar on mobile, fixed rail on desktop. */
 .admin-shell{max-width:1180px;margin:0 auto;padding:48px 44px 24px;min-height:100vh}
-#admin-settings {
-  position:fixed;
-  margin:auto;
-  padding:32px;
-  max-width:min(480px,calc(100% - 32px));
-  width:100%;
-  border:1px solid var(--color-bg-tertiary);
-  border-radius:12px;
-  background:var(--color-bg-secondary);
-  color:var(--color-fg)
-}
-#admin-settings::backdrop{background:rgba(0,0,0,.65)}
-#admin-settings h2{margin:0 0 24px}
-#admin-settings .admin-theme{display:flex;flex-direction:column;gap:8px;width:100%;font-size:1rem}
-#admin-settings select{width:100%;background:var(--color-bg);color:var(--color-fg);border:1px solid var(--color-bg-tertiary);border-radius:6px;padding:10px}
-#admin-settings p{margin-top:20px}#admin-settings a{color:var(--color-primary)}
 @media(min-width:40rem){.admin-shell{margin-left:58px;padding-left:44px} }
 @media(max-width:calc(40rem - 1px)){.admin-shell{padding:32px 18px 30px}.skip-link{left:16px}}
 /* Server configuration reuses the administrative shell and stacks field state clearly. */
@@ -306,7 +275,7 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 }
 
 /* Administrative backgrounds also need the shared inset arrow. */
-:is(.admin-main, #admin-settings) select:not([multiple]):not([size]) {
+.admin-main select:not([multiple]):not([size]) {
   background-image: var(--select-arrow);
   background-position: calc(100% - 20px) center, calc(100% - 15px) center;
   background-size: 5px 5px;
@@ -314,7 +283,7 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
   padding-right: 2.5rem;
 }
 @media (forced-colors: active) {
-  :is(.admin-main, #admin-settings) select:not([multiple]):not([size]) { background-image: none; }
+  .admin-main select:not([multiple]):not([size]) { background-image: none; }
 }
 /* Deprecated KOITO_* override on the settings page (ISSUE-111). The notice uses the
    theme's warning colour: border at least 3:1 and a 12% tint behind the text. The red

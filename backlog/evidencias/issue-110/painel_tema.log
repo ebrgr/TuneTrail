@@ -1,0 +1,30 @@
+{
+ "publico": {
+  "closedAtLoad": true,
+  "clickOpens": true,
+  "applied": "pearl",
+  "pressed": "true",
+  "escCloses": true,
+  "focusBack": true,
+  "enterOpens": true,
+  "backslashOpens": true,
+  "backslashFocusInside": true,
+  "backslashFocusBack": true
+ },
+ "login": 204,
+ "admin": {
+  "closedAtLoad": true,
+  "clickOpens": true,
+  "applied": "pearl",
+  "pressed": "true",
+  "escCloses": true,
+  "focusBack": true,
+  "enterOpens": true,
+  "backslashOpens": true,
+  "backslashFocusInside": true,
+  "backslashFocusBack": true
+ },
+ "adminBadge": 1,
+ "languageAfter": "en"
+}
+PASS

@@ -13,7 +13,7 @@ func TestNoScriptNavigationExposesProfileAndScopedSearchLinks(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := pageRequest(h, "/alpha?period=all_time").Body.String()
-	for _, want := range []string{`<noscript>`, `href="/"\s+aria-label="Choose listening profile"`, `href="/alpha/search"\s+aria-label="Search"`, `Appearance settings require JavaScript.`} {
+	for _, want := range []string{`<noscript>`, `href="/"\s+aria-label="Choose listening profile"`, `href="/alpha/search"\s+aria-label="Search"`, `Changing the theme requires JavaScript.`} {
 		if !regexp.MustCompile(want).MatchString(body) {
 			t.Fatalf("no-script navigation missing %q", want)
 		}

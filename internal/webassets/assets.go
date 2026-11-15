@@ -121,7 +121,7 @@ func Load(ctx context.Context, source fs.FS) (*Snapshot, error) {
 	if err = json.Unmarshal(data, &manifest); err != nil {
 		return nil, fmt.Errorf("manifest: %w", err)
 	}
-	for _, key := range []string{"public/templates/live.html", "public/templates/page.html", "public/templates/rewind.html", "admin/templates/admin.html", "admin/templates/shell.html", "public/static/ui.css", "public/static/admin.css", "public/static/theme.js", "public/static/ui.js", "public/static/live.js", "public/static/admin.js", "public/palettes.json"} {
+	for _, key := range []string{"public/templates/live.html", "public/templates/page.html", "public/templates/rewind.html", "admin/templates/admin.html", "admin/templates/nav.html", "public/static/ui.css", "public/static/admin.css", "public/static/theme.js", "public/static/ui.js", "public/static/live.js", "public/static/admin.js", "public/palettes.json"} {
 		if _, ok := manifest[key]; !ok {
 			return nil, fmt.Errorf("manifest missing %s", key)
 		}

@@ -765,44 +765,48 @@ dialog h2 {
   margin-top: 24px;
   font-size: 14px
 }
-.settings-dialog {
-  max-width: 1000px;
-  height: 700px
+/* ISSUE-110: theme panel as a native popover. Older browsers ignore :popover-open and drop
+   that rule, so the panel stays hidden instead of showing inline. */
+.theme-panel[popover] {
+  display: none
 }
-.settings-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100%
+.theme-panel[popover]:popover-open {
+  display: block
 }
-.settings-tabs {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0 auto;
-  width: 85%;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-bg);
-  padding: 8px;
-  flex-shrink: 0
-}
-.settings-tabs button {
-  padding: 8px 4px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  text-align: left
-}
-.settings-tabs button[aria-selected=true] {
+.theme-panel {
+  margin: auto;
+  color: var(--color-fg);
   background: var(--color-bg-secondary);
-  border-color: var(--color-border)
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px;
+  padding: 24px;
+  width: calc(100% - 16px);
+  max-width: 600px;
+  max-height: 80vh;
+  overflow: auto
 }
-.settings-content {
-  width: 100%;
-  min-width: 0;
-  margin-top: 32px;
-  padding: 0 8px;
-  overflow-y: auto;
-  flex: 1
+.theme-panel::backdrop {
+  background: rgb(0 0 0/.6)
+}
+.theme-heading h2 {
+  margin: 0
+}
+.custom-theme-details {
+  margin-top: 20px
+}
+.custom-theme-details summary {
+  cursor: pointer;
+  color: var(--color-fg-secondary)
+}
+.nav-button .admin-badge {
+  right: 2px;
+  bottom: 2px;
+  width: 12px;
+  height: 12px
+}
+.nav-button .admin-badge svg {
+  width: 8px;
+  height: 8px
 }
 .theme-heading {
   display: flex;
@@ -861,9 +865,6 @@ dialog h2 {
   border-radius: 8px;
   background: var(--color-bg-secondary)
 }
-#custom-theme-form {
-  margin-top: 40px
-}
 textarea {
   resize: vertical;
   background: var(--color-bg);
@@ -883,7 +884,7 @@ button.large-button {
 button.large-button:hover {
   background: var(--color-bg-tertiary)
 }
-#theme-status {
+.theme-status {
   font-size: 14px
 }
 body:has(dialog[open]) {
@@ -994,20 +995,6 @@ body:has(dialog[open]) {
   .close-dialog {
     top: 12px;
     right: 16px
-  }
-  .settings-layout {
-    flex-direction: row
-  }
-  .settings-tabs {
-    max-width: 25%
-  }
-  .settings-tabs button {
-    padding-left: 16px;
-    padding-right: 16px
-  }
-  .settings-content {
-    margin: 16px 12px 0;
-    padding: 0 40px
   }
   .theme-grid {
     grid-template-columns: repeat(2,minmax(0,1fr))
@@ -1288,5 +1275,3 @@ select:not([multiple]):not([size]) {
   padding:8px 12px
 }
 .language-picker select{padding-right:2.5rem}.language-picker button{cursor:pointer}
-.language-settings-fallback{max-width:36rem;margin:1.5rem auto;padding:0 1rem;color:var(--color-fg-secondary)}
-.language-settings-fallback summary{cursor:pointer}

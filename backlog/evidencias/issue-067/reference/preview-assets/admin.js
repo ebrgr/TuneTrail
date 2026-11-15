@@ -1,12 +1,6 @@
 /* Progressive form enhancements; ordinary GET/POST remains available without JavaScript. */
 (() => {
  const section=new URLSearchParams(location.search).get('section');if(['keys','relay','import','export'].includes(section))requestAnimationFrame(()=>document.getElementById(section==='export'?'import':section)?.scrollIntoView());
- const theme=document.querySelector('[data-admin-theme]');
- if(theme){theme.value=document.documentElement.dataset.theme;theme.addEventListener('change',()=>window.TuneTrailTheme?.apply(theme.value));}
- // Keep appearance settings available from the same navigation icon as public pages.
- const settings=document.getElementById('admin-settings');
- const settingsTrigger=document.querySelector('[data-admin-settings]');
- if(settings&&settingsTrigger){settingsTrigger.addEventListener('click',()=>settings.showModal());settings.querySelector('[data-admin-close]')?.addEventListener('click',()=>settings.close());settings.addEventListener('close',()=>settingsTrigger.focus());document.addEventListener('keydown',event=>{if(event.key==='\\'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,textarea,select,[contenteditable=true]')&&!settings.open){event.preventDefault();settings.showModal();}});}
  // Preserve a visible avatar when a profile image cannot be loaded (shared sidebar avatar, ISSUE-122).
  document.querySelectorAll('[data-avatar-image]').forEach(image=>{const fallback=image.parentElement.querySelector('[data-avatar-fallback]');const fail=()=>{image.hidden=true;if(fallback)fallback.hidden=false;};image.addEventListener('error',fail);if(image.complete&&!image.naturalWidth)fail();});
  document.addEventListener('submit',event=>{const form=event.target;if(!(form instanceof HTMLFormElement)||form.method.toLowerCase()!=='post')return;if(form.dataset.pending){event.preventDefault();return;}form.dataset.pending='1';setTimeout(()=>form.querySelectorAll('button').forEach(button=>button.disabled=true),0);});

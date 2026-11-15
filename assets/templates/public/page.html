@@ -5,17 +5,10 @@
       {{template "partial/head" (head "preview" "TuneTrail · Go visual preview")}}
     </head>
     <body
-      data-themes-url="{{asset "themes.json"}}"
       data-cover-fallback-url="{{asset "icons/Disc3.svg"}}"
       data-i18n-delete-label="{{tr "js.delete_label" "Delete listening record"}}"
       data-i18n-delete-confirm="{{tr "js.delete_confirm" "Delete this listening record?"}}"
       data-i18n-delete-error="{{tr "js.delete_error" "Unable to delete this listening record. Please retry."}}"
-      data-i18n-theme-load-error="{{tr "js.theme_load_error" "Unable to load theme examples. Built-in themes still work."}}"
-      data-i18n-theme-applied="{{tr "js.theme_applied" "Theme applied on this browser."}}"
-      data-i18n-theme-reset="{{tr "js.theme_reset" "Default theme restored."}}"
-      data-i18n-theme-custom-applied="{{tr "js.theme_custom_applied" "Custom theme applied on this browser."}}"
-      data-i18n-theme-invalid-json="{{tr "js.theme_invalid_json" "Invalid JSON. No appearance changes were made."}}"
-      data-i18n-theme-invalid-palette="{{tr "js.theme_invalid_palette" "Use exactly the 14 expected hexadecimal color properties."}}"
     >
       <div class="app-shell">
         {{template "partial/sidebar" .Nav}}
@@ -54,7 +47,7 @@
       </div>
       {{template "partial/dialogs" .}}
       <noscript>
-        <p class="noscript">Page navigation works without JavaScript. Enable JavaScript for appearance settings and dialogs.</p>
+        <p class="noscript">Page navigation works without JavaScript. Enable JavaScript for dialogs and theme changes.</p>
       </noscript>
     </body>
   </html>
@@ -310,16 +303,4 @@
       <div class="media-meta">{{.Count}} plays</div>
     </div>
   </div>
-{{end}}
-
-{{define "partial/language-picker"}}
-  <form class="language-picker" method="post" action="/language">
-    <label>{{.T "language.label"}}<select name="language">
-      <option value="auto"{{if eq .Choice "auto"}} selected{{end}}>{{.T "language.auto"}}</option>
-      <option value="en"{{if eq .Choice "en"}} selected{{end}}>English</option>
-      <option value="pt-BR"{{if eq .Choice "pt-BR"}} selected{{end}}>Português (Brasil)</option>
-    </select></label>
-    <input type="hidden" name="return_to" value="{{.Return}}">
-    <button type="submit">{{.T "language.save"}}</button>
-  </form>
 {{end}}

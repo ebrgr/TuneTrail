@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Replace the About icon with a theme icon that opens a simple panel with the themes, the custom theme and the language, without tabs; the panel also works in administration and opens with the \ key (ISSUE-110).
+- The settings icon now links to administration and shows the administrator badge when a session is active; account, server and About move to a second sidebar in a later version (ISSUE-110, ISSUE-123).
+
 ## [0.15] - 2026-11-15
 
 ### Added

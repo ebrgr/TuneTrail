@@ -97,6 +97,13 @@ func (p Page) Nav() webassets.Nav {
 	return nav
 }
 
+// Nav adds the administrator session, which only live pages resolve (ISSUE-109).
+func (p LivePage) Nav() webassets.Nav {
+	nav := p.Page.Nav()
+	nav.Admin = p.Admin
+	return nav
+}
+
 var profiles = []Profile{{1, "demo", "Mara Silva", "headphones", ""}, {2, "luna", "Luna Paz", "", ""}, {3, "iara", "Iara Costa", "", "preview-photo"}}
 
 func findProfile(slug string) *Profile {

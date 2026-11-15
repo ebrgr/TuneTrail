@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T01:19:00Z'
+updated_date: '2026-11-15T01:31:00Z'
 labels:
   - ui
   - i18n
@@ -16,6 +16,8 @@ dependencies:
 references:
   - backlog/evidencias/issue-110/advisor-inicial.md
   - backlog/evidencias/issue-110/advisor-segunda-barra.md
+  - backlog/evidencias/issue-110/reviewer.md
+  - backlog/evidencias/issue-110/painel_tema.log
 priority: high
 type: feature
 ordinal: 110000
@@ -35,10 +37,10 @@ Origem: pedido do usuário em 13–14/11/2026; escopo revisto em 14/11/2026 depo
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Penúltimo ícone é Palette e abre modal só com temas, tema personalizado recolhido e idioma, sem abas
-- [ ] #2 Modal de tema abre por clique, teclado e pela tecla \; foco devolvido ao ícone ao fechar
-- [ ] #3 Troca de tema funciona nas páginas públicas, na prévia e na administração (theme-picker.js compartilhado)
-- [ ] #4 settings-dialog, #admin-settings e ícone Info removidos; último ícone leva a /admin com selo quando há sessão
+- [x] #1 Penúltimo ícone é Palette e abre modal só com temas, tema personalizado recolhido e idioma, sem abas
+- [x] #2 Modal de tema abre por clique, teclado e pela tecla \; foco devolvido ao ícone ao fechar
+- [x] #3 Troca de tema funciona nas páginas públicas, na prévia e na administração (theme-picker.js compartilhado)
+- [x] #4 settings-dialog, #admin-settings e ícone Info removidos; último ícone leva a /admin com selo quando há sessão
 - [ ] #5 Traduções em inglês e português; testes e capturas desktop e celular com aceite visual
 <!-- AC:END -->
 

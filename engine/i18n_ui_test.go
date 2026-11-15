@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -28,36 +27,30 @@ func TestLanguageJourney(t *testing.T) {
 	if !strings.Contains(en.Body.String(), "Choose a listening profile") {
 		t.Fatal("English page")
 	}
-	// The language form belongs to the settings dialog, with a separate no-JS fallback.
-	checkSettings := func(body, dialog string) {
+	// ISSUE-110: the language form belongs to the theme panel, a native popover that also
+	// opens without JavaScript, so there is no separate no-JS copy of the form.
+	checkSettings := func(body string) {
 		t.Helper()
-		start := strings.Index(body, `<dialog id="`+dialog+`"`)
-		if start < 0 {
-			t.Fatal("settings dialog missing")
+		start := strings.Index(body, `id="theme-panel"`)
+		if start < 0 || !strings.Contains(body, `popovertarget="theme-panel"`) {
+			t.Fatal("theme panel or its trigger missing")
 		}
-		end := strings.Index(body[start:], "</dialog>")
-		if end < 0 || !strings.Contains(body[start:start+end], `name="language"`) {
-			t.Fatal("language form outside settings dialog")
+		if !strings.Contains(body[start:], `name="language"`) {
+			t.Fatal("language form outside theme panel")
 		}
-		fallback := regexp.MustCompile(`<noscript>\s*<details class="language-settings-fallback">`).FindStringIndex(body)
-		if fallback == nil {
-			t.Fatal("no-JS settings missing")
-		}
-		pos := fallback[0]
-		close := strings.Index(body[pos:], "</noscript>")
-		if close < 0 || !strings.Contains(body[pos:pos+close], `name="language"`) {
-			t.Fatal("no-JS language form missing")
-		}
-		if strings.Count(body, `name="language"`) != 2 {
+		if strings.Count(body, `name="language"`) != 1 {
 			t.Fatal("unexpected language selector on page")
 		}
+		if strings.Contains(body, "settings-dialog") || strings.Contains(body, "admin-settings") {
+			t.Fatal("old settings dialog still rendered")
+		}
 	}
-	checkSettings(pt.Body.String(), "settings-dialog")
+	checkSettings(pt.Body.String())
 	admin := page("/admin", "pt-BR")
 	if admin.Code != 200 || !strings.Contains(admin.Body.String(), "Aplicar idioma") {
 		t.Fatalf("admin language selector: %d", admin.Code)
 	}
-	checkSettings(admin.Body.String(), "admin-settings")
+	checkSettings(admin.Body.String())
 	req := httptest.NewRequest("POST", "http://koito.test/language", strings.NewReader("language=pt-BR&return_to=%2Fadmin"))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Origin", "http://evil.test")

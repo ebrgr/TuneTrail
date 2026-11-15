@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 )
 
 // Palette is the fixed set of appearance colors bundled with the distribution.
@@ -54,4 +55,44 @@ func renderThemes(data []byte) ([]byte, error) {
 		fmt.Fprintln(&out, "}")
 	}
 	return out.Bytes(), nil
+}
+
+// ThemeOption is one entry of the theme grid shared by public pages and administration.
+type ThemeOption struct {
+	Name   string
+	Colors Palette
+}
+
+// themeCache keeps the parsed theme grid of the current generation; a new snapshot
+// (different Hash) rebuilds it once instead of on every rendered page.
+var themeCache struct {
+	sync.Mutex
+	hash    string
+	options []ThemeOption
+}
+
+// ThemeOptions lists the bundled themes in display order for the shared theme panel (ISSUE-110).
+func ThemeOptions() ([]ThemeOption, error) {
+	s, err := Current()
+	if err != nil {
+		return nil, err
+	}
+	themeCache.Lock()
+	defer themeCache.Unlock()
+	if themeCache.hash == s.Hash {
+		return themeCache.options, nil
+	}
+	var palettes map[string]Palette
+	if err := json.Unmarshal(s.files["public/palettes.json"], &palettes); err != nil {
+		return nil, fmt.Errorf("palettes: %w", err)
+	}
+	options := make([]ThemeOption, 0, len(themeOrder))
+	for _, name := range themeOrder {
+		if len(palettes[name]) != len(colorKeys) {
+			return nil, fmt.Errorf("invalid or missing palette %s", name)
+		}
+		options = append(options, ThemeOption{Name: name, Colors: palettes[name]})
+	}
+	themeCache.hash, themeCache.options = s.Hash, options
+	return options, nil
 }

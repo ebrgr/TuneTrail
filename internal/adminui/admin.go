@@ -130,7 +130,7 @@ func New(store Store, opts Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "nav": adminNav}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "nav": adminNav, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}
@@ -522,9 +522,10 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 	return os.Open(u.Path)
 }
 
-// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122).
-func adminNav(p *models.ListeningProfile) webassets.Nav {
-	nav := webassets.Nav{Kind: "admin"}
+// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122); signedIn
+// is false only on the login page and shows the session badge otherwise (ISSUE-110).
+func adminNav(p *models.ListeningProfile, signedIn bool) webassets.Nav {
+	nav := webassets.Nav{Kind: "admin", Admin: signedIn}
 	if p != nil {
 		nav.Profile = &webassets.NavProfile{Name: p.DisplayName, Slug: p.Slug}
 		if p.AvatarImageID != nil {

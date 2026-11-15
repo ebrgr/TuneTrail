@@ -14,6 +14,7 @@ type NavProfile struct {
 type Nav struct {
 	Kind    string // live, preview or admin: selects dialogs or links for the same controls
 	Profile *NavProfile
+	Admin   bool // valid administrator session: badge on the administration icon (ISSUE-110)
 }
 
 // Icon inlines a bundled, reviewed Lucide SVG; never catalog or user HTML.
