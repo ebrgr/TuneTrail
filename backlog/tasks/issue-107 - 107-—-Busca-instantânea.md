@@ -1,11 +1,11 @@
 ---
 id: ISSUE-107
 title: 107 — Busca instantânea
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T12:14:00Z'
+updated_date: '2026-11-15T12:17:00Z'
 labels:
   - ui
   - admin
@@ -149,6 +149,15 @@ created: 2026-11-15T12:14:00Z
 ---
 
 Correção a partir da captura do usuário no tema Pearl: o fundo fixo escuro do diálogo deixava os títulos (cor do texto do tema, quase preta no Pearl) invisíveis. Diálogo e faixa fixa passam a usar a cor de fundo do tema (contraste texto/fundo acima de 12:1 em todos os temas). O roteiro passou a capturar e medir o Pearl.
+
+---
+
+author: ebrgr
+created: 2026-11-15T12:17:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 15/11/2026, incluindo o aceite visual ("Aceito, aprovado, comita e faça o push").
 
 ---
 <!-- COMMENTS:END -->
