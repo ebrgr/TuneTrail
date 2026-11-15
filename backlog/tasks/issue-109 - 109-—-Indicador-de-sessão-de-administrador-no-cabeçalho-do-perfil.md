@@ -1,11 +1,11 @@
 ---
 id: ISSUE-109
 title: 109 — Indicador de sessão de administrador no cabeçalho do perfil
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T00:22:00Z'
+updated_date: '2026-11-15T00:23:00Z'
 labels:
   - ui
   - admin
@@ -57,7 +57,7 @@ A ISSUE-108 reutiliza a detecção do passo 1 para mostrar a barra de ações.
 - [x] #3 Contraste do selo de pelo menos 3:1 em todos os temas; texto acessível e title traduzidos
 - [x] #4 live.js deixa de chamar /apis/web/v1/user para descobrir o papel
 - [x] #5 Respostas com Vary: Cookie e cache privado
-- [ ] #6 Capturas nos temas Yuu e Pearl e aceite visual do usuário
+- [x] #6 Capturas nos temas Yuu e Pearl e aceite visual do usuário
 <!-- AC:END -->
 
 ## Comments
@@ -96,6 +96,15 @@ created: 2026-11-15T00:22:00Z
 ---
 
 Ajuste pedido pelo usuário: no Pearl o selo passa de preto (fg) para azul. Como o azul primary do Pearl tem 2,69:1 sobre o fundo, usa-se o azul info (#0E7DB8, 4,33:1). Capturas do Pearl atualizadas; make check 12/12.
+
+---
+
+author: ebrgr
+created: 2026-11-15T00:23:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026, incluindo o aceite visual com o selo azul no Pearl ("Aceito, comite e faça o push").
 
 ---
 <!-- COMMENTS:END -->
