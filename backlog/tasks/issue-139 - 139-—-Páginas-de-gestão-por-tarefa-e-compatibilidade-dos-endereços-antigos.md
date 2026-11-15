@@ -91,4 +91,13 @@ created: 2026-11-15T20:44:00Z
 Aceite: aprovada pelo usuário em 15/11/2026, com autorização para push e publicação.
 
 ---
+
+author: ebrgr
+created: 2026-11-15T20:44:00Z
+
+---
+
+Publicação: versão 0.21 (tag `v0.21`), branch `feat/issue-139-paginas-de-gestao-por-tarefa` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->
