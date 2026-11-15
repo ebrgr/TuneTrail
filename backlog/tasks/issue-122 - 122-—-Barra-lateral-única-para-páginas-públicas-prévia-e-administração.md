@@ -1,7 +1,7 @@
 ---
 id: ISSUE-122
 title: 122 — Barra lateral única para páginas públicas, prévia e administração
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T00:57:00Z'
@@ -41,6 +41,15 @@ created: 2026-11-15T00:57:00Z
 ---
 
 Início: branch `chore/issue-122-barra-lateral-unica-para-paginas` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-15T01:06:00Z
+
+---
+
+Verificação: make check 12/12 e referência sem diferenças; validador real Chrome/Firefox/HTTPS PASS; HTML público e da prévia estritamente idêntico, administração difere só nos ícones SVG; capturas 111/138 idênticas e 27 com 12 px de suavização (delta 1/255) nos ícones da administração; Reviewer APROVADO.
 
 ---
 <!-- COMMENTS:END -->
