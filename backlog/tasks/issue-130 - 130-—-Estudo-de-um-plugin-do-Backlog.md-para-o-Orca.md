@@ -1,11 +1,11 @@
 ---
 id: ISSUE-130
 title: 130 — Estudo de um plugin do Backlog.md para o Orca
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:06:00Z'
-updated_date: '2026-11-15T16:10:00Z'
+updated_date: '2026-11-15T16:17:00Z'
 labels:
   - processo
 dependencies: []
@@ -47,6 +47,15 @@ created: 2026-11-15T16:10:00Z
 ---
 
 Verificação: estudo doc-037 com API de plugins do Orca 1.4.259 conferida (referências do orca-plugin-authoring, plugin-host-entry.js sem modelo de permissões do Node), saída backlog --json/--watch medida (~70 ms), PATH do app conferido (/usr/bin:/bin:/usr/sbin:/sbin), catálogo da comunidade consultado (299 plugins, nenhum do Backlog.md). Nada publicado.
+
+---
+
+author: claude
+created: 2026-11-15T16:17:00Z
+
+---
+
+Aceite do usuário em 15/11/2026. Decisões: (1) o plugin terá repositório próprio, ebrgr/backlog-md-orca, com o próprio Backlog.md; toda a implementação segue lá; (2) projeto em inglês; (3) tudo separado do TuneTrail, com o checkout local em ~/Projects/backlog-md-orca. Esta tarefa fica encerrada com o estudo doc-037.
 
 ---
 <!-- COMMENTS:END -->
