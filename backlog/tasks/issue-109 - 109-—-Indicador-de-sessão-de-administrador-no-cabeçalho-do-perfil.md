@@ -107,4 +107,13 @@ created: 2026-11-15T00:23:00Z
 Aceite: aprovada pelo usuário em 14/11/2026, incluindo o aceite visual com o selo azul no Pearl ("Aceito, comite e faça o push").
 
 ---
+
+author: ebrgr
+created: 2026-11-15T00:23:00Z
+
+---
+
+Publicação: versão 0.15 (tag `v0.15`), branch `feat/issue-109-indicador-de-sessao-de-administrador` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->

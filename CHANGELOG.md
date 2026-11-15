@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.15] - 2026-11-15
+
 ### Added
 
 - Show a shield badge on the profile avatar when an administrator session is active, linking to administration; visitors never receive it (ISSUE-109).
