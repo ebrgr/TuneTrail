@@ -1,11 +1,11 @@
 ---
 id: ISSUE-068
 title: 068 — Dividir o CSS em camadas com concatenação e cache no Go
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-15T17:38:00Z'
+updated_date: '2026-11-15T19:35:00Z'
 labels:
   - ui
 milestone: m-10
@@ -75,6 +75,15 @@ created: 2026-11-15T17:38:00Z
 ---
 
 Verificação: 18 partes em @layer concatenadas pelo Go na ordem do manifesto; mesmas 366 regras (verify.py); estilos computados idênticos em 70.710 elementos, 11 páginas × 2 temas × 5 larguras; 126/132 capturas idênticas e 6 com 19–25 px no ícone do pé da barra lateral, que oscila também entre duas capturas da main; URL muda ao alterar uma parte (bundle_test.go); maior arquivo 323 linhas; Reviewer sem bloqueios, 5 ajustes aplicados. Passo 3 (remover regras mortas): nenhuma removida, pois não havia prova de não uso; fica para a ISSUE-069. make check verde, 12/12 E2E.
+
+---
+
+author: claude
+created: 2026-11-15T19:35:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 15/11/2026.
 
 ---
 <!-- COMMENTS:END -->
