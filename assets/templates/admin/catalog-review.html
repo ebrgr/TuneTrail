@@ -17,14 +17,32 @@
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>{{trn
+          {{template "manage/review-content" . -}}
+        </main>
+        <footer class="admin-footer">
+          TuneTrail ·
+          <a href="/">{{tr "admin.text.listening_profiles" "Listening profiles"}}</a>
+        </footer>
+      </div>
+    </body>
+  </html>
+{{end}}
+
+{{- define "manage/review"}}
+  <div id="review" class="admin-main" data-section>
+    {{template "manage/review-content" . -}}
+  </div>
+{{- end}}
+
+{{- define "manage/review-content"}}
+          {{- if .Dialog}}<h2>{{else}}<h1>{{end}}{{trn
             "admin.review.title"
             "Review {{.Action}}: {{.Kind}}"
             "Action"
             (tr (printf "admin.action.%s" .Plan.Action) .Plan.Action)
             "Kind"
             (tr (printf "admin.kind.%s" .Kind) .Kind)
-          }}</h1>
+          }}{{if .Dialog}}</h2>{{else}}</h1>{{end}}
           <p>{{tr
             "admin.text.this_changes_the_shared_catalog_for_all_profiles_this_action_cannot_be_undone"
             "This changes the shared catalog for all profiles. This action cannot be undone."
@@ -34,14 +52,14 @@
             "Destination and surviving ID:"}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
           <p>{{tr "admin.review.source_tracks" "Source-linked tracks:"}} {{.Plan.SourceTracks}}{{tr "admin.review.albums" "; albums:"}} {{.Plan.SourceAlbums}}
             {{- tr "admin.review.listens" "; listens:"}} {{.Plan.SourceListens}}.</p>
-          {{if eq .Plan.Action "delete"}}
+          {{- if eq .Plan.Action "delete"}}
             <p>{{tr "admin.review.deleted_albums" "Albums deleted by this action:"}} {{.Plan.RemovedAlbums}}
               {{- tr "admin.review.deleted_tracks" "; tracks deleted by this action:"}} {{.Plan.RemovedTracks}}
               {{- tr "admin.review.deleted_listens" "; listens deleted:"}} {{.Plan.RemovedListens}}{{tr
               "admin.review.orphan_warning"
               ". Removing an artist can also remove albums with no remaining album artist."
             }}</p>
-          {{else}}
+          {{- else}}
             <p>{{tr "admin.review.duplicates" "Duplicate listens in the same profile and second:"}} {{.Plan.DuplicateListens}}
               {{- tr "admin.review.profiles_separate" ". Listens from different profiles stay separate."}}</p>
             <p>{{tr
@@ -57,26 +75,26 @@
               "admin.review.track_policy"
               "Source listens move to the destination track. Track artist relations, duration and aliases are not transferred; source artists may be associated with the destination album."
             }}{{end}}</p>
-          {{end}}
+          {{- end}}
           <h2>{{tr "admin.text.source_metadata_and_relations" "Source metadata and relations"}}</h2>
           <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.SourceMBID}}{{.Plan.SourceMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
           <p>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}
             {{- end}}.</p>
-          {{if .Plan.SourceArtists}}
+          {{- if .Plan.SourceArtists}}
             <p>{{tr "admin.review.source_artists" "Source artists:"}} {{range .Plan.SourceArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
               {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
-          {{end}}
-          {{if eq .Plan.Action "merge"}}
+          {{- end}}
+          {{- if eq .Plan.Action "merge"}}
             <h2>{{tr "admin.text.destination_metadata_and_relations" "Destination metadata and relations"}}</h2>
             <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.DestinationMBID}}{{.Plan.DestinationMBID}}{{else}}{{tr "admin.review.none" "none"}}
               {{- end}}.</p>
             <p>{{tr "admin.review.destination_aliases" "Destination aliases:"}} {{range .Plan.DestinationAliases}}<span>{{.}}; </span>{{else}}
               {{- tr "admin.review.none" "none"}}{{end}}.</p>
-            {{if .Plan.DestinationArtists}}
+            {{- if .Plan.DestinationArtists}}
               <p>{{tr "admin.review.destination_artists" "Destination artists:"}} {{range .Plan.DestinationArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
                 {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
-            {{end}}
-          {{end}}
+            {{- end}}
+          {{- end}}
           <p>{{tr "admin.review.source_image" "Source image ID:"}} {{if .Plan.SourceImage}}{{.Plan.SourceImage}}{{else}}{{tr "admin.review.none" "none"}}{{end}}
             {{- tr "admin.review.destination_image" ". Destination image ID:"}} {{if .Plan.DestinationImage}}{{.Plan.DestinationImage}}{{else}}
             {{- tr "admin.review.none" "none"}}{{end}}. {{if eq .Plan.Action "merge"}}{{if .Plan.ReplaceImage}}
@@ -86,14 +104,14 @@
           <ul>
             {{range .Plan.Profiles}}
               <li>{{.Name}} (ID {{.ID}}): {{.Listens}} {{tr "admin.review.source_listens" "source-linked listens"}}</li>
-            {{else}}
+            {{- else}}
               <li>{{tr
                 "admin.text.no_stored_listens_are_currently_linked_to_the_source"
                 "No stored listens are currently linked to the source."
               }}</li>
-            {{end}}
+            {{- end}}
           </ul>
-          {{if eq .Plan.Action "merge"}}
+          {{- if eq .Plan.Action "merge"}}
             <h2>{{tr
               "admin.text.profiles_with_destination_linked_listens"
               "Profiles with destination-linked listens"
@@ -101,14 +119,14 @@
             <ul>
               {{range .Plan.DestinationProfiles}}
                 <li>{{.Name}} (ID {{.ID}}): {{.Listens}} {{tr "admin.review.destination_listens" "destination-linked listens"}}</li>
-              {{else}}
+              {{- else}}
                 <li>{{tr
                   "admin.text.no_stored_listens_currently_linked_to_the_destination"
                   "No stored listens currently linked to the destination."
                 }}</li>
-              {{end}}
+              {{- end}}
             </ul>
-          {{end}}
+          {{- end}}
           <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.RouteID}}/confirm">
             <input type="hidden" name="csrf_token" value="{{.CSRF}}">
             <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
@@ -124,12 +142,4 @@
             }}</button>
           </form>
           <p><a href="{{.ReturnPath}}">{{tr "admin.text.cancel" "Cancel"}}</a></p>
-        </main>
-        <footer class="admin-footer">
-          TuneTrail ·
-          <a href="/">{{tr "admin.text.listening_profiles" "Listening profiles"}}</a>
-        </footer>
-      </div>
-    </body>
-  </html>
-{{end}}
+{{- end}}

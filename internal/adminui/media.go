@@ -53,8 +53,8 @@ type mediaView struct {
 	TaskQuery string
 }
 
-// actionSection names the section an enhanced action updates; "" keeps a full reload
-// (artwork uploads, by user decision, and unknown actions).
+// actionSection names legacy editor sections; artwork keeps its full-page fallback.
+// Dialog requests render the complete task instead.
 func actionSection(action string) string {
 	switch action {
 	case "alias-add", "alias-primary", "alias-delete":
@@ -166,6 +166,8 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 			return
 		}
 		switch {
+		case dialogRequested(r) && len(parts) == 5 && parts[4] != "listen" && parts[4] != "listens":
+			section = "task"
 		case r.URL.Query().Has("artist_query") && kind == "track" && (len(parts) == 4 || parts[4] == "edit"):
 			section = "artists"
 		case r.URL.Query().Has("merge_query") && (len(parts) == 4 || parts[4] == "merge"):
@@ -199,7 +201,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	} else {
 		task = actionTask(action)
 		// Legacy section requests keep their existing composition.
-		if section != "" {
+		if section != "" && section != "task" {
 			task = ""
 		}
 		if form != nil {
@@ -213,7 +215,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	}
 	v := mediaView{Task: task, Profile: profile, Kind: kind, ID: id, CSRF: token, Timezone: effectiveZone.String(), Location: effectiveZone}
 	// Notices are written by listen actions; other fragments must not consume them.
-	if section == "" || section == "listens" {
+	if section == "" || section == "listens" || section == "task" {
 		v.Notice = h.takeNotice(identity.SessionID, profile.ID, i18n.ViewOf(w))
 	}
 	query := r.URL.Query()
@@ -433,13 +435,15 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 		}
 	}
 	var ticket string
-	if section != "" && r.Method == "GET" {
+	if section != "" && r.Method == "GET" && (section != "task" || r.Header.Get("X-TuneTrail-Submission") != "") {
 		// Search fragments never mint tickets (the store is bounded for all sessions); their
 		// forms reuse the page's current ticket, which is validated again on submission.
 		if raw, e := uuid.Parse(r.Header.Get("X-TuneTrail-Submission")); e == nil {
 			ticket = raw.String()
 		}
-	} else if task != "" && task != "merge" && task != "delete" || section != "" {
+	} else if task != "" && task != "merge" && task != "delete" || section != "" && section != "task" {
+		// Merge/delete use their reviewed plan token, not a generic mutation ticket.
+		// In particular, their search fragments must not fill the bounded ticket store.
 		ticket, err = h.newSubmission(identity.SessionID)
 		if err != nil {
 			h.fail(w, err)
@@ -627,10 +631,13 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
-	// Enhanced actions get their section back; the artwork upload keeps the full reload.
+	// Dialog mutations refresh the task, keeping its return context and issuing a fresh ticket.
 	section := ""
 	if adminweb.FragmentRequested(r) {
 		section = actionSection(action)
+		if dialogRequested(r) {
+			section = "task"
+		}
 	}
 	if err != nil {
 		if returnTo != "" {
@@ -645,7 +652,7 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 		if returnTo != "" {
 			f.Values.Set("return_to", returnTo)
 		}
-		h.mediaPage(w, r, identity, p, kind, id, f, "", nil, section)
+		h.mediaPage(w, r, identity, p, kind, id, f, action, nil, section)
 		return
 	}
 	target := expected + "/" + actionTask(action)

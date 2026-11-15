@@ -1,0 +1,583 @@
+{
+  "checks": [
+    "Three media types, both sizes: icon order, 30/22px glyphs, 44px targets, no overflow, isolated tasks, Tab trap, Escape and restored focus",
+    "Modified click follows the real task link in a separate tab",
+    "Manual listen updates public heading count without navigation",
+    "Alias mutation rotates ticket; primary alias refreshes public title; artist search preserves public URL and heading; metadata refreshes MusicBrainz link",
+    "Long media titles and type labels do not overlap action targets at 768, 900, 960, 1024 and 1440px",
+    "Multipart image upload refreshes cover and srcset while dialog and public document remain open",
+    "Close/reopen aborts delayed edit response; new image dialog retains its own task",
+    "Network failure fallback navigates to the complete task page; returning and reopening recovers without replay",
+    "pagehide clears active forms; pageshow revalidates; real Back does not restore an active dialog",
+    "Missing session cookie leaves no form; bfcache revalidation removes all administrator actions",
+    "No-JavaScript action link opens its complete task document"
+  ],
+  "entries": [
+    {
+      "file": "tunetrail-track-desktop.png",
+      "kind": "track",
+      "size": "desktop",
+      "actions": [
+        {
+          "task": "add-listen",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "edit",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "merge",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "delete",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        }
+      ]
+    },
+    {
+      "file": "tunetrail-album-desktop.png",
+      "kind": "album",
+      "size": "desktop",
+      "actions": [
+        {
+          "task": "edit",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "image",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "merge",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "delete",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        }
+      ]
+    },
+    {
+      "file": "tunetrail-artist-desktop.png",
+      "kind": "artist",
+      "size": "desktop",
+      "actions": [
+        {
+          "task": "edit",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "image",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "merge",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        },
+        {
+          "task": "delete",
+          "width": 44,
+          "height": 44,
+          "icon": "30px"
+        }
+      ]
+    },
+    {
+      "file": "tunetrail-track-mobile.png",
+      "kind": "track",
+      "size": "mobile",
+      "actions": [
+        {
+          "task": "add-listen",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "edit",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "merge",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "delete",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        }
+      ]
+    },
+    {
+      "file": "tunetrail-album-mobile.png",
+      "kind": "album",
+      "size": "mobile",
+      "actions": [
+        {
+          "task": "edit",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "image",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "merge",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "delete",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        }
+      ]
+    },
+    {
+      "file": "tunetrail-artist-mobile.png",
+      "kind": "artist",
+      "size": "mobile",
+      "actions": [
+        {
+          "task": "edit",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "image",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "merge",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        },
+        {
+          "task": "delete",
+          "width": 44,
+          "height": 44,
+          "icon": "22px"
+        }
+      ]
+    },
+    {
+      "file": "koito-track-desktop.png",
+      "kind": "track",
+      "size": "desktop",
+      "actions": [
+        {
+          "title": "Add Listen",
+          "rect": {
+            "x": 1204,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1234,
+            "bottom": 78,
+            "left": 1204
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Edit Item",
+          "rect": {
+            "x": 1246,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1276,
+            "bottom": 78,
+            "left": 1246
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Merge Items",
+          "rect": {
+            "x": 1288,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1318,
+            "bottom": 78,
+            "left": 1288
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Delete Item",
+          "rect": {
+            "x": 1330,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1360,
+            "bottom": 78,
+            "left": 1330
+          },
+          "svg": "30"
+        }
+      ]
+    },
+    {
+      "file": "koito-album-desktop.png",
+      "kind": "album",
+      "size": "desktop",
+      "actions": [
+        {
+          "title": "Edit Item",
+          "rect": {
+            "x": 1204,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1234,
+            "bottom": 78,
+            "left": 1204
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Replace Image",
+          "rect": {
+            "x": 1246,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1276,
+            "bottom": 78,
+            "left": 1246
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Merge Items",
+          "rect": {
+            "x": 1288,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1318,
+            "bottom": 78,
+            "left": 1288
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Delete Item",
+          "rect": {
+            "x": 1330,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1360,
+            "bottom": 78,
+            "left": 1330
+          },
+          "svg": "30"
+        }
+      ]
+    },
+    {
+      "file": "koito-artist-desktop.png",
+      "kind": "artist",
+      "size": "desktop",
+      "actions": [
+        {
+          "title": "Edit Item",
+          "rect": {
+            "x": 1204,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1234,
+            "bottom": 78,
+            "left": 1204
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Replace Image",
+          "rect": {
+            "x": 1246,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1276,
+            "bottom": 78,
+            "left": 1246
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Merge Items",
+          "rect": {
+            "x": 1288,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1318,
+            "bottom": 78,
+            "left": 1288
+          },
+          "svg": "30"
+        },
+        {
+          "title": "Delete Item",
+          "rect": {
+            "x": 1330,
+            "y": 48,
+            "width": 30,
+            "height": 30,
+            "top": 48,
+            "right": 1360,
+            "bottom": 78,
+            "left": 1330
+          },
+          "svg": "30"
+        }
+      ]
+    },
+    {
+      "file": "koito-track-mobile.png",
+      "kind": "track",
+      "size": "mobile",
+      "actions": [
+        {
+          "title": "Add Listen",
+          "rect": {
+            "x": 13.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 35.75,
+            "bottom": 84,
+            "left": 13.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Edit Item",
+          "rect": {
+            "x": 47.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 69.75,
+            "bottom": 84,
+            "left": 47.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Merge Items",
+          "rect": {
+            "x": 81.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 103.75,
+            "bottom": 84,
+            "left": 81.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Delete Item",
+          "rect": {
+            "x": 115.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 137.75,
+            "bottom": 84,
+            "left": 115.75
+          },
+          "svg": "22"
+        }
+      ]
+    },
+    {
+      "file": "koito-album-mobile.png",
+      "kind": "album",
+      "size": "mobile",
+      "actions": [
+        {
+          "title": "Edit Item",
+          "rect": {
+            "x": 13.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 35.75,
+            "bottom": 84,
+            "left": 13.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Replace Image",
+          "rect": {
+            "x": 47.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 69.75,
+            "bottom": 84,
+            "left": 47.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Merge Items",
+          "rect": {
+            "x": 81.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 103.75,
+            "bottom": 84,
+            "left": 81.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Delete Item",
+          "rect": {
+            "x": 115.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 137.75,
+            "bottom": 84,
+            "left": 115.75
+          },
+          "svg": "22"
+        }
+      ]
+    },
+    {
+      "file": "koito-artist-mobile.png",
+      "kind": "artist",
+      "size": "mobile",
+      "actions": [
+        {
+          "title": "Edit Item",
+          "rect": {
+            "x": 13.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 35.75,
+            "bottom": 84,
+            "left": 13.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Replace Image",
+          "rect": {
+            "x": 47.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 69.75,
+            "bottom": 84,
+            "left": 47.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Merge Items",
+          "rect": {
+            "x": 81.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 103.75,
+            "bottom": 84,
+            "left": 81.75
+          },
+          "svg": "22"
+        },
+        {
+          "title": "Delete Item",
+          "rect": {
+            "x": 115.75,
+            "y": 62,
+            "width": 22,
+            "height": 22,
+            "top": 62,
+            "right": 137.75,
+            "bottom": 84,
+            "left": 115.75
+          },
+          "svg": "22"
+        }
+      ]
+    }
+  ],
+  "jsErrors": [],
+  "session_test_method": "Browser: removed session cookies; actual server-side expiry additionally verified by TestMediaDialogSecurity140."
+}

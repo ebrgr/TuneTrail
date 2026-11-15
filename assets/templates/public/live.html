@@ -3,6 +3,11 @@
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{.Theme}}">
     <head>
       {{template "partial/head" (head "live" (printf "%s - TuneTrail" .Title))}}
+      {{- if and .Media .Admin}}
+      <link rel="stylesheet" href="{{asset "media-dialog.css"}}">
+      <script defer src="{{asset "enhance.js"}}"></script>
+      <script defer src="{{asset "media-dialog.js"}}"></script>
+      {{- end}}
     </head>
     <body
       data-cover-fallback-url="{{asset "icons/Disc3.svg"}}"

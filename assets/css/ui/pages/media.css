@@ -2,7 +2,7 @@
 @layer pages {
 /* Scoped media reading pages; graphs and management are integrated separately. */
 .media-detail { width:100%; padding:48px 40px; min-width:0; }
-.media-heading { display:flex; flex-wrap:wrap; gap:32px; align-items:start; }
+.media-heading { position:relative; display:flex; flex-wrap:wrap; gap:32px; align-items:start; }
 .media-cover { width:385px; height:385px; max-width:100%; object-fit:cover; border:1px solid var(--color-border); border-radius:var(--border-radius); }
 .media-heading-text { flex:1; min-width:0; }
 .media-type { font-size:24px; margin-bottom:8px; }
@@ -10,8 +10,12 @@
 .media-overall-rank { color:var(--color-fg-secondary); font-size:20px; font-weight:500; white-space:nowrap; }
 .media-heading-text p { margin-bottom:6px; }
 .media-heading-text .media-artist { font-size:inherit; }
-.media-mbz { display:inline-flex; gap:6px; align-items:center; margin-top:16px; }
-.media-mbz svg { width:16px; height:16px; }
+/* Match Koito's icon size and sequence; reserve accessible, non-overlapping targets. */
+.media-actions { position:absolute; top:0; right:calc(40px - (44px - var(--media-action-icon))/2); display:flex; gap:0; align-items:center; }
+.media-actions a { display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
+.media-actions a:hover { color:var(--color-fg); }
+.media-actions svg { width:var(--media-action-icon); height:var(--media-action-icon); }
+.media-heading:not(:has(.media-actions a)) { padding-top:0; }
 .media-reading-blocks { display:flex; flex-wrap:wrap; align-items:start; gap:40px 80px; margin-top:48px; max-width:1400px; }
 .media-top-tracks { width:450px; max-width:100%; }
 .media-history { flex:1; min-width:min(350px,100%); max-width:100%; }
@@ -19,8 +23,14 @@
 .media-albums { margin-top:56px; }
 .media-album-grid { display:flex; flex-wrap:wrap; gap:32px; margin-top:32px; }
 .media-album-grid>.media { width:330px; max-width:100%; }
+/* Narrow desktop headers cannot fit the media type beside five action targets. */
+@media(min-width:768px) and (max-width:60rem) {
+  .media-heading:has(.media-actions) { padding-top:56px; }
+}
 @media(max-width:767px) {
   .media-detail { padding:24px 16px; }
+  .media-heading { padding-top:56px; }
+  .media-actions { right:0; }
   .media-cover { width:280px; height:280px; }
   .media-heading-text { flex-basis:100%; }
   .media-heading h1 { font-size:32px; }

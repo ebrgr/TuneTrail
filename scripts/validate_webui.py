@@ -48,6 +48,7 @@ def seed(server):
 
 
 def validate(server, key):
+    """Verify public rendering, including server-side media action visibility."""
     pages = ['/', '/mara?period=all_time', '/mara/chart/top/artists', '/mara/chart/top/albums', '/mara/chart/top/tracks', '/mara/listens?limit=100&page=2', '/iara']
     for path in pages:
         content = server.request('GET', path).decode()
@@ -66,7 +67,10 @@ def validate(server, key):
     for kind in ['artist', 'album', 'track']:
         content = server.request('GET', f'/mara/{kind}/1').decode()
         assert 'data-assets="/web-assets"' in content
-        assert f'/mara/manage/{kind}/1' in content
+        assert 'data-media-task' not in content
+        admin_content = server.request('GET', f'/mara/{kind}/1', admin=True).decode()
+        assert f'/mara/manage/{kind}/1/edit' in admin_content
+        assert 'data-media-task' in admin_content
         server.request('GET', f'/mara/{kind}/0', expected=400)
         server.request('GET', f'/iara/{kind}/1', expected=404)
         assert 'data-admin-ui="go"' in server.request('GET', f'/mara/manage/{kind}/1', admin=True).decode()

@@ -84,6 +84,7 @@ ui.check:
 	node --check assets/js/theme-picker.js
 	node --check assets/js/nav.js
 	node --check assets/js/search.js
+	node --check assets/js/media-dialog.js
 	node --check assets/js/enhance.js
 	node --check assets/js/live.js
 	node --check assets/js/admin.js

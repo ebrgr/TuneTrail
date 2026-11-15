@@ -43,23 +43,7 @@
             .Profile.ID
           }}</p>
           <p class="sr-only" role="status" aria-live="polite" data-enhance-status></p>
-          {{if eq .Task ""}}
-            {{template "manage/index" .}}
-          {{else if eq .Task "edit"}}
-            {{template "manage/aliases" .}}
-            {{template "manage/metadata" .}}
-            {{template "manage/artists" .}}
-          {{else if or (eq .Task "listens") (eq .Task "add-listen")}}
-            {{template "manage/listens" .}}
-          {{else if eq .Task "listen"}}
-            {{template "manage/listen" .}}
-          {{else if eq .Task "merge"}}
-            {{template "manage/merge" .}}
-          {{else if eq .Task "delete"}}
-            {{template "manage/delete" .}}
-          {{else if eq .Task "image"}}
-            {{template "manage/image" .}}
-          {{end}}
+          {{template "manage/task-content" . -}}
         </main>
         <footer class="admin-footer">
           TuneTrail ·
@@ -441,3 +425,32 @@
   {{if .Query.Get "listen_at"}}<input type="hidden" name="listen_at" value="{{.Query.Get "listen_at"}}">{{end}}
   {{if .HistoryReturn}}<input type="hidden" name="history_return" value="{{.HistoryReturn}}">{{end}}
 {{end}}
+
+{{/* A dialog uses the same task content without a document shell. */}}
+{{- define "manage/task"}}
+  <div id="task" class="admin-main" data-section>
+    {{template "manage/message" .}}
+    <p>{{tr "admin.dialog.catalog_context" "Catalog changes affect all profiles."}}</p>
+    {{template "manage/task-content" . -}}
+  </div>
+{{- end}}
+
+{{- define "manage/task-content"}}
+          {{- if eq .Task ""}}
+            {{template "manage/index" .}}
+          {{- else if eq .Task "edit"}}
+            {{template "manage/aliases" .}}
+            {{template "manage/metadata" .}}
+            {{template "manage/artists" .}}
+          {{- else if or (eq .Task "listens") (eq .Task "add-listen")}}
+            {{template "manage/listens" .}}
+          {{- else if eq .Task "listen"}}
+            {{template "manage/listen" .}}
+          {{- else if eq .Task "merge"}}
+            {{template "manage/merge" .}}
+          {{- else if eq .Task "delete"}}
+            {{template "manage/delete" .}}
+          {{- else if eq .Task "image"}}
+            {{template "manage/image" .}}
+          {{- end}}
+{{- end}}

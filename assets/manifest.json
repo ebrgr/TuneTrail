@@ -77,5 +77,12 @@
   "public/templates/media.html": "templates/public/media.html",
   "public/templates/nav.html": "templates/shared/nav.html",
   "public/templates/page.html": "templates/public/page.html",
-  "public/templates/rewind.html": "templates/public/rewind.html"
+  "public/templates/rewind.html": "templates/public/rewind.html",
+  "public/static/media-dialog.js": "js/media-dialog.js",
+  "public/static/media-dialog.css": "css/admin/media-dialog.css",
+  "public/static/icons/Pencil.svg": "icons/Pencil.svg",
+  "public/static/icons/Image.svg": "icons/Image.svg",
+  "public/static/icons/Merge.svg": "icons/Merge.svg",
+  "public/static/icons/Plus.svg": "icons/Plus.svg",
+  "public/static/icons/Trash2.svg": "icons/Trash2.svg"
 }

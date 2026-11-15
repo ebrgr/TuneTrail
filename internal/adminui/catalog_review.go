@@ -24,6 +24,7 @@ type catalogReviewView struct {
 	RouteID                       int32
 	Kind, CSRF, Token, ReturnPath string
 	Plan                          db.CatalogPlan
+	Dialog                        bool
 }
 
 // reviewCatalog only reads data and issues a short-lived confirmation bound to the session and route.
@@ -32,6 +33,19 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 	if err != nil {
 		h.fail(w, db.ErrInvalidInput)
 		return
+	}
+	// Fragment markers are transport context, never part of the destructive plan.
+	partial := q.Get("partial")
+	if partial != "" {
+		if partial != "1" || len(q["partial"]) != 1 {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+		q.Del("partial")
+		if !dialogRequested(r) {
+			http.Redirect(w, r, (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).RequestURI(), http.StatusSeeOther)
+			return
+		}
 	}
 	for k, v := range q {
 		if len(v) != 1 || (k != "action" && k != "to" && k != "reverse" && k != "replace_image") {
@@ -98,12 +112,17 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 	}
 	h.catalogPlans[token] = pendingCatalogPlan{Session: identity.SessionID, ProfileID: p.ID, ProfileSlug: p.Slug, RouteID: id, Kind: kind, Plan: plan, Expires: now.Add(10 * time.Minute)}
 	h.mu.Unlock()
-	view := catalogReviewView{Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id) + "/" + request.Action}
+	view := catalogReviewView{Dialog: partial == "1", Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id) + "/" + request.Action}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder
 	tmpl, err := h.adminTemplate(view.Locale)
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&out, "admin/catalog-review", view)
+		name := "admin/catalog-review"
+		if partial == "1" {
+			name = "manage/review"
+			w.Header().Set("X-TuneTrail-Fragment", "review")
+		}
+		err = tmpl.ExecuteTemplate(&out, name, view)
 	}
 	if err != nil {
 		h.fail(w, err)
@@ -157,6 +176,12 @@ func (h *Handler) confirmCatalog(w http.ResponseWriter, r *http.Request, identit
 	target := "/" + url.PathEscape(p.Slug)
 	if review.Plan.Action == "merge" {
 		target = h.mediaDestination(r.Context(), p, kind, review.Plan.To)
+	}
+	// The client navigates only after the reviewed mutation succeeds.
+	if dialogRequested(r) {
+		w.Header().Set("X-TuneTrail-Navigate", target)
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
 	http.Redirect(w, r, target, http.StatusSeeOther)
 }

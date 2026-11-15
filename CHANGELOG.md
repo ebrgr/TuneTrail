@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Media pages now offer administrator action icons and task dialogs, with artwork and heading updates without reloading (ISSUE-140).
+
 ## [0.21] - 2026-11-15
 
 - Media management now has separate task pages, preserves old addresses, and returns confirmed merges to the surviving item (ISSUE-139).

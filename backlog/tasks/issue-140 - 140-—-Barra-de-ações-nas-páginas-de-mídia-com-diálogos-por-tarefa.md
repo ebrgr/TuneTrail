@@ -1,10 +1,11 @@
 ---
 id: ISSUE-140
 title: 140 — Barra de ações nas páginas de mídia com diálogos por tarefa
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T20:13:00Z'
+updated_date: '2026-11-15T21:58:00Z'
 labels:
   - ui
   - admin
@@ -13,6 +14,10 @@ dependencies:
   - ISSUE-139
 references:
   - backlog/evidencias/issue-108/avaliacao-codex.md
+  - backlog/evidencias/issue-140/relatorio.md
+  - backlog/evidencias/issue-140/comparacao.html
+  - backlog/evidencias/issue-140/browser-checks.json
+  - backlog/evidencias/issue-140/reviewer-complementar.md
 priority: high
 type: feature
 ordinal: 153000
@@ -26,10 +31,10 @@ Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Barra na ordem e posição do Koito original em faixa, álbum e artista, com e sem MBID, em desktop e celular
-- [ ] #2 Visitantes não recebem ícones de gestão no HTML; administrador os vê na primeira pintura, sem consulta de papel
-- [ ] #3 Cada ícone abre só a sua tarefa em diálogo (foco preso, Esc, foco devolvido) e, sem JavaScript, a página da tarefa; erro, rede e sessão expirada são recuperáveis
-- [ ] #4 Trocar imagem atualiza a capa sem recarregar; editar atualiza o cabeçalho; resposta antiga não preenche diálogo novo e o botão Voltar não restaura formulário ativo
+- [x] #1 Barra na ordem e posição do Koito original em faixa, álbum e artista, com e sem MBID, em desktop e celular
+- [x] #2 Visitantes não recebem ícones de gestão no HTML; administrador os vê na primeira pintura, sem consulta de papel
+- [x] #3 Cada ícone abre só a sua tarefa em diálogo (foco preso, Esc, foco devolvido) e, sem JavaScript, a página da tarefa; erro, rede e sessão expirada são recuperáveis
+- [x] #4 Trocar imagem atualiza a capa sem recarregar; editar atualiza o cabeçalho; resposta antiga não preenche diálogo novo e o botão Voltar não restaura formulário ativo
 - [ ] #5 Capturas lado a lado com o Koito original (desktop e celular) e aceite visual do usuário
 <!-- AC:END -->
 
@@ -42,6 +47,24 @@ created: 2026-11-15T20:13:00Z
 ---
 
 Referência visual definida pelo usuário em 15/11/2026: a última versão do Koito em http://127.0.0.1:4111/artist/1, /album/1 e /track/1 (instância local do usuário). A barra de ícones fica inicialmente abaixo da barra superior, no canto superior direito. Alinhar o padrão (ordem, tamanho, espaçamento, posição) com essa versão, não com a comparação histórica de 13/11.
+
+---
+
+author: ebrgr
+created: 2026-11-15T20:45:00Z
+
+---
+
+Início: branch `feat/issue-140-barra-de-acoes-nas-paginas` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-15T21:58:00Z
+
+---
+
+Verificação: critérios 1–4 exercitados por roteador real e Chrome em fixture descartável; make check com 12/12 E2E. Reviewer sem itens impeditivos após correções de geometria, carregamento condicional de assets e recuperação; aceite visual #5 fica com o usuário. Atualização automática abrange cabeçalho/capa/contagens; histórico, atividade e gráficos conservam snapshot até navegação. Sem push, merge ou publicação.
 
 ---
 <!-- COMMENTS:END -->

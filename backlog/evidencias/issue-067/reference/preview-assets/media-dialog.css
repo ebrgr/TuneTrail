@@ -1,0 +1,28 @@
+/* Task forms in public media dialogs, isolated from the administrative page shell. */
+@layer pages {
+#media-task-dialog { max-width:780px; }
+#media-task-title { padding-right:36px; }
+#media-task-dialog [data-task-status]:empty { display:none; }
+#media-task-dialog [data-task-status] { margin:12px 0; }
+#media-task-dialog .admin-main h2 { font-size:1.3rem; margin:20px 0 12px; }
+#media-task-dialog .admin-main p { margin:12px 0; }
+#media-task-dialog form { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:16px 0; }
+#media-task-dialog label { display:flex; flex-direction:column; gap:6px; flex:1 1 180px; min-width:0; }
+#media-task-dialog label:has(input[type=checkbox]) { flex-direction:row; flex-basis:100%; align-items:center; }
+#media-task-dialog input:not([type=checkbox]),#media-task-dialog select {
+  width:100%; min-height:44px; padding:10px 12px;
+  border:1px solid var(--color-border); border-radius:7px; background:var(--color-bg);
+}
+#media-task-dialog button:not(.close-dialog) { min-height:44px; padding:10px 16px; border-radius:7px; background:var(--color-primary); color:var(--color-bg); }
+#media-task-dialog .close-dialog { min-width:44px; min-height:44px; }
+#media-task-dialog a { color:var(--color-primary); text-decoration:underline; }
+#media-task-dialog ul { padding-left:24px; list-style:disc; }
+#media-task-dialog li { margin:10px 0; }
+#media-task-dialog .section-error { color:var(--color-error); }
+html[data-theme="pearl"] #media-task-dialog button:not(.close-dialog) { color:var(--color-fg); }
+html[data-theme="pearl"] #media-task-dialog a { color:#00538a; }
+@media(max-width:767px) {
+  #media-task-dialog form { flex-direction:column; align-items:stretch; }
+  #media-task-dialog label { flex:initial; }
+}
+}

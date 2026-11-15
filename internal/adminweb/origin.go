@@ -9,10 +9,11 @@ import (
 // SameOrigin keeps the existing origin and Fetch Metadata policy for every web mutation.
 func SameOrigin(next http.Handler) http.Handler { return SameOriginWithReject(next, nil) }
 
-// SameOriginWithReject preserves the shared policy while allowing HTML-specific feedback.
+// SameOriginWithReject protects mutations and token-bearing dialog reads with the same origin policy.
 func SameOriginWithReject(next http.Handler, reject http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" && r.Method != "HEAD" && r.Method != "OPTIONS" {
+		if r.Method != "GET" && r.Method != "HEAD" && r.Method != "OPTIONS" ||
+			FragmentRequested(r) && r.Header.Get("X-TuneTrail-Dialog") == "1" {
 			scheme := "http"
 			if SecureRequest(r) {
 				scheme = "https"
