@@ -1,7 +1,7 @@
 ---
 id: ISSUE-109
 title: 109 — Indicador de sessão de administrador no cabeçalho do perfil
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
@@ -78,6 +78,15 @@ created: 2026-11-15T00:04:00Z
 ---
 
 Início: branch `feat/issue-109-indicador-de-sessao-de-administrador` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-15T00:13:00Z
+
+---
+
+Verificação: make check 12/12 e referência sem diferenças; validador real de cache/histórico PASS em Chrome 157, Firefox 147 e HTTPS; roteiro sem bfcache: selo mantido sem recarga com sessão ativa e ausente após logout; testes de visitante, cookie inválido, duplicado, papel não admin e logout; contraste do selo ≥ 5,0 em 11 temas e 17,9 no Pearl; Reviewer com o item obrigatório corrigido. Falta o aceite visual (capturas Yuu e Pearl em backlog/evidencias/issue-109/).
 
 ---
 <!-- COMMENTS:END -->
