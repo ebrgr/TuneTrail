@@ -1,7 +1,7 @@
 ---
 id: ISSUE-130
 title: 130 — Estudo de um plugin do Backlog.md para o Orca
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:06:00Z'
@@ -38,6 +38,15 @@ created: 2026-11-15T16:06:00Z
 ---
 
 Início: branch `spike/issue-130-estudo-de-um-plugin-do` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-15T16:10:00Z
+
+---
+
+Verificação: estudo doc-037 com API de plugins do Orca 1.4.259 conferida (referências do orca-plugin-authoring, plugin-host-entry.js sem modelo de permissões do Node), saída backlog --json/--watch medida (~70 ms), PATH do app conferido (/usr/bin:/bin:/usr/sbin:/sbin), catálogo da comunidade consultado (299 plugins, nenhum do Backlog.md). Nada publicado.
 
 ---
 <!-- COMMENTS:END -->
