@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T12:17:00Z'
+updated_date: '2026-11-15T12:18:00Z'
 labels:
   - ui
   - admin
@@ -158,6 +158,15 @@ created: 2026-11-15T12:17:00Z
 ---
 
 Aceite: aprovada pelo usuário em 15/11/2026, incluindo o aceite visual ("Aceito, aprovado, comita e faça o push").
+
+---
+
+author: ebrgr
+created: 2026-11-15T12:18:00Z
+
+---
+
+Publicação: versão 0.18 (tag `v0.18`), branch `feat/issue-107-busca-instantanea-e-edicao-de` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.18] - 2026-11-15
+
 ### Added
 
 - Show search results while typing in the search dialog, up to five artists, albums and tracks with a link to all results; arrow keys, Enter and Escape work from the keyboard and screen readers hear the result count. Without JavaScript the full search page works as before (ISSUE-107).
