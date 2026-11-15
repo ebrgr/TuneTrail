@@ -1,16 +1,19 @@
 ---
 id: ISSUE-108
 title: 108 — Barra de ações nas páginas de mídia e edição separada por tarefa
-status: Aberta
+status: Planejada
 assignee: []
 created_date: '2026-11-14T01:06:00Z'
-updated_date: '2026-11-15T02:15:00Z'
+updated_date: '2026-11-15T20:04:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
-  - ISSUE-124
+  - ISSUE-139
+  - ISSUE-140
+  - ISSUE-141
+  - ISSUE-142
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
 priority: high
@@ -68,6 +71,15 @@ created: 2026-11-14T15:10:00Z
 ---
 
 Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos.
+
+---
+
+author: claude
+created: 2026-11-15T20:04:00Z
+
+---
+
+Avaliação do Codex (backlog/evidencias/issue-108/avaliacao-codex.md) e decisões do usuário em 15/11/2026. Dividida em ISSUE-139 (páginas por tarefa e compatibilidade), 140 (barra e diálogos), 141 (escuta no histórico) e 142 (arrastar capa); esta tarefa fica como guarda-chuva e só fecha quando as quatro estiverem Done. Escopo corrigido: o sinal .Admin, o cache privado e a remoção da consulta tardia do live.js (passo 2) já foram feitos pela ISSUE-109. Decisões: (1) divisão aprovada; (2) trocar imagem atualiza a capa sem recarregar; (3) a imagem da faixa continua alterando a capa do álbum; (4) após merge ou exclusão, ir ao item que sobrou e, se não sobrar nenhum, ao perfil; (5) o × rápido do histórico continua, e os detalhes da escuta aguardam confirmação (proposta na ISSUE-141); (7) a versão original do Koito é a referência do aceite visual. Pendente: confirmar que a compatibilidade com endereços antigos inclui consultas, âncoras e ações (proposta nas ISSUE-139).
 
 ---
 <!-- COMMENTS:END -->
