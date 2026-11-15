@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import unicodedata
@@ -41,11 +42,12 @@ class Fail(Exception):
     pass
 
 
-def run(*cmd, capture=True, check=True):
-    # Every external command runs from the repository root; failures stop the flow.
+def run(*cmd, capture=True, check=True, cwd=None):
+    # External commands run from the repository root unless told otherwise (an Orca
+    # worktree, ISSUE-129); failures stop the flow.
     # Output is only shown or compared; undecodable bytes (e.g. a merge summary with
     # binary evidence names) must not abort a publish halfway (seen in ISSUE-107).
-    result = subprocess.run(cmd, cwd=ROOT, capture_output=capture, text=True, errors="replace")
+    result = subprocess.run(cmd, cwd=cwd or ROOT, capture_output=capture, text=True, errors="replace")
     if check and result.returncode != 0:
         detail = (result.stderr or result.stdout or "").strip() if capture else ""
         raise Fail(f"falhou: {' '.join(cmd)}" + (f"\n{detail}" if detail else ""))
@@ -56,8 +58,30 @@ def git(*args, **kw):
     return run("git", *args, **kw)
 
 
-def backlog(*args):
-    return run(*BACKLOG, *args, "--plain")
+def backlog(*args, cwd=None):
+    return run(*BACKLOG, *args, "--plain", cwd=cwd)
+
+
+def orca_bin():
+    # The Orca CLI ships inside the app bundle and is not always on PATH (ISSUE-129).
+    found = os.environ.get("ORCA_BIN") or shutil.which("orca")
+    bundled = "/Applications/Orca.app/Contents/Resources/bin/orca"
+    if not found and os.path.exists(bundled):
+        found = bundled
+    if not found:
+        raise Fail("CLI do Orca não encontrada; defina ORCA_BIN")
+    return found
+
+
+def worktree_of(branch):
+    # Path of a linked worktree that has this branch checked out, if any.
+    path = None
+    for line in git("worktree", "list", "--porcelain").splitlines():
+        if line.startswith("worktree "):
+            path = line[len("worktree "):]
+        elif line == f"branch refs/heads/{branch}" and path and Path(path).resolve() != ROOT.resolve():
+            return path
+    return None
 
 
 def task_number(value):
@@ -192,6 +216,51 @@ def cmd_start(args):
     print(f"Commits devem começar com '{task_id(num)}: '")
 
 
+def cmd_worktree(args):
+    # Start a task in its own Orca worktree instead of switching the main checkout (ISSUE-129).
+    num = task_number(args.iss)
+    task = read_task(num)
+    if task["status"] == "Done":
+        raise Fail(f"{task_id(num)} já está Done; reabra-a antes de retomar o trabalho")
+    branch = find_branch(num)
+    if branch and worktree_of(branch):
+        print(f"{task_id(num)} já tem worktree em {worktree_of(branch)}")
+        return
+    if branch:
+        raise Fail(f"a branch {branch} já existe fora de uma worktree; continue com make issue.start ou remova-a")
+    branch = branch_name(num, task)
+    cmd = [orca_bin(), "worktree", "create", "--repo", f"path:{ROOT}", "--name", f"{PREFIX}-{num}",
+           "--branch", branch, "--base-branch", MAIN, "--setup", "run",
+           "--comment", f"{task_id(num)} — {plain_title(task['title'])}", "--json"]
+    if args.agent:
+        cmd += ["--agent", args.agent]
+    run(*cmd)
+    path = worktree_of(branch)
+    if not path:
+        raise Fail(f"o Orca não criou a worktree da branch {branch}")
+    # The task record changes on the task branch, inside the worktree.
+    backlog("task", "edit", task_id(num), "-s", "Em andamento", "-a", f"@{author()}", "--comment",
+            f"Início: worktree Orca `{path}` na branch `{branch}` criada a partir de `{MAIN}`.",
+            "--comment-author", author(), cwd=path)
+    print(f"{task_id(num)} em andamento na worktree {path} (branch {branch})")
+    print(f"Commits devem começar com '{task_id(num)}: '")
+
+
+def release_worktree(branch):
+    # A branch checked out in another worktree cannot be checked out here: remove the
+    # worktree first, only when it has nothing uncommitted (its commits stay on the branch).
+    path = worktree_of(branch)
+    if not path:
+        return
+    if git("status", "--porcelain", cwd=path):
+        raise Fail(f"a worktree {path} tem mudanças não commitadas; commite ou descarte antes de publicar")
+    try:
+        run(orca_bin(), "worktree", "rm", "--worktree", f"path:{path}", "--json")
+    except Fail:
+        git("worktree", "remove", path)
+    print(f"  worktree {path} removida (branch {branch} preservada)")
+
+
 def cmd_review(args):
     num = task_number(args.iss)
     task = read_task(num)
@@ -269,10 +338,13 @@ def cmd_publish(args):
     if args.push:
         # A pushed v* tag triggers the Docker workflow, which publishes a public image.
         print(f"  ATENÇÃO: o push da tag {tag} dispara .github/workflows/docker.yml e publica a imagem no GHCR (inclusive como latest)")
+    if worktree_of(branch):
+        print(f"  a worktree {worktree_of(branch)} será removida antes da publicação")
     if args.dry_run:
         print("DRY: nada foi alterado")
         return
 
+    release_worktree(branch)
     git("checkout", branch)
     if pending:
         git("add", "-A", "--", f":(glob)backlog/tasks/{PREFIX}-{num} - *")
@@ -322,6 +394,10 @@ def main():
     p = sub.add_parser("start", help="criar/abrir a branch e marcar Em andamento")
     p.add_argument("iss")
     p.set_defaults(func=cmd_start)
+    p = sub.add_parser("worktree", help="criar a worktree Orca da tarefa e marcar Em andamento")
+    p.add_argument("iss")
+    p.add_argument("--agent", default="", help="agente Orca a iniciar na worktree (ex.: codex, claude)")
+    p.set_defaults(func=cmd_worktree)
     p = sub.add_parser("review", help="rodar checks e marcar Aguardando aceite")
     p.add_argument("iss")
     p.add_argument("-m", "--message", required=True, help="comentário de verificação")

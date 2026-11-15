@@ -146,6 +146,65 @@ class PublishTests(unittest.TestCase):
         self.assertIn("publica a imagem no GHCR", result.stdout)
         self.assertEqual(self.git("tag"), "")
 
+    def fake_orca(self):
+        # Minimal stand-in for the Orca CLI: worktree create/rm through plain git (ISSUE-129).
+        fake = self.root.parent / f"{self.root.name}-orca"
+        fake.write_text("""#!/usr/bin/env python3
+import subprocess, sys
+a = sys.argv[1:]
+opt = lambda name: a[a.index(name) + 1]
+if a[:2] == ["worktree", "create"]:
+    path = opt("--repo")[5:] + "-wt-" + opt("--name")
+    subprocess.run(["git", "worktree", "add", "-q", "-b", opt("--branch"), path, opt("--base-branch")], check=True)
+elif a[:2] == ["worktree", "rm"]:
+    subprocess.run(["git", "worktree", "remove", opt("--worktree")[5:]], check=True)
+print("{}")
+""")
+        fake.chmod(0o755)
+        self.addCleanup(fake.unlink)
+        self.env["ORCA_BIN"] = str(fake)
+
+    def test_publish_removes_clean_worktree_of_the_branch(self):
+        self.fake_orca()
+        branch = f"fix/{self.prefix}-001-teste"
+        self.git("checkout", "-q", "main")
+        wt = str(self.root) + "-wt-publish"
+        self.git("worktree", "add", "-q", wt, branch)
+        self.addCleanup(lambda: subprocess.run(["git", "worktree", "remove", "--force", wt], cwd=self.root, capture_output=True))
+        result = self.publish()
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertFalse(Path(wt).exists())
+        self.assertEqual(self.git("describe", "--tags"), "v0.8")
+
+    def test_publish_refuses_dirty_worktree(self):
+        self.fake_orca()
+        branch = f"fix/{self.prefix}-001-teste"
+        self.git("checkout", "-q", "main")
+        wt = str(self.root) + "-wt-dirty"
+        self.git("worktree", "add", "-q", wt, branch)
+        self.addCleanup(lambda: subprocess.run(["git", "worktree", "remove", "--force", wt], cwd=self.root, capture_output=True))
+        (Path(wt) / "feature.txt").write_text("unsaved\n")
+        result = self.publish()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("mudanças não commitadas", result.stderr)
+        self.assertEqual(self.git("tag"), "")
+
+    def test_worktree_starts_task_in_its_own_checkout(self):
+        self.fake_orca()
+        self.git("checkout", "-q", "main")
+        self.git("branch", "-D", f"fix/{self.prefix}-001-teste")
+        self.task("Aberta", "")
+        self.git("commit", "-qam", "reopen")
+        result = subprocess.run([sys.executable, "scripts/issue.py", "worktree", "1"], cwd=self.root, env=self.env,
+                                capture_output=True, text=True)
+        wt = Path(str(self.root) + "-wt-" + f"{self.prefix}-001")
+        self.addCleanup(lambda: subprocess.run(["git", "worktree", "remove", "--force", str(wt)], cwd=self.root, capture_output=True))
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertEqual(self.git("rev-parse", "--abbrev-ref", "HEAD"), "main", "main checkout untouched")
+        record = next((wt / "backlog/tasks").iterdir()).read_text()
+        self.assertIn("status: Em andamento", record)
+        self.assertNotIn("Em andamento", next((self.root / "backlog/tasks").iterdir()).read_text())
+
     def assertRejected(self, needle):
         head = self.git("rev-parse", "HEAD")
         result = self.publish()

@@ -1,0 +1,3 @@
+# Orca workspace hooks (ISSUE-129). Each Orca worktree runs setup once when created.
+scripts:
+  setup: ./scripts/orca-setup.sh

@@ -111,7 +111,7 @@ version.bump:
 # Backlog.md task cycle (see /.agents/issue-first). ISSUE accepts 60, 060 or ISSUE-060.
 # issue.publish pushes only with PUSH=1, which requires the user's authorization.
 TYPE ?= bug
-.PHONY: issue.new issue.start issue.review issue.publish issue.test
+.PHONY: issue.new issue.start issue.worktree issue.review issue.publish issue.test
 issue.new:
 	@test -n "$(T)" || (echo 'use: make issue.new T="Título" [TYPE=bug] [L=ui] [M=m-6]' && exit 1)
 	python3 scripts/issue.py new "$(T)" --type $(TYPE) --labels "$(L)" --milestone "$(M)"
@@ -119,6 +119,11 @@ issue.new:
 issue.start:
 	@test -n "$(ISSUE)" || (echo 'use: make issue.start ISSUE=60' && exit 1)
 	python3 scripts/issue.py start $(ISSUE)
+
+# ISSUE-129: start a task in its own Orca worktree (AGENT=codex|claude optional).
+issue.worktree:
+	@test -n "$(ISSUE)" || (echo 'use: make issue.worktree ISSUE=60 [AGENT=codex]' && exit 1)
+	python3 scripts/issue.py worktree $(ISSUE) $(if $(AGENT),--agent $(AGENT))
 
 issue.review:
 	@test -n "$(ISSUE)" -a -n "$(MSG)" || (echo 'use: make issue.review ISSUE=60 MSG="Verificação: ..."' && exit 1)
