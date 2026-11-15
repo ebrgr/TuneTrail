@@ -1,7 +1,7 @@
 ---
 id: ISSUE-123
 title: 123 — Segunda barra lateral de administração
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T01:19:00Z'
@@ -53,6 +53,15 @@ created: 2026-11-15T01:46:00Z
 ---
 
 Decisões em 14/11/2026: (1) usuário — a opção empurrar/sobrepor fica no painel Tema; o painel separa cores, esta opção e o idioma em blocos com borda fina e cantos arredondados no estilo do projeto. (2) implementação — sem item Sair na barra: o logout exige token de envio de uso único por formulário (consumeSubmission), e um formulário em todas as páginas consumiria o token dos demais; Conta leva a /admin?section=account, onde Sair já existe. Critério #2 ajustado.
+
+---
+
+author: ebrgr
+created: 2026-11-15T01:54:00Z
+
+---
+
+Verificação: make check 12/12 e referência sem diferenças; validador real Chrome/Firefox/HTTPS PASS; roteiro segunda_barra.py PASS (clique, Espaço, Esc com foco, empurrar desloca 58 px e sobrepor não, preferência lembrada, aberta na administração com Servidor marcado, faixa abaixo da barra no celular); testes de papel, estado aberto e erro 429 antes do login; Reviewer com os dois itens obrigatórios corrigidos. Falta o aceite visual (capturas em backlog/evidencias/issue-123/).
 
 ---
 <!-- COMMENTS:END -->
