@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T02:15:00Z'
+updated_date: '2026-11-15T02:30:00Z'
 labels:
   - ui
   - admin
@@ -16,6 +16,9 @@ dependencies:
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
   - backlog/evidencias/issue-107/advisor-inicial.md
+  - backlog/evidencias/issue-107/reviewer.md
+  - backlog/evidencias/issue-107/busca_instantanea.log
+  - backlog/evidencias/ui-responsiva/issue-107-tempos.md
 priority: high
 type: feature
 ordinal: 107000
@@ -49,11 +52,11 @@ Recomendação de ordem: depois da ISSUE-106. Pode vir antes da reorganização 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Busca mostra resultados enquanto digita, sem recarregar, descartando respostas antigas
-- [ ] #2 Busca utilizável só por teclado (combobox) e anunciada por leitor de tela
-- [ ] #3 Até 5 itens por tipo e link "ver todos" para a página completa; sem JavaScript a busca funciona como hoje
-- [ ] #4 Fragmento respeita perfil e sessão, recusa pedido fora de contexto e usa cache privado (testes)
-- [ ] #5 JS novo abaixo de 4 KB comprimido; tempos antes/depois registrados em backlog/evidencias/ui-responsiva
+- [x] #1 Busca mostra resultados enquanto digita, sem recarregar, descartando respostas antigas
+- [x] #2 Busca utilizável só por teclado (combobox) e anunciada por leitor de tela
+- [x] #3 Até 5 itens por tipo e link "ver todos" para a página completa; sem JavaScript a busca funciona como hoje
+- [x] #4 Fragmento respeita perfil e sessão, recusa pedido fora de contexto e usa cache privado (testes)
+- [x] #5 JS novo abaixo de 4 KB comprimido; tempos antes/depois registrados em backlog/evidencias/ui-responsiva
 <!-- AC:END -->
 
 ## Comments

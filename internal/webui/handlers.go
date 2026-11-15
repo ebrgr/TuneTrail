@@ -87,6 +87,11 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			p.Section = strings.Join(parts[1:], "/")
 		}
 	}
+	// The instant search fragment needs only the resolved profile (ISSUE-107).
+	if p.Profile != nil && p.Section == "search" && r.URL.Query().Get("partial") == "1" {
+		h.serveSearchFragment(w, r, p)
+		return
+	}
 	all, err := h.store.ListListeningProfiles(r.Context())
 	if err != nil {
 		h.fail(w, p, 500)

@@ -16,7 +16,13 @@
     if (close) closeDialog(close.closest('dialog'));
   });
   document.querySelectorAll('dialog').forEach(dialog => {
-    dialog.addEventListener('close', () => { if (opener?.isConnected) opener.focus(); });
+    // Return focus to the opener; a dialog opened by a shortcut has none, so never leave
+    // focus on a hidden field inside it (it would swallow the next shortcut, ISSUE-107).
+    dialog.addEventListener('close', () => {
+      if (dialog.open) return; // the queued close event arrived after a quick reopen
+      if (opener?.isConnected && opener !== document.body) opener.focus();
+      else if (dialog.contains(document.activeElement)) document.activeElement.blur();
+    });
     dialog.addEventListener('click', event => {
       if (event.target !== dialog) return;
       const box = dialog.getBoundingClientRect();

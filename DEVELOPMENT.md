@@ -52,7 +52,7 @@ Os alvos de teste do Makefile usam `-count=1`: mudanças nos arquivos externos l
 
 ### Verificação de cache e histórico
 
-`make check` inclui os testes HTTP de cache, partida e condicionais e compara os 129 arquivos exportados com `backlog/evidencias/issue-067/reference/`. As bases históricas da 065, da formatação da 066 e da 106 continuam intactas. A base atual inclui URLs versionadas, CSS derivado e scripts de restauração revisados; a versão de apresentação das fixtures permanece fixa entre publicações.
+`make check` inclui os testes HTTP de cache, partida e condicionais e compara os 131 arquivos exportados com `backlog/evidencias/issue-067/reference/`. As bases históricas da 065, da formatação da 066 e da 106 continuam intactas. A base atual inclui URLs versionadas, CSS derivado e scripts de restauração revisados; a versão de apresentação das fixtures permanece fixa entre publicações.
 
 Para verificar navegadores reais, execute `PLAYWRIGHT_MODULE=/caminho/playwright make web.cache.check`. São necessários Chrome e Firefox instalados, Node com WebSocket nativo e OpenSSL. `CHROME_PATH` e `TUNETRAIL_TEST_FIREFOX_PATH` selecionam os executáveis; os padrões macOS apontam para Applications. Cada execução cria dados fictícios, perfis temporários e um certificado HTTPS descartável; não altera a confiança do sistema nem o perfil pessoal do navegador. O Firefox usa WebDriver BiDi nativo. O roteiro verifica cache, documento/scroll/filtros restaurados, fallback de capas, idioma, seleção de perfis, fuso inválido, logout, expiração, DELETE e formulários administrativos. O Chrome também verifica restauração offline.
 

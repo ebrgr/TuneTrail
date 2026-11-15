@@ -121,6 +121,10 @@
   "ui.sidebar_push": "Empurrar o conteúdo",
   "ui.sidebar_overlay": "Abrir sobre o conteúdo",
   "ui.opens_new_tab": "abre em nova aba",
+  "ui.search_results": "Resultados da busca",
+  "ui.search_see_all": "Ver todos os resultados",
+  "ui.search_no_results": "Nenhum resultado.",
+  "ui.search_type_more": "Digite pelo menos 2 caracteres.",
   "ui.admin_signed_in": "Administrador conectado",
   "ui.page": "Página",
   "ui.plays_word": "reproduções",
@@ -465,6 +469,10 @@
   "date.weekday.Thu": "qui",
   "date.weekday.Fri": "sex",
   "date.weekday.Sat": "sáb",
+  "quantity.results": {
+    "one": "{{.Count}} resultado",
+    "other": "{{.Count}} resultados"
+  },
   "quantity.plays": {
     "one": "{{.Count}} reprodução",
     "other": "{{.Count}} reproduções"

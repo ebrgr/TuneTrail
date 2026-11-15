@@ -1,0 +1,28 @@
+{
+ "dialogOpen": true,
+ "options": [
+  "Cache Band",
+  "Cache Song",
+  "Cachet"
+ ],
+ "expanded": "true",
+ "status": "3 resultados",
+ "activedescendant": "search-artists-0",
+ "selected": 1,
+ "listClosed": true,
+ "dialogStillOpen": true,
+ "dialogClosedSecondEsc": true,
+ "focusAfterClose": "BODY#",
+ "enterNavigates": true,
+ "timings_ms_bytes": {
+  "full_search_page": [
+   1.64,
+   25210
+  ],
+  "fragment": [
+   0.83,
+   1772
+  ]
+ }
+}
+PASS

@@ -121,6 +121,10 @@
   "ui.sidebar_push": "Push the content aside",
   "ui.sidebar_overlay": "Open over the content",
   "ui.opens_new_tab": "opens in a new tab",
+  "ui.search_results": "Search results",
+  "ui.search_see_all": "See all results",
+  "ui.search_no_results": "No results.",
+  "ui.search_type_more": "Type at least 2 characters.",
   "ui.admin_signed_in": "Administrator signed in",
   "ui.page": "Page",
   "ui.plays_word": "plays",
@@ -465,6 +469,10 @@
   "date.weekday.Thu": "Thu",
   "date.weekday.Fri": "Fri",
   "date.weekday.Sat": "Sat",
+  "quantity.results": {
+    "one": "{{.Count}} result",
+    "other": "{{.Count}} results"
+  },
   "quantity.plays": {
     "one": "{{.Count}} play",
     "other": "{{.Count}} plays"

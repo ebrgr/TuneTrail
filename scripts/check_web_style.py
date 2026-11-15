@@ -5,6 +5,7 @@ Exceptions are lines that cannot be broken without changing the output: a single
 attribute whose value has no spaces (a long URL), or a single Go string literal
 (a long translation default) on its own line.
 """
+import gzip
 import re
 import sys
 from pathlib import Path
@@ -24,11 +25,26 @@ def offenders(root=ROOT):
                 yield path.relative_to(root), number, len(line)
 
 
+# Compressed size budgets for scripts that must stay small (ISSUE-107).
+JS_BUDGETS = {'assets/js/search.js': 4096}
+
+
+def over_budget(root=ROOT):
+    """Yield (path, gzip size, budget) for every budgeted script above its limit."""
+    for name, budget in JS_BUDGETS.items():
+        size = len(gzip.compress((root / name).read_bytes(), compresslevel=9))
+        if size > budget:
+            yield name, size, budget
+
+
 def main():
     found = list(offenders())
     for path, number, length in found:
         print(f'{path}:{number}: {length} characters (limit {LIMIT})')
-    return 1 if found else 0
+    heavy = list(over_budget())
+    for path, size, budget in heavy:
+        print(f'{path}: {size} bytes gzip (budget {budget})')
+    return 1 if found or heavy else 0
 
 
 if __name__ == '__main__':

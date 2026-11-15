@@ -164,7 +164,7 @@ func formatFuncs(locale *i18n.View) template.FuncMap {
 					return value
 				}
 			}
-			word := map[string]string{"quantity.plays": "play", "quantity.minutes": "minute", "quantity.intervals": "interval"}[key]
+			word := map[string]string{"quantity.plays": "play", "quantity.minutes": "minute", "quantity.intervals": "interval", "quantity.results": "result"}[key]
 			if count != 1 {
 				word += "s"
 			}

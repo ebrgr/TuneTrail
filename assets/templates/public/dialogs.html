@@ -30,11 +30,26 @@
     <h2 id="search-title">{{tr "ui.search" "Search"}}</h2>
     {{if .Live}}
       {{if .Profile}}
-        <form method="get" action="/{{.Profile.Slug}}/search">
+        {{/* ISSUE-107: search.js turns the field into a combobox with results while typing;
+             without JavaScript the form opens the full search page. */}}
+        <form method="get" action="/{{.Profile.Slug}}/search" data-instant-search>
           <label for="search-input">{{tr "ui.search_your_listening_history" "Search your listening history"}}</label>
-          <input id="search-input" type="search" name="q" required maxlength="200">
+          <input
+            id="search-input"
+            type="search"
+            name="q"
+            required
+            maxlength="200"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="search-results"
+          >
           <button class="large-button">{{tr "ui.search" "Search"}}</button>
         </form>
+        <div id="search-results" class="search-results" data-search-results></div>
+        <p class="sr-only" role="status" aria-live="polite" data-search-status></p>
       {{end}}
     {{else}}
       <p>Functional search belongs to the next migration steps. This preview contains fictional media only.</p>
@@ -45,4 +60,33 @@
     <h2 id="feature-title">{{tr "ui.visual_preview" "Visual preview"}}</h2>
     <p>This control demonstrates the presentation. Real media pages, filters, rewind and administration will be migrated in the next roadmap steps.</p>
   </dialog>
+{{end}}
+
+{{/* Results fragment for the instant search (ISSUE-107), grouped by kind. */}}
+{{define "partial/search-results"}}
+  {{if .TooShort}}
+    <p class="search-hint" data-search-summary>{{tr "ui.search_type_more" "Type at least 2 characters."}}</p>
+  {{else if .Groups}}
+    <div id="search-listbox" role="listbox" aria-label="{{tr "ui.search_results" "Search results"}}">
+      {{range $group := .Groups}}
+        <ul role="group" aria-labelledby="search-group-{{$group.Kind}}">
+          <li role="presentation" id="search-group-{{$group.Kind}}" class="search-group">
+            {{- if eq $group.Kind "artists"}}{{tr "ui.artists" "Artists"}}{{else if eq $group.Kind "albums"}}{{tr "ui.albums" "Albums"}}
+            {{- else}}{{tr "ui.tracks" "Tracks"}}{{end}}</li>
+          {{range $i, $item := $group.Items}}
+            <li role="option" id="search-{{$group.Kind}}-{{$i}}" aria-selected="false">
+              <a class="search-option" href="{{$item.URL}}" tabindex="-1">
+                <img src="{{$item.Image.XS}}" width="32" height="32" alt="" loading="lazy" data-cover>
+                <span>{{$item.Title}}</span>
+              </a>
+            </li>
+          {{end}}
+        </ul>
+      {{end}}
+    </div>
+    <a class="text-link search-all" href="{{.AllURL}}">{{tr "ui.search_see_all" "See all results"}}</a>
+    <p class="sr-only" data-search-summary>{{quantity "quantity.results" .Total}}</p>
+  {{else}}
+    <p class="search-hint" data-search-summary>{{tr "ui.search_no_results" "No results."}}</p>
+  {{end}}
 {{end}}

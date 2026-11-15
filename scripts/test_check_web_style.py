@@ -1,5 +1,6 @@
 """Exercise the web style limit on a disposable tree."""
 import importlib.util
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -32,6 +33,14 @@ class WebStyleTests(unittest.TestCase):
         root = self.tree('<p>' + 'word ' * 40 + '</p>', '.a{' + 'color:red;' * 20 + '}')
         found = [(str(p), n) for p, n, _ in check.offenders(root)]
         self.assertEqual(found, [('assets/templates/public/a.html', 1), ('assets/css/a.css', 1)])
+
+    def test_script_budget(self):
+        root = self.tree('')
+        (root / 'assets/js').mkdir(parents=True)
+        (root / 'assets/js/search.js').write_bytes(os.urandom(8192))
+        self.assertEqual([name for name, _, _ in check.over_budget(root)], ['assets/js/search.js'])
+        (root / 'assets/js/search.js').write_text('const a = 1;')
+        self.assertEqual(list(check.over_budget(root)), [])
 
     def test_rejects_long_attribute_with_spaces(self):
         self.assertEqual(len(list(check.offenders(self.tree('  title="' + 'a b ' * 50 + '"')))), 1)

@@ -1177,6 +1177,45 @@ button {
 @media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
 .delete-listen { color:var(--color-fg-tertiary); padding:8px; }
 .delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
+/* ISSUE-107: instant search results inside the search dialog. */
+.search-results {
+  max-height: 50vh;
+  overflow-y: auto
+}
+.search-results ul {
+  list-style: none;
+  margin: 0;
+  padding: 0
+}
+.search-group {
+  padding: 12px 6px 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--color-fg-secondary)
+}
+.search-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 6px
+}
+.search-option img {
+  border-radius: 4px;
+  object-fit: cover
+}
+[role=option][aria-selected=true] .search-option,
+.search-option:hover {
+  background: var(--color-bg-tertiary)
+}
+.search-all {
+  display: inline-block;
+  margin-top: 10px
+}
+.search-hint {
+  margin-top: 12px;
+  color: var(--color-fg-secondary)
+}
 #search-dialog input { display:block; width:100%; margin:16px 0; padding:12px; background:var(--color-bg); border:1px solid var(--color-border); }
 /* Scoped media reading pages; graphs and management are integrated separately. */
 .media-detail { width:100%; padding:48px 40px; min-width:0; }
