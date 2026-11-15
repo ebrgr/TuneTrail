@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-15T19:35:00Z'
+updated_date: '2026-11-15T19:36:00Z'
 labels:
   - ui
 milestone: m-10
@@ -84,6 +84,15 @@ created: 2026-11-15T19:35:00Z
 ---
 
 Aceite: aprovada pelo usuário em 15/11/2026.
+
+---
+
+author: ebrgr
+created: 2026-11-15T19:36:00Z
+
+---
+
+Publicação: versão 0.20 (tag `v0.20`), branch `chore/issue-068-dividir-o-css-em-camadas` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
