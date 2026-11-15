@@ -1,11 +1,11 @@
 ---
 id: ISSUE-139
 title: 139 — Páginas de gestão por tarefa e compatibilidade dos endereços antigos
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T20:39:00Z'
+updated_date: '2026-11-15T20:44:00Z'
 labels:
   - admin
 milestone: m-10
@@ -80,6 +80,15 @@ created: 2026-11-15T20:39:00Z
 ---
 
 Verificação: critérios 1–4 verificados pelo roteador principal com tickets obrigatórios; páginas por tarefa, compatibilidade de URLs e POST, login e retornos seguros, isolamento de perfis, merge normal/invertido e sobrevivente não ouvido; make check aprovado com 12/12 E2E, Reviewer Opus APROVADO sem itens obrigatórios e graphify atualizado; evidências em backlog/evidencias/issue-139/relatorio.md
+
+---
+
+author: claude
+created: 2026-11-15T20:44:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 15/11/2026, com autorização para push e publicação.
 
 ---
 <!-- COMMENTS:END -->
