@@ -1,4 +1,6 @@
 {
+ "focusOnLoad": "BODY",
+ "focusOnOpen": "search-input",
  "dialogOpen": true,
  "inputY": [
   111,
@@ -28,13 +30,23 @@
  "dialogClosedSecondEsc": true,
  "focusAfterClose": "BODY#",
  "enterNavigates": true,
+ "pageField1024": {
+  "field": 811,
+  "form": 934,
+  "beside": true
+ },
+ "pageField390": {
+  "field": 235,
+  "form": 358,
+  "beside": true
+ },
  "timings_ms_bytes": {
   "full_search_page": [
-   1.95,
-   35237
+   2.18,
+   35295
   ],
   "fragment": [
-   1.01,
+   1.13,
    6040
   ]
  }

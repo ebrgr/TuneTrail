@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T11:46:00Z'
+updated_date: '2026-11-15T12:00:00Z'
 labels:
   - ui
   - admin
@@ -122,6 +122,15 @@ created: 2026-11-15T11:46:00Z
 ---
 
 Ajustes pedidos pelo usuário antes do aceite, comparando com o Koito original (capturas em backlog/evidencias/issue-107/koito/): diálogo ancorado no topo com o campo fixo (posição constante com e sem resultados e ao rolar), resultados em cartões por tipo com título acima (artistas em grade com imagem e nome, álbuns e faixas com miniatura e artistas), botão Buscar escondido com JavaScript; mantidos 5 por tipo e ver todos (decisão do usuário). Reviewer: item obrigatório (opção ativa coberta pelo cabeçalho) corrigido e coberto pelo roteiro.
+
+---
+
+author: claude
+created: 2026-11-15T12:00:00Z
+
+---
+
+Ajustes pedidos pelo usuário antes do aceite: (1) o campo recebe o foco ao abrir a busca (autofocus; o carregamento da página não rouba o foco); (2) títulos das seções na cor principal do texto, com mais contraste; (3) na página completa de busca o campo ocupa a largura disponível e o botão fica ao lado (antes limitado a 110px pela classe de filtros). Roteiro, make check e validador aprovados.
 
 ---
 <!-- COMMENTS:END -->

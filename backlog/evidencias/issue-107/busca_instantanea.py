@@ -33,7 +33,10 @@ const origin = process.argv[2], shots = process.argv[3];
   });
   const out = {};
   await page.goto(origin + '/cache-study');
+  out.focusOnLoad = await page.evaluate(() => document.activeElement.tagName);
   await page.keyboard.press('/');
+  await page.waitForTimeout(200);
+  out.focusOnOpen = await page.evaluate(() => document.activeElement.id);
   const input = page.locator('#search-input');
   out.dialogOpen = await page.locator('#search-dialog').evaluate(d => d.open);
   const y = async () => Math.round((await input.boundingBox()).y);
@@ -81,7 +84,19 @@ const origin = process.argv[2], shots = process.argv[3];
   const target = await page.locator('#search-results [aria-selected=true] a').getAttribute('href');
   await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
   out.enterNavigates = new URL(page.url()).pathname === target;
+  // Full search page (Enter without a selected option): the field fills the row beside the button.
+  const pageField = async () => page.evaluate(() => {
+    const form = document.querySelector('.search-page-form'), field = form.querySelector('input'), button = form.querySelector('button');
+    const f = field.getBoundingClientRect(), b = button.getBoundingClientRect(), r = form.getBoundingClientRect();
+    return {field: Math.round(f.width), form: Math.round(r.width), beside: Math.abs(f.bottom - b.bottom) < 2 && b.left > f.right};
+  });
+  await page.goto(origin + '/cache-study/search?q=Cache');
+  out.pageField1024 = await pageField();
+  await page.screenshot({path: `${shots}/busca-pagina-1024.png`});
   await page.setViewportSize({width: 390, height: 844});
+  await page.goto(origin + '/cache-study/search?q=Cache');
+  out.pageField390 = await pageField();
+  await page.screenshot({path: `${shots}/busca-pagina-390.png`});
   await page.goto(origin + '/cache-study');
   await page.keyboard.press('/');
   await page.locator('#search-input').fill('Cache');
@@ -138,7 +153,10 @@ def main():
                   and r['expanded'] == 'true' and r['status'] and r['activedescendant'] and r['selected'] == 1
                   and r['listClosed'] and r['dialogStillOpen'] and r['dialogClosedSecondEsc'] and r['enterNavigates']
                   and r['focusAfterClose'] != 'INPUT#search-input'
-                  and len(set(r['inputY'])) == 1 and r['submitHidden'] and r['activeVisible'])
+                  and len(set(r['inputY'])) == 1 and r['submitHidden'] and r['activeVisible']
+                  and r['focusOnLoad'] == 'BODY' and r['focusOnOpen'] == 'search-input'
+                  and r['pageField1024']['beside'] and r['pageField390']['beside']
+                  and r['pageField1024']['field'] > r['pageField390']['field'] > 150)
             print('PASS' if ok else 'FAIL')
             return 0 if ok else 1
         finally:

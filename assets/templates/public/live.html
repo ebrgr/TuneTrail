@@ -43,7 +43,8 @@
           {{else if eq .Section "search"}}
             <main class="listing">
               <h1>{{tr "ui.search" "Search"}}</h1>
-              <form method="get" class="listing-filters">
+              {{/* ISSUE-107: the field grows with the window, the button stays beside it. */}}
+              <form method="get" class="listing-filters search-page-form">
                 <label>
                   {{- tr "ui.search_your_listening_history" "Search your listening history"}}<input type="search" name="q" value="{{.Search}}" maxlength="200"
                   required></label>
