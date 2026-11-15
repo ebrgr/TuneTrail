@@ -1,11 +1,11 @@
 ---
 id: ISSUE-140
 title: 140 — Barra de ações nas páginas de mídia com diálogos por tarefa
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T23:30:00Z'
+updated_date: '2026-11-15T23:31:00Z'
 labels:
   - ui
   - admin
@@ -100,6 +100,15 @@ created: 2026-11-15T23:30:00Z
 ---
 
 Verificação dos ajustes: critérios 6–9 exercitados em Chrome, com 72 capturas Yuu/Pearl desktop/celular, contraste de botões/inputs/selects nos 12 temas, fuso opcional resolvido no servidor e inválido sem gravação, busca dinâmica com foco/ticket/URL preservados e resposta antiga descartada, tooltip compartilhado sem título nativo duplicado e regressão do editor completo coberta. make check passou 12/12 E2E; comparação de áreas de controle sem diferenças em 20 visualizações/21.934 elementos. Reviewer final aprovado; recomendações posteriores de foco aplicadas e verificadas inclusive durante POST pendente. #5 permanece para aceite visual; sem alteração da semântica de Excluir ou do × do histórico e sem mutações em 4110/4111.
+
+---
+
+author: ebrgr
+created: 2026-11-15T23:31:00Z
+
+---
+
+Verificação: ajustes 6–9 concluídos; make check com 12/12 E2E, jornadas Chrome sem erros de JavaScript, 72 capturas de diálogos em Yuu/Pearl desktop/celular, contraste de controles nos 12 temas, fuso opcional/erro sem gravação, busca dinâmica com cancelamento e recuperação, tooltip/foco e regressão do editor completo. Comparação das áreas de controle: 20 visualizações/21.934 elementos sem diferenças. Sem novas chamadas ao Reviewer conforme instrução do usuário; critérios 1–4 e 6–9 verificados, #5 aguarda aceite visual. Sem push/merge/publicação e sem mudar a semântica de Excluir ou o × do histórico.
 
 ---
 <!-- COMMENTS:END -->

@@ -71,3 +71,5 @@ O coordenador autorizou alterações nos bancos de desenvolvimento em 4110 e 411
 Continuam fora do escopo a exclusão por perfil (ISSUE-143), a semântica do × do histórico (ISSUE-141) e arrastar capa (ISSUE-142). O aceite visual #5 continua reservado ao usuário; conferir principalmente a comparação dos formulários em Pearl/celular, a disposição das linhas de edição, o fuso opcional e a lista dinâmica de mesclagem.
 
 Por instrução explícita do usuário na retomada, o restante da entrega foi concluído sem novas chamadas ao Reviewer; os pareceres já obtidos e as verificações do implementador permanecem nas evidências.
+
+Entrega dos ajustes: implementação em `11874d6` (`ISSUE-140: Refina temas, formulários e buscas dos diálogos`), com coautoria exigida. `make issue.review ISSUE=140` repetiu o gate completo com 12/12 E2E e devolveu a tarefa para **Aguardando aceite**; os critérios novos #6–#9 foram marcados e #5 permanece desmarcado. Árvore final limpa após o registro de verificação; sem push, merge, publicação ou Done.
