@@ -30,7 +30,7 @@ func TestAdminBadgeOnlyForAdministratorSession(t *testing.T) {
 	require.Equal(t, "true", admin.Header().Get("X-TuneTrail-Admin"))
 	require.Contains(t, admin.Body.String(), `class="admin-badge"`)
 	require.Contains(t, admin.Body.String(), "data-admin\n")
-	require.Contains(t, admin.Body.String(), `href="/admin"`)
+	require.Contains(t, admin.Body.String(), `href="/admin?profile=1"`) // badge keeps the profile (ISSUE-123)
 
 	for name, cookie := range map[string]string{
 		"visitor":     "",

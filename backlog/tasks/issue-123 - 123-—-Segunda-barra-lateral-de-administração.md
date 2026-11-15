@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T01:19:00Z'
-updated_date: '2026-11-15T02:00:00Z'
+updated_date: '2026-11-15T02:07:00Z'
 labels:
   - ui
   - admin
@@ -71,6 +71,15 @@ created: 2026-11-15T02:00:00Z
 ---
 
 Ajustes pedidos pelo usuário antes do aceite: (1) no modo sobrepor a barra começa fechada (também nas páginas da administração, sem piscar) e fecha depois do clique num item; (2) ícone de Conta trocado de CircleUserRound para LockKeyhole (cadeado), para não lembrar o perfil nem confundir com as chaves de API. Roteiro segunda_barra.py, make check e validador de cache aprovados.
+
+---
+
+author: claude
+created: 2026-11-15T02:07:00Z
+
+---
+
+Ajuste pedido pelo usuário: as páginas abertas pela segunda barra não mostravam o cabeçalho do perfil. Os links da barra passam a levar ?profile=N (a configuração do servidor aceita só esse parâmetro), o cabeçalho virou partial/profile-header compartilhado (público e administração) e na administração ocupa a largura toda acima do conteúdo, como nas páginas públicas. Testes de cabeçalho, roteiro, make check e validador aprovados.
 
 ---
 <!-- COMMENTS:END -->

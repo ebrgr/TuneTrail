@@ -528,7 +528,7 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 func adminNav(p *models.ListeningProfile, signedIn bool, current string) webassets.Nav {
 	nav := webassets.Nav{Kind: "admin", Admin: signedIn, Open: true, Current: current, Version: version.Current}
 	if p != nil {
-		nav.Profile = &webassets.NavProfile{Name: p.DisplayName, Slug: p.Slug}
+		nav.Profile = &webassets.NavProfile{ID: int64(p.ID), Name: p.DisplayName, Slug: p.Slug}
 		if p.AvatarImageID != nil {
 			nav.Profile.Image = *p.AvatarImageID
 		}

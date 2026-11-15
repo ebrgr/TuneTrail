@@ -36,6 +36,10 @@
    "https://github.com/ebrgr/TuneTrail"
   ]
  },
+ "header": {
+  "url": "?profile=2",
+  "shown": "Cache Study"
+ },
  "phone": {
   "below": true,
   "fullWidth": true

@@ -7,6 +7,7 @@ import (
 
 // NavProfile is the profile shown by the shared sidebar, whatever page model it came from.
 type NavProfile struct {
+	ID                      int64 // carried by administration links so pages keep the profile
 	Name, Slug, Image, Icon string
 }
 

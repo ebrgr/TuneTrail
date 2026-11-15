@@ -72,6 +72,12 @@ const origin = process.argv[2], shots = process.argv[3];
     current: await page.locator('#nav-admin [aria-current="page"]').getAttribute('href'), leftPush: await contentLeft('.admin-shell')};
   out.admin.items = await page.locator('#nav-admin a').evaluateAll(as => as.map(a => a.getAttribute('href')));
   await page.screenshot({path: `${shots}/barra-admin-1024.png`});
+  // From a profile page, the second sidebar keeps the profile header on administration pages.
+  await page.goto(origin + '/cache-study');
+  await page.locator('[data-nav-toggle]').click();
+  await Promise.all([page.waitForNavigation(), page.locator('#nav-admin a[href^="/admin/settings"]').click()]);
+  out.header = {url: new URL(page.url()).search, shown: await page.locator('body > .profile-header strong').textContent()};
+  await page.screenshot({path: `${shots}/barra-admin-cabecalho-1024.png`});
   // Phone: below the top bar, in the page flow.
   await page.setViewportSize({width: 390, height: 844});
   await page.goto(origin + '/cache-study');
@@ -119,7 +125,8 @@ def main():
                   and a['items'][:3] == ['/admin?section=account', '/admin?section=profiles', '/admin/settings']
                   and r['phone']['below'] and r['phone']['fullWidth']
                   and r['overlayAdmin']['closedAtLoad'] and r['overlayAdmin']['opens']
-                  and r['overlayAdmin']['closesAfterClick'] and r['overlayAdmin']['left'] == 58)
+                  and r['overlayAdmin']['closesAfterClick'] and r['overlayAdmin']['left'] == 58
+                  and r['header']['shown'] == 'Cache Study' and r['header']['url'].startswith('?profile='))
             print('PASS' if ok else 'FAIL')
             return 0 if ok else 1
         finally:

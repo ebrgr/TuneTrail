@@ -109,7 +109,7 @@
       {{else}}
         <a
           class="nav-button"
-          href="/admin"
+          href="/admin{{with .Profile}}?profile={{.ID}}{{end}}"
           data-nav-toggle
           aria-controls="nav-admin"
           aria-label="{{tr "ui.administration" "Administration"}}"
@@ -119,6 +119,32 @@
     </div>
   </nav>
   {{template "partial/admin-sidebar" .}}
+{{end}}
+
+{{/* Profile header shared by public pages and administration (ISSUE-109, ISSUE-123).
+     The administrator badge links to administration and appears only for a valid session. */}}
+{{define "partial/profile-header"}}
+  {{if .Profile}}
+    <header class="profile-header">
+      {{if .Admin}}
+        <a
+          class="admin-avatar-link"
+          href="/admin?profile={{.Profile.ID}}"
+          title="{{tr "ui.admin_signed_in" "Administrator signed in"}}"
+        >
+          {{template "partial/avatar" .Profile}}
+          <span class="admin-badge">{{icon "ShieldCheck"}}</span>
+          <span class="sr-only">{{tr "ui.admin_signed_in" "Administrator signed in"}}</span>
+        </a>
+      {{else}}
+        {{template "partial/avatar" .Profile}}
+      {{end}}
+      <div class="profile-identity">
+        <strong>{{.Profile.Name}}</strong>
+        <span>{{tr "ui.listening_profile" "Listening profile"}} · /{{.Profile.Slug}}</span>
+      </div>
+    </header>
+  {{end}}
 {{end}}
 
 {{/* Second sidebar (ISSUE-123): beside the first on wide screens, below it on narrow ones. */}}
@@ -141,21 +167,21 @@
       {{else if .Admin}}
         <a
           class="nav-button"
-          href="/admin?section=account"
+          href="/admin?section=account{{with .Profile}}&profile={{.ID}}{{end}}"
           {{if eq .Current "account"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.account" "Account"}}"
           data-tip="{{tr "ui.account" "Account"}}"
         >{{icon "LockKeyhole"}}</a>
         <a
           class="nav-button"
-          href="/admin?section=profiles"
+          href="/admin?section=profiles{{with .Profile}}&profile={{.ID}}{{end}}"
           {{if eq .Current "profiles"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.manage_profiles" "Profiles"}}"
           data-tip="{{tr "ui.manage_profiles" "Profiles"}}"
         >{{icon "UserRoundCog"}}</a>
         <a
           class="nav-button"
-          href="/admin/settings"
+          href="/admin/settings{{with .Profile}}?profile={{.ID}}{{end}}"
           {{if eq .Current "settings"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.server_configuration" "Server configuration"}}"
           data-tip="{{tr "ui.server_configuration" "Server configuration"}}"

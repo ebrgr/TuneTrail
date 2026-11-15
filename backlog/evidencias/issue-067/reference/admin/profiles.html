@@ -18,7 +18,7 @@
       <link rel="stylesheet" href="/web-assets/ui.css?v=dbb302f68c12f21ec6c3f48e497140f6dce184fb2ff973fc37c8312ba8c60d0b">
       <script defer src="/web-assets/theme-picker.js?v=2a7c560c283c563fea7209a8b8244b98170eb46b5b0e712ebf41a438c5a583b1"></script>
       <script defer src="/web-assets/nav.js?v=5b5589a73f4b9ef414aef5c020186951c947e3850ba52c2263cbbee8cba1977c"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=2142ef18d800a86cc3b672f683abadaf1ba37265e02c2a5cb9bb4d9dc7f26601">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=62460bc3454f3f44f11c7ca75fd06b5d95150022b01275098b41fbd7951cc185">
       <script defer src="/web-assets/admin.js?v=440f73e250bb13d5197247b845464960152049ebfb9d75ce4a50bca980bc6530"></script>
 
     </head>
@@ -29,6 +29,7 @@
       data-i18n-copy-manual="Select and copy manually"
     >
       <a class="skip-link" href="#admin-main">Skip to content</a>
+      
       
   
   <nav class="sidebar" aria-label="Main navigation">
@@ -87,7 +88,7 @@
       
         <a
           class="nav-button"
-          href="/admin"
+          href="/admin?profile=1"
           data-nav-toggle
           aria-controls="nav-admin"
           aria-label="Administration"
@@ -108,7 +109,7 @@
       
         <a
           class="nav-button"
-          href="/admin?section=account"
+          href="/admin?section=account&profile=1"
           
           aria-label="Account"
           data-tip="Account"
@@ -116,7 +117,7 @@
 </a>
         <a
           class="nav-button"
-          href="/admin?section=profiles"
+          href="/admin?section=profiles&profile=1"
           aria-current="page"
           aria-label="Profiles"
           data-tip="Profiles"
@@ -124,7 +125,7 @@
 </a>
         <a
           class="nav-button"
-          href="/admin/settings"
+          href="/admin/settings?profile=1"
           
           aria-label="Server configuration"
           data-tip="Server configuration"
@@ -365,6 +366,30 @@
     </fieldset>
     
   </div>
+
+      
+  
+    <header class="profile-header">
+      
+        <a
+          class="admin-avatar-link"
+          href="/admin?profile=1"
+          title="Administrator signed in"
+        >
+          
+  <span class="avatar" aria-hidden="true">FA</span>
+
+          <span class="admin-badge"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+</span>
+          <span class="sr-only">Administrator signed in</span>
+        </a>
+      
+      <div class="profile-identity">
+        <strong>Fictional Alpha</strong>
+        <span>Listening profile · /alpha</span>
+      </div>
+    </header>
+  
 
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">

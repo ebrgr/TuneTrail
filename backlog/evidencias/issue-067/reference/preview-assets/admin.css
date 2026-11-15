@@ -230,12 +230,19 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 /* Match the public navigation: top bar on mobile, fixed rail on desktop. */
 .admin-shell{max-width:1180px;margin:0 auto;padding:48px 44px 24px;min-height:100vh}
 @media(min-width:40rem){.admin-shell{margin-left:58px;padding-left:44px} }
-/* ISSUE-123: administration renders the second sidebar open; follow the layout preference. */
+/* ISSUE-123: administration renders the second sidebar open; follow the layout preference.
+   The profile header spans the page above the content, as on public pages. */
 @media(min-width:40rem) {
-  body:has(#nav-admin:not([hidden])) .admin-shell {
+  body > .profile-header {
+    width: auto;
+    margin-left: 58px
+  }
+  body:has(#nav-admin:not([hidden])) .admin-shell,
+  body:has(#nav-admin:not([hidden])) > .profile-header {
     margin-left: 116px
   }
-  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .admin-shell {
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .admin-shell,
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) > .profile-header {
     margin-left: 58px
   }
 }

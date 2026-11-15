@@ -89,7 +89,8 @@ func displaySetting(value string) string {
 }
 
 // renderSettings keeps submitted values and issues a fresh one-use ticket after each response.
-func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap cfg.SettingsSnapshot, draft map[string]string, revision, notice, message string, status int) {
+// renderSettings shows the form; profile only fills the shared profile header (ISSUE-123).
+func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap cfg.SettingsSnapshot, draft map[string]string, revision, notice, message string, status int, profile *models.ListeningProfile) {
 	token, err := h.csrf.SessionToken(id)
 	if err != nil {
 		h.fail(w, err)
@@ -104,7 +105,7 @@ func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap 
 	now := time.Now()
 	zone, _ := now.Zone()
 	local := fmt.Sprintf("%s (%s, UTC%s)", now.Location(), zone, now.Format("-07:00"))
-	v := settingsView{Locale: i18n.ViewOf(w), User: id.User, CSRF: token, Submission: ticket, Revision: revision, Notice: notice, Error: message, LocalTimezone: local, RestartRequired: snap.RestartRequired, StateAvailable: len(snap.Revision) == 64}
+	v := settingsView{Locale: i18n.ViewOf(w), User: id.User, Profile: profile, CSRF: token, Submission: ticket, Revision: revision, Notice: notice, Error: message, LocalTimezone: local, RestartRequired: snap.RestartRequired, StateAvailable: len(snap.Revision) == 64}
 	for _, spec := range settingsFields {
 		value := snap.Saved[spec.Name]
 		if draft != nil {
@@ -184,9 +185,23 @@ func (h *Handler) renderSettings(w http.ResponseWriter, id admin.Identity, snap 
 
 // settingsPage is available only after the dispatcher has authenticated an administrator.
 func (h *Handler) settingsPage(w http.ResponseWriter, r *http.Request, id admin.Identity) {
-	if r.URL.RawQuery != "" {
+	// Only ?profile=N is accepted: it keeps the current profile in the header (ISSUE-123).
+	q := r.URL.Query()
+	var profile *models.ListeningProfile
+	if len(q) > 1 || (len(q) == 1 && len(q["profile"]) != 1) {
 		h.fail(w, db.ErrInvalidInput)
 		return
+	}
+	if raw := q.Get("profile"); raw != "" {
+		n, err := parseID(raw)
+		if err != nil {
+			h.fail(w, err)
+			return
+		}
+		if profile, err = h.store.GetListeningProfileByID(r.Context(), n); err != nil {
+			h.fail(w, err)
+			return
+		}
 	}
 	if h.settings == nil {
 		textError(w, "Configuration is unavailable.", http.StatusServiceUnavailable)
@@ -197,7 +212,7 @@ func (h *Handler) settingsPage(w http.ResponseWriter, r *http.Request, id admin.
 		textError(w, "Configuration could not be read. Check the configuration file and try again.", http.StatusServiceUnavailable)
 		return
 	}
-	h.renderSettings(w, id, snap, nil, snap.Revision, h.takeNotice(id.SessionID, 0, i18n.ViewOf(w)), "", http.StatusOK)
+	h.renderSettings(w, id, snap, nil, snap.Revision, h.takeNotice(id.SessionID, 0, i18n.ViewOf(w)), "", http.StatusOK, profile)
 }
 
 // settingsValidationMessage gives actionable feedback without including submitted values.
@@ -253,7 +268,7 @@ func (h *Handler) settingsAction(w http.ResponseWriter, r *http.Request, id admi
 	}
 	current, readErr := h.settings.Read(r.Context())
 	if readErr != nil {
-		h.renderSettings(w, id, cfg.SettingsSnapshot{}, draft, revision, "", "Configuration state is temporarily unavailable. Your draft is shown below.", http.StatusServiceUnavailable)
+		h.renderSettings(w, id, cfg.SettingsSnapshot{}, draft, revision, "", "Configuration state is temporarily unavailable. Your draft is shown below.", http.StatusServiceUnavailable, nil)
 		return
 	}
 	for _, spec := range settingsFields {
@@ -287,7 +302,7 @@ func (h *Handler) settingsAction(w http.ResponseWriter, r *http.Request, id admi
 			message = "Configuration could not be read. Your draft is shown below."
 			status = http.StatusServiceUnavailable
 		}
-		h.renderSettings(w, id, snap, draft, revision, notice, message, status)
+		h.renderSettings(w, id, snap, draft, revision, notice, message, status, nil)
 		return
 	}
 	// Avoid rewriting the TOML representation of fields the user did not change.
@@ -311,7 +326,7 @@ func (h *Handler) settingsAction(w http.ResponseWriter, r *http.Request, id admi
 		return
 	}
 	if errors.Is(err, cfg.ErrSettingsDurability) {
-		h.renderSettings(w, id, snap, nil, snap.Revision, "", "The configuration was saved, but its durability could not be confirmed. Check the file before continuing.", http.StatusInternalServerError)
+		h.renderSettings(w, id, snap, nil, snap.Revision, "", "The configuration was saved, but its durability could not be confirmed. Check the file before continuing.", http.StatusInternalServerError, nil)
 		return
 	}
 	message, status := "Configuration could not be saved. Your draft is shown below.", http.StatusInternalServerError
@@ -340,5 +355,5 @@ func (h *Handler) settingsAction(w http.ResponseWriter, r *http.Request, id admi
 		current = cfg.SettingsSnapshot{}
 		message = localMessage(i18n.ViewOf(w), message) + localMessage(i18n.ViewOf(w), " Saved and running values are temporarily unavailable.")
 	}
-	h.renderSettings(w, id, current, draft, revision, "", message, status)
+	h.renderSettings(w, id, current, draft, revision, "", message, status, nil)
 }

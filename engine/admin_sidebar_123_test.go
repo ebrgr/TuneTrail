@@ -30,7 +30,9 @@ func TestSecondSidebarItemsByRole(t *testing.T) {
 
 	admin := secondBar(t, a.request(http.MethodGet, "/default", "", "", true).Body.String())
 	require.Contains(t, admin, "hidden\n", "public pages start with the second sidebar closed")
-	for _, link := range []string{`href="/admin?section=account"`, `href="/admin?section=profiles"`, `href="/admin/settings"`, `href="https://github.com/ebrgr/TuneTrail"`} {
+	// Administration links keep the current profile so its header stays in view.
+	for _, link := range []string{`href="/admin?section=account&profile=1"`, `href="/admin?section=profiles&profile=1"`,
+		`href="/admin/settings?profile=1"`, `href="https://github.com/ebrgr/TuneTrail"`} {
 		require.Contains(t, admin, link)
 	}
 }
@@ -67,4 +69,19 @@ func TestSecondSidebarPreAuthErrorShowsVisitorItems(t *testing.T) {
 	require.Contains(t, bar, `href="/admin"`)
 	require.NotContains(t, bar, "/admin/settings")
 	require.NotContains(t, bar, "section=profiles")
+}
+
+// TestAdministrationPagesShowProfileHeader keeps the public header pattern in administration.
+func TestAdministrationPagesShowProfileHeader(t *testing.T) {
+	a := newProfileTestApp(t)
+	for _, path := range []string{"/admin/settings?profile=2", "/admin?section=account&profile=2", "/admin?profile=2"} {
+		w := a.request(http.MethodGet, path, "", "", true)
+		require.Equal(t, http.StatusOK, w.Code, path)
+		body := w.Body.String()
+		require.Contains(t, body, `<header class="profile-header">`, path)
+		require.Contains(t, body, "<strong>Second</strong>", path)
+		require.Contains(t, body, `class="admin-badge"`, path)
+	}
+	require.Equal(t, http.StatusBadRequest, a.request(http.MethodGet, "/admin/settings?other=1", "", "", true).Code)
+	require.NotContains(t, a.request(http.MethodGet, "/admin/settings", "", "", true).Body.String(), `<header class="profile-header">`)
 }

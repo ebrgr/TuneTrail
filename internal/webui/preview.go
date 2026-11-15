@@ -92,7 +92,7 @@ func (p Page) Nav() webassets.Nav {
 		nav.Kind = "live"
 	}
 	if p.Profile != nil {
-		nav.Profile = &webassets.NavProfile{Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon}
+		nav.Profile = &webassets.NavProfile{ID: int64(p.Profile.ID), Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon}
 	}
 	return nav
 }
