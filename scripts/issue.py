@@ -43,7 +43,9 @@ class Fail(Exception):
 
 def run(*cmd, capture=True, check=True):
     # Every external command runs from the repository root; failures stop the flow.
-    result = subprocess.run(cmd, cwd=ROOT, capture_output=capture, text=True)
+    # Output is only shown or compared; undecodable bytes (e.g. a merge summary with
+    # binary evidence names) must not abort a publish halfway (seen in ISSUE-107).
+    result = subprocess.run(cmd, cwd=ROOT, capture_output=capture, text=True, errors="replace")
     if check and result.returncode != 0:
         detail = (result.stderr or result.stdout or "").strip() if capture else ""
         raise Fail(f"falhou: {' '.join(cmd)}" + (f"\n{detail}" if detail else ""))
