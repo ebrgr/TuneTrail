@@ -17,7 +17,7 @@ Seguindo a persona Reviewer, fiz a revisão eu mesmo em vez de chamar outro `cla
 4. **`internal/adminui/media.go`, `mediaAction` no caminho de erro**: agora ele passa `action` em vez de `""` para `mediaPage`. Isso também muda o fluxo sem JavaScript:
    - A mensagem de horário ambíguo em `listen-add` passa a aparecer (antes nunca aparecia). É uma correção.
    - Sem `return_to`, a página de erro mostra a tarefa em vez do índice.
-   
+
    As duas mudanças parecem desejáveis, mas são visíveis ao usuário. Vale citá-las no comentário de verificação da issue ou no CHANGELOG.
 
 5. **`media-dialog.js`, tempo limite de 15 s**: o upload de imagem em multipart usa o mesmo limite. Numa conexão lenta, a requisição é abortada, mas o servidor pode concluir a troca mesmo assim. A mensagem de erro já manda reabrir a tarefa, então o risco é baixo. Um limite maior só para multipart evitaria falsos erros.

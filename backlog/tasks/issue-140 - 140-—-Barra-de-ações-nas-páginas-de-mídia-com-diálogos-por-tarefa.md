@@ -1,11 +1,11 @@
 ---
 id: ISSUE-140
 title: 140 — Barra de ações nas páginas de mídia com diálogos por tarefa
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T21:58:00Z'
+updated_date: '2026-11-15T22:00:00Z'
 labels:
   - ui
   - admin
@@ -65,6 +65,15 @@ created: 2026-11-15T21:58:00Z
 ---
 
 Verificação: critérios 1–4 exercitados por roteador real e Chrome em fixture descartável; make check com 12/12 E2E. Reviewer sem itens impeditivos após correções de geometria, carregamento condicional de assets e recuperação; aceite visual #5 fica com o usuário. Atualização automática abrange cabeçalho/capa/contagens; histórico, atividade e gráficos conservam snapshot até navegação. Sem push, merge ou publicação.
+
+---
+
+author: ebrgr
+created: 2026-11-15T22:00:00Z
+
+---
+
+Verificação: make check aprovado com 12/12 jornadas E2E; roteador real valida sessão (incluindo expiração no banco), origem, CSRF, perfil, tickets e plano de confirmação; Chrome valida faixa/álbum/artista em desktop/celular, sem JS e clique modificado, foco/Tab/Esc, nome/MBID/contagens/capa sem recarga, rede, respostas antigas e bfcache. Capturas com Koito atual e relatório em backlog/evidencias/issue-140; Reviewer complementar sem itens impeditivos. Critérios 1–4 verificados; #5 aguarda aceite visual do usuário.
 
 ---
 <!-- COMMENTS:END -->
