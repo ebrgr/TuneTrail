@@ -65,4 +65,13 @@ created: 2026-11-15T15:35:00Z
 Aceite: aprovada pelo usuário em 15/11/2026 ("aceito"). Publicação local; push não solicitado.
 
 ---
+
+author: ebrgr
+created: 2026-11-15T15:35:00Z
+
+---
+
+Publicação: versão 0.19 (tag `v0.19`), branch `feat/issue-124-edicao-de-faixas-sem-recarregar` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->
