@@ -7,6 +7,7 @@
   const box = document.querySelector('[data-search-results]');
   const status = document.querySelector('[data-search-status]');
   let timer, request = null, active = -1;
+  form.dataset.enhanced = ''; // hides the submit button: results appear while typing
   const options = () => [...box.querySelectorAll('[role=option]')];
   const setActive = index => {
     const list = options();
@@ -14,6 +15,10 @@
     active = index;
     if (list[index]) {
       input.setAttribute('aria-activedescendant', list[index].id);
+      // Keep the active option clear of the sticky heading and field (WCAG 2.4.11).
+      const dialog = form.closest('dialog');
+      const head = dialog?.querySelector('.search-head');
+      if (head) dialog.style.scrollPaddingTop = head.offsetHeight + 'px';
       list[index].scrollIntoView({block: 'nearest'});
     } else input.removeAttribute('aria-activedescendant');
   };

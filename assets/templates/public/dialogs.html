@@ -25,35 +25,44 @@
     <a class="text-link all-profiles" href="/">{{tr "ui.all_profiles" "All profiles"}}</a>
   </dialog>
   {{template "partial/theme-panel" .Locale}}
-  <dialog id="search-dialog" aria-labelledby="search-title">
-    <button class="close-dialog" data-close aria-label="{{tr "ui.close_dialog" "Close dialog"}}">×</button>
-    <h2 id="search-title">{{tr "ui.search" "Search"}}</h2>
-    {{if .Live}}
-      {{if .Profile}}
-        {{/* ISSUE-107: search.js turns the field into a combobox with results while typing;
-             without JavaScript the form opens the full search page. */}}
-        <form method="get" action="/{{.Profile.Slug}}/search" data-instant-search>
-          <label for="search-input">{{tr "ui.search_your_listening_history" "Search your listening history"}}</label>
-          <input
-            id="search-input"
-            type="search"
-            name="q"
-            required
-            maxlength="200"
-            autocomplete="off"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded="false"
-            aria-controls="search-results"
-          >
-          <button class="large-button">{{tr "ui.search" "Search"}}</button>
-        </form>
-        <div id="search-results" class="search-results" data-search-results></div>
-        <p class="sr-only" role="status" aria-live="polite" data-search-status></p>
-      {{end}}
-    {{else}}
-      <p>Functional search belongs to the next migration steps. This preview contains fictional media only.</p>
-    {{end}}
+  {{/* ISSUE-107: anchored to the top like the original Koito; the heading and field stay
+       in place (sticky) while the results grow and scroll below them. */}}
+  <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <div class="search-head-row">
+        <h2 id="search-title" class="search-section-title">{{tr "ui.search" "Search"}}</h2>
+        <button class="close-dialog" data-close aria-label="{{tr "ui.close_dialog" "Close dialog"}}">×</button>
+      </div>
+      <div class="search-box">
+        {{if .Live}}
+          {{if .Profile}}
+            {{/* search.js turns the field into a combobox with results while typing and hides the
+                 button; without JavaScript the form opens the full search page. */}}
+            <form method="get" action="/{{.Profile.Slug}}/search" data-instant-search>
+              <label class="sr-only" for="search-input">{{tr "ui.search_your_listening_history" "Search your listening history"}}</label>
+              <input
+                id="search-input"
+                type="search"
+                name="q"
+                required
+                maxlength="200"
+                autocomplete="off"
+                placeholder="{{tr "ui.search_your_listening_history" "Search your listening history"}}"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="search-results"
+              >
+              <button class="large-button" data-search-submit>{{tr "ui.search" "Search"}}</button>
+            </form>
+          {{end}}
+        {{else}}
+          <p>Functional search belongs to the next migration steps. This preview contains fictional media only.</p>
+        {{end}}
+      </div>
+    </div>
+    <div id="search-results" class="search-results" data-search-results></div>
+    <p class="sr-only" role="status" aria-live="polite" data-search-status></p>
   </dialog>
   <dialog id="feature-dialog" aria-labelledby="feature-title">
     <button class="close-dialog" data-close aria-label="{{tr "ui.close_dialog" "Close dialog"}}">×</button>
@@ -67,18 +76,32 @@
   {{if .TooShort}}
     <p class="search-hint" data-search-summary>{{tr "ui.search_type_more" "Type at least 2 characters."}}</p>
   {{else if .Groups}}
+    {{/* One listbox with a group per kind; each group is a titled card as in the original Koito. */}}
     <div id="search-listbox" role="listbox" aria-label="{{tr "ui.search_results" "Search results"}}">
       {{range $group := .Groups}}
-        <ul role="group" aria-labelledby="search-group-{{$group.Kind}}">
-          <li role="presentation" id="search-group-{{$group.Kind}}" class="search-group">
-            {{- if eq $group.Kind "artists"}}{{tr "ui.artists" "Artists"}}{{else if eq $group.Kind "albums"}}{{tr "ui.albums" "Albums"}}
-            {{- else}}{{tr "ui.tracks" "Tracks"}}{{end}}</li>
+        <h3 class="search-section-title" id="search-group-{{$group.Kind}}" aria-hidden="true">
+          {{- if eq $group.Kind "artists"}}{{tr "ui.artists" "Artists"}}{{else if eq $group.Kind "albums"}}{{tr "ui.albums" "Albums"}}
+          {{- else}}{{tr "ui.tracks" "Tracks"}}{{end}}</h3>
+        <ul class="search-card search-{{$group.Kind}}" role="group" aria-labelledby="search-group-{{$group.Kind}}">
           {{range $i, $item := $group.Items}}
             <li role="option" id="search-{{$group.Kind}}-{{$i}}" aria-selected="false">
-              <a class="search-option" href="{{$item.URL}}" tabindex="-1">
-                <img src="{{$item.Image.XS}}" width="32" height="32" alt="" loading="lazy" data-cover>
-                <span>{{$item.Title}}</span>
-              </a>
+              {{if eq $group.Kind "artists"}}
+                <a class="search-option search-artist" href="{{$item.URL}}" tabindex="-1">
+                  <img src="{{$item.Image.Medium}}" width="150" height="150" alt="" loading="lazy" data-cover>
+                  <span class="search-artist-name">{{$item.Title}}</span>
+                </a>
+              {{else}}
+                <a class="search-option" href="{{$item.URL}}" tabindex="-1">
+                  <img src="{{$item.Image.Small}}" width="100" height="100" alt="" loading="lazy" data-cover>
+                  <span class="search-text">
+                    <span class="search-title">{{$item.Title}}</span>
+                    <span class="search-subtitle">
+                      {{- if $item.Various}}{{tr "ui.various_artists" "Various Artists"}}{{else}}
+                        {{- range $j, $a := $item.Artists}}{{if $j}}, {{end}}{{$a.Label}}{{end}}{{end -}}
+                    </span>
+                  </span>
+                </a>
+              {{end}}
             </li>
           {{end}}
         </ul>

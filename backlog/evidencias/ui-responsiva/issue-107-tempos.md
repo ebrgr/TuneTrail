@@ -11,4 +11,4 @@ Antes: cada busca exigia Enter e uma navegação para a página completa, com HT
 
 Depois: enquanto se digita, só o fragmento é pedido, 120 ms depois da última tecla, cancelando a requisição anterior. O fragmento é cerca de 14 vezes menor que a página e leva metade do tempo no servidor.
 
-`search.js`: 1.564 bytes comprimidos, dentro do orçamento de 4.096 verificado por `scripts/check_web_style.py`.
+`search.js`: 1.702 bytes comprimidos, dentro do orçamento de 4.096 verificado por `scripts/check_web_style.py`.

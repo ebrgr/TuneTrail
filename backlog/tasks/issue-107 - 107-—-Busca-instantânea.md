@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T02:31:00Z'
+updated_date: '2026-11-15T11:46:00Z'
 labels:
   - ui
   - admin
@@ -113,6 +113,15 @@ created: 2026-11-15T02:31:00Z
 ---
 
 Verificação: make check 12/12 e referência sem diferenças; validador de cache Chrome/Firefox/HTTPS PASS; testes do fragmento (5 por tipo, curto/longo, perfil inexistente, navegação direta recusada, cabeçalhos); roteiro busca_instantanea.py PASS em 5 execuções (resposta atrasada descartada, setas, Enter, Esc duplo, anúncio, foco); fragmento 0,85 ms/1,8 KB contra 1,81 ms/25 KB da página; search.js 1,6 KB gzip; Reviewer APROVADO. Falta o aceite visual (capturas em backlog/evidencias/issue-107/).
+
+---
+
+author: claude
+created: 2026-11-15T11:46:00Z
+
+---
+
+Ajustes pedidos pelo usuário antes do aceite, comparando com o Koito original (capturas em backlog/evidencias/issue-107/koito/): diálogo ancorado no topo com o campo fixo (posição constante com e sem resultados e ao rolar), resultados em cartões por tipo com título acima (artistas em grade com imagem e nome, álbuns e faixas com miniatura e artistas), botão Buscar escondido com JavaScript; mantidos 5 por tipo e ver todos (decisão do usuário). Reviewer: item obrigatório (opção ativa coberta pelo cabeçalho) corrigido e coberto pelo roteiro.
 
 ---
 <!-- COMMENTS:END -->

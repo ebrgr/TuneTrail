@@ -36,18 +36,38 @@ const origin = process.argv[2], shots = process.argv[3];
   await page.keyboard.press('/');
   const input = page.locator('#search-input');
   out.dialogOpen = await page.locator('#search-dialog').evaluate(d => d.open);
+  const y = async () => Math.round((await input.boundingBox()).y);
+  await page.waitForTimeout(300); // let the dialog opening animation finish
+  out.inputY = [await y()];
+  out.submitHidden = await page.locator('[data-search-submit]').isHidden();
   await input.pressSequentially('Ca', {delay: 20});
   await page.waitForTimeout(250);
   await input.pressSequentially('che', {delay: 20});
   await page.waitForSelector('#search-results [role=option]');
   await page.waitForTimeout(1200);
-  out.options = await page.locator('#search-results [role=option] span').allTextContents();
+  out.inputY.push(await y());
+  out.options = await page.locator('#search-results [role=option] .search-artist-name, #search-results [role=option] .search-title').allTextContents();
   out.expanded = await input.getAttribute('aria-expanded');
   out.status = await page.locator('[data-search-status]').textContent();
   await page.keyboard.press('ArrowDown');
   out.activedescendant = await input.getAttribute('aria-activedescendant');
   out.selected = await page.locator('#search-results [aria-selected=true]').count();
   await page.screenshot({path: `${shots}/busca-instantanea-1024.png`});
+  await page.locator('#search-dialog').evaluate(d => { d.scrollTop = 400; });
+  await page.waitForTimeout(200);
+  out.inputY.push(await y());
+  // ArrowUp from the first option wraps to the last one; it must not hide under the sticky head.
+  await page.locator('#search-dialog').evaluate(d => { d.scrollTop = 0; });
+  // Wrap to the last option (list scrolled to the bottom), then go up to an artist card
+  // above the visible area: scrolling it into view must not leave it under the sticky head.
+  for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(200);
+  out.activeVisible = await page.evaluate(() => {
+    const head = document.querySelector('.search-head').getBoundingClientRect();
+    const option = document.querySelector('#search-results [aria-selected=true]').getBoundingClientRect();
+    return option.top >= head.bottom - 1;
+  });
+  await page.locator('#search-dialog').evaluate(d => { d.scrollTop = 0; });
   await page.keyboard.press('Escape');
   out.listClosed = await input.getAttribute('aria-expanded') === 'false';
   out.dialogStillOpen = await page.locator('#search-dialog').evaluate(d => d.open);
@@ -95,7 +115,9 @@ def main():
             server.request('POST', WEB + '/profiles', {'display_name': 'Cache Study', 'slug': 'cache-study',
                                                       'avatar_icon': 'headphones'}, admin=True, expected=201)
             key = server.request('GET', WEB + '/profiles/cache-study/user/apikeys', admin=True)[0]['key']
-            for offset, (artist, title) in enumerate([('Cache Band', 'Cache Song'), ('Cadence', 'Cascade'), ('Other', 'Cachet')]):
+            pairs = [('Cache Band', 'Cache Song'), ('Cadence', 'Cascade'), ('Other', 'Cachet')]
+            pairs += [(f'Cache Artist {n}', f'Cache Track {n}') for n in range(1, 6)]
+            for offset, (artist, title) in enumerate(pairs):
                 body = scrobble(int(time.time()) - 3600 - offset)
                 body['payload'][0]['track_metadata'].update({'artist_name': artist, 'track_name': title})
                 server.request('POST', LBZ + '/submit-listens', body, token=key)
@@ -115,7 +137,8 @@ def main():
             ok = (r['dialogOpen'] and r['options'] and all('Cach' in o or 'Cache' in o for o in r['options'])
                   and r['expanded'] == 'true' and r['status'] and r['activedescendant'] and r['selected'] == 1
                   and r['listClosed'] and r['dialogStillOpen'] and r['dialogClosedSecondEsc'] and r['enterNavigates']
-                  and r['focusAfterClose'] != 'INPUT#search-input')
+                  and r['focusAfterClose'] != 'INPUT#search-input'
+                  and len(set(r['inputY'])) == 1 and r['submitHidden'] and r['activeVisible'])
             print('PASS' if ok else 'FAIL')
             return 0 if ok else 1
         finally:

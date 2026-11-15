@@ -1,14 +1,28 @@
 {
  "dialogOpen": true,
+ "inputY": [
+  111,
+  111,
+  111
+ ],
+ "submitHidden": true,
  "options": [
-  "Cache Band",
-  "Cache Song",
-  "Cachet"
+  "Cache Artist 1",
+  "Cache Artist 2",
+  "Cache Artist 3",
+  "Cache Artist 4",
+  "Cache Artist 5",
+  "Cache Track 1",
+  "Cache Track 2",
+  "Cache Track 3",
+  "Cache Track 4",
+  "Cache Track 5"
  ],
  "expanded": "true",
- "status": "3 resultados",
+ "status": "13 resultados",
  "activedescendant": "search-artists-0",
  "selected": 1,
+ "activeVisible": true,
  "listClosed": true,
  "dialogStillOpen": true,
  "dialogClosedSecondEsc": true,
@@ -16,12 +30,12 @@
  "enterNavigates": true,
  "timings_ms_bytes": {
   "full_search_page": [
-   1.64,
-   25210
+   1.95,
+   35237
   ],
   "fragment": [
-   0.83,
-   1772
+   1.01,
+   6040
   ]
  }
 }
