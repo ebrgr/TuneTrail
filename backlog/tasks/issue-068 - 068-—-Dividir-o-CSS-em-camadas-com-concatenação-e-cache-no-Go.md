@@ -5,12 +5,15 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-15T17:04:00Z'
+updated_date: '2026-11-15T17:38:00Z'
 labels:
   - ui
 milestone: m-10
 dependencies:
   - ISSUE-067
+references:
+  - backlog/evidencias/issue-068/relatorio.md
+  - backlog/evidencias/issue-068/parecer-reviewer.md
 priority: high
 type: chore
 ordinal: 68000
@@ -30,10 +33,10 @@ Passos:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 CSS concatenado equivalente ao anterior (salvo espaços e ordem documentada)
-- [ ] #2 URL do CSS com hash e cache imutável; troca de conteúdo muda a URL
-- [ ] #3 Nenhum arquivo de CSS acima de 400 linhas
-- [ ] #4 Capturas sem diferença visual
+- [x] #1 CSS concatenado equivalente ao anterior (salvo espaços e ordem documentada)
+- [x] #2 URL do CSS com hash e cache imutável; troca de conteúdo muda a URL
+- [x] #3 Nenhum arquivo de CSS acima de 400 linhas
+- [x] #4 Capturas sem diferença visual
 <!-- AC:END -->
 
 ## Comments
