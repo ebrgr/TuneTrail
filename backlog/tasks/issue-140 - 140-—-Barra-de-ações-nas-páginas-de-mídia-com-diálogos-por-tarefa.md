@@ -4,6 +4,7 @@ title: 140 — Barra de ações nas páginas de mídia com diálogos por tarefa
 status: Aberta
 assignee: []
 created_date: '2026-11-15T20:04:00Z'
+updated_date: '2026-11-15T20:13:00Z'
 labels:
   - ui
   - admin
@@ -20,7 +21,7 @@ ordinal: 153000
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/avaliacao-codex.md, §5). Barra de ícones no cabeçalho de faixa, álbum e artista na ordem do Koito original: MusicBrainz (link externo, para todos, com MBID), Adicionar escuta (só faixa), Editar, Trocar imagem (álbum e artista), Mesclar, Excluir. Ícones Lucide Pencil, Image, Merge, Plus e Trash2 registrados no manifesto e em icons/LICENSE; tamanhos por tokens (30px desktop, 22px celular), alvo de 44×44px, aria-label e title traduzidos. Ícones de gestão só para administrador, usando o sinal .Admin da ISSUE-109, sem requisição extra. Com JavaScript, cada ícone abre um dialog nativo com o fragmento da página da tarefa (recorte A); sem JavaScript é um link. O primeiro fragmento emite o ticket de uso único; o enhance.js ganha escopo ao diálogo e não troca a URL nem o h1 da página pública. Trocar imagem atualiza a capa sem recarregar a página. Depois de editar, o cabeçalho (nome, MBID, artistas, contagens) é atualizado. Posição da barra alinhada com a ISSUE-073.
+Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/avaliacao-codex.md, §5). Barra de ícones no cabeçalho de faixa, álbum e artista na ordem do Koito mais recente (referência http://127.0.0.1:4111/artist/1, /album/1 e /track/1), posicionada inicialmente abaixo da barra superior, no canto superior direito: MusicBrainz (link externo, para todos, com MBID), Adicionar escuta (só faixa), Editar, Trocar imagem (álbum e artista), Mesclar, Excluir. Ícones Lucide Pencil, Image, Merge, Plus e Trash2 registrados no manifesto e em icons/LICENSE; tamanhos por tokens (30px desktop, 22px celular), alvo de 44×44px, aria-label e title traduzidos. Ícones de gestão só para administrador, usando o sinal .Admin da ISSUE-109, sem requisição extra. Com JavaScript, cada ícone abre um dialog nativo com o fragmento da página da tarefa (recorte A); sem JavaScript é um link. O primeiro fragmento emite o ticket de uso único; o enhance.js ganha escopo ao diálogo e não troca a URL nem o h1 da página pública. Trocar imagem atualiza a capa sem recarregar a página. Depois de editar, o cabeçalho (nome, MBID, artistas, contagens) é atualizado. Posição da barra alinhada com a ISSUE-073.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Acceptance Criteria
@@ -31,3 +32,16 @@ Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 - [ ] #4 Trocar imagem atualiza a capa sem recarregar; editar atualiza o cabeçalho; resposta antiga não preenche diálogo novo e o botão Voltar não restaura formulário ativo
 - [ ] #5 Capturas lado a lado com o Koito original (desktop e celular) e aceite visual do usuário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-15T20:13:00Z
+
+---
+
+Referência visual definida pelo usuário em 15/11/2026: a última versão do Koito em http://127.0.0.1:4111/artist/1, /album/1 e /track/1 (instância local do usuário). A barra de ícones fica inicialmente abaixo da barra superior, no canto superior direito. Alinhar o padrão (ordem, tamanho, espaçamento, posição) com essa versão, não com a comparação histórica de 13/11.
+
+---
+<!-- COMMENTS:END -->

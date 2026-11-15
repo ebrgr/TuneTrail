@@ -4,7 +4,7 @@ title: 108 — Barra de ações nas páginas de mídia e edição separada por t
 status: Planejada
 assignee: []
 created_date: '2026-11-14T01:06:00Z'
-updated_date: '2026-11-15T20:04:00Z'
+updated_date: '2026-11-15T20:13:00Z'
 labels:
   - ui
   - admin
@@ -80,6 +80,15 @@ created: 2026-11-15T20:04:00Z
 ---
 
 Avaliação do Codex (backlog/evidencias/issue-108/avaliacao-codex.md) e decisões do usuário em 15/11/2026. Dividida em ISSUE-139 (páginas por tarefa e compatibilidade), 140 (barra e diálogos), 141 (escuta no histórico) e 142 (arrastar capa); esta tarefa fica como guarda-chuva e só fecha quando as quatro estiverem Done. Escopo corrigido: o sinal .Admin, o cache privado e a remoção da consulta tardia do live.js (passo 2) já foram feitos pela ISSUE-109. Decisões: (1) divisão aprovada; (2) trocar imagem atualiza a capa sem recarregar; (3) a imagem da faixa continua alterando a capa do álbum; (4) após merge ou exclusão, ir ao item que sobrou e, se não sobrar nenhum, ao perfil; (5) o × rápido do histórico continua, e os detalhes da escuta aguardam confirmação (proposta na ISSUE-141); (7) a versão original do Koito é a referência do aceite visual. Pendente: confirmar que a compatibilidade com endereços antigos inclui consultas, âncoras e ações (proposta nas ISSUE-139).
+
+---
+
+author: claude
+created: 2026-11-15T20:13:00Z
+
+---
+
+Decisões finais do usuário em 15/11/2026: compatibilidade com endereços antigos preservada (ISSUE-139); detalhes da escuta aprovados (ISSUE-141); referência visual é a última versão do Koito em http://127.0.0.1:4111/artist/1, /album/1 e /track/1, com a barra de ícones inicialmente abaixo da barra superior, no canto superior direito (ISSUE-140). Sem decisões pendentes.
 
 ---
 <!-- COMMENTS:END -->

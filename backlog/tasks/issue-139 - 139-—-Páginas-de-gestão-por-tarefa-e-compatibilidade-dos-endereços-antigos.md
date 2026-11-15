@@ -4,6 +4,7 @@ title: 139 — Páginas de gestão por tarefa e compatibilidade dos endereços a
 status: Aberta
 assignee: []
 created_date: '2026-11-15T20:04:00Z'
+updated_date: '2026-11-15T20:13:00Z'
 labels:
   - admin
 milestone: m-10
@@ -29,3 +30,16 @@ Recorte A da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 - [ ] #3 Merge ou exclusão confirmados levam ao item que sobrou; sem sobrevivente, ao perfil
 - [ ] #4 Testes de sessão, origem, CSRF, ticket de uso único e escopo de perfil passam pelo roteador principal, com ticket obrigatório como em produção
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-15T20:13:00Z
+
+---
+
+Decisão do usuário em 15/11/2026: preservar endereços antigos, incluindo consultas (listen_at, history_return, artist_query, merge_query, tz), âncoras, /review e ações POST, e não só fazer a página base responder.
+
+---
+<!-- COMMENTS:END -->
