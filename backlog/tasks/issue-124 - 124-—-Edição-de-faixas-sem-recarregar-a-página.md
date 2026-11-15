@@ -1,11 +1,11 @@
 ---
 id: ISSUE-124
 title: 124 — Edição de faixas sem recarregar a página
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T02:15:00Z'
-updated_date: '2026-11-15T15:32:00Z'
+updated_date: '2026-11-15T15:35:00Z'
 labels:
   - ui
   - admin
@@ -54,6 +54,15 @@ created: 2026-11-15T15:32:00Z
 ---
 
 Verificação: make check 12/12 e referência sem diferenças; validador de cache Chrome/Firefox/HTTPS PASS; testes com ticket obrigatório (âncora sem JS, ações encadeadas com ticket novo, ticket gasto e CSRF sem fragmento, erro na seção, aviso de escuta, buscas sem ticket, contexto da busca preservado, resultados mantidos após adicionar artista); roteiro edicao_sem_recarregar.py PASS (mesmo documento, rolagem e foco mantidos, título e link atualizados, aviso anunciado, busca sem recarga, âncora sem JS); seção de 2,7–3,5 KB contra 27,8 KB da página; Reviewer com os dois itens obrigatórios corrigidos.
+
+---
+
+author: ebrgr
+created: 2026-11-15T15:35:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 15/11/2026 ("aceito"). Publicação local; push não solicitado.
 
 ---
 <!-- COMMENTS:END -->
