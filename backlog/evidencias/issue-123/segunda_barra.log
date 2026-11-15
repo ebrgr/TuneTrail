@@ -18,6 +18,12 @@
   "overlayRemembered": true
  },
  "login": 204,
+ "overlayAdmin": {
+  "closedAtLoad": true,
+  "left": 58,
+  "opens": true,
+  "closesAfterClick": true
+ },
  "admin": {
   "open": true,
   "expanded": "true",

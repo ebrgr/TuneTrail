@@ -141,6 +141,10 @@ a:hover,button.media-title:hover {
 .sidebar-secondary[hidden] {
   display: none
 }
+/* Overlay mode starts closed; hide the server-open bar until nav.js applies that state. */
+html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
+  display: none
+}
 .nav-disabled {
   opacity: .55;
   cursor: default

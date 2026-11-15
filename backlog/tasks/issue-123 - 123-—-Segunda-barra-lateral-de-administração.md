@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T01:19:00Z'
-updated_date: '2026-11-15T01:54:00Z'
+updated_date: '2026-11-15T02:00:00Z'
 labels:
   - ui
   - admin
@@ -62,6 +62,15 @@ created: 2026-11-15T01:54:00Z
 ---
 
 Verificação: make check 12/12 e referência sem diferenças; validador real Chrome/Firefox/HTTPS PASS; roteiro segunda_barra.py PASS (clique, Espaço, Esc com foco, empurrar desloca 58 px e sobrepor não, preferência lembrada, aberta na administração com Servidor marcado, faixa abaixo da barra no celular); testes de papel, estado aberto e erro 429 antes do login; Reviewer com os dois itens obrigatórios corrigidos. Falta o aceite visual (capturas em backlog/evidencias/issue-123/).
+
+---
+
+author: claude
+created: 2026-11-15T02:00:00Z
+
+---
+
+Ajustes pedidos pelo usuário antes do aceite: (1) no modo sobrepor a barra começa fechada (também nas páginas da administração, sem piscar) e fecha depois do clique num item; (2) ícone de Conta trocado de CircleUserRound para LockKeyhole (cadeado), para não lembrar o perfil nem confundir com as chaves de API. Roteiro segunda_barra.py, make check e validador de cache aprovados.
 
 ---
 <!-- COMMENTS:END -->

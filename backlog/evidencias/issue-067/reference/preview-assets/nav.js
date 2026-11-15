@@ -9,7 +9,14 @@
     bar.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
   };
-  set(!bar.hidden);
+  // Overlay mode (theme panel): the bar covers the content, so it starts closed even where
+  // the server opens it (administration) and closes after an item is chosen.
+  const overlay = () => document.documentElement.dataset.navLayout === 'overlay';
+  set(!bar.hidden && !overlay());
+  document.documentElement.dataset.navReady = '';
+  bar.addEventListener('click', event => {
+    if (overlay() && event.target.closest('a')) set(false);
+  });
   toggle.addEventListener('click', event => {
     event.preventDefault();
     set(bar.hidden);

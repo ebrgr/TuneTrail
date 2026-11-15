@@ -56,6 +56,17 @@ const origin = process.argv[2], shots = process.argv[3];
   // Administrator: administration pages open the second sidebar.
   out.login = await page.evaluate(() => fetch('/apis/web/v1/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({username: 'validation-admin', password: 'validation-password'})}).then(r => r.status));
+  // Overlay in administration: starts closed, opens on demand and closes after an item click.
+  await page.evaluate(() => localStorage.setItem('nav-layout', 'overlay'));
+  await page.goto(origin + '/admin/settings');
+  out.overlayAdmin = {closedAtLoad: !(await bar()), left: await contentLeft('.admin-shell')};
+  await page.locator('[data-nav-toggle]').click();
+  out.overlayAdmin.opens = await bar();
+  await page.screenshot({path: `${shots}/barra-admin-sobrepor-1024.png`});
+  const [popup] = await Promise.all([page.waitForEvent('popup'), page.locator('#nav-admin a[target="_blank"]').click()]);
+  await popup.close();
+  out.overlayAdmin.closesAfterClick = !(await bar());
+  await page.evaluate(() => localStorage.setItem('nav-layout', 'push'));
   await page.goto(origin + '/admin/settings');
   out.admin = {open: await bar(), expanded: await toggle.getAttribute('aria-expanded'),
     current: await page.locator('#nav-admin [aria-current="page"]').getAttribute('href'), leftPush: await contentLeft('.admin-shell')};
@@ -106,7 +117,9 @@ def main():
                   and v['leftOverlay'] == v['leftClosed'] and v['overlayRemembered']
                   and a['open'] and a['expanded'] == 'true' and a['current'] == '/admin/settings'
                   and a['items'][:3] == ['/admin?section=account', '/admin?section=profiles', '/admin/settings']
-                  and r['phone']['below'] and r['phone']['fullWidth'])
+                  and r['phone']['below'] and r['phone']['fullWidth']
+                  and r['overlayAdmin']['closedAtLoad'] and r['overlayAdmin']['opens']
+                  and r['overlayAdmin']['closesAfterClick'] and r['overlayAdmin']['left'] == 58)
             print('PASS' if ok else 'FAIL')
             return 0 if ok else 1
         finally:
