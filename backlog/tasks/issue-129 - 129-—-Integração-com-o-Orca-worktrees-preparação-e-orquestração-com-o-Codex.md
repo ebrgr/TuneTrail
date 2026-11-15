@@ -1,11 +1,11 @@
 ---
 id: ISSUE-129
 title: '129 — Integração com o Orca: worktrees, preparação e orquestração com o Codex'
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:44:00Z'
-updated_date: '2026-11-15T16:03:00Z'
+updated_date: '2026-11-15T16:39:00Z'
 labels:
   - processo
 milestone: m-6
@@ -28,10 +28,10 @@ Passos:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 orca.yaml e scripts/orca-setup.sh preparam uma worktree nova com .agents e estudos locais
-- [ ] #2 make issue.worktree cria a worktree pelo Orca com a branch da tarefa
-- [ ] #3 make issue.publish publica uma tarefa feita numa worktree
-- [ ] #4 Piloto com um worker Codex concluído e avaliado
+- [x] #1 orca.yaml e scripts/orca-setup.sh preparam uma worktree nova com .agents e estudos locais
+- [x] #2 make issue.worktree cria a worktree pelo Orca com a branch da tarefa
+- [x] #3 make issue.publish publica uma tarefa feita numa worktree
+- [x] #4 Piloto com um worker Codex concluído e avaliado
 <!-- AC:END -->
 
 ## Comments
@@ -52,6 +52,24 @@ created: 2026-11-15T16:03:00Z
 ---
 
 Quadro no Orca: o 'backlog browser --port 6420 --no-open' passou a rodar num terminal 'Backlog' do próprio Orca, no checkout principal, e a aba do navegador aponta para http://127.0.0.1:6420/board. Remoto 'upstream' (gabehf/Koito) renomeado para 'koito' (configuração local; nada no projeto usava o nome), porque o Orca trata 'upstream' como o repositório principal e listava as issues do Koito. O GitHub ainda registra ebrgr/TuneTrail como fork do Koito e as issues estão desligadas na origin; as issues do projeto continuam no Backlog.md.
+
+---
+
+author: claude
+created: 2026-11-15T16:39:00Z
+
+---
+
+Avaliação do piloto: o worker Codex fez o estudo da ISSUE-116 numa worktree criada por make issue.worktree, em cerca de 6 min mais o make check (12/12); mexeu só no doc-036 e na tarefa, num único commit, sem push nem merge, e deixou a tarefa em Aguardando aceite. orca.yaml e os links de .agents funcionaram na worktree. Critério #3 verificado por teste automatizado (test_publish_removes_clean_worktree_of_the_branch e test_publish_refuses_dirty_worktree, com orca falso); 43 testes de scripts passam após o rebase sobre a main.
+
+---
+
+author: claude
+created: 2026-11-15T16:39:00Z
+
+---
+
+Aceite do usuário em 15/11/2026. Integração por fast-forward na main, sem versão (chore sem mudança no produto).
 
 ---
 <!-- COMMENTS:END -->
