@@ -16,6 +16,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/webquery"
+	"github.com/google/uuid"
 )
 
 type mergeCandidate struct {
@@ -45,17 +46,46 @@ type mediaView struct {
 	AlbumID                         int32
 	Listens                         []*models.Listen
 	Values                          url.Values
+	// Section is set when only one section is rendered as a fragment (ISSUE-124).
+	Section string
 }
 
-// renderMedia buffers the administrative editor before writing the response.
+// actionSection names the section an enhanced action updates; "" keeps a full reload
+// (artwork uploads, by user decision, and unknown actions).
+func actionSection(action string) string {
+	switch action {
+	case "alias-add", "alias-primary", "alias-delete":
+		return "aliases"
+	case "metadata":
+		return "metadata"
+	case "artist-add", "artist-remove", "primary-artist":
+		return "artists"
+	case "listen-add", "listen-delete":
+		return "listens"
+	}
+	return ""
+}
+
+// renderMedia buffers the administrative editor, or one section of it, before writing.
 func (h *Handler) renderMedia(w http.ResponseWriter, status int, v mediaView) {
 	v.Locale = i18n.ViewOf(w)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var output strings.Builder
 	v.Error = localMessage(v.Locale, v.Error)
 	tmpl, err := h.adminTemplate(v.Locale)
+	name := "admin/manage"
+	if v.Section != "" {
+		name = "manage/" + v.Section
+	}
 	if err == nil {
-		err = tmpl.ExecuteTemplate(&output, "admin/manage", v)
+		err = tmpl.ExecuteTemplate(&output, name, v)
+	}
+	if err == nil && v.Section != "" {
+		// Set only after a successful render: the script checks these before swapping, and
+		// the ticket replaces the consumed one in every form of the page (ISSUE-124).
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-TuneTrail-Fragment", v.Section)
+		w.Header().Set("X-TuneTrail-Submission", v.Submission)
 	}
 	if err != nil {
 		textError(w, "operation failed", 500)
@@ -123,26 +153,56 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
-	h.mediaPage(w, r, identity, profile, kind, id, nil, "", nil)
+	// Artist and merge searches can answer with their section only (ISSUE-124).
+	section := ""
+	if r.URL.Query().Get("partial") == "1" {
+		if !adminweb.FragmentRequested(r) {
+			q := r.URL.Query()
+			q.Del("partial")
+			http.Redirect(w, r, (&url.URL{Path: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(profile.Slug), kind, id), RawQuery: q.Encode()}).RequestURI(), http.StatusSeeOther)
+			return
+		}
+		switch {
+		case r.URL.Query().Has("artist_query") && kind == "track":
+			section = "artists"
+		case r.URL.Query().Has("merge_query"):
+			section = "merge"
+		default:
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+	}
+	h.mediaPage(w, r, identity, profile, kind, id, nil, "", nil, section)
 
 }
 
 // mediaPage loads shared metadata and personal listens, retaining validated input and navigation.
-func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity admin.Identity, profile *models.ListeningProfile, kind string, id int32, form *adminweb.PreparedForm, action string, actionErr error) {
+// A non-empty section renders only that section (ISSUE-124).
+func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity admin.Identity, profile *models.ListeningProfile, kind string, id int32, form *adminweb.PreparedForm, action string, actionErr error, section string) {
 	var err error
 	token, err := h.csrf.SessionToken(identity)
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	ticket, err := h.newSubmission(identity.SessionID)
-	if err != nil {
+	var ticket string
+	if section != "" && r.Method == "GET" {
+		// Search fragments never mint tickets (the store is bounded for all sessions); their
+		// forms reuse the page's current ticket, which is validated again on submission.
+		if raw, e := uuid.Parse(r.Header.Get("X-TuneTrail-Submission")); e == nil {
+			ticket = raw.String()
+		}
+	} else if ticket, err = h.newSubmission(identity.SessionID); err != nil {
 		h.fail(w, err)
 		return
 	}
 	ctx := db.WithoutProfile(r.Context())
 	effectiveZone := webquery.Timezone(r)
-	v := mediaView{Submission: ticket, Profile: profile, Kind: kind, ID: id, CSRF: token, Notice: h.takeNotice(identity.SessionID, profile.ID, i18n.ViewOf(w)), Timezone: effectiveZone.String(), Location: effectiveZone}
+	v := mediaView{Submission: ticket, Profile: profile, Kind: kind, ID: id, CSRF: token, Timezone: effectiveZone.String(), Location: effectiveZone}
+	// Notices are written by listen actions; other fragments must not consume them.
+	if section == "" || section == "listens" {
+		v.Notice = h.takeNotice(identity.SessionID, profile.ID, i18n.ViewOf(w))
+	}
 	query := r.URL.Query()
 	if r.Method == "POST" && form != nil {
 		if saved := adminweb.SafeReturn(form.SingleValue("return_to")); saved != "" {
@@ -213,7 +273,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			if err == nil {
 				v.Artists, err = h.store.GetArtistsForTrack(ctx, id)
 			}
-			if err == nil {
+			if err == nil && (section == "" || section == "listens") {
 				var page *db.PaginatedResponse[*models.Listen]
 				page, err = h.store.GetListensPaginated(db.WithProfile(r.Context(), profile.ID), db.GetItemsOpts{TrackID: int(id), Page: 1, Limit: 25, Timeframe: db.Timeframe{Period: db.PeriodAllTime}})
 				if err == nil {
@@ -228,7 +288,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			err = db.ErrInvalidInput
 		} else {
 			for key, values := range q {
-				if (key != "artist_query" && key != "tz" && key != "merge_query" && key != "listen_at" && key != "history_return") || len(values) != 1 || len(values[0]) > 4096 || (key == "artist_query" && kind != "track") {
+				if (key != "artist_query" && key != "tz" && key != "merge_query" && key != "listen_at" && key != "history_return" && key != "partial") || len(values) != 1 || len(values[0]) > 4096 || (key == "artist_query" && kind != "track") {
 					err = db.ErrInvalidInput
 					break
 				}
@@ -310,13 +370,25 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			}
 		}
 	}
+	if err == nil && r.Method == "POST" && section == "artists" && v.ArtistQuery != "" {
+		// Keep the search results after adding or removing an artist, as the full reload did.
+		v.ArtistResults, err = h.store.SearchArtists(ctx, v.ArtistQuery)
+		if len(v.ArtistResults) > 50 {
+			v.ArtistResults = v.ArtistResults[:50]
+		}
+	}
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
 	base := fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(profile.Slug), kind, id)
 	if r.Method == "GET" {
-		v.ReturnTo = adminweb.SafeReturn(r.URL.RequestURI())
+		// partial is not a return parameter: drop it so search fragments keep tz and query.
+		page := *r.URL
+		q := page.Query()
+		q.Del("partial")
+		page.RawQuery = q.Encode()
+		v.ReturnTo = adminweb.SafeReturn(page.RequestURI())
 	} else if form != nil {
 		v.ReturnTo = adminweb.SafeReturn(form.SingleValue("return_to"))
 	}
@@ -342,6 +414,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	if actionErr != nil {
 		status = adminweb.ErrorStatus(actionErr)
 	}
+	v.Section = section
 	h.renderMedia(w, status, v)
 }
 
@@ -487,11 +560,25 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
+	// Enhanced actions get their section back; the artwork upload keeps the full reload.
+	section := ""
+	if adminweb.FragmentRequested(r) {
+		section = actionSection(action)
+	}
 	if err != nil {
 		if returnTo != "" {
 			f.Values.Set("return_to", returnTo)
 		}
-		h.mediaPage(w, r, identity, p, kind, id, f, action, err)
+		h.mediaPage(w, r, identity, p, kind, id, f, action, err, section)
+		return
+	}
+	if section != "" {
+		// Success: fresh section without the submitted values, keeping the return context.
+		f.Values = url.Values{}
+		if returnTo != "" {
+			f.Values.Set("return_to", returnTo)
+		}
+		h.mediaPage(w, r, identity, p, kind, id, f, "", nil, section)
 		return
 	}
 	target := expected
@@ -519,6 +606,13 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 					}
 				}
 			}
+		}
+	}
+	// Without JavaScript, come back to the edited section instead of the top (ISSUE-124).
+	if anchor := actionSection(action); anchor != "" {
+		if u, e := url.Parse(target); e == nil && u.Path == expected {
+			u.Fragment = anchor
+			target = u.String()
 		}
 	}
 	http.Redirect(w, r, target, http.StatusSeeOther)

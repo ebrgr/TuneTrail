@@ -26,12 +26,14 @@ def offenders(root=ROOT):
 
 
 # Compressed size budgets for scripts that must stay small (ISSUE-107).
-JS_BUDGETS = {'assets/js/search.js': 4096}
+JS_BUDGETS = {'assets/js/search.js': 4096, 'assets/js/enhance.js': 4096}
 
 
 def over_budget(root=ROOT):
     """Yield (path, gzip size, budget) for every budgeted script above its limit."""
     for name, budget in JS_BUDGETS.items():
+        if not (root / name).exists():
+            continue  # a missing script is reported by the manifest and node --check
         size = len(gzip.compress((root / name).read_bytes(), compresslevel=9))
         if size > budget:
             yield name, size, budget

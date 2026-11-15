@@ -3,7 +3,8 @@
  const section=new URLSearchParams(location.search).get('section');if(['keys','relay','import','export'].includes(section))requestAnimationFrame(()=>document.getElementById(section==='export'?'import':section)?.scrollIntoView());
  // Preserve a visible avatar when a profile image cannot be loaded (shared sidebar avatar, ISSUE-122).
  document.querySelectorAll('[data-avatar-image]').forEach(image=>{const fallback=image.parentElement.querySelector('[data-avatar-fallback]');const fail=()=>{image.hidden=true;if(fallback)fallback.hidden=false;};image.addEventListener('error',fail);if(image.complete&&!image.naturalWidth)fail();});
- document.addEventListener('submit',event=>{const form=event.target;if(!(form instanceof HTMLFormElement)||form.method.toLowerCase()!=='post')return;if(form.dataset.pending){event.preventDefault();return;}form.dataset.pending='1';setTimeout(()=>form.querySelectorAll('button').forEach(button=>button.disabled=true),0);});
+ // Enhanced forms (ISSUE-124) are serialized by enhance.js instead.
+ document.addEventListener('submit',event=>{const form=event.target;if(!(form instanceof HTMLFormElement)||form.method.toLowerCase()!=='post'||form.matches('[data-enhance]'))return;if(form.dataset.pending){event.preventDefault();return;}form.dataset.pending='1';setTimeout(()=>form.querySelectorAll('button').forEach(button=>button.disabled=true),0);});
  // Do not restore expired sessions or old CSRF/submission forms from the browser heap.
  addEventListener('pagehide', () => { document.body.hidden = true; });
  addEventListener('pageshow', event => {

@@ -19,6 +19,7 @@
       {{- if eq .Kind "admin"}}
       <link rel="stylesheet" href="{{asset "admin.css"}}">
       <script defer src="{{asset "admin.js"}}"></script>
+      <script defer src="{{asset "enhance.js"}}"></script>
       {{- else}}
       <script defer src="{{asset "ui.js"}}"></script>
       {{- end}}

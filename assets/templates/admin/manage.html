@@ -16,8 +16,8 @@
       {{template "partial/theme-panel" .Locale}}
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
-        <main id="admin-main" class="admin-main">
-          <p><a href="/{{.Profile.Slug}}/{{.Kind}}/{{.ID}}">{{trn "admin.manage.back" "Back to {{.Name}}" "Name" .Name}}</a></p>
+        <main id="admin-main" class="admin-main" data-manage-base="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}">
+          <p><a href="/{{.Profile.Slug}}/{{.Kind}}/{{.ID}}" data-media-back>{{trn "admin.manage.back" "Back to {{.Name}}" "Name" .Name}}</a></p>
           <h1>{{trn
             "admin.manage.title"
             "Manage {{.Kind}}: {{.Name}}"
@@ -42,177 +42,11 @@
             "ID"
             .Profile.ID
           }}</p>
-          <h2>{{tr "admin.text.aliases" "Aliases"}}</h2>
-          <ul>
-            {{range .Aliases}}
-              <li>
-                {{.Alias}}
-                {{if .Primary}}
-                  {{tr "admin.text.primary" "(primary)"}}
-                {{else}}
-                  <form method="post" action="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/alias-primary">
-                    <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-                    <input type="hidden" name="submission_token" value="{{$.Submission}}">
-                    <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
-                    <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
-                    <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
-                    <input type="hidden" name="alias" value="{{.Alias}}">
-                    <button>{{tr "admin.text.set_primary" "Set primary"}}</button>
-                  </form>
-                  <form method="post" action="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/alias-delete">
-                    <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-                    <input type="hidden" name="submission_token" value="{{$.Submission}}">
-                    <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
-                    <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
-                    <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
-                    <input type="hidden" name="alias" value="{{.Alias}}">
-                    <button>{{tr "admin.text.remove_alias" "Remove alias"}}</button>
-                  </form>
-                {{end}}
-              </li>
-            {{end}}
-          </ul>
-          <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/alias-add">
-            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-            {{if .Submission}}
-              <input type="hidden" name="submission_token" value="{{.Submission}}">
-            {{end}}
-            <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
-            <input type="hidden" name="return_to" value="{{.ReturnTo}}">
-            <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-            <label>{{tr "admin.text.new_alias" "New alias"}} <input name="alias" value="{{.Values.Get "alias"}}" required></label>
-            <button>{{tr "admin.text.add_alias" "Add alias"}}</button>
-          </form>
-          <h2>{{tr "admin.text.metadata" "Metadata"}}</h2>
-          <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/metadata">
-            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-            {{if .Submission}}
-              <input type="hidden" name="submission_token" value="{{.Submission}}">
-            {{end}}
-            <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
-            <input type="hidden" name="return_to" value="{{.ReturnTo}}">
-            <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-            <label>{{tr "admin.text.musicbrainz_id" "MusicBrainz ID"}} <input name="mbid" value="{{.MBID}}"></label>
-            <p>{{tr "admin.text.leave_blank_to_keep_the_current_id" "Leave blank to keep the current ID."}}</p>
-            {{if eq .Kind "album"}}
-              <label>{{tr "admin.text.compilation" "Compilation"}} <select name="various">
-                <option value="0" {{if not .Various}}selected{{end}}>{{tr "admin.text.no" "No"}}</option>
-                <option value="1" {{if .Various}}selected{{end}}>{{tr "admin.text.yes" "Yes"}}</option>
-              </select></label>
-            {{end}}
-            <button>{{tr "admin.text.save_metadata" "Save metadata"}}</button>
-          </form>
-          {{if .Artists}}
-            <h2>{{tr "admin.text.artists" "Artists"}}</h2>
-            {{range .Artists}}
-              <form method="post" action="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/primary-artist">
-                <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-                <input type="hidden" name="submission_token" value="{{$.Submission}}">
-                <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
-                <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
-                <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
-                <input type="hidden" name="artist_id" value="{{.ID}}">
-                <span>{{.Name}}{{if .IsPrimary}} {{tr "admin.text.primary" "(primary)"}}{{end}}</span>
-                <button name="primary" value="{{if .IsPrimary}}0{{else}}1{{end}}">{{if .IsPrimary}}{{tr "admin.text.unset_primary" "Unset primary"}}{{else}}
-                  {{- tr "admin.text.set_primary" "Set primary"}}{{end}}</button>
-              </form>
-            {{end}}
-          {{end}}
-          {{if eq .Kind "track"}}
-            <h2>{{tr "admin.text.track_artists" "Track artists"}}</h2>
-            <form method="get" action="/{{.Profile.Slug}}/manage/track/{{.ID}}">
-              <input type="hidden" name="tz" value="{{.Timezone}}">
-              <label>
-                {{- tr "admin.text.search_shared_artists" "Search shared artists"}} <input name="artist_query" value="{{.ArtistQuery}}" maxlength="100"></label>
-              <button>{{tr "admin.text.search" "Search"}}</button>
-            </form>
-            {{range .ArtistResults}}
-              <form method="post" action="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/artist-add">
-                <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-                <input type="hidden" name="submission_token" value="{{$.Submission}}">
-                <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
-                <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
-                <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
-                <input type="hidden" name="artist_id" value="{{.ID}}">
-                <button>{{trn "admin.manage.add_artist" "Add {{.Name}}" "Name" .Name}}</button>
-              </form>
-            {{end}}
-            <form method="post" action="/{{.Profile.Slug}}/manage/track/{{.ID}}/artist-add">
-              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              {{if .Submission}}
-                <input type="hidden" name="submission_token" value="{{.Submission}}">
-              {{end}}
-              <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
-              <input type="hidden" name="return_to" value="{{.ReturnTo}}">
-              <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-              <label>
-                {{- tr "admin.text.existing_artist_id" "Existing artist ID"}} <input name="artist_id" value="{{.Values.Get "artist_id"}}" type="number" min="1"
-                required></label>
-              <button>{{tr "admin.text.add_artist" "Add artist"}}</button>
-            </form>
-            {{range .Artists}}
-              {{if not .IsPrimary}}
-                <form method="post" action="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/artist-remove">
-                  <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-                  <input type="hidden" name="submission_token" value="{{$.Submission}}">
-                  <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
-                  <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
-                  <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
-                  <input type="hidden" name="artist_id" value="{{.ID}}">
-                  <button>{{trn "admin.manage.remove_artist" "Remove {{.Name}} from track" "Name" .Name}}</button>
-                </form>
-              {{end}}
-            {{end}}
-          {{end}}
-          {{if eq .Kind "track"}}
-            <h2>{{trn "admin.manage.recent" "Recent listens for {{.Name}}" "Name" .Profile.DisplayName}}</h2>
-            <form method="get" action="/{{.Profile.Slug}}/manage/track/{{.ID}}">
-              <input type="hidden" name="artist_query" value="{{.ArtistQuery}}">
-              <label>{{tr "admin.text.time_zone" "Time zone"}} <input name="tz" value="{{.Timezone}}" required></label>
-              <button>{{tr "admin.text.apply" "Apply"}}</button>
-            </form>
-            {{range .Listens}}
-              <form method="post" action="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/listen-delete">
-                <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-                <input type="hidden" name="submission_token" value="{{$.Submission}}">
-                <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
-                <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
-                <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
-                <input type="hidden" name="unix" value="{{.Time.Unix}}">
-                <time datetime="{{(.Time.In $.Location).Format "2006-01-02T15:04:05Z07:00"}}">{{(.Time.In $.Location).Format "2006-01-02 15:04:05 MST"}}</time>
-                <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen"
-                  "Confirm removal of this listen"}}</label>
-                <button>{{tr "admin.text.delete_listen" "Delete listen"}}</button>
-              </form>
-            {{else}}
-              <p>{{tr "admin.text.no_recent_listens_for_this_profile" "No recent listens for this profile."}}</p>
-            {{end}}
-          {{end}}
-          {{if eq .Kind "track"}}
-            <h2>{{trn "admin.manage.add_listen" "Add a listen for {{.Name}}" "Name" .Profile.DisplayName}}</h2>
-            <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/listen-add">
-              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              {{if .Submission}}
-                <input type="hidden" name="submission_token" value="{{.Submission}}">
-              {{end}}
-              <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
-              <input type="hidden" name="return_to" value="{{.ReturnTo}}">
-              <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-              <label>
-                {{- tr "admin.text.local_date_and_time" "Local date and time"}} <input type="datetime-local" name="local_time" value="{{.Values.Get
-                "local_time"}}" required></label>
-              <label>{{tr "admin.text.time_zone_iana" "Time zone (IANA)"}} <input
-                name="timezone"
-                value="{{if .Values.Get "timezone"}}{{.Values.Get "timezone"}}{{else}}{{.Timezone}}{{end}}"
-                placeholder="America/Sao_Paulo"
-                required
-              ></label>
-              <label>
-                {{- tr "admin.text.utc_offset_for_ambiguous_time" "UTC offset for ambiguous time"}} <input name="offset" value="{{.Values.Get "offset"}}"
-                placeholder="-03:00"></label>
-              <button>{{tr "admin.text.add_listen" "Add listen"}}</button>
-            </form>
-          {{end}}
+          <p class="sr-only" role="status" aria-live="polite" data-enhance-status></p>
+          {{template "manage/aliases" .}}
+          {{template "manage/metadata" .}}
+          {{template "manage/artists" .}}
+          {{template "manage/listens" .}}
           {{if .FocusListen}}
             <section id="selected-listen">
               <h2>{{trn "admin.manage.delete_listen" "Delete this listen for {{.Name}}" "Name" .Profile.DisplayName}}</h2>
@@ -236,45 +70,7 @@
               </form>
             </section>
           {{end}}
-          <h2>{{trn
-            "admin.manage.delete_merge"
-            "Delete or merge this {{.Kind}}"
-            "Kind"
-            (tr (printf "admin.kind.%s" .Kind) .Kind)
-          }}</h2>
-          <p>{{tr
-            "admin.text.these_operations_affect_the_shared_catalog_review_the_impact_before_confirming"
-            "These operations affect the shared catalog. Review the impact before confirming."
-          }}</p>
-          <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/review">
-            <input type="hidden" name="action" value="delete">
-            <button>{{tr "admin.text.review_deletion" "Review deletion"}}</button>
-          </form>
-          <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}">
-            <label>
-              {{- tr "admin.text.search_merge_destination" "Search merge destination"}} <input name="merge_query" value="{{.MergeQuery}}"
-              maxlength="100"></label>
-            <button>{{tr "admin.text.search_destinations" "Search destinations"}}</button>
-          </form>
-          {{range .MergeCandidates}}
-            <p><a href="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/review?action=merge&amp;to={{.ID}}">
-              {{- trn "admin.manage.review_merge" "Review merge into {{.Name}} (ID {{.ID}})" "Name" .Name "ID" .ID}}</a></p>
-          {{end}}
-          <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/review">
-            <input type="hidden" name="action" value="merge">
-            <label>{{trn
-              "admin.manage.other_id"
-              "Other {{.Kind}} ID"
-              "Kind"
-              (tr (printf "admin.kind.%s" .Kind) .Kind)
-            }} <input name="to" type="number" min="1" required></label>
-            <label><input type="checkbox" name="reverse" value="1"> {{tr "admin.text.reverse_direction" "Reverse direction"}}</label>
-            {{if ne .Kind "track"}}
-              <label><input type="checkbox" name="replace_image" value="1"> {{tr "admin.text.use_source_image_if_available"
-                "Use source image if available"}}</label>
-            {{end}}
-            <button>{{tr "admin.text.review_merge" "Review merge"}}</button>
-          </form>
+          {{template "manage/merge" .}}
           <h2>{{tr "admin.text.artwork" "Artwork"}}</h2>
           {{if .SuggestedURL}}
             <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/artwork">
@@ -322,4 +118,259 @@
       </div>
     </body>
   </html>
+{{end}}
+
+{{/* ISSUE-124: sections are rendered alone after an enhanced action; their message
+     stays inside the section because the page top is not replaced. */}}
+{{define "manage/message"}}
+    {{/* No live roles here: the page's status region announces the message once. */}}
+    {{if .Notice}}<p class="section-notice" data-section-message>{{.Notice}}</p>{{end}}
+    {{if .Error}}<p class="section-error" data-section-message>{{.Error}}</p>{{end}}
+{{end}}
+
+{{define "manage/aliases"}}
+  {{/* The primary alias is the media name: the script updates the page heading from this. */}}
+  <div
+    id="aliases"
+    class="manage-section"
+    data-section
+    data-heading="{{trn "admin.manage.title" "Manage {{.Kind}}: {{.Name}}" "Kind" (tr (printf "admin.kind.%s" .Kind) .Kind) "Name" .Name}}"
+    data-back="{{trn "admin.manage.back" "Back to {{.Name}}" "Name" .Name}}"
+  >
+    {{if eq .Section "aliases"}}{{template "manage/message" .}}{{end}}
+          <h2>{{tr "admin.text.aliases" "Aliases"}}</h2>
+          <ul>
+            {{range .Aliases}}
+              <li>
+                {{.Alias}}
+                {{if .Primary}}
+                  {{tr "admin.text.primary" "(primary)"}}
+                {{else}}
+                  <form method="post" data-enhance action="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/alias-primary">
+                    <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                    <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                    <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
+                    <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
+                    <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
+                    <input type="hidden" name="alias" value="{{.Alias}}">
+                    <button>{{tr "admin.text.set_primary" "Set primary"}}</button>
+                  </form>
+                  <form method="post" data-enhance action="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/alias-delete">
+                    <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                    <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                    <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
+                    <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
+                    <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
+                    <input type="hidden" name="alias" value="{{.Alias}}">
+                    <button>{{tr "admin.text.remove_alias" "Remove alias"}}</button>
+                  </form>
+                {{end}}
+              </li>
+            {{end}}
+          </ul>
+          <form method="post" data-enhance action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/alias-add">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            {{if .Submission}}
+              <input type="hidden" name="submission_token" value="{{.Submission}}">
+            {{end}}
+            <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+            <input type="hidden" name="return_to" value="{{.ReturnTo}}">
+            <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+            <label>{{tr "admin.text.new_alias" "New alias"}} <input name="alias" value="{{.Values.Get "alias"}}" required></label>
+            <button>{{tr "admin.text.add_alias" "Add alias"}}</button>
+          </form>
+  </div>
+{{end}}
+
+{{define "manage/metadata"}}
+  <div id="metadata" class="manage-section" data-section>
+    {{if eq .Section "metadata"}}{{template "manage/message" .}}{{end}}
+          <h2>{{tr "admin.text.metadata" "Metadata"}}</h2>
+          <form method="post" data-enhance action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/metadata">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            {{if .Submission}}
+              <input type="hidden" name="submission_token" value="{{.Submission}}">
+            {{end}}
+            <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+            <input type="hidden" name="return_to" value="{{.ReturnTo}}">
+            <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+            <label>{{tr "admin.text.musicbrainz_id" "MusicBrainz ID"}} <input name="mbid" value="{{.MBID}}"></label>
+            <p>{{tr "admin.text.leave_blank_to_keep_the_current_id" "Leave blank to keep the current ID."}}</p>
+            {{if eq .Kind "album"}}
+              <label>{{tr "admin.text.compilation" "Compilation"}} <select name="various">
+                <option value="0" {{if not .Various}}selected{{end}}>{{tr "admin.text.no" "No"}}</option>
+                <option value="1" {{if .Various}}selected{{end}}>{{tr "admin.text.yes" "Yes"}}</option>
+              </select></label>
+            {{end}}
+            <button>{{tr "admin.text.save_metadata" "Save metadata"}}</button>
+          </form>
+  </div>
+{{end}}
+
+{{define "manage/artists"}}
+  <div id="artists" class="manage-section" data-section>
+    {{if eq .Section "artists"}}{{template "manage/message" .}}{{end}}
+          {{if .Artists}}
+            <h2>{{tr "admin.text.artists" "Artists"}}</h2>
+            {{range .Artists}}
+              <form method="post" data-enhance action="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/primary-artist">
+                <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
+                <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
+                <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
+                <input type="hidden" name="artist_id" value="{{.ID}}">
+                <span>{{.Name}}{{if .IsPrimary}} {{tr "admin.text.primary" "(primary)"}}{{end}}</span>
+                <button name="primary" value="{{if .IsPrimary}}0{{else}}1{{end}}">{{if .IsPrimary}}{{tr "admin.text.unset_primary" "Unset primary"}}{{else}}
+                  {{- tr "admin.text.set_primary" "Set primary"}}{{end}}</button>
+              </form>
+            {{end}}
+          {{end}}
+          {{if eq .Kind "track"}}
+            <h2>{{tr "admin.text.track_artists" "Track artists"}}</h2>
+            <form method="get" data-enhance action="/{{.Profile.Slug}}/manage/track/{{.ID}}">
+              <input type="hidden" name="tz" value="{{.Timezone}}">
+              <label>
+                {{- tr "admin.text.search_shared_artists" "Search shared artists"}} <input name="artist_query" value="{{.ArtistQuery}}" maxlength="100"></label>
+              <button>{{tr "admin.text.search" "Search"}}</button>
+            </form>
+            {{range .ArtistResults}}
+              <form method="post" data-enhance action="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/artist-add">
+                <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
+                <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
+                <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
+                <input type="hidden" name="artist_id" value="{{.ID}}">
+                <button>{{trn "admin.manage.add_artist" "Add {{.Name}}" "Name" .Name}}</button>
+              </form>
+            {{end}}
+            <form method="post" data-enhance action="/{{.Profile.Slug}}/manage/track/{{.ID}}/artist-add">
+              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+              {{if .Submission}}
+                <input type="hidden" name="submission_token" value="{{.Submission}}">
+              {{end}}
+              <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+              <input type="hidden" name="return_to" value="{{.ReturnTo}}">
+              <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+              <label>
+                {{- tr "admin.text.existing_artist_id" "Existing artist ID"}} <input name="artist_id" value="{{.Values.Get "artist_id"}}" type="number" min="1"
+                required></label>
+              <button>{{tr "admin.text.add_artist" "Add artist"}}</button>
+            </form>
+            {{range .Artists}}
+              {{if not .IsPrimary}}
+                <form method="post" data-enhance action="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/artist-remove">
+                  <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                  <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                  <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
+                  <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
+                  <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
+                  <input type="hidden" name="artist_id" value="{{.ID}}">
+                  <button>{{trn "admin.manage.remove_artist" "Remove {{.Name}} from track" "Name" .Name}}</button>
+                </form>
+              {{end}}
+            {{end}}
+          {{end}}
+  </div>
+{{end}}
+
+{{define "manage/listens"}}
+  <div id="listens" class="manage-section" data-section>
+    {{if eq .Section "listens"}}{{template "manage/message" .}}{{end}}
+          {{if eq .Kind "track"}}
+            <h2>{{trn "admin.manage.recent" "Recent listens for {{.Name}}" "Name" .Profile.DisplayName}}</h2>
+            <form method="get" action="/{{.Profile.Slug}}/manage/track/{{.ID}}">
+              <input type="hidden" name="artist_query" value="{{.ArtistQuery}}">
+              <label>{{tr "admin.text.time_zone" "Time zone"}} <input name="tz" value="{{.Timezone}}" required></label>
+              <button>{{tr "admin.text.apply" "Apply"}}</button>
+            </form>
+            {{range .Listens}}
+              <form method="post" data-enhance action="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/listen-delete">
+                <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                <input type="hidden" name="profile_id" value="{{$.Profile.ID}}">
+                <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
+                <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
+                <input type="hidden" name="unix" value="{{.Time.Unix}}">
+                <time datetime="{{(.Time.In $.Location).Format "2006-01-02T15:04:05Z07:00"}}">{{(.Time.In $.Location).Format "2006-01-02 15:04:05 MST"}}</time>
+                <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen"
+                  "Confirm removal of this listen"}}</label>
+                <button>{{tr "admin.text.delete_listen" "Delete listen"}}</button>
+              </form>
+            {{else}}
+              <p>{{tr "admin.text.no_recent_listens_for_this_profile" "No recent listens for this profile."}}</p>
+            {{end}}
+          {{end}}
+          {{if eq .Kind "track"}}
+            <h2>{{trn "admin.manage.add_listen" "Add a listen for {{.Name}}" "Name" .Profile.DisplayName}}</h2>
+            <form method="post" data-enhance action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/listen-add">
+              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+              {{if .Submission}}
+                <input type="hidden" name="submission_token" value="{{.Submission}}">
+              {{end}}
+              <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+              <input type="hidden" name="return_to" value="{{.ReturnTo}}">
+              <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+              <label>
+                {{- tr "admin.text.local_date_and_time" "Local date and time"}} <input type="datetime-local" name="local_time" value="{{.Values.Get
+                "local_time"}}" required></label>
+              <label>{{tr "admin.text.time_zone_iana" "Time zone (IANA)"}} <input
+                name="timezone"
+                value="{{if .Values.Get "timezone"}}{{.Values.Get "timezone"}}{{else}}{{.Timezone}}{{end}}"
+                placeholder="America/Sao_Paulo"
+                required
+              ></label>
+              <label>
+                {{- tr "admin.text.utc_offset_for_ambiguous_time" "UTC offset for ambiguous time"}} <input name="offset" value="{{.Values.Get "offset"}}"
+                placeholder="-03:00"></label>
+              <button>{{tr "admin.text.add_listen" "Add listen"}}</button>
+            </form>
+          {{end}}
+  </div>
+{{end}}
+
+{{define "manage/merge"}}
+  <div id="merge" class="manage-section" data-section>
+    {{if eq .Section "merge"}}{{template "manage/message" .}}{{end}}
+          <h2>{{trn
+            "admin.manage.delete_merge"
+            "Delete or merge this {{.Kind}}"
+            "Kind"
+            (tr (printf "admin.kind.%s" .Kind) .Kind)
+          }}</h2>
+          <p>{{tr
+            "admin.text.these_operations_affect_the_shared_catalog_review_the_impact_before_confirming"
+            "These operations affect the shared catalog. Review the impact before confirming."
+          }}</p>
+          <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/review">
+            <input type="hidden" name="action" value="delete">
+            <button>{{tr "admin.text.review_deletion" "Review deletion"}}</button>
+          </form>
+          <form method="get" data-enhance action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}">
+            <label>
+              {{- tr "admin.text.search_merge_destination" "Search merge destination"}} <input name="merge_query" value="{{.MergeQuery}}"
+              maxlength="100"></label>
+            <button>{{tr "admin.text.search_destinations" "Search destinations"}}</button>
+          </form>
+          {{range .MergeCandidates}}
+            <p><a href="/{{$.Profile.Slug}}/manage/{{$.Kind}}/{{$.ID}}/review?action=merge&amp;to={{.ID}}">
+              {{- trn "admin.manage.review_merge" "Review merge into {{.Name}} (ID {{.ID}})" "Name" .Name "ID" .ID}}</a></p>
+          {{end}}
+          <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/review">
+            <input type="hidden" name="action" value="merge">
+            <label>{{trn
+              "admin.manage.other_id"
+              "Other {{.Kind}} ID"
+              "Kind"
+              (tr (printf "admin.kind.%s" .Kind) .Kind)
+            }} <input name="to" type="number" min="1" required></label>
+            <label><input type="checkbox" name="reverse" value="1"> {{tr "admin.text.reverse_direction" "Reverse direction"}}</label>
+            {{if ne .Kind "track"}}
+              <label><input type="checkbox" name="replace_image" value="1"> {{tr "admin.text.use_source_image_if_available"
+                "Use source image if available"}}</label>
+            {{end}}
+            <button>{{tr "admin.text.review_merge" "Review merge"}}</button>
+          </form>
+  </div>
 {{end}}

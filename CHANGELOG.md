@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Media management (aliases, metadata, artists, listens, artist and merge searches) updates only the edited section, keeping scroll and focus and refreshing the heading when the primary alias changes. Without JavaScript, actions return to the edited section instead of the top of the page. Artwork uploads still reload the page (ISSUE-124).
+
 ## [0.18] - 2026-11-15
 
 ### Added

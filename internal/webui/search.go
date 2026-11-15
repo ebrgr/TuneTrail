@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/listening"
 )
 
@@ -88,17 +89,10 @@ func (h *Pages) searchFragment(ctx context.Context, slug, q string) (SearchFragm
 	return f, nil
 }
 
-// fragmentRequested reports whether a fetch from the search dialog asked for the fragment;
-// a navigation to a URL with partial=1 (typed, bookmarked or cross-site) does not qualify.
-func fragmentRequested(r *http.Request) bool {
-	return r.Header.Get("X-TuneTrail-Partial") == "1" &&
-		r.Header.Get("Sec-Fetch-Mode") != "navigate" && r.Header.Get("Sec-Fetch-Dest") != "document"
-}
-
 // serveSearchFragment renders only the results list, after the profile was resolved.
 func (h *Pages) serveSearchFragment(w http.ResponseWriter, r *http.Request, p LivePage) {
 	w.Header().Set("Cache-Control", "no-store")
-	if !fragmentRequested(r) {
+	if !adminweb.FragmentRequested(r) {
 		q := r.URL.Query()
 		q.Del("partial")
 		// Built from the resolved profile, never from the request path.

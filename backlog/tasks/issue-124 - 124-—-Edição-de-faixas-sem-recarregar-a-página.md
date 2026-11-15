@@ -1,10 +1,11 @@
 ---
 id: ISSUE-124
 title: 124 — Edição de faixas sem recarregar a página
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T02:15:00Z'
-updated_date: '2026-11-15T02:15:00Z'
+updated_date: '2026-11-15T15:32:00Z'
 labels:
   - ui
   - admin
@@ -13,6 +14,9 @@ dependencies:
   - ISSUE-107
 references:
   - backlog/evidencias/issue-107/advisor-inicial.md
+  - backlog/evidencias/issue-124/reviewer.md
+  - backlog/evidencias/issue-124/edicao_sem_recarregar.log
+  - backlog/evidencias/ui-responsiva/issue-124-tempos.md
 type: feature
 ordinal: 133000
 ---
@@ -25,9 +29,22 @@ Origem: divisão da ISSUE-107 por decisão do usuário em 14/11/2026, seguindo o
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Adicionar/remover apelido ou artista atualiza só a seção, sem perder rolagem e foco
-- [ ] #2 Sem JavaScript, as ações voltam à âncora da seção editada
-- [ ] #3 Fragmentos respeitam sessão, CSRF, token de uso único, permissões e perfil (testes)
-- [ ] #4 Consultas de artista e mesclagem por fragmento não criam ticket de envio
-- [ ] #5 JS novo abaixo de 4 KB comprimido; tempos antes/depois registrados
+- [x] #1 Adicionar/remover apelido ou artista atualiza só a seção, sem perder rolagem e foco
+- [x] #2 Sem JavaScript, as ações voltam à âncora da seção editada
+- [x] #3 Fragmentos respeitam sessão, CSRF, token de uso único, permissões e perfil (testes)
+- [x] #4 Consultas de artista e mesclagem por fragmento não criam ticket de envio
+- [x] #5 JS novo abaixo de 4 KB comprimido; tempos antes/depois registrados
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-15T15:19:00Z
+
+---
+
+Início: branch `feat/issue-124-edicao-de-faixas-sem-recarregar` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->

@@ -1,0 +1,50 @@
+{
+ "login": 204,
+ "alias": {
+  "sameDocument": true,
+  "scrollKept": true,
+  "focus": "alias",
+  "url": "/cache-study/manage/track/1"
+ },
+ "primary": {
+  "heading": "Manage track: Alias One",
+  "back": "Back to Alias One",
+  "sameDocument": true
+ },
+ "listen": {
+  "message": "Listen added.",
+  "status": "Listen added.",
+  "sameDocument": true
+ },
+ "search": {
+  "sameDocument": true,
+  "url": "?tz=UTC&artist_query=Validation"
+ },
+ "noJs": "#aliases",
+ "sizes": {
+  "fullPage": 27820,
+  "fragments": [
+   {
+    "fragment": "aliases",
+    "bytes": 2711,
+    "ms": 2
+   },
+   {
+    "fragment": "aliases",
+    "bytes": 2711,
+    "ms": 2
+   },
+   {
+    "fragment": "listens",
+    "bytes": 3504,
+    "ms": 3
+   },
+   {
+    "fragment": "artists",
+    "bytes": 2959,
+    "ms": 4
+   }
+  ]
+ }
+}
+PASS

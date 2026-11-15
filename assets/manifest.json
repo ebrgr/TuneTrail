@@ -10,6 +10,7 @@
   "public/static/admin.css": "css/admin.css",
   "public/static/admin.js": "js/admin.js",
   "public/static/avatar.webp": "preview/avatar.webp",
+  "public/static/enhance.js": "js/enhance.js",
   "public/static/favicon.svg": "preview/favicon.svg",
   "public/static/icons/Check.svg": "icons/Check.svg",
   "public/static/icons/Disc3.svg": "icons/Disc3.svg",
