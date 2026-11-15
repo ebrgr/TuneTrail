@@ -1,11 +1,11 @@
 ---
 id: ISSUE-122
 title: 122 — Barra lateral única para páginas públicas, prévia e administração
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T00:57:00Z'
-updated_date: '2026-11-15T01:06:00Z'
+updated_date: '2026-11-15T01:12:00Z'
 labels:
   - ui
 milestone: m-10
@@ -50,6 +50,15 @@ created: 2026-11-15T01:06:00Z
 ---
 
 Verificação: make check 12/12 e referência sem diferenças; validador real Chrome/Firefox/HTTPS PASS; HTML público e da prévia estritamente idêntico, administração difere só nos ícones SVG; capturas 111/138 idênticas e 27 com 12 px de suavização (delta 1/255) nos ícones da administração; Reviewer APROVADO.
+
+---
+
+author: ebrgr
+created: 2026-11-15T01:12:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026 ("aceito a 122, faça o merge"). Tarefa chore de refatoração sem versão: merge fast-forward no main, sem tag.
 
 ---
 <!-- COMMENTS:END -->
