@@ -1,11 +1,11 @@
 ---
 id: ISSUE-110
 title: 110 — Ícone de tema com modal simples de tema e idioma
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T01:31:00Z'
+updated_date: '2026-11-15T01:32:00Z'
 labels:
   - ui
   - i18n
@@ -98,6 +98,15 @@ created: 2026-11-15T01:19:00Z
 ---
 
 Escopo revisto por decisão do usuário: 110 só com o tema (Palette, modal de tema e idioma, theme-picker.js, remoção dos diálogos antigos; Settings2 vira link para /admin com selo). Segunda barra na ISSUE-123; Sobre será o último item dela; layout em telas largas com as duas formas (empurrar ou sobrepor) e uma opção para escolher.
+
+---
+
+author: ebrgr
+created: 2026-11-15T01:32:00Z
+
+---
+
+Verificação: make check 12/12 e referência sem diferenças; validador real Chrome/Firefox/HTTPS PASS; roteiro painel_tema.py PASS em páginas públicas e administração (abre por clique, Enter e \, foco entra no painel e volta ao fechar, Esc, tema Pearl aplicado, idioma salvo, selo no ícone de administração); Reviewer com o item obrigatório corrigido. Falta o aceite visual (capturas em backlog/evidencias/issue-110/).
 
 ---
 <!-- COMMENTS:END -->
