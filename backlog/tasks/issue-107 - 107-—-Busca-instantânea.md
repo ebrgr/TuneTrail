@@ -1,11 +1,11 @@
 ---
 id: ISSUE-107
 title: 107 — Busca instantânea
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T02:30:00Z'
+updated_date: '2026-11-15T02:31:00Z'
 labels:
   - ui
   - admin
@@ -104,6 +104,15 @@ created: 2026-11-15T02:15:00Z
 ---
 
 Decisões do usuário em 14/11/2026: dividir conforme o Advisor — a 107 fica só com a busca instantânea (5 itens por tipo + ver todos); a edição sem recarregar vai para a ISSUE-124 (envio de capa continua recarregando); a ISSUE-108 passa a depender da 124.
+
+---
+
+author: ebrgr
+created: 2026-11-15T02:31:00Z
+
+---
+
+Verificação: make check 12/12 e referência sem diferenças; validador de cache Chrome/Firefox/HTTPS PASS; testes do fragmento (5 por tipo, curto/longo, perfil inexistente, navegação direta recusada, cabeçalhos); roteiro busca_instantanea.py PASS em 5 execuções (resposta atrasada descartada, setas, Enter, Esc duplo, anúncio, foco); fragmento 0,85 ms/1,8 KB contra 1,81 ms/25 KB da página; search.js 1,6 KB gzip; Reviewer APROVADO. Falta o aceite visual (capturas em backlog/evidencias/issue-107/).
 
 ---
 <!-- COMMENTS:END -->
