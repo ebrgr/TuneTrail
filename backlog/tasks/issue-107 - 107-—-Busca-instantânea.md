@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T12:00:00Z'
+updated_date: '2026-11-15T12:04:00Z'
 labels:
   - ui
   - admin
@@ -131,6 +131,15 @@ created: 2026-11-15T12:00:00Z
 ---
 
 Ajustes pedidos pelo usuário antes do aceite: (1) o campo recebe o foco ao abrir a busca (autofocus; o carregamento da página não rouba o foco); (2) títulos das seções na cor principal do texto, com mais contraste; (3) na página completa de busca o campo ocupa a largura disponível e o botão fica ao lado (antes limitado a 110px pela classe de filtros). Roteiro, make check e validador aprovados.
+
+---
+
+author: claude
+created: 2026-11-15T12:04:00Z
+
+---
+
+Ajuste pedido pelo usuário: o texto da página aparecia por trás das áreas escuras do diálogo (acima do campo e entre os cartões), deixando os títulos ilegíveis. O diálogo ganhou fundo sólido (mesma cor da faixa fixa) e o fundo da página fica desfocado. Roteiro e make check aprovados.
 
 ---
 <!-- COMMENTS:END -->

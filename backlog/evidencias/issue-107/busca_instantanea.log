@@ -42,11 +42,11 @@
  },
  "timings_ms_bytes": {
   "full_search_page": [
-   2.18,
+   2.06,
    35295
   ],
   "fragment": [
-   1.13,
+   1.06,
    6040
   ]
  }

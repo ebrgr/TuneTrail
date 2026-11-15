@@ -1199,9 +1199,16 @@ button {
   max-height: calc(100vh - 64px);
   max-height: calc(100dvh - 64px);
   padding: 0;
-  background: transparent;
+  /* Solid like the sticky band, so page text never shows behind titles and gaps. */
+  background: #0b0b0b;
+  background: color-mix(in srgb,var(--color-bg) 10%,#000);
   border: 0;
+  border-radius: 8px;
   overflow-y: auto
+}
+.search-dialog::backdrop {
+  background: rgb(0 0 0/.9);
+  backdrop-filter: blur(6px)
 }
 /* The sticky band uses the color the 90% black backdrop gives the page background. */
 .search-head {
