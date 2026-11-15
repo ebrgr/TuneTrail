@@ -1,11 +1,11 @@
 ---
 id: ISSUE-140
 title: 140 — Barra de ações nas páginas de mídia com diálogos por tarefa
-status: Aguardando aceite
+status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T22:00:00Z'
+updated_date: '2026-11-15T22:44:00Z'
 labels:
   - ui
   - admin
@@ -36,6 +36,10 @@ Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 - [x] #3 Cada ícone abre só a sua tarefa em diálogo (foco preso, Esc, foco devolvido) e, sem JavaScript, a página da tarefa; erro, rede e sessão expirada são recuperáveis
 - [x] #4 Trocar imagem atualiza a capa sem recarregar; editar atualiza o cabeçalho; resposta antiga não preenche diálogo novo e o botão Voltar não restaura formulário ativo
 - [ ] #5 Capturas lado a lado com o Koito original (desktop e celular) e aceite visual do usuário
+- [ ] #6 Todos os formulários dos diálogos usam botões e campos do tema
+- [ ] #7 Adicionar escuta: data e hora, botão responsivo e fuso horário opcional abaixo
+- [ ] #8 Editar item e Mesclar no padrão do Koito, com lista dinâmica e responsiva na mescla
+- [ ] #9 Tooltip nos ícones da barra, no mesmo estilo da barra lateral
 <!-- AC:END -->
 
 ## Comments
@@ -74,6 +78,15 @@ created: 2026-11-15T22:00:00Z
 ---
 
 Verificação: make check aprovado com 12/12 jornadas E2E; roteador real valida sessão (incluindo expiração no banco), origem, CSRF, perfil, tickets e plano de confirmação; Chrome valida faixa/álbum/artista em desktop/celular, sem JS e clique modificado, foco/Tab/Esc, nome/MBID/contagens/capa sem recarga, rede, respostas antigas e bfcache. Capturas com Koito atual e relatório em backlog/evidencias/issue-140; Reviewer complementar sem itens impeditivos. Critérios 1–4 verificados; #5 aguarda aceite visual do usuário.
+
+---
+
+author: claude
+created: 2026-11-15T22:44:00Z
+
+---
+
+Aceite adiado: o usuário pediu ajustes antes do aceite final (15/11/2026). Voltam para esta tarefa: (3a) todos os formulários dos diálogos com botões e campos no tema do TuneTrail; (3b) Adicionar escuta: campo de data e hora, botão de adicionar responsivo e, abaixo, o fuso horário como campo opcional; (3c) Editar item com a identidade visual e o funcionamento do Koito, botões no mesmo estilo; (3d) Mesclar no padrão do Koito, com lista dinâmica e responsiva; (4) tooltip nos ícones da barra, no mesmo estilo da barra lateral. Fora desta tarefa: Excluir por perfil (ISSUE-143) e o × do histórico (ISSUE-141).
 
 ---
 <!-- COMMENTS:END -->
