@@ -5,14 +5,14 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T00:57:00Z'
+updated_date: '2026-11-15T01:12:00Z'
 labels:
   - ui
   - i18n
   - admin
 milestone: m-10
 dependencies:
-  - ISSUE-109
+  - ISSUE-122
 references:
   - backlog/evidencias/issue-110/advisor-inicial.md
 priority: high
