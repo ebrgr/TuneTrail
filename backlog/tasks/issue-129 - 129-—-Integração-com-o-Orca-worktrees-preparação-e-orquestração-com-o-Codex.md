@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:44:00Z'
-updated_date: '2026-11-15T15:45:00Z'
+updated_date: '2026-11-15T16:03:00Z'
 labels:
   - processo
 milestone: m-6
@@ -43,6 +43,15 @@ created: 2026-11-15T15:45:00Z
 ---
 
 Início: branch `chore/issue-129-integracao-com-o-orca-worktrees` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-15T16:03:00Z
+
+---
+
+Quadro no Orca: o 'backlog browser --port 6420 --no-open' passou a rodar num terminal 'Backlog' do próprio Orca, no checkout principal, e a aba do navegador aponta para http://127.0.0.1:6420/board. Remoto 'upstream' (gabehf/Koito) renomeado para 'koito' (configuração local; nada no projeto usava o nome), porque o Orca trata 'upstream' como o repositório principal e listava as issues do Koito. O GitHub ainda registra ebrgr/TuneTrail como fork do Koito e as issues estão desligadas na origin; as issues do projeto continuam no Backlog.md.
 
 ---
 <!-- COMMENTS:END -->
