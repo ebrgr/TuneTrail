@@ -35,6 +35,19 @@
   // "\" opens the panel from anywhere except form fields and open dialogs. Without an
   // invoker button the browser leaves focus behind, so move it into the panel and return
   // it on close (the button path is handled natively by popovertarget).
+  // Push or overlay for the second sidebar (ISSUE-123), remembered on this browser only.
+  const layoutChoice = panel.querySelector('[data-nav-layout-choice]');
+  if (layoutChoice) {
+    const current = document.documentElement.dataset.navLayout === 'overlay' ? 'overlay' : 'push';
+    const selected = layoutChoice.querySelector(`input[value="${current}"]`);
+    if (selected) selected.checked = true;
+    layoutChoice.addEventListener('change', event => {
+      const value = event.target.value === 'overlay' ? 'overlay' : 'push';
+      if (value === 'overlay') document.documentElement.dataset.navLayout = 'overlay';
+      else delete document.documentElement.dataset.navLayout;
+      try { localStorage.setItem('nav-layout', value); } catch {}
+    });
+  }
   let opener = null;
   document.addEventListener('keydown', event => {
     if (event.key !== '\\' || event.ctrlKey || event.metaKey || event.altKey) return;

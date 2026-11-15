@@ -87,13 +87,20 @@ type Page struct {
 
 // Nav adapts public and preview pages to the shared sidebar (ISSUE-122).
 func (p Page) Nav() webassets.Nav {
-	nav := webassets.Nav{Kind: "preview"}
+	nav := webassets.Nav{Kind: "preview", Version: p.Version}
 	if p.Live {
 		nav.Kind = "live"
 	}
 	if p.Profile != nil {
 		nav.Profile = &webassets.NavProfile{Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon}
 	}
+	return nav
+}
+
+// Nav adds the administrator session, which only live pages resolve (ISSUE-109, ISSUE-123).
+func (p LivePage) Nav() webassets.Nav {
+	nav := p.Page.Nav()
+	nav.Admin = p.Admin
 	return nav
 }
 

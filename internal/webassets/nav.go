@@ -14,6 +14,12 @@ type NavProfile struct {
 type Nav struct {
 	Kind    string // live, preview or admin: selects dialogs or links for the same controls
 	Profile *NavProfile
+	// Second sidebar (ISSUE-123): administration links for a valid session, open on
+	// administration pages, with the current item and the version shown in About.
+	Admin   bool
+	Open    bool
+	Current string // account, profiles or settings
+	Version string
 }
 
 // Icon inlines a bundled, reviewed Lucide SVG; never catalog or user HTML.

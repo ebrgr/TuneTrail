@@ -11,7 +11,7 @@
       data-i18n-copy-manual="{{tr "admin.js.copy_manual" "Select and copy manually"}}"
     >
       <a class="skip-link" href="#admin-main">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>
-      {{template "partial/sidebar" (nav .Profile)}}
+      {{template "partial/sidebar" (nav .Profile .SignedIn (adminSection .Section))}}
       {{template "partial/theme-panel" .Locale}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">

@@ -38,5 +38,7 @@
     apply(saved === 'custom' && custom ? 'custom' : names.includes(saved) ? saved : defaultTheme, custom, false);
   }
   refresh();
+  // Second sidebar layout (ISSUE-123): applied before paint so the content does not jump.
+  if (read('nav-layout') === 'overlay') root.dataset.navLayout = 'overlay';
   window.TuneTrailTheme = {apply, refresh, valid, keys, getCustom: () => custom, reset: () => { apply(defaultTheme, null, false); write('theme', null); write('bgcolor', null); }};
 })();

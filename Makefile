@@ -82,6 +82,7 @@ ui.check:
 	node --check assets/js/theme.js
 	node --check assets/js/ui.js
 	node --check assets/js/theme-picker.js
+	node --check assets/js/nav.js
 	node --check assets/js/live.js
 	node --check assets/js/admin.js
 	node --test internal/webui/theme.test.mjs

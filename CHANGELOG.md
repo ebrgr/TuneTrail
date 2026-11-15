@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Add a second sidebar opened from the administration icon: Sign in for visitors; Account, Profiles and Server configuration for administrators; and About. It opens beside the first sidebar on wide screens, below it on phones, and stays open in administration (ISSUE-123).
+- The theme panel separates colors, the sidebar layout and the language into bordered sections; the new layout option chooses whether the second sidebar pushes the content aside or opens over it, remembered per browser (ISSUE-123).
+
 ## [0.16] - 2026-11-15
 
 ### Changed

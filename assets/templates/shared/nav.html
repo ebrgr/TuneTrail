@@ -94,22 +94,91 @@
         aria-label="{{tr "ui.theme" "Theme"}}"
         data-tip="{{tr "ui.theme" "Theme"}} \"
       >{{icon "Palette"}}</button>
+      {{/* ISSUE-123: opens the second sidebar. Without JavaScript the link leads to
+           administration, where the server renders the second sidebar open. */}}
       {{if eq .Kind "preview"}}
         <button
           class="nav-button"
-          data-dialog="feature-dialog"
+          type="button"
+          data-nav-toggle
+          aria-controls="nav-admin"
+          aria-expanded="false"
           aria-label="{{tr "ui.administration" "Administration"}}"
           data-tip="{{tr "ui.administration" "Administration"}}"
         >{{icon "Settings2"}}</button>
       {{else}}
-        {{/* Until the second sidebar (ISSUE-123), administration is a plain link. */}}
         <a
           class="nav-button"
           href="/admin"
+          data-nav-toggle
+          aria-controls="nav-admin"
           aria-label="{{tr "ui.administration" "Administration"}}"
           data-tip="{{tr "ui.administration" "Administration"}}"
         >{{icon "Settings2"}}</a>
       {{end}}
+    </div>
+  </nav>
+  {{template "partial/admin-sidebar" .}}
+{{end}}
+
+{{/* Second sidebar (ISSUE-123): beside the first on wide screens, below it on narrow ones. */}}
+{{define "partial/admin-sidebar"}}
+  <nav
+    id="nav-admin"
+    class="sidebar sidebar-secondary"
+    aria-label="{{tr "ui.administration" "Administration"}}"
+    {{if not .Open}}hidden{{end}}
+  >
+    <div class="nav-group">
+      {{if eq .Kind "preview"}}
+        <button
+          class="nav-button nav-disabled"
+          type="button"
+          aria-disabled="true"
+          aria-label="{{tr "ui.preview_no_admin" "This preview has no administration."}}"
+          data-tip="{{tr "ui.preview_no_admin" "This preview has no administration."}}"
+        >{{icon "LogIn"}}</button>
+      {{else if .Admin}}
+        <a
+          class="nav-button"
+          href="/admin?section=account"
+          {{if eq .Current "account"}}aria-current="page"{{end}}
+          aria-label="{{tr "ui.account" "Account"}}"
+          data-tip="{{tr "ui.account" "Account"}}"
+        >{{icon "CircleUserRound"}}</a>
+        <a
+          class="nav-button"
+          href="/admin?section=profiles"
+          {{if eq .Current "profiles"}}aria-current="page"{{end}}
+          aria-label="{{tr "ui.manage_profiles" "Profiles"}}"
+          data-tip="{{tr "ui.manage_profiles" "Profiles"}}"
+        >{{icon "UserRoundCog"}}</a>
+        <a
+          class="nav-button"
+          href="/admin/settings"
+          {{if eq .Current "settings"}}aria-current="page"{{end}}
+          aria-label="{{tr "ui.server_configuration" "Server configuration"}}"
+          data-tip="{{tr "ui.server_configuration" "Server configuration"}}"
+        >{{icon "Server"}}</a>
+      {{else}}
+        <a
+          class="nav-button"
+          href="/admin"
+          {{if .Open}}aria-current="page"{{end}}
+          aria-label="{{tr "ui.sign_in" "Sign in"}}"
+          data-tip="{{tr "ui.sign_in" "Sign in"}}"
+        >{{icon "LogIn"}}</a>
+      {{end}}
+    </div>
+    <div class="nav-group">
+      <a
+        class="nav-button"
+        href="https://github.com/ebrgr/TuneTrail"
+        target="_blank"
+        rel="noopener"
+        aria-label="{{tr "ui.about" "About"}} TuneTrail {{.Version}} ({{tr "ui.opens_new_tab" "opens in a new tab"}})"
+        data-tip="TuneTrail {{.Version}} ↗"
+      >{{icon "Info"}}</a>
     </div>
   </nav>
 {{end}}
@@ -138,40 +207,51 @@
       popovertargetaction="hide"
       aria-label="{{tr "ui.close_dialog" "Close dialog"}}"
     >×</button>
-    <div class="theme-heading">
-      <h2 id="theme-panel-title">{{tr "ui.theme" "Theme"}}</h2>
-      <button class="reset-theme" type="button" data-theme-reset>{{tr "ui.reset" "Reset"}}</button>
-    </div>
+    <h2 id="theme-panel-title">{{tr "ui.theme" "Theme"}}</h2>
     <noscript><p class="noscript">{{tr "ui.theme_requires_javascript" "Changing the theme requires JavaScript."}}</p></noscript>
-    <div class="theme-grid">
-      {{range themes}}
-        <button
-          class="theme-option"
-          type="button"
-          data-theme-choice="{{.Name}}"
-          style="background:{{.Colors.bg}};color:{{.Colors.fg}};border-color:{{.Colors.bgSecondary}}"
-        >
-          <span>{{.Name}}</span>
-          <span class="swatches">
-            <i style="background:{{.Colors.bgSecondary}}"></i>
-            <i style="background:{{.Colors.fgSecondary}}"></i>
-            <i style="background:{{.Colors.primary}}"></i>
-          </span>
-        </button>
-      {{end}}
-    </div>
-    <details class="custom-theme-details">
-      <summary>{{tr "ui.use_custom_theme" "Use Custom Theme"}}</summary>
-      <form class="custom-theme" data-custom-theme-form>
-        <label class="sr-only" for="custom-theme-input">
-          {{- tr "ui.custom_theme_json_14_hexadecimal_colors" "Custom theme JSON (14 hexadecimal colors)"}}</label>
-        <textarea id="custom-theme-input" name="custom-theme" spellcheck="false"></textarea>
-        <button class="large-button" type="submit">{{tr "ui.submit" "Submit"}}</button>
-      </form>
-    </details>
-    <p class="theme-status" role="status" aria-live="polite" data-theme-status></p>
+    {{/* ISSUE-123: colors, sidebar layout and language in separate bordered sections. */}}
+    <section class="panel-section" aria-labelledby="theme-colors-title">
+      <div class="theme-heading">
+        <h3 id="theme-colors-title">{{tr "ui.colors" "Colors"}}</h3>
+        <button class="reset-theme" type="button" data-theme-reset>{{tr "ui.reset" "Reset"}}</button>
+      </div>
+      <div class="theme-grid">
+        {{range themes}}
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="{{.Name}}"
+            style="background:{{.Colors.bg}};color:{{.Colors.fg}};border-color:{{.Colors.bgSecondary}}"
+          >
+            <span>{{.Name}}</span>
+            <span class="swatches">
+              <i style="background:{{.Colors.bgSecondary}}"></i>
+              <i style="background:{{.Colors.fgSecondary}}"></i>
+              <i style="background:{{.Colors.primary}}"></i>
+            </span>
+          </button>
+        {{end}}
+      </div>
+      <details class="custom-theme-details">
+        <summary>{{tr "ui.use_custom_theme" "Use Custom Theme"}}</summary>
+        <form class="custom-theme" data-custom-theme-form>
+          <label class="sr-only" for="custom-theme-input">
+            {{- tr "ui.custom_theme_json_14_hexadecimal_colors" "Custom theme JSON (14 hexadecimal colors)"}}</label>
+          <textarea id="custom-theme-input" name="custom-theme" spellcheck="false"></textarea>
+          <button class="large-button" type="submit">{{tr "ui.submit" "Submit"}}</button>
+        </form>
+      </details>
+      <p class="theme-status" role="status" aria-live="polite" data-theme-status></p>
+    </section>
+    <fieldset class="panel-section nav-layout" data-nav-layout-choice>
+      <legend>{{tr "ui.sidebar_layout" "Administration sidebar"}}</legend>
+      <label><input type="radio" name="nav-layout" value="push" checked> {{tr "ui.sidebar_push" "Push the content aside"}}</label>
+      <label><input type="radio" name="nav-layout" value="overlay"> {{tr "ui.sidebar_overlay" "Open over the content"}}</label>
+    </fieldset>
     {{if .}}
-      {{template "partial/language-picker" .}}
+      <section class="panel-section">
+        {{template "partial/language-picker" .}}
+      </section>
     {{end}}
   </div>
 {{end}}

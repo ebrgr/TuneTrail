@@ -1,0 +1,38 @@
+{
+ "visitor": {
+  "closed": true,
+  "role": "button",
+  "expanded": "false",
+  "leftClosed": 58,
+  "clickOpens": true,
+  "expandedOpen": "true",
+  "leftPush": 116,
+  "items": [
+   "/admin",
+   "https://github.com/ebrgr/TuneTrail"
+  ],
+  "escCloses": true,
+  "focusBack": true,
+  "spaceOpens": true,
+  "leftOverlay": 58,
+  "overlayRemembered": true
+ },
+ "login": 204,
+ "admin": {
+  "open": true,
+  "expanded": "true",
+  "current": "/admin/settings",
+  "leftPush": 116,
+  "items": [
+   "/admin?section=account",
+   "/admin?section=profiles",
+   "/admin/settings",
+   "https://github.com/ebrgr/TuneTrail"
+  ]
+ },
+ "phone": {
+  "below": true,
+  "fullWidth": true
+ }
+}
+PASS

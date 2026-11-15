@@ -1,10 +1,11 @@
 ---
 id: ISSUE-123
 title: 123 — Segunda barra lateral de administração
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T01:19:00Z'
-updated_date: '2026-11-15T01:19:00Z'
+updated_date: '2026-11-15T01:54:00Z'
 labels:
   - ui
   - admin
@@ -13,6 +14,8 @@ dependencies:
   - ISSUE-110
 references:
   - backlog/evidencias/issue-110/advisor-segunda-barra.md
+  - backlog/evidencias/issue-123/reviewer.md
+  - backlog/evidencias/issue-123/segunda_barra.log
 type: feature
 ordinal: 132000
 ---
@@ -25,9 +28,31 @@ Origem: pedido do usuário em 14/11/2026 e parecer do Advisor em backlog/evidenc
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Settings2 abre e fecha a segunda barra por clique e teclado; sem JS leva a /admin
-- [ ] #2 Itens por papel: visitante vê Entrar e Sobre; administrador vê Conta, Sair (na administração), Perfis, Servidor e Sobre
-- [ ] #3 Telas largas: empurrar ou sobrepor, conforme a opção escolhida; telas estreitas: abaixo da barra superior
-- [ ] #4 Aberta nas páginas /admin; aviso na prévia
+- [x] #1 Settings2 abre e fecha a segunda barra por clique e teclado; sem JS leva a /admin
+- [x] #2 Itens por papel: visitante vê Entrar e Sobre; administrador vê Conta (com Sair na própria página), Perfis, Servidor e Sobre
+- [x] #3 Telas largas: empurrar ou sobrepor, conforme a opção escolhida; telas estreitas: abaixo da barra superior
+- [x] #4 Aberta nas páginas /admin; aviso na prévia
 - [ ] #5 Traduções, testes e capturas desktop e celular com aceite visual
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-15T01:45:00Z
+
+---
+
+Início: branch `feat/issue-123-segunda-barra-lateral-de-administracao` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-15T01:46:00Z
+
+---
+
+Decisões em 14/11/2026: (1) usuário — a opção empurrar/sobrepor fica no painel Tema; o painel separa cores, esta opção e o idioma em blocos com borda fina e cantos arredondados no estilo do projeto. (2) implementação — sem item Sair na barra: o logout exige token de envio de uso único por formulário (consumeSubmission), e um formulário em todas as páginas consumiria o token dos demais; Conta leva a /admin?section=account, onde Sair já existe. Critério #2 ajustado.
+
+---
+<!-- COMMENTS:END -->

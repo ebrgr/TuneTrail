@@ -137,6 +137,14 @@ a:hover,button.media-title:hover {
   color: var(--color-fg-secondary);
   border-bottom: 1px solid var(--color-bg-tertiary)
 }
+/* ISSUE-123: second sidebar. On narrow screens it is a row below the first one. */
+.sidebar-secondary[hidden] {
+  display: none
+}
+.nav-disabled {
+  opacity: .55;
+  cursor: default
+}
 .nav-group {
   display: flex;
   gap: 16px
@@ -788,7 +796,30 @@ dialog h2 {
 .theme-panel::backdrop {
   background: rgb(0 0 0/.6)
 }
-.theme-heading h2 {
+/* ISSUE-123: colors, sidebar layout and language as bordered sections, like .card. */
+.theme-panel h2 {
+  margin: 0 0 4px
+}
+.panel-section {
+  margin: 16px 0 0;
+  padding: 16px;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 8px
+}
+.panel-section h3 {
+  margin: 0;
+  font-size: 16px
+}
+.nav-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+.nav-layout legend {
+  padding: 0 4px;
+  color: var(--color-fg-secondary)
+}
+.panel-section .language-picker {
   margin: 0
 }
 .custom-theme-details {
@@ -890,6 +921,25 @@ body:has(dialog[open]) {
   }
   .app-content {
     margin-left: 58px
+  }
+  /* Second sidebar beside the first: pushes the content by default, or opens over it
+     when the browser preference (theme panel) is "overlay". */
+  .sidebar.sidebar-secondary {
+    left: 58px;
+    z-index: 49
+  }
+  body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: 116px
+  }
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: 58px
+  }
+  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary {
+    z-index: 60;
+    box-shadow: 4px 0 16px rgb(0 0 0/.35)
+  }
+  body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
+    left: calc(100% + 80px)
   }
   .sidebar {
     position: fixed;

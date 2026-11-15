@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/version"
 	"html/template"
 	"io"
 	"net/http"
@@ -130,7 +131,7 @@ func New(store Store, opts Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "nav": adminNav, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "nav": adminNav, "adminSection": navSection, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}
@@ -522,9 +523,10 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 	return os.Open(u.Path)
 }
 
-// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122).
-func adminNav(p *models.ListeningProfile) webassets.Nav {
-	nav := webassets.Nav{Kind: "admin"}
+// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122). Administration
+// pages open the second sidebar (ISSUE-123); signedIn is false only on the login page.
+func adminNav(p *models.ListeningProfile, signedIn bool, current string) webassets.Nav {
+	nav := webassets.Nav{Kind: "admin", Admin: signedIn, Open: true, Current: current, Version: version.Current}
 	if p != nil {
 		nav.Profile = &webassets.NavProfile{Name: p.DisplayName, Slug: p.Slug}
 		if p.AvatarImageID != nil {
@@ -536,3 +538,16 @@ func adminNav(p *models.ListeningProfile) webassets.Nav {
 	}
 	return nav
 }
+
+// navSection marks the second sidebar item for the administration home: the account
+// section or, for every other section, the profiles item (ISSUE-123).
+func navSection(section string) string {
+	if section == "account" {
+		return "account"
+	}
+	return "profiles"
+}
+
+// SignedIn is true only when the page was rendered for a valid session: User is set after
+// authentication, never on the login page or on errors raised before it (ISSUE-123).
+func (v view) SignedIn() bool { return v.User != nil }

@@ -230,6 +230,15 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 /* Match the public navigation: top bar on mobile, fixed rail on desktop. */
 .admin-shell{max-width:1180px;margin:0 auto;padding:48px 44px 24px;min-height:100vh}
 @media(min-width:40rem){.admin-shell{margin-left:58px;padding-left:44px} }
+/* ISSUE-123: administration renders the second sidebar open; follow the layout preference. */
+@media(min-width:40rem) {
+  body:has(#nav-admin:not([hidden])) .admin-shell {
+    margin-left: 116px
+  }
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .admin-shell {
+    margin-left: 58px
+  }
+}
 @media(max-width:calc(40rem - 1px)){.admin-shell{padding:32px 18px 30px}.skip-link{left:16px}}
 /* Server configuration reuses the administrative shell and stacks field state clearly. */
 .admin-main .server-settings-form {
