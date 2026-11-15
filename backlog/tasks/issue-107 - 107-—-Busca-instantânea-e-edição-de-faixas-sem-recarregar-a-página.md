@@ -1,10 +1,11 @@
 ---
 id: ISSUE-107
 title: 107 — Busca instantânea e edição de faixas sem recarregar a página
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-14T15:10:00Z'
+updated_date: '2026-11-15T02:14:00Z'
 labels:
   - ui
   - admin
@@ -14,6 +15,7 @@ dependencies:
   - ISSUE-067
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
+  - backlog/evidencias/issue-107/advisor-inicial.md
 priority: high
 type: feature
 ordinal: 107000
@@ -73,6 +75,24 @@ created: 2026-11-14T15:10:00Z
 ---
 
 Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos.
+
+---
+
+author: ebrgr
+created: 2026-11-15T02:12:00Z
+
+---
+
+Início: branch `feat/issue-107-busca-instantanea-e-edicao-de` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-15T02:14:00Z
+
+---
+
+Parecer do Advisor (Opus, medium): REPROVADO COM RESSALVAS — token de uso único por página, limite global de tickets, serialização de envios, nome no cabeçalho em alias-primary e aviso consumido no fragmento; recomenda dividir em busca (107a) e edição (107b). Aguardando decisões do usuário.
 
 ---
 <!-- COMMENTS:END -->
