@@ -56,6 +56,17 @@ const origin = process.argv[2], shots = process.argv[3];
   out.activedescendant = await input.getAttribute('aria-activedescendant');
   out.selected = await page.locator('#search-results [aria-selected=true]').count();
   await page.screenshot({path: `${shots}/busca-instantanea-1024.png`});
+  // Light theme: titles must stay readable on the dialog background (user report, Pearl).
+  await page.evaluate(() => window.TuneTrailTheme.apply('pearl'));
+  await page.waitForTimeout(500); // let color transitions finish before measuring
+  out.pearlTitle = await page.evaluate(() => {
+    const t = getComputedStyle(document.querySelector('.search-section-title')).color;
+    const d = getComputedStyle(document.getElementById('search-dialog')).backgroundColor;
+    const n = getComputedStyle(document.querySelector('.search-artist-name')).color;
+    return {title: t, dialog: d, artistName: n};
+  });
+  await page.screenshot({path: `${shots}/busca-instantanea-pearl-1024.png`});
+  await page.evaluate(() => window.TuneTrailTheme.reset());
   await page.locator('#search-dialog').evaluate(d => { d.scrollTop = 400; });
   await page.waitForTimeout(200);
   out.inputY.push(await y());

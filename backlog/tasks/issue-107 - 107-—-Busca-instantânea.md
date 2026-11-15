@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:55:00Z'
-updated_date: '2026-11-15T12:04:00Z'
+updated_date: '2026-11-15T12:14:00Z'
 labels:
   - ui
   - admin
@@ -140,6 +140,15 @@ created: 2026-11-15T12:04:00Z
 ---
 
 Ajuste pedido pelo usuário: o texto da página aparecia por trás das áreas escuras do diálogo (acima do campo e entre os cartões), deixando os títulos ilegíveis. O diálogo ganhou fundo sólido (mesma cor da faixa fixa) e o fundo da página fica desfocado. Roteiro e make check aprovados.
+
+---
+
+author: claude
+created: 2026-11-15T12:14:00Z
+
+---
+
+Correção a partir da captura do usuário no tema Pearl: o fundo fixo escuro do diálogo deixava os títulos (cor do texto do tema, quase preta no Pearl) invisíveis. Diálogo e faixa fixa passam a usar a cor de fundo do tema (contraste texto/fundo acima de 12:1 em todos os temas). O roteiro passou a capturar e medir o Pearl.
 
 ---
 <!-- COMMENTS:END -->
