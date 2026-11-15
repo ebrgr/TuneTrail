@@ -1,11 +1,11 @@
 ---
 id: ISSUE-123
 title: 123 — Segunda barra lateral de administração
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T01:19:00Z'
-updated_date: '2026-11-15T02:07:00Z'
+updated_date: '2026-11-15T02:09:00Z'
 labels:
   - ui
   - admin
@@ -32,7 +32,7 @@ Origem: pedido do usuário em 14/11/2026 e parecer do Advisor em backlog/evidenc
 - [x] #2 Itens por papel: visitante vê Entrar e Sobre; administrador vê Conta (com Sair na própria página), Perfis, Servidor e Sobre
 - [x] #3 Telas largas: empurrar ou sobrepor, conforme a opção escolhida; telas estreitas: abaixo da barra superior
 - [x] #4 Aberta nas páginas /admin; aviso na prévia
-- [ ] #5 Traduções, testes e capturas desktop e celular com aceite visual
+- [x] #5 Traduções, testes e capturas desktop e celular com aceite visual
 <!-- AC:END -->
 
 ## Comments
@@ -80,6 +80,15 @@ created: 2026-11-15T02:07:00Z
 ---
 
 Ajuste pedido pelo usuário: as páginas abertas pela segunda barra não mostravam o cabeçalho do perfil. Os links da barra passam a levar ?profile=N (a configuração do servidor aceita só esse parâmetro), o cabeçalho virou partial/profile-header compartilhado (público e administração) e na administração ocupa a largura toda acima do conteúdo, como nas páginas públicas. Testes de cabeçalho, roteiro, make check e validador aprovados.
+
+---
+
+author: ebrgr
+created: 2026-11-15T02:09:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 14/11/2026, incluindo o aceite visual ("aceito a 123, publique"). Push não solicitado.
 
 ---
 <!-- COMMENTS:END -->
