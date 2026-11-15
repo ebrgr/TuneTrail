@@ -578,6 +578,5 @@
       ]
     }
   ],
-  "jsErrors": [],
-  "session_test_method": "Browser: removed session cookies; actual server-side expiry additionally verified by TestMediaDialogSecurity140."
+  "jsErrors": []
 }

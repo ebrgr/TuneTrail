@@ -49,7 +49,7 @@ const entries = [];
           assert.equal(await page.locator('#media-task-dialog h1').count(), 0);
           for (let i = 0; i < 15; i++) {
             await page.keyboard.press('Tab');
-            assert(await page.evaluate(() => document.querySelector('#media-task-dialog').contains(document.activeElement)));
+            assert(await page.evaluate(() => document.querySelector('#media-task-dialog').contains(document.activeElement)), JSON.stringify({kind,task,size,i,focus:await page.evaluate(()=>document.activeElement.tagName+':'+document.activeElement.id+':'+document.activeElement.getAttribute('name'))}));
           }
           await page.locator('#media-task-title').focus();
           await page.locator('#media-task-dialog').evaluate(dialog=>{dialog.scrollTop=0;});

@@ -19,9 +19,13 @@ import (
 	"github.com/google/uuid"
 )
 
+var errInvalidListenTimezone = fmt.Errorf("invalid listen timezone: %w", db.ErrInvalidInput)
+
 type mergeCandidate struct {
-	ID   int32
-	Name string
+	ID      int32
+	Name    string
+	Image   string
+	Artists []models.SimpleArtist
 }
 type mediaView struct {
 	Locale                          *i18n.View
@@ -42,6 +46,7 @@ type mediaView struct {
 	ArtistResults                   []*models.Artist
 	Aliases                         []models.Alias
 	Various                         bool
+	AmbiguousTime                   bool
 	Artists                         []*models.Artist
 	AlbumID                         int32
 	Listens                         []*models.Listen
@@ -166,6 +171,10 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 			return
 		}
 		switch {
+		case dialogRequested(r) && r.Header.Get("X-TuneTrail-Search") == "merge" && len(parts) == 5 && parts[4] == "merge" && r.URL.Query().Has("merge_query"):
+			section = "merge-results"
+		case dialogRequested(r) && r.Header.Get("X-TuneTrail-Search") == "artists" && kind == "track" && len(parts) == 5 && parts[4] == "edit" && r.URL.Query().Has("artist_query"):
+			section = "artist-results"
 		case dialogRequested(r) && len(parts) == 5 && parts[4] != "listen" && parts[4] != "listens":
 			section = "task"
 		case r.URL.Query().Has("artist_query") && kind == "track" && (len(parts) == 4 || parts[4] == "edit"):
@@ -324,6 +333,10 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			}
 			if err == nil {
 				v.MergeQuery = strings.TrimSpace(q.Get("merge_query"))
+				// Opening merge starts with the current name, as in the reference UI.
+				if task == "merge" && !q.Has("merge_query") && len(v.Name) <= 100 {
+					v.MergeQuery = v.Name
+				}
 				if v.MergeQuery != "" {
 					switch kind {
 					case "artist":
@@ -331,7 +344,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 						found, err = h.store.SearchArtists(ctx, v.MergeQuery)
 						for _, x := range found {
 							if x.ID != id {
-								v.MergeCandidates = append(v.MergeCandidates, mergeCandidate{x.ID, x.Name})
+								v.MergeCandidates = append(v.MergeCandidates, mergeCandidate{ID: x.ID, Name: x.Name, Image: x.Image.Small})
 							}
 						}
 					case "album":
@@ -339,7 +352,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 						found, err = h.store.SearchAlbums(ctx, v.MergeQuery)
 						for _, x := range found {
 							if x.ID != id {
-								v.MergeCandidates = append(v.MergeCandidates, mergeCandidate{x.ID, x.Title})
+								v.MergeCandidates = append(v.MergeCandidates, mergeCandidate{ID: x.ID, Name: x.Title, Image: x.Image.Small, Artists: x.Artists})
 							}
 						}
 					case "track":
@@ -347,7 +360,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 						found, err = h.store.SearchTracks(ctx, v.MergeQuery)
 						for _, x := range found {
 							if x.ID != id {
-								v.MergeCandidates = append(v.MergeCandidates, mergeCandidate{x.ID, x.Title})
+								v.MergeCandidates = append(v.MergeCandidates, mergeCandidate{ID: x.ID, Name: x.Title, Image: x.Image.Small, Artists: x.Artists})
 							}
 						}
 					}
@@ -450,6 +463,9 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			return
 		}
 	}
+	if len(v.MergeCandidates) > 50 {
+		v.MergeCandidates = v.MergeCandidates[:50]
+	}
 	v.Submission = ticket
 	// Task links keep all validated navigation context, without the fragment marker.
 	linkQuery := url.Values{}
@@ -467,7 +483,11 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	}
 	if actionErr != nil {
 		v.Error = adminweb.PublicError(actionErr)
+		if errors.Is(actionErr, errInvalidListenTimezone) {
+			v.Error = "Invalid time zone. Use an IANA name such as America/Sao_Paulo."
+		}
 		if action == "listen-add" && errors.Is(actionErr, db.ErrConflict) {
+			v.AmbiguousTime = true
 			v.Error = "This local time occurs twice. Specify the UTC offset."
 		}
 		if action == "metadata" && form != nil {
@@ -582,7 +602,28 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 			err = db.ErrInvalidInput
 			break
 		}
-		at, e := admin.LocalListenTime(f.SingleValue("local_time"), f.SingleValue("timezone"), f.SingleValue("offset"))
+		// An omitted timezone uses the same effective page context, including a validated return query.
+		zone := f.SingleValue("timezone")
+		if zone == "" {
+			zoneRequest := r.Clone(r.Context())
+			pageURL := *r.URL
+			if saved, parseErr := url.Parse(returnTo); parseErr == nil {
+				pageURL.RawQuery = saved.RawQuery
+				if savedZone := saved.Query().Get("tz"); savedZone != "" {
+					if _, zoneErr := time.LoadLocation(savedZone); zoneErr != nil {
+						err = errInvalidListenTimezone
+						break
+					}
+				}
+			}
+			zoneRequest.URL = &pageURL
+			zone = webquery.Timezone(zoneRequest).String()
+		}
+		if _, zoneErr := time.LoadLocation(zone); zoneErr != nil {
+			err = errInvalidListenTimezone
+			break
+		}
+		at, e := admin.LocalListenTime(f.SingleValue("local_time"), zone, f.SingleValue("offset"))
 		if e != nil {
 			err = e
 			break

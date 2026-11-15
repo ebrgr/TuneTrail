@@ -12,7 +12,8 @@
 .media-heading-text .media-artist { font-size:inherit; }
 /* Match Koito's icon size and sequence; reserve accessible, non-overlapping targets. */
 .media-actions { position:absolute; top:0; right:calc(40px - (44px - var(--media-action-icon))/2); display:flex; gap:0; align-items:center; }
-.media-actions a { display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
+.media-actions a { position:relative; display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
+.media-actions [data-tip]::after { top:calc(100% + 8px); right:0; z-index:70; }
 .media-actions a:hover { color:var(--color-fg); }
 .media-actions svg { width:var(--media-action-icon); height:var(--media-action-icon); }
 .media-heading:not(:has(.media-actions a)) { padding-top:0; }

@@ -1,0 +1,13 @@
+/* Shared tooltip appearance; each surface owns placement. Labels also have accessible names. */
+@layer components {
+.nav-button[data-tip]::after,.media-actions [data-tip]::after {
+  content:attr(data-tip); position:absolute; white-space:nowrap;
+  padding:8px 12px; border:1px solid var(--color-bg-tertiary); border-radius:8px;
+  background:var(--color-bg); color:var(--color-fg); line-height:1.5;
+  opacity:0; pointer-events:none; transition:opacity .1s;
+}
+.nav-button:is(:hover,:focus-visible)::after,
+html[data-media-tooltips] .media-actions [data-tip]:focus-visible::after { opacity:1; }
+@media(hover:hover) { html[data-media-tooltips] .media-actions [data-tip]:hover::after { opacity:1; } }
+@media(max-width:calc(40rem - 1px)) { .nav-button[data-tip]::after { content:none; } }
+}

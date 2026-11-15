@@ -337,22 +337,8 @@ footer a:hover {
     display: flex
   }
   .nav-button[data-tip]::after {
-    content: attr(data-tip);
-    position: absolute;
     left: calc(100% + 22px);
-    bottom: 4px;
-    white-space: nowrap;
-    padding: 8px 12px;
-    border: 1px solid var(--color-bg-tertiary);
-    border-radius: 8px;
-    background: var(--color-bg);
-    color: var(--color-fg);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .1s
-  }
-  .nav-button:hover::after,.nav-button:focus-visible::after {
-    opacity: 1
+    bottom: 4px
   }
 }
 @media(max-width:calc(40rem - 1px)) {
@@ -813,6 +799,19 @@ footer a:hover {
 .activity-cell {
   transform: translateY(8px)
 }
+}
+/* Shared tooltip appearance; each surface owns placement. Labels also have accessible names. */
+@layer components {
+.nav-button[data-tip]::after,.media-actions [data-tip]::after {
+  content:attr(data-tip); position:absolute; white-space:nowrap;
+  padding:8px 12px; border:1px solid var(--color-bg-tertiary); border-radius:8px;
+  background:var(--color-bg); color:var(--color-fg); line-height:1.5;
+  opacity:0; pointer-events:none; transition:opacity .1s;
+}
+.nav-button:is(:hover,:focus-visible)::after,
+html[data-media-tooltips] .media-actions [data-tip]:focus-visible::after { opacity:1; }
+@media(hover:hover) { html[data-media-tooltips] .media-actions [data-tip]:hover::after { opacity:1; } }
+@media(max-width:calc(40rem - 1px)) { .nav-button[data-tip]::after { content:none; } }
 }
 /* Components: native dialogs and the profile switcher. */
 @layer components {
@@ -1461,7 +1460,8 @@ h2.search-section-title,
 .media-heading-text .media-artist { font-size:inherit; }
 /* Match Koito's icon size and sequence; reserve accessible, non-overlapping targets. */
 .media-actions { position:absolute; top:0; right:calc(40px - (44px - var(--media-action-icon))/2); display:flex; gap:0; align-items:center; }
-.media-actions a { display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
+.media-actions a { position:relative; display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
+.media-actions [data-tip]::after { top:calc(100% + 8px); right:0; z-index:70; }
 .media-actions a:hover { color:var(--color-fg); }
 .media-actions svg { width:var(--media-action-icon); height:var(--media-action-icon); }
 .media-heading:not(:has(.media-actions a)) { padding-top:0; }

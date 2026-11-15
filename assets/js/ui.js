@@ -48,3 +48,15 @@
     if (image.complete && !image.naturalWidth) failImage(image);
   });
 })();
+
+/* Use the sidebar tooltip appearance on public media actions without a duplicate native title. */
+(() => {
+  document.documentElement.dataset.mediaTooltips = '';
+  function tooltip(event) {
+    const link = event.target.closest('.media-actions [data-tip]');
+    if (!link) return;
+    if (event.type === 'pointerover' || event.type === 'focusin') link.removeAttribute('title');
+    else if (!link.matches(':hover') && !link.contains(document.activeElement)) link.title = link.dataset.tip;
+  }
+  ['pointerover','pointerout','focusin','focusout'].forEach(type => document.addEventListener(type, tooltip));
+})();

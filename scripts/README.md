@@ -34,6 +34,7 @@ Para acrescentar uma jornada, crie o script com `--binary` e diretório descart�
 - `serve_roadmap06.py --binary ./tunetrail --work-dir <novo>` — mantém um servidor com a fixture fictícia para capturas.
 - `capture_admin_webui.cjs` — capturas da administração em navegador.
 - `validate_media_dialogs.cjs <origem descartável> <diretório de evidências>` — verifica barra, diálogos, foco, atualização de cabeçalho/capa, rede, sessão e histórico em Chrome. Usa a fixture de `serve_roadmap06.py`; `PLAYWRIGHT_MODULE` indica o Playwright instalado. A comparação opcional com Koito em 4111 requer `REFERENCE_USER` e `REFERENCE_PASSWORD` em memória e faz somente login e capturas, sem mutações.
+- `validate_media_dialog_refinements.cjs <origem descartável> <evidências>` — testa temas/contraste, fuso opcional, tooltips e buscas dinâmicas de artista/mesclagem; exige fixture nova por execução e os mesmos módulos/variáveis de referência do script anterior. Captura os diálogos em Yuu/Pearl e desktop/celular; no Koito faz apenas leitura e seleção de revisão, sem confirmar alterações.
 
 ## Scripts históricos
 

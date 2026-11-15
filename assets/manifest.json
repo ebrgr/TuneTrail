@@ -58,6 +58,7 @@
     "css/ui/components/section.css",
     "css/ui/components/media-list.css",
     "css/ui/components/activity.css",
+    "css/ui/components/tooltip.css",
     "css/ui/components/dialog.css",
     "css/ui/components/theme-panel.css",
     "css/ui/components/search.css",

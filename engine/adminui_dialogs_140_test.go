@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -139,4 +140,91 @@ func TestMediaActionVisibility140(t *testing.T) {
 		require.Contains(t, visitorMBID, "https://musicbrainz.org/")
 		require.NotContains(t, visitorMBID, "data-media-task")
 	}
+}
+
+// TestMediaOptionalTimezone140 preserves old POST fields and resolves a blank zone on the server.
+func TestMediaOptionalTimezone140(t *testing.T) {
+	for _, tc := range []struct {
+		name, zone, pageZone, wall, instant string
+		status                              int
+	}{
+		{"blank UTC", "", "UTC", "2023-02-03T12:34", "2023-02-03T12:34:00Z", 200},
+		{"blank return zone", "", "Asia/Tokyo", "2023-02-03T12:34", "2023-02-03T03:34:00Z", 200},
+		{"explicit old contract", "America/Sao_Paulo", "UTC", "2023-02-03T12:34", "2023-02-03T15:34:00Z", 200},
+		{"invalid zone", "No/Such_Zone", "UTC", "2023-02-03T12:34", "", 400},
+		{"nonexistent wall time", "America/Sao_Paulo", "UTC", "2018-11-04T00:30", "", 400},
+		{"ambiguous wall time", "America/Sao_Paulo", "UTC", "2019-02-16T23:30", "", 409},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			a := taskApp139(t)
+			base := "/second/manage/track/12"
+			form := taskForm139(t, a, base+"/add-listen?tz="+url.QueryEscape(tc.pageZone))
+			form.Set("local_time", tc.wall)
+			form.Set("timezone", tc.zone)
+			form.Set("offset", "")
+			headers := map[string]string{"X-TuneTrail-Partial": "1", "X-TuneTrail-Dialog": "1"}
+			result := taskRequest139(a, "POST", base+"/listen-add", a.cookie, form, headers)
+			require.Equal(t, tc.status, result.Code, result.Body.String())
+			var count int
+			require.NoError(t, a.store.QueryRow(`SELECT count(*) FROM listens WHERE profile_id=2 AND track_id=12`).Scan(&count))
+			if tc.status == 200 {
+				require.Equal(t, 2, count)
+				expected, err := time.Parse(time.RFC3339, tc.instant)
+				require.NoError(t, err)
+				require.NoError(t, a.store.QueryRow(`SELECT count(*) FROM listens WHERE profile_id=2 AND track_id=12 AND listened_at=?`, expected.Unix()).Scan(&count))
+				require.Equal(t, 1, count)
+			} else {
+				require.Equal(t, 1, count)
+				require.NotEmpty(t, result.Header().Get("X-TuneTrail-Submission"))
+				if tc.status == 409 {
+					require.Contains(t, result.Body.String(), `class="listen-offset" open`)
+				}
+				if tc.zone == "No/Such_Zone" {
+					require.Contains(t, result.Body.String(), "Invalid time zone.")
+					require.Contains(t, result.Body.String(), tc.zone)
+				}
+			}
+		})
+	}
+}
+
+// TestMediaLiveSearch140 returns only selectable results, without issuing mutation tickets per query.
+func TestMediaLiveSearch140(t *testing.T) {
+	a := taskApp139(t)
+	base := "/second/manage/track/12"
+	headers := map[string]string{"X-TuneTrail-Partial": "1", "X-TuneTrail-Dialog": "1", "X-TuneTrail-Search": "merge"}
+	result := taskRequest139(a, "GET", base+"/merge?merge_query=Target&partial=1", a.cookie, nil, headers)
+	require.Equal(t, 200, result.Code, result.Body.String())
+	require.Equal(t, "merge-results", result.Header().Get("X-TuneTrail-Fragment"))
+	require.Equal(t, "no-store", result.Header().Get("Cache-Control"))
+	require.Empty(t, result.Header().Get("X-TuneTrail-Submission"))
+	require.Contains(t, result.Body.String(), "Target Track")
+	require.Contains(t, result.Body.String(), "/review?action=merge&amp;to=13")
+	require.NotContains(t, result.Body.String(), "merge_query")
+	edit := taskForm139(t, a, base+"/edit")
+	headers["X-TuneTrail-Search"] = "artists"
+	headers["X-TuneTrail-Submission"] = edit.Get("submission_token")
+	result = taskRequest139(a, "GET", base+"/edit?artist_query=Target&partial=1", a.cookie, nil, headers)
+	require.Equal(t, 200, result.Code, result.Body.String())
+	require.Equal(t, "artist-results", result.Header().Get("X-TuneTrail-Fragment"))
+	require.Equal(t, edit.Get("submission_token"), result.Header().Get("X-TuneTrail-Submission"))
+	require.Contains(t, result.Body.String(), "Target Artist")
+	require.NotContains(t, result.Body.String(), "<html")
+}
+
+// TestMediaInvalidReturnTimezone140 proves invalid return context cannot be opened or used to insert a listen.
+func TestMediaInvalidReturnTimezone140(t *testing.T) {
+	a := taskApp139(t)
+	base := "/second/manage/track/12"
+	require.Equal(t, 400, taskRequest139(a, "GET", base+"/add-listen?tz=Invalid/Zone", a.cookie, nil, nil).Code)
+	form := taskForm139(t, a, base+"/add-listen?tz=UTC")
+	form.Set("return_to", base+"/add-listen?tz=Invalid/Zone")
+	form.Set("local_time", "2023-02-03T12:34")
+	form.Set("timezone", "")
+	form.Set("offset", "")
+	result := taskRequest139(a, "POST", base+"/listen-add", a.cookie, form, map[string]string{"X-TuneTrail-Partial": "1", "X-TuneTrail-Dialog": "1"})
+	require.Equal(t, 400, result.Code)
+	var count int
+	require.NoError(t, a.store.QueryRow(`SELECT count(*) FROM listens WHERE profile_id=2 AND track_id=12`).Scan(&count))
+	require.Equal(t, 1, count)
 }

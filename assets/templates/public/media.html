@@ -35,13 +35,16 @@
           <p>{{quantity "quantity.minutes" $media.MinutesListened}}</p>
         {{end}}
         {{with $media.FirstListen}}
-          <p>{{tr "media.listening_since" "Listening since"}} <time datetime="{{.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .}}">
+          <p>{{tr "media.listening_since" "Listening since"}} <time datetime="{{.Format "2006-01-02T15:04:05Z07:00"}}"
+            title="{{datetime .}}">
             {{- date .}}</time></p>
         {{end}}
       </div>
     </header>
     {{- if .Admin}}
-      <dialog id="media-task-dialog" aria-labelledby="media-task-title"
+      <dialog id="media-task-dialog" class="media-task-dialog" aria-labelledby="media-task-title"
+        data-search-error="{{tr "media.dialog.search_error" "Unable to search. Try again."}}"
+        data-search-updated="{{tr "media.dialog.search_updated" "Search results updated."}}"
         data-loading="{{tr "media.dialog.loading" "Loading…"}}"
         data-error="{{tr "media.dialog.error" "Unable to complete the request. Reopen the task to check its current state, or open the task page."}}"
         data-refresh-error="{{tr "media.dialog.refresh_error" "Changes saved. Reload the page to refresh its information."}}"
@@ -130,23 +133,35 @@
   <nav class="media-actions" aria-label="{{tr "media.actions" "Media actions"}}">
     {{- if $media.MusicBrainzURL}}
       <a href="{{$media.MusicBrainzURL}}" target="_blank" rel="noopener noreferrer"
-        aria-label="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}" title="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}">{{icon "ExternalLink"}}</a>
+        aria-label="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}"
+        data-tip="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}"
+        title="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}">{{icon "ExternalLink"}}</a>
     {{- end}}
     {{- if .Admin}}
       {{- if eq $media.Kind "track"}}
         <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/add-listen"
-          aria-label="{{tr "media.action.add_listen" "Add listen"}}" title="{{tr "media.action.add_listen" "Add listen"}}">{{icon "Plus"}}</a>
+          aria-label="{{tr "media.action.add_listen" "Add listen"}}"
+        data-tip="{{tr "media.action.add_listen" "Add listen"}}"
+        title="{{tr "media.action.add_listen" "Add listen"}}">{{icon "Plus"}}</a>
       {{- end}}
       <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/edit"
-        aria-label="{{tr "media.action.edit" "Edit item"}}" title="{{tr "media.action.edit" "Edit item"}}">{{icon "Pencil"}}</a>
+        aria-label="{{tr "media.action.edit" "Edit item"}}"
+        data-tip="{{tr "media.action.edit" "Edit item"}}"
+        title="{{tr "media.action.edit" "Edit item"}}">{{icon "Pencil"}}</a>
       {{- if ne $media.Kind "track"}}
         <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/image"
-          aria-label="{{tr "media.action.image" "Replace image"}}" title="{{tr "media.action.image" "Replace image"}}">{{icon "Image"}}</a>
+          aria-label="{{tr "media.action.image" "Replace image"}}"
+        data-tip="{{tr "media.action.image" "Replace image"}}"
+        title="{{tr "media.action.image" "Replace image"}}">{{icon "Image"}}</a>
       {{- end}}
       <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/merge"
-        aria-label="{{tr "media.action.merge" "Merge items"}}" title="{{tr "media.action.merge" "Merge items"}}">{{icon "Merge"}}</a>
+        aria-label="{{tr "media.action.merge" "Merge items"}}"
+        data-tip="{{tr "media.action.merge" "Merge items"}}"
+        title="{{tr "media.action.merge" "Merge items"}}">{{icon "Merge"}}</a>
       <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/delete"
-        aria-label="{{tr "media.action.delete" "Delete item"}}" title="{{tr "media.action.delete" "Delete item"}}">{{icon "Trash2"}}</a>
+        aria-label="{{tr "media.action.delete" "Delete item"}}"
+        data-tip="{{tr "media.action.delete" "Delete item"}}"
+        title="{{tr "media.action.delete" "Delete item"}}">{{icon "Trash2"}}</a>
     {{- end}}
   </nav>
   {{- end}}

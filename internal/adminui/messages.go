@@ -53,4 +53,6 @@ var adminMessages = map[string]string{
 	"Select a supported log level.":                                                                             "admin.message.select_a_supported_log_level",
 	"Some settings are invalid. Check the values and their combinations.":                                       "admin.message.some_settings_are_invalid_check_the_values_and_their_combinations",
 	"too many requests": "admin.message.too_many_requests",
+
+	"Invalid time zone. Use an IANA name such as America/Sao_Paulo.": "admin.listen.invalid_timezone",
 }

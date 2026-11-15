@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T22:44:00Z'
+updated_date: '2026-11-15T23:30:00Z'
 labels:
   - ui
   - admin
@@ -18,6 +18,10 @@ references:
   - backlog/evidencias/issue-140/comparacao.html
   - backlog/evidencias/issue-140/browser-checks.json
   - backlog/evidencias/issue-140/reviewer-complementar.md
+  - backlog/evidencias/issue-140/ajustes/comparacao.html
+  - backlog/evidencias/issue-140/ajustes/browser-checks.json
+  - backlog/evidencias/issue-140/ajustes/reviewer-final.md
+  - backlog/evidencias/issue-140/ajustes/estilos-inalterados.json
 priority: high
 type: feature
 ordinal: 153000
@@ -36,10 +40,10 @@ Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 - [x] #3 Cada ícone abre só a sua tarefa em diálogo (foco preso, Esc, foco devolvido) e, sem JavaScript, a página da tarefa; erro, rede e sessão expirada são recuperáveis
 - [x] #4 Trocar imagem atualiza a capa sem recarregar; editar atualiza o cabeçalho; resposta antiga não preenche diálogo novo e o botão Voltar não restaura formulário ativo
 - [ ] #5 Capturas lado a lado com o Koito original (desktop e celular) e aceite visual do usuário
-- [ ] #6 Todos os formulários dos diálogos usam botões e campos do tema
-- [ ] #7 Adicionar escuta: data e hora, botão responsivo e fuso horário opcional abaixo
-- [ ] #8 Editar item e Mesclar no padrão do Koito, com lista dinâmica e responsiva na mescla
-- [ ] #9 Tooltip nos ícones da barra, no mesmo estilo da barra lateral
+- [x] #6 Todos os formulários dos diálogos usam botões e campos do tema
+- [x] #7 Adicionar escuta: data e hora, botão responsivo e fuso horário opcional abaixo
+- [x] #8 Editar item e Mesclar no padrão do Koito, com lista dinâmica e responsiva na mescla
+- [x] #9 Tooltip nos ícones da barra, no mesmo estilo da barra lateral
 <!-- AC:END -->
 
 ## Comments
@@ -87,6 +91,15 @@ created: 2026-11-15T22:44:00Z
 ---
 
 Aceite adiado: o usuário pediu ajustes antes do aceite final (15/11/2026). Voltam para esta tarefa: (3a) todos os formulários dos diálogos com botões e campos no tema do TuneTrail; (3b) Adicionar escuta: campo de data e hora, botão de adicionar responsivo e, abaixo, o fuso horário como campo opcional; (3c) Editar item com a identidade visual e o funcionamento do Koito, botões no mesmo estilo; (3d) Mesclar no padrão do Koito, com lista dinâmica e responsiva; (4) tooltip nos ícones da barra, no mesmo estilo da barra lateral. Fora desta tarefa: Excluir por perfil (ISSUE-143) e o × do histórico (ISSUE-141).
+
+---
+
+author: codex
+created: 2026-11-15T23:30:00Z
+
+---
+
+Verificação dos ajustes: critérios 6–9 exercitados em Chrome, com 72 capturas Yuu/Pearl desktop/celular, contraste de botões/inputs/selects nos 12 temas, fuso opcional resolvido no servidor e inválido sem gravação, busca dinâmica com foco/ticket/URL preservados e resposta antiga descartada, tooltip compartilhado sem título nativo duplicado e regressão do editor completo coberta. make check passou 12/12 E2E; comparação de áreas de controle sem diferenças em 20 visualizações/21.934 elementos. Reviewer final aprovado; recomendações posteriores de foco aplicadas e verificadas inclusive durante POST pendente. #5 permanece para aceite visual; sem alteração da semântica de Excluir ou do × do histórico e sem mutações em 4110/4111.
 
 ---
 <!-- COMMENTS:END -->

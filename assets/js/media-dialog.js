@@ -10,11 +10,23 @@
   let taskURL = '';
   let ready = true;
   let validation = null;
+  let searchController = null;
+  let searchTimer = null;
+  let searchVersion = 0;
+  // Debounced reads never consume or mint mutation tickets, and cannot outlive their task.
+  function cancelSearch() {
+    clearTimeout(searchTimer);
+    searchController?.abort();
+    searchController = null;
+    searchVersion++;
+    content.querySelectorAll('.manage-search-results').forEach(section => { section.inert = false; section.removeAttribute('aria-busy'); });
+  }
   const base = document.querySelector('[data-media-task]')?.pathname.replace(/\/[^/]+$/, '');
   const plainClick = event => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
   // Closing or navigating away invalidates every outstanding response, including body reads.
   function clear() {
+    cancelSearch();
     activation?.abort();
     activation = null;
     content.replaceChildren();
@@ -34,7 +46,7 @@
   function allowed(url) {
     return url.origin === location.origin && url.pathname.startsWith(base + '/');
   }
-  function focusTitle() { title.focus({preventScroll: true}); }
+  function focusTitle() { dialog.scrollTop = 0; title.focus({preventScroll: true}); }
 
   // Refresh the public header from its owning renderer, including artwork srcset and statistics.
   async function refresh(signal) {
@@ -53,6 +65,7 @@
   // A dialog request has a bounded lifetime and validates the fragment before inserting any form.
   async function request(url, init = {}, mutation = false) {
     if (!activation || activation.signal.aborted) return;
+    cancelSearch();
     const owner = activation;
     const controller = new AbortController();
     const abort = () => controller.abort();
@@ -60,6 +73,7 @@
     const timeout = setTimeout(abort, init.body instanceof FormData ? 60000 : 15000);
     dialog.setAttribute('aria-busy', 'true');
     status.textContent = dialog.dataset.loading;
+    if (content.contains(document.activeElement)) focusTitle();
     content.inert = true;
     try {
       const response = await fetch(url, {...init, signal: controller.signal, cache: 'no-store', credentials: 'same-origin', redirect: 'manual',
@@ -102,7 +116,8 @@
     clear();
     opener = link.href;
     taskURL = link.href;
-    title.textContent = link.title;
+    dialog.dataset.task = new URL(taskURL).pathname.split('/').at(-1);
+    title.textContent = link.dataset.tip || link.title || link.getAttribute('aria-label');
     activation = new AbortController();
     dialog.showModal();
     focusTitle();
@@ -119,9 +134,10 @@
   });
   // Keep Tab within task controls, including the wrap through browser chrome in Chromium.
   dialog.addEventListener('keydown', event => {
-    if (event.key !== 'Tab') return;
-    const controls = [...dialog.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,[tabindex="0"]')]
-      .filter(element => !element.disabled && !element.closest('[inert]') && element.getClientRects().length);
+    if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
+    const controls = [...dialog.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,[tabindex="0"]')]
+      // Chromium retains layout boxes for inputs inside closed details; those are not focusable.
+      .filter(element => element.tabIndex >= 0 && !element.matches(':disabled') && !element.closest('[inert]') && element.checkVisibility({visibilityProperty:true}));
     const first = controls[0];
     const last = controls.at(-1);
     if (!first) { event.preventDefault(); focusTitle(); return; }
@@ -148,8 +164,71 @@
     url.searchParams.set('partial', '1');
     request(url);
   });
+  // Only results are swapped while typing: retain the field, caret and public URL.
+  async function search(form) {
+    cancelSearch();
+    if (!activation || dialog.hasAttribute('aria-busy') || !form.isConnected) return;
+    const owner = activation;
+    const version = searchVersion;
+    const controller = new AbortController();
+    searchController = controller;
+    const abort = () => controller.abort();
+    owner.signal.addEventListener('abort', abort, {once:true});
+    const timeout = setTimeout(abort, 10000);
+    const sectionID = form.dataset.liveSearch === 'merge' ? 'merge-results' : 'artist-results';
+    const section = content.querySelector('#' + sectionID);
+    section?.setAttribute('aria-busy', 'true');
+    if (section) section.inert = true;
+    try {
+      const url = new URL(form.action);
+      if (!allowed(url)) throw Error('Invalid search');
+      url.search = new URLSearchParams(new FormData(form)).toString();
+      url.searchParams.set('partial', '1');
+      const response = await fetch(url, {signal:controller.signal, cache:'no-store', credentials:'same-origin', redirect:'manual',
+        headers:{'X-TuneTrail-Partial':'1','X-TuneTrail-Dialog':'1','X-TuneTrail-Search':form.dataset.liveSearch,
+          'X-TuneTrail-Submission':content.querySelector('input[name=submission_token]')?.value || ''}});
+      if (!response.ok || response.headers.get('X-TuneTrail-Fragment') !== sectionID) throw Error('Invalid search fragment');
+      const html = await response.text();
+      if (owner !== activation || controller.signal.aborted || version !== searchVersion || !section?.isConnected) return;
+      const template = document.createElement('template');
+      template.innerHTML = html.trim();
+      const next = template.content.firstElementChild;
+      if (template.content.childElementCount !== 1 || next?.id !== sectionID || !next.matches('[data-section]')) throw Error('Invalid results');
+      section.replaceWith(next);
+      status.textContent = '';
+      next.querySelector('[data-search-status]').textContent = dialog.dataset.searchUpdated;
+    } catch {
+      if (owner === activation && !owner.signal.aborted && version === searchVersion && section?.isConnected) {
+        const message = document.createElement('p');
+        message.setAttribute('role', 'status');
+        message.dataset.searchStatus = '';
+        message.className = 'section-error';
+        message.textContent = dialog.dataset.searchError;
+        section.replaceChildren(message);
+        // Leave the input and ordinary Search button usable after a failed read.
+        status.textContent = dialog.dataset.searchError;
+      }
+    } finally {
+      clearTimeout(timeout);
+      owner.signal.removeEventListener('abort', abort);
+      if (searchController === controller) {
+        if (section) section.inert = false;
+        section?.removeAttribute('aria-busy');
+        searchController = null;
+      }
+    }
+  }
+  dialog.addEventListener('input', event => {
+    const form = event.target.closest('form[data-live-search]');
+    if (!form || event.isComposing || !event.target.matches('input[name=merge_query],input[name=artist_query]')) return;
+    cancelSearch();
+    const section = content.querySelector('#' + (form.dataset.liveSearch === 'merge' ? 'merge-results' : 'artist-results'));
+    if (section) section.inert = true;
+    searchTimer = setTimeout(() => search(form), 250);
+  });
   window.TuneTrailEnhance.install(dialog, {submit(form, submitter) {
     if (!activation || dialog.hasAttribute('aria-busy')) return;
+    if (form.matches('[data-live-search]')) { search(form); return; }
     const url = new URL(form.action);
     if (!allowed(url)) { failure(); focusTitle(); return; }
     const data = new FormData(form);

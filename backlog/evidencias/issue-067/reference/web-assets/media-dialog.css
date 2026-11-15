@@ -1,28 +1,95 @@
-/* Task forms in public media dialogs, isolated from the administrative page shell. */
-@layer pages {
-#media-task-dialog { max-width:780px; }
-#media-task-title { padding-right:36px; }
-#media-task-dialog [data-task-status]:empty { display:none; }
-#media-task-dialog [data-task-status] { margin:12px 0; }
-#media-task-dialog .admin-main h2 { font-size:1.3rem; margin:20px 0 12px; }
-#media-task-dialog .admin-main p { margin:12px 0; }
-#media-task-dialog form { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:16px 0; }
-#media-task-dialog label { display:flex; flex-direction:column; gap:6px; flex:1 1 180px; min-width:0; }
-#media-task-dialog label:has(input[type=checkbox]) { flex-direction:row; flex-basis:100%; align-items:center; }
-#media-task-dialog input:not([type=checkbox]),#media-task-dialog select {
-  width:100%; min-height:44px; padding:10px 12px;
-  border:1px solid var(--color-border); border-radius:7px; background:var(--color-bg);
+/* Media task controls own component styles, isolated by .media-task-dialog.
+   Public media page rules belong to the pages layer and never target these controls. */
+@layer components {
+.media-task-dialog {
+  --task-border:color-mix(in srgb,var(--color-fg) 60%,var(--color-bg));
+  max-width:600px; color-scheme:dark;
 }
-#media-task-dialog button:not(.close-dialog) { min-height:44px; padding:10px 16px; border-radius:7px; background:var(--color-primary); color:var(--color-bg); }
-#media-task-dialog .close-dialog { min-width:44px; min-height:44px; }
-#media-task-dialog a { color:var(--color-primary); text-decoration:underline; }
-#media-task-dialog ul { padding-left:24px; list-style:disc; }
-#media-task-dialog li { margin:10px 0; }
-#media-task-dialog .section-error { color:var(--color-error); }
-html[data-theme="pearl"] #media-task-dialog button:not(.close-dialog) { color:var(--color-fg); }
-html[data-theme="pearl"] #media-task-dialog a { color:#00538a; }
-@media(max-width:767px) {
-  #media-task-dialog form { flex-direction:column; align-items:stretch; }
-  #media-task-dialog label { flex:initial; }
+.media-task-dialog[data-task="edit"] { max-width:1000px; }
+html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
+.media-task-dialog #media-task-title { padding-right:36px; }
+.media-task-dialog [data-task-status]:empty { display:none; }
+.media-task-dialog [data-task-status] { margin:12px 0; }
+.media-task-dialog h2 { font-size:18px; margin:24px 0 12px; color:var(--color-fg-secondary); }
+.media-task-dialog #media-task-title { margin-top:0; font-size:24px; color:var(--color-fg); }
+.media-task-dialog p { margin:12px 0; }
+.media-task-dialog form { display:flex; flex-wrap:wrap; align-items:end; gap:8px; margin:12px 0; }
+.media-task-dialog label { display:flex; flex-direction:column; gap:6px; flex:1 1 180px; min-width:0; }
+.media-task-dialog label:has(input[type=checkbox]) { flex-direction:row; flex-basis:100%; align-items:center; min-height:44px; }
+.media-task-dialog :is(input:not([type=checkbox]),select,textarea) {
+  width:100%; min-width:0; min-height:44px; padding:10px 12px;
+  border:1px solid var(--task-border); border-radius:6px;
+  background-color:var(--color-bg); color:var(--color-fg);
+}
+.media-task-dialog input::placeholder { color:var(--color-fg-secondary); opacity:1; }
+.media-task-dialog input[type=checkbox] { accent-color:var(--color-primary); width:18px; height:18px; }
+.media-task-dialog input::file-selector-button {
+  background:var(--color-bg-secondary); color:var(--color-fg);
+  border:1px solid var(--task-border); border-radius:6px; padding:6px 10px; margin-right:12px;
+}
+.media-task-dialog button:not(.close-dialog) {
+  min-height:44px; padding:10px 16px; border:1px solid var(--task-border); border-radius:8px;
+  background:var(--color-bg); color:var(--color-fg); white-space:normal;
+}
+.media-task-dialog button:not(.close-dialog):hover { background:var(--color-bg-tertiary); }
+.media-task-dialog button:disabled { opacity:.55; cursor:default; }
+.media-task-dialog :is(a,button,input,select,textarea,summary):focus-visible { outline:2px solid var(--color-fg); outline-offset:2px; }
+.media-task-dialog .close-dialog { min-width:44px; min-height:44px; }
+.media-task-dialog a { color:var(--color-fg); text-decoration:underline; text-underline-offset:3px; }
+.media-task-dialog ul { list-style:none; padding:0; }
+.media-task-dialog li { margin:8px 0; }
+.media-task-dialog .manage-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.media-task-dialog li.manage-row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; }
+.media-task-dialog li.manage-row:has(>span:only-child) { grid-template-columns:1fr; }
+.media-task-dialog .manage-artist-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
+.media-task-dialog .manage-artist-row:has(>form:only-child) { grid-template-columns:1fr; }
+.media-task-dialog .manage-artist-row .manage-row { display:grid; grid-template-columns:minmax(0,1fr) auto; }
+.media-task-dialog .manage-artist-row form { margin:4px 0; }
+.media-task-dialog button.manage-remove { padding:10px; min-width:44px; }
+.media-task-dialog .manage-remove svg { width:18px; height:18px; }
+.media-task-dialog[data-task="add-listen"] #listens h2 { display:none; }
+.media-task-dialog .manage-row form { margin:0; }
+.media-task-dialog .manage-row-name { flex:1 1 160px; padding:10px 12px; border-radius:6px; background:var(--color-bg); overflow-wrap:anywhere; }
+.media-task-dialog .manage-metadata p { flex-basis:100%; order:3; }
+.media-task-dialog .manage-metadata label:has(select) { order:2; }
+.media-task-dialog .manage-section > h2 { text-transform:uppercase; font-weight:400; }
+.media-task-dialog[data-task="edit"] .manage-search-heading { display:none; }
+.media-task-dialog .manage-section + .manage-section { margin-top:24px; }
+.media-task-dialog :is(.section-error,.section-notice) {
+  padding:10px 12px; border:1px solid; border-radius:6px; background:var(--color-bg);
+}
+.media-task-dialog .section-error { color:color-mix(in srgb,var(--color-error) 45%,var(--color-fg)); }
+.media-task-dialog .section-notice { color:color-mix(in srgb,var(--color-success) 45%,var(--color-fg)); }
+.media-task-dialog .manage-search-results { margin:12px 0; }
+.media-task-dialog .manage-search-results ul { background:var(--color-bg); border-radius:8px; }
+.media-task-dialog .manage-search-results li { margin:0; }
+.media-task-dialog .manage-result { display:flex; gap:12px; padding:12px; text-decoration:none; align-items:center; min-height:75px; }
+.media-task-dialog .manage-result:hover { background:var(--color-bg-tertiary); border-radius:8px; }
+.media-task-dialog .manage-result span { min-width:0; flex:1; overflow-wrap:anywhere; }
+.media-task-dialog .manage-result span small { display:block; }
+.media-task-dialog .manage-result small { color:var(--color-fg-secondary); }
+.media-task-dialog .manage-result img { width:64px; height:64px; border-radius:6px; object-fit:cover; }
+.media-task-dialog .manage-advanced { margin:20px 0; }
+.media-task-dialog summary { min-height:44px; padding:8px 0; }
+.media-task-dialog .manage-empty { padding:12px; color:var(--color-fg-secondary); }
+.media-task-dialog .manage-add-listen {
+  display:grid; grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"datetime submit" "timezone ." "help help" "offset offset"; align-items:end;
+}
+.media-task-dialog .listen-datetime { grid-area:datetime; }
+.media-task-dialog .listen-submit { grid-area:submit; }
+.media-task-dialog .listen-timezone { grid-area:timezone; }
+.media-task-dialog .listen-timezone-help { grid-area:help; color:var(--color-fg-secondary); }
+.media-task-dialog .listen-offset { grid-area:offset; color:var(--color-fg-secondary); }
+.media-task-dialog .listen-offset label { margin-top:8px; color:var(--color-fg); }
+@media(min-width:640px) {
+  .media-task-dialog[data-task="edit"] .manage-section > form { max-width:60%; }
+}
+@media(max-width:480px) {
+  .media-task-dialog .manage-add-listen {
+    grid-template-columns:minmax(0,1fr); grid-template-areas:"datetime" "submit" "timezone" "help" "offset";
+  }
+  .media-task-dialog .manage-result { flex-wrap:wrap; }
+  .media-task-dialog .manage-result > small { flex-basis:100%; }
 }
 }
