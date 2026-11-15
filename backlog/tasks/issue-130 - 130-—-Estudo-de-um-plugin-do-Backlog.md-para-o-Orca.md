@@ -5,10 +5,12 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:06:00Z'
-updated_date: '2026-11-15T16:17:00Z'
+updated_date: '2026-11-15T16:37:00Z'
 labels:
   - processo
 dependencies: []
+references:
+  - https://github.com/ebrgr/backlog-md-orca
 documentation:
   - doc-037
 type: spike
@@ -56,6 +58,15 @@ created: 2026-11-15T16:17:00Z
 ---
 
 Aceite do usuário em 15/11/2026. Decisões: (1) o plugin terá repositório próprio, ebrgr/backlog-md-orca, com o próprio Backlog.md; toda a implementação segue lá; (2) projeto em inglês; (3) tudo separado do TuneTrail, com o checkout local em ~/Projects/backlog-md-orca. Esta tarefa fica encerrada com o estudo doc-037.
+
+---
+
+author: claude
+created: 2026-11-15T16:37:00Z
+
+---
+
+Encerrada: o plugin virou projeto próprio, público em https://github.com/ebrgr/backlog-md-orca (checkout em ~/Projects/backlog-md-orca, registrado como projeto separado no Orca). A implementação segue no Backlog.md de lá (TASK-001 a TASK-006, marco v0.1.0); nada do plugin fica no TuneTrail.
 
 ---
 <!-- COMMENTS:END -->
