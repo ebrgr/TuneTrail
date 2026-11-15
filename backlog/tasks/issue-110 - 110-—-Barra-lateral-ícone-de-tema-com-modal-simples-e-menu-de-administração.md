@@ -1,10 +1,11 @@
 ---
 id: ISSUE-110
 title: '110 — Barra lateral: ícone de tema com modal simples e menu de administração'
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T00:03:00Z'
+updated_date: '2026-11-15T00:57:00Z'
 labels:
   - ui
   - i18n
@@ -12,6 +13,8 @@ labels:
 milestone: m-10
 dependencies:
   - ISSUE-109
+references:
+  - backlog/evidencias/issue-110/advisor-inicial.md
 priority: high
 type: feature
 ordinal: 110000
@@ -58,6 +61,33 @@ created: 2026-11-15T00:03:00Z
 ---
 
 Herdado da ISSUE-067 (decisão do usuário em 14/11/2026): unificar a barra lateral nesta tarefa. Hoje existem duas: partial/sidebar (público e prévia, em assets/templates/public/page.html) e admin/sidebar (assets/templates/admin/shell.html). Diferem na busca (diálogo × link), nos ícones (função icon × SVG no template), nos campos do avatar e no diálogo de configurações. Critério a cumprir aqui: barra lateral definida uma única vez, como já foi feito com o head em templates/shared/head.html; verificar com capturas antes/depois e aceite visual. Ver doc-035.
+
+---
+
+author: ebrgr
+created: 2026-11-15T00:50:00Z
+
+---
+
+Início: branch `feat/issue-110-barra-lateral-icone-de-tema` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-15T00:53:00Z
+
+---
+
+Parecer do Advisor (Opus, medium): REPROVADO COM RESSALVAS — 4 lacunas corrigíveis (theme-picker.js compartilhado, Conta como link sem formulário, CSS/fallback de popover, teste i18n_ui). Desenho: webassets.Nav + shared/nav.html. Aguardando decisões do usuário.
+
+---
+
+author: claude
+created: 2026-11-15T00:57:00Z
+
+---
+
+Decisões do usuário em 14/11/2026 sobre o parecer do Advisor: (1) unificação da barra lateral numa tarefa própria de refatoração, antes da 110; (2) tema personalizado mantido recolhido em <details> no fim do modal de tema; (3) na prévia, o menu de administração mostra Sobre e um aviso de prévia, sem links para /admin; (4) a tecla \ passa a abrir o modal de tema. A 110 fica com: ícone Palette e modal de tema (temas, personalizado recolhido, idioma, sem abas), menu de administração (Administração, Configuração do servidor, Conta, Sobre) com selo ShieldCheck, popover com fallback, theme-picker.js compartilhado e remoção do settings-dialog/#admin-settings.
 
 ---
 <!-- COMMENTS:END -->
