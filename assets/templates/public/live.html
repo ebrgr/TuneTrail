@@ -23,6 +23,7 @@
       data-week-start="{{.WeekStart}}"
       data-force-timezone="{{.ForcedTimezone}}"
       data-section="{{.Section}}"
+      {{if .Admin}}data-admin{{end}}
       {{if .Profile}}data-profile-id="{{.Profile.ID}}"
       data-profile-slug="{{.Profile.Slug}}"{{end}}
     >
@@ -31,7 +32,20 @@
         <div class="app-content">
           {{if .Profile}}
             <header class="profile-header">
-              {{template "partial/avatar" .Profile}}
+              {{if .Admin}}
+                {{/* ISSUE-109: rendered only for a valid administrator session; links to administration. */}}
+                <a
+                  class="admin-avatar-link"
+                  href="/admin"
+                  title="{{tr "ui.admin_signed_in" "Administrator signed in"}}"
+                >
+                  {{template "partial/avatar" .Profile}}
+                  <span class="admin-badge">{{icon "ShieldCheck"}}</span>
+                  <span class="sr-only">{{tr "ui.admin_signed_in" "Administrator signed in"}}</span>
+                </a>
+              {{else}}
+                {{template "partial/avatar" .Profile}}
+              {{end}}
               <div class="profile-identity">
                 <strong>{{.Profile.Name}}</strong>
                 <span>{{tr "ui.listening_profile" "Listening profile"}} · /{{.Profile.Slug}}</span>

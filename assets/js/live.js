@@ -66,6 +66,9 @@
     });
   }
 
+  // The server marks administrator sessions with data-admin (ISSUE-109); no role fetch is needed.
+  const admin = 'admin' in body.dataset;
+
   // Restore authority and compare server-resolved context without trusting preference cookies.
   async function activate(restored) {
     active?.abort();
@@ -73,29 +76,29 @@
     const controller = new AbortController();
     active = controller;
     window.TuneTrailTheme?.refresh();
+    if (!restored) {
+      if (slug && admin) addControls();
+      return;
+    }
     try {
       await requestScope(controller, async signal => {
-        const options = {signal, cache: 'no-store', credentials: 'same-origin'};
-        const account = slug ? fetch('/apis/web/v1/user', options).then(async response =>
-          response.ok ? response.json() : null) : Promise.resolve(null);
-        const context = restored ? fetch(location.href, {...options, method: 'HEAD'}) : Promise.resolve(null);
-        const [user, head] = await Promise.all([account, context]);
+        const head = await fetch(location.href, {signal, cache: 'no-store', credentials: 'same-origin', method: 'HEAD'});
         if (signal.aborted || active !== controller) return;
-        if (head) {
-          const language = head.headers.get('Content-Language');
-          const generation = head.headers.get('X-TuneTrail-UI-Generation');
-          const timezone = head.headers.get('X-TuneTrail-Timezone');
-          const week = head.headers.get('X-TuneTrail-Week-Start');
-          if (head.redirected || head.status === 404 || head.status === 410 ||
-              (language && language !== document.documentElement.lang) ||
-              (generation && generation !== body.dataset.uiGeneration) ||
-              (timezone && body.dataset.timezone && timezone !== body.dataset.timezone) ||
-              (week && body.dataset.weekStart && week !== body.dataset.weekStart)) {
-            location.reload(); return;
-          }
-          if (!head.ok) return;
+        const language = head.headers.get('Content-Language');
+        const generation = head.headers.get('X-TuneTrail-UI-Generation');
+        const timezone = head.headers.get('X-TuneTrail-Timezone');
+        const week = head.headers.get('X-TuneTrail-Week-Start');
+        const session = head.headers.get('X-TuneTrail-Admin');
+        // A login, logout or expiry while suspended reloads instead of showing a stale badge.
+        if (head.redirected || head.status === 404 || head.status === 410 ||
+            (language && language !== document.documentElement.lang) ||
+            (generation && generation !== body.dataset.uiGeneration) ||
+            (timezone && body.dataset.timezone && timezone !== body.dataset.timezone) ||
+            (week && body.dataset.weekStart && week !== body.dataset.weekStart) ||
+            (session && session !== String(admin))) {
+          location.reload(); return;
         }
-        if (user?.role === 'admin') addControls();
+        if (head.ok && slug && admin) addControls();
       });
     } catch {
       // Keep the public snapshot available, with no mutation controls, on failure.
@@ -145,5 +148,7 @@
       if (!reloading && button.isConnected && active === controller) button.disabled = false;
     }
   });
-  activate(false);
+  // A history navigation may rebuild the page from the HTTP cache without the bfcache;
+  // revalidate it like a restore so a stale badge or controls never survive a logout.
+  activate(performance.getEntriesByType('navigation')[0]?.type === 'back_forward');
 })();

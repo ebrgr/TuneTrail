@@ -1,0 +1,33 @@
+{
+ "visitor": {
+  "nav": "navigate",
+  "persisted": false,
+  "badge": 0,
+  "dataAdmin": false,
+  "controls": 0
+ },
+ "login": 204,
+ "admin": {
+  "nav": "navigate",
+  "persisted": false,
+  "badge": 1,
+  "dataAdmin": true,
+  "controls": 3
+ },
+ "adminBack": {
+  "nav": "back_forward",
+  "persisted": false,
+  "badge": 1,
+  "dataAdmin": true,
+  "controls": 3
+ },
+ "logout": 204,
+ "afterLogoutBack": {
+  "nav": "back_forward",
+  "persisted": false,
+  "badge": 0,
+  "dataAdmin": false,
+  "controls": 0
+ }
+}
+PASS

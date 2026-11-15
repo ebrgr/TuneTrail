@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- Show a shield badge on the profile avatar when an administrator session is active, linking to administration; visitors never receive it (ISSUE-109).
+
+### Changed
+
+- Public pages learn the administrator session from the server, so listen deletion controls appear without an extra request (ISSUE-109).
+
 ## [0.14] - 2026-11-14
 
 ### Fixed

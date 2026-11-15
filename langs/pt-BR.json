@@ -118,6 +118,7 @@
   "graph.daily_activity": "Atividade diária de reprodução · {{.Timezone}}",
   "graph.interest_desc": "{{.Count}} em {{.Intervals}}. Datas e quantidades exatas estão disponíveis na tabela de interesse.",
   "ui.listening_profile": "Perfil de reprodução",
+  "ui.admin_signed_in": "Administrador conectado",
   "ui.page": "Página",
   "ui.plays_word": "reproduções",
   "ui.play_word": "reprodução",

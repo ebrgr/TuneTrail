@@ -168,7 +168,7 @@ func bindRoutes(
 			panic(fmt.Errorf("load language catalogs: %w", err))
 		}
 		r.With(adminweb.SameOrigin).Post("/language", catalog.SetLanguage)
-		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil})
+		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil, Sessions: db})
 		if err != nil {
 			panic(fmt.Errorf("initialize Go pages: %w", err))
 		}

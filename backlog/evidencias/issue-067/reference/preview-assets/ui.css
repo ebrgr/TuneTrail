@@ -201,6 +201,39 @@ a:hover,button.media-title:hover {
   gap: 12px;
   border-bottom: 1px solid var(--color-border)
 }
+/* ISSUE-109: administrator session badge. The link pads the 32px avatar to a 44px
+   touch target without moving the header; the badge keeps 3:1 against the background. */
+.admin-avatar-link {
+  position: relative;
+  display: inline-flex;
+  padding: 6px;
+  margin: -6px;
+  border-radius: 50%;
+  color: inherit
+}
+.admin-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  box-shadow: 0 0 0 2px var(--color-bg)
+}
+.admin-badge svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.5
+}
+/* Pearl's accent colors stay under 3:1 on its background; use the text color there. */
+[data-theme="pearl"] .admin-badge {
+  background: var(--color-fg)
+}
 .profile-identity {
   min-width: 0;
   display: block

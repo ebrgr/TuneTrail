@@ -118,6 +118,7 @@
   "graph.daily_activity": "Daily listening activity · {{.Timezone}}",
   "graph.interest_desc": "{{.Count}} in {{.Intervals}}. Exact dates and counts are available in the Interest values table.",
   "ui.listening_profile": "Listening profile",
+  "ui.admin_signed_in": "Administrator signed in",
   "ui.page": "Page",
   "ui.plays_word": "plays",
   "ui.play_word": "play",

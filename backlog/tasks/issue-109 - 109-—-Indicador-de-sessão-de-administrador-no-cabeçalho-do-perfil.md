@@ -1,10 +1,11 @@
 ---
 id: ISSUE-109
 title: 109 — Indicador de sessão de administrador no cabeçalho do perfil
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-14T15:10:00Z'
+updated_date: '2026-11-15T00:13:00Z'
 labels:
   - ui
   - admin
@@ -12,6 +13,9 @@ milestone: m-10
 dependencies:
   - ISSUE-106
   - ISSUE-067
+references:
+  - backlog/evidencias/issue-109/reviewer.md
+  - backlog/evidencias/issue-109/historico_sem_bfcache.log
 priority: high
 type: feature
 ordinal: 109000
@@ -48,11 +52,11 @@ A ISSUE-108 reutiliza a detecção do passo 1 para mostrar a barra de ações.
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Selo ShieldCheck no avatar do cabeçalho somente com sessão de administrador ativa
-- [ ] #2 Visitantes nunca recebem o selo nem o atributo data-admin (testes)
-- [ ] #3 Contraste do selo de pelo menos 3:1 em todos os temas; texto acessível e title traduzidos
-- [ ] #4 live.js deixa de chamar /apis/web/v1/user para descobrir o papel
-- [ ] #5 Respostas com Vary: Cookie e cache privado
+- [x] #1 Selo ShieldCheck no avatar do cabeçalho somente com sessão de administrador ativa
+- [x] #2 Visitantes nunca recebem o selo nem o atributo data-admin (testes)
+- [x] #3 Contraste do selo de pelo menos 3:1 em todos os temas; texto acessível e title traduzidos
+- [x] #4 live.js deixa de chamar /apis/web/v1/user para descobrir o papel
+- [x] #5 Respostas com Vary: Cookie e cache privado
 - [ ] #6 Capturas nos temas Yuu e Pearl e aceite visual do usuário
 <!-- AC:END -->
 
@@ -65,6 +69,15 @@ created: 2026-11-14T15:10:00Z
 ---
 
 Nova ordem da Fase 1 aprovada pelo usuário em 14/11/2026: os assets passam a ser servidos do disco pela ISSUE-066 e os templates são reformatados pela ISSUE-067, então as tarefas de fluidez vêm depois delas para evitar retrabalho e conflitos.
+
+---
+
+author: ebrgr
+created: 2026-11-15T00:04:00Z
+
+---
+
+Início: branch `feat/issue-109-indicador-de-sessao-de-administrador` criada a partir de `main`.
 
 ---
 <!-- COMMENTS:END -->

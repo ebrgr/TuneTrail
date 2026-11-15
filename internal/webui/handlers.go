@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"html/template"
 	"log"
 	"net/http"
@@ -28,6 +30,8 @@ type ReadStore interface {
 	db.ProfileStore
 }
 type Options struct {
+	// Sessions resolves the administrator session cookie; nil means no admin badge.
+	Sessions       admin.SessionReader
 	Languages      *i18n.Catalog
 	ForcedTimezone bool
 	DefaultTheme   string
@@ -63,6 +67,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	w = h.options.Languages.Wrap(w, r)
 	p := LivePage{Page: Page{Locale: i18n.ViewOf(w), Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: r.URL.RequestURI(), Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}, Params: cloneQuery(r.URL.Query())}
+	p.Admin = h.adminSession(r)
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if r.URL.Path != "/" {
 		profile, err := h.store.GetListeningProfile(r.Context(), parts[0])
@@ -214,6 +219,20 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	h.render(w, p)
 }
+
+// adminSession reads the administrator cookie without creating or extending a session;
+// any error (missing, ambiguous, expired, non-admin or store failure) means a visitor.
+func (h *Pages) adminSession(r *http.Request) bool {
+	if h.options.Sessions == nil {
+		return false
+	}
+	_, err := adminweb.SessionIdentity(r, h.options.Sessions)
+	if err != nil && !errors.Is(err, admin.ErrUnauthorized) && !errors.Is(err, admin.ErrForbidden) {
+		log.Printf("admin session lookup failed: %v", err)
+	}
+	return err == nil
+}
+
 func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 	// Buffer localized documents and select cache policy by final status, never for admin forms.
 	w.Header().Set("Cache-Control", "no-store")
@@ -249,6 +268,8 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 		w.Header().Set("Cache-Control", "private, no-cache")
 		w.Header().Add("Vary", "Cookie")
 		w.Header().Set("X-TuneTrail-UI-Generation", generation)
+		// Lets a page restored from the back/forward cache detect a login or logout.
+		w.Header().Set("X-TuneTrail-Admin", strconv.FormatBool(p.Admin))
 		if p.Profile != nil {
 			w.Header().Set("X-TuneTrail-Timezone", p.Timezone)
 			w.Header().Set("X-TuneTrail-Week-Start", strconv.Itoa(p.WeekStart))
