@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T01:44:00Z'
+updated_date: '2026-11-15T01:45:00Z'
 labels:
   - ui
   - i18n
@@ -125,6 +125,15 @@ created: 2026-11-15T01:44:00Z
 ---
 
 Aceite: aprovada pelo usuário em 14/11/2026, incluindo o aceite visual ("aceito a 110, publique"). Push não solicitado.
+
+---
+
+author: ebrgr
+created: 2026-11-15T01:45:00Z
+
+---
+
+Publicação: versão 0.16 (tag `v0.16`), branch `feat/issue-110-barra-lateral-icone-de-tema` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

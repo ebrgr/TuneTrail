@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.16] - 2026-11-15
+
 ### Changed
 
 - Replace the About icon with a theme icon that opens a simple panel with the themes, the custom theme and the language, without tabs; the panel also works in administration and opens with the \ key (ISSUE-110).
