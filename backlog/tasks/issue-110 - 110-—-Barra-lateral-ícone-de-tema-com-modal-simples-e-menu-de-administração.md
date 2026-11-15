@@ -15,6 +15,7 @@ dependencies:
   - ISSUE-122
 references:
   - backlog/evidencias/issue-110/advisor-inicial.md
+  - backlog/evidencias/issue-110/advisor-segunda-barra.md
 priority: high
 type: feature
 ordinal: 110000
@@ -88,6 +89,15 @@ created: 2026-11-15T00:57:00Z
 ---
 
 Decisões do usuário em 14/11/2026 sobre o parecer do Advisor: (1) unificação da barra lateral numa tarefa própria de refatoração, antes da 110; (2) tema personalizado mantido recolhido em <details> no fim do modal de tema; (3) na prévia, o menu de administração mostra Sobre e um aviso de prévia, sem links para /admin; (4) a tecla \ passa a abrir o modal de tema. A 110 fica com: ícone Palette e modal de tema (temas, personalizado recolhido, idioma, sem abas), menu de administração (Administração, Configuração do servidor, Conta, Sobre) com selo ShieldCheck, popover com fallback, theme-picker.js compartilhado e remoção do settings-dialog/#admin-settings.
+
+---
+
+author: claude
+created: 2026-11-15T01:12:00Z
+
+---
+
+Nova demanda do usuário: segunda barra de administração no lugar do submenu. Parecer do Advisor: REPROVADO COM RESSALVAS (popover inadequado, CSRF no Sair, tooltips sobre a segunda barra, destinos dos itens); propõe disclosure com aprimoramento progressivo e dividir a tarefa. Aguardando decisões do usuário.
 
 ---
 <!-- COMMENTS:END -->
