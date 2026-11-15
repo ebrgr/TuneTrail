@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T22:54:00Z'
-updated_date: '2026-11-15T16:42:00Z'
+updated_date: '2026-11-15T16:44:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -78,6 +78,15 @@ created: 2026-11-15T16:42:00Z
 ---
 
 Aceite do usuário em 15/11/2026. Integração por fast-forward na main, sem versão (estudo sem mudança no produto). Primeiro estudo feito por um worker Codex numa worktree do Orca (piloto da ISSUE-129).
+
+---
+
+author: claude
+created: 2026-11-15T16:44:00Z
+
+---
+
+Recortes registrados: ISSUE-131 a ISSUE-138, na ordem do doc-036 (131–134 e 136 na Fase 2, 135, 137 e 138 na Fase 4).
 
 ---
 <!-- COMMENTS:END -->
