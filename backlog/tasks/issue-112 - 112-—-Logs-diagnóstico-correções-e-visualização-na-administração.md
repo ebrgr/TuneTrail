@@ -4,7 +4,7 @@ title: '112 — Logs: diagnóstico, correções e visualização na administraç
 status: Aberta
 assignee: []
 created_date: '2026-11-14T03:48:00Z'
-updated_date: '2026-11-14T03:54:00Z'
+updated_date: '2026-11-15T15:18:00Z'
 labels:
   - admin
   - operacao
@@ -73,6 +73,15 @@ request_id: código aleatório de 8 caracteres gerado por requisição (WithRequ
 RequestIDHook (middleware.go:20): hook do zerolog pensado para acrescentar o request_id a qualquer linha registrada com contexto (.Ctx(ctx)), inclusive pelo logger global — cobriria trabalho em segundo plano (ex.: fila de imagens) e código que usa logger.Get() com ctx em mãos. Não faz nada hoje: (1) nunca é registrado (nenhum .Hook(RequestIDHook{})); (2) procura ctx.Value("requestID") com string simples, enquanto o middleware guarda com a chave tipada MiddlwareContextKey("requestID"); em Go as chaves comparam também o tipo, então nunca coincidem. Provável herança incompleta do Koito.
 
 Decisão recomendada para a Etapa 1: remover o RequestIDHook e propagar o contexto com o logger da requisição para o trabalho em segundo plano. Acrescentado critério: linhas registradas durante uma requisição, inclusive em segundo plano, saem com o request_id (teste). Alternativa descartada salvo necessidade: consertar o hook (registrar no logger global e usar a chave tipada).
+
+---
+
+author: claude
+created: 2026-11-15T15:18:00Z
+
+---
+
+A página desta tarefa segue o padrão visual comum da remodelação da administração (ISSUE-074) e entra como item da segunda barra (ISSUE-123).
 
 ---
 <!-- COMMENTS:END -->

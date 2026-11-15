@@ -4,7 +4,7 @@ title: 083 — Central de saúde da ingestão e "por que esta escuta está aqui"
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-14T03:48:00Z'
+updated_date: '2026-11-15T15:18:00Z'
 labels:
   - admin
   - ingestao
@@ -38,6 +38,15 @@ created: 2026-11-14T03:48:00Z
 ---
 
 Coordenar com a ISSUE-112 (logs): a central de saúde mostra a contagem de erros e avisos da última hora com link para /admin/logs filtrado.
+
+---
+
+author: claude
+created: 2026-11-15T15:18:00Z
+
+---
+
+A página desta tarefa segue o padrão visual comum da remodelação da administração (ISSUE-074) e entra como item da segunda barra (ISSUE-123).
 
 ---
 <!-- COMMENTS:END -->

@@ -239,6 +239,7 @@ Concluídas: ISSUE-058.
 | Página de mídia sem ícones de ação; link de gestão visível a visitantes; página de gestão misturando todas as tarefas | 108, 073 |
 | Nenhum sinal de sessão de administrador; ícone Info só com link; configurações em modal com abas | 109, 110 |
 | Issues e PRs abertos do Koito em 14/11/2026 ([doc-034](<../estudos/doc-034 - Estudo-da-ISSUE-114-—-issues-e-PRs-abertos-do-Koito.md>)) | 114 (estudo) · 115 (correções herdadas) · 116 (identidade de faixas) · 117 (imagens) · 118 (favoritos) · 119 (importadores) · 120 (períodos) · 121 (implantação) |
+| Remodelação responsiva da administração no estilo da busca e do painel de Tema (pedido de 15/11/2026) | 074 (tarefa-mãe) · 125 (conta) · 126 (perfis) · 127 (configuração do servidor) · 128 (login, revisões e mensagens) · base: 124 · mídia: 108 |
 | Acessibilidade sem validação abrangente (024/026) | 078 |
 | Curvas do gráfico (047) | 077 |
 | Relay best-effort, 429 sem repetição (020/034) | 082 |
