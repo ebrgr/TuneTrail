@@ -24,7 +24,7 @@
   "backslashFocusInside": true,
   "backslashFocusBack": true
  },
- "adminBadge": 1,
+ "adminBadge": 0,
  "languageAfter": "en"
 }
 PASS

@@ -57,7 +57,7 @@ const origin = process.argv[2], shots = process.argv[3];
   out.login = await page.evaluate(() => fetch('/apis/web/v1/login', {method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({username: 'validation-admin', password: 'validation-password'})}).then(r => r.status));
   await check('admin', '/admin');
-  out.adminBadge = await page.locator('a[href="/admin"].nav-button .admin-badge').count();
+  out.adminBadge = await page.locator('.nav-button .admin-badge').count();
   // Language form inside the panel works through the normal POST.
   await page.goto(origin + '/cache-study');
   await page.locator('button[popovertarget="theme-panel"]').first().click();
@@ -97,7 +97,7 @@ def main():
                      and r['escCloses'] and r['focusBack'] and r['enterOpens'] and r['backslashOpens']
                      and r['backslashFocusInside'] and r['backslashFocusBack']
                      for r in (report['publico'], report['admin']))
-            ok = ok and report['adminBadge'] == 1 and report['languageAfter'] == 'en'
+            ok = ok and report['adminBadge'] == 0 and report['languageAfter'] == 'en'
             print('PASS' if ok else 'FAIL')
             return 0 if ok else 1
         finally:

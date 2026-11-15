@@ -798,16 +798,6 @@ dialog h2 {
   cursor: pointer;
   color: var(--color-fg-secondary)
 }
-.nav-button .admin-badge {
-  right: 2px;
-  bottom: 2px;
-  width: 12px;
-  height: 12px
-}
-.nav-button .admin-badge svg {
-  width: 8px;
-  height: 8px
-}
 .theme-heading {
   display: flex;
   gap: 12px;

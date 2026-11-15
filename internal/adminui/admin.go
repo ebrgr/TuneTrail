@@ -522,10 +522,9 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 	return os.Open(u.Path)
 }
 
-// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122); signedIn
-// is false only on the login page and shows the session badge otherwise (ISSUE-110).
-func adminNav(p *models.ListeningProfile, signedIn bool) webassets.Nav {
-	nav := webassets.Nav{Kind: "admin", Admin: signedIn}
+// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122).
+func adminNav(p *models.ListeningProfile) webassets.Nav {
+	nav := webassets.Nav{Kind: "admin"}
 	if p != nil {
 		nav.Profile = &webassets.NavProfile{Name: p.DisplayName, Slug: p.Slug}
 		if p.AvatarImageID != nil {

@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T01:12:00Z'
-updated_date: '2026-11-15T01:32:00Z'
+updated_date: '2026-11-15T01:40:00Z'
 labels:
   - ui
   - i18n
@@ -31,7 +31,7 @@ Origem: pedido do usuário em 13–14/11/2026; escopo revisto em 14/11/2026 depo
 1. O penúltimo ícone da barra (Info, só link para o GitHub) vira Palette (Lucide, ISC). Ao clicar, abre um modal só com a grade de temas, o tema personalizado recolhido em <details> no fim e o idioma (POST /language, sem campos novos), sem abas nem menu lateral. A tecla \\ abre esse modal.
 2. A troca de tema sai de ui.js para assets/js/theme-picker.js, carregado no head compartilhado em todos os tipos de página, para funcionar também na administração; o <select data-admin-theme> de admin.js sai.
 3. Remover o settings-dialog com abas (Aparência, Conta, Sobre, Administração), o #admin-settings da administração e os <noscript> de idioma do rodapé; um <noscript> curto no modal explica que a troca de tema precisa de JavaScript.
-4. Enquanto a ISSUE-123 não chega, o último ícone (Settings2) é um link para /admin, com o selo ShieldCheck da ISSUE-109 quando a sessão está ativa. Sobre (versão e GitHub) vai para a ISSUE-123 como último item da segunda barra.
+4. Enquanto a ISSUE-123 não chega, o último ícone (Settings2) é um link para /admin, sem selo: por decisão do usuário, o selo ShieldCheck da ISSUE-109 fica só no avatar do perfil. Sobre (versão e GitHub) vai para a ISSUE-123 como último item da segunda barra.
 5. Mesma barra nas páginas públicas, na prévia e na administração (shared/nav.html, ISSUE-122); teclado, foco devolvido, rótulos traduzidos; testes (engine/i18n_ui_test.go) e capturas.
 <!-- SECTION:DESCRIPTION:END -->
 
@@ -40,7 +40,7 @@ Origem: pedido do usuário em 13–14/11/2026; escopo revisto em 14/11/2026 depo
 - [x] #1 Penúltimo ícone é Palette e abre modal só com temas, tema personalizado recolhido e idioma, sem abas
 - [x] #2 Modal de tema abre por clique, teclado e pela tecla \; foco devolvido ao ícone ao fechar
 - [x] #3 Troca de tema funciona nas páginas públicas, na prévia e na administração (theme-picker.js compartilhado)
-- [x] #4 settings-dialog, #admin-settings e ícone Info removidos; último ícone leva a /admin com selo quando há sessão
+- [x] #4 settings-dialog, #admin-settings e ícone Info removidos; último ícone leva a /admin, sem selo (o selo de sessão fica só no avatar do perfil)
 - [ ] #5 Traduções em inglês e português; testes e capturas desktop e celular com aceite visual
 <!-- AC:END -->
 
@@ -107,6 +107,15 @@ created: 2026-11-15T01:32:00Z
 ---
 
 Verificação: make check 12/12 e referência sem diferenças; validador real Chrome/Firefox/HTTPS PASS; roteiro painel_tema.py PASS em páginas públicas e administração (abre por clique, Enter e \, foco entra no painel e volta ao fechar, Esc, tema Pearl aplicado, idioma salvo, selo no ícone de administração); Reviewer com o item obrigatório corrigido. Falta o aceite visual (capturas em backlog/evidencias/issue-110/).
+
+---
+
+author: claude
+created: 2026-11-15T01:40:00Z
+
+---
+
+Ajuste pedido pelo usuário antes do aceite: o selo de sessão sai do ícone de administração da barra e fica só no avatar do perfil (ISSUE-109). Nav.Admin, LivePage.Nav e o parâmetro de sessão de adminNav removidos; ISSUE-123 atualizada (sem selo no gatilho nem em Conta).
 
 ---
 <!-- COMMENTS:END -->
