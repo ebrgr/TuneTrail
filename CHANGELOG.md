@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The stylesheets in `assets/css/` are now split into smaller files that the server joins into the same `ui.css`; the page looks the same, but a custom web directory set with `TUNETRAIL_WEB_DIR` must follow the new layout listed in `assets/manifest.json` (ISSUE-068).
+
 ## [0.19] - 2026-11-15
 
 ### Changed
