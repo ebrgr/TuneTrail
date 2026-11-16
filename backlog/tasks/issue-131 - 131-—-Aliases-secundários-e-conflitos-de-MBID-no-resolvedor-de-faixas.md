@@ -1,11 +1,11 @@
 ---
 id: ISSUE-131
 title: 131 — Aliases secundários e conflitos de MBID no resolvedor de faixas
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-16T16:24:00Z'
+updated_date: '2026-11-16T16:26:00Z'
 labels:
   - catalogo
   - ingestao
@@ -89,6 +89,15 @@ created: 2026-11-16T16:24:00Z
 ---
 
 Verificação: make check verde, quatro testes de regressão falham no código anterior, testes race de catalog/sqlite verdes, rollback e concorrência cobertos; Reviewer APROVADO. Sem migração. Conflitos recusam a escuta; pendências duráveis ficam na ISSUE-132+. Evidências em backlog/evidencias/issue-131/.
+
+---
+
+author: codex
+created: 2026-11-16T16:26:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 16/11/2026. Pendências sobre preservação de escutas conflitantes e comportamento das fontes encaminhadas para definição de contrato na ISSUE-132, conforme solicitado.
 
 ---
 <!-- COMMENTS:END -->
