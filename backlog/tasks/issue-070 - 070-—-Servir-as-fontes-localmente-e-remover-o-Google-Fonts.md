@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T19:20:00Z'
+updated_date: '2026-11-16T19:21:00Z'
 labels:
   - ui
 milestone: m-10
@@ -116,6 +116,15 @@ created: 2026-11-16T19:20:00Z
 ---
 
 Aceite do usuário (2026-11-16) após ver as capturas antes/depois da retrospectiva e a Home. Decisão: manter os tamanhos atuais (título 42/36, rótulo 18 em 1440px); aceita apenas pesos, caixa e itálico alinhados ao Koito. Qualquer igualar de tamanho (título 36, rótulo 16, regra de título longo >28 caracteres) fica fora desta issue. Publicação e push dependem de autorização à parte.
+
+---
+
+author: ebrgr
+created: 2026-11-16T19:21:00Z
+
+---
+
+Publicação: versão 0.29 (tag `v0.29`), branch `feat/issue-070-servir-as-fontes-localmente-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

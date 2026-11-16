@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.29] - 2026-11-16
+
 ### Changed
 - A interface carrega fontes locais, sem Google Fonts; a retrospectiva alinha pesos e caixa à referência Koito (ISSUE-070).
 
