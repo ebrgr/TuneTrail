@@ -50,3 +50,7 @@ Não houve uso da porta 4110, leitura de `.env` ou bancos do usuário, nem alter
 Critérios #2–#6 verificados. O #1 permanece desmarcado para o aceite visual do usuário: conferir a janela pequena, o nome/pergunta, o aviso irreversível, a contagem e a explicação das colaborações, em especial Pearl/celular. Falta também a revisão do diff pelo coordenador.
 
 Entrega: `make issue.review ISSUE=143` executado com sucesso e gate repetido (12/12 E2E); tarefa em **Aguardando aceite**. Critérios #2–#6 marcados; #1 permanece para o usuário. Nenhuma revisão externa foi executada, conforme a instrução do coordenador.
+
+## Rebase sobre a v0.23 (16/11/2026)
+
+A ISSUE-141 foi publicada (v0.23) depois que esta branch foi entregue. O coordenador reaplicou a branch sobre a `main` atual (`git rebase main`): só conflitaram o `CHANGELOG.md` e a referência HTML da ISSUE-067 (arquivo gerado, regenerado com `make ui.reference`); os arquivos de código se mesclaram sem conflito e foi conferido que a janela da escuta e o × da 141 e a exclusão por perfil da 143 permanecem. `make check` verde, 12/12 E2E. As validações em Chrome desta nota não foram repetidas após o rebase, por decisão do usuário; valem as da entrega original.
