@@ -121,16 +121,35 @@ def front_field(front, key):
     return value
 
 
-def read_task(num):
+def parse_task(text, path):
     # Parse only the fields the workflow needs from the Backlog.md frontmatter.
-    path = task_file(num)
-    text = path.read_text()
     front = text.split("---", 2)[1] if text.startswith("---") else ""
     fields = {key: front_field(front, key) for key in ("title", "status", "type")}
     comments = text.split("<!-- COMMENTS:BEGIN -->", 1)[-1] if "<!-- COMMENTS:BEGIN -->" in text else ""
     fields["accepted"] = bool(re.search(r"^Aceite\b", comments, re.M | re.I))
     fields["path"] = path
     return fields
+
+
+def read_task(num, branch=None):
+    # With a branch, read the record where the task actually lives (ISSUE-144): acceptance is
+    # committed on the task branch or inside its Orca worktree, while the main checkout still
+    # holds the older status. Without a branch, or on the branch itself, use the checkout.
+    if branch:
+        wt = worktree_of(branch)
+        if wt:
+            matches = sorted((Path(wt) / "backlog/tasks").glob(f"{PREFIX}-{num} - *.md"))
+            if len(matches) != 1:
+                raise Fail(f"{task_id(num)}: esperado um arquivo em backlog/tasks da worktree, encontrados {len(matches)}")
+            return parse_task(matches[0].read_text(), matches[0])
+        if git("rev-parse", "--abbrev-ref", "HEAD") != branch:
+            listed = git("-c", "core.quotepath=false", "ls-tree", "-r", "--name-only", branch, "--", "backlog/tasks").splitlines()
+            found = [f for f in listed if Path(f).name.startswith(f"{PREFIX}-{num} - ")]
+            if len(found) != 1:
+                raise Fail(f"{task_id(num)}: esperado um arquivo em backlog/tasks da branch {branch}, encontrados {len(found)}")
+            return parse_task(git("show", f"{branch}:{found[0]}"), ROOT / found[0])
+    path = task_file(num)
+    return parse_task(path.read_text(), path)
 
 
 def plain_title(title):
@@ -305,14 +324,15 @@ def next_version():
 def cmd_publish(args):
     num = task_number(args.iss)
     ref = task_id(num)
-    task = read_task(num)
+    branch = find_branch(num)
+    # The record is read from the task branch or worktree, not from the main checkout (ISSUE-144).
+    task = read_task(num, branch)
     # Validate everything before touching the repository.
     if task["status"] != "Done":
         raise Fail(f"{ref} está '{task['status']}'; só publica tarefa Done (aceita pelo usuário)")
     if not task["accepted"]:
         raise Fail(f"{ref} está Done sem comentário 'Aceite: ...' do usuário")
     require_clean(num)
-    branch = find_branch(num)
     if not branch:
         raise Fail(f"{ref}: nenhuma branch local '*/{PREFIX}-{num}-*'")
     commits = git("log", "--format=%h %s", f"{MAIN}..{branch}").splitlines()
@@ -344,6 +364,11 @@ def cmd_publish(args):
         print("DRY: nada foi alterado")
         return
 
+    # Acceptance recorded inside the task worktree is committed there before it is removed (ISSUE-144).
+    wt = worktree_of(branch)
+    if wt and git("status", "--porcelain", "--", f":(glob)backlog/tasks/{PREFIX}-{num} - *", cwd=wt):
+        git("add", "-A", "--", f":(glob)backlog/tasks/{PREFIX}-{num} - *", cwd=wt)
+        git("commit", "-m", f"{ref}: Registra aceite", cwd=wt)
     release_worktree(branch)
     git("checkout", branch)
     if pending:

@@ -1,9 +1,11 @@
 ---
 id: ISSUE-144
 title: 144 — Observações e pendências das ISSUE-139 a 143
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-16T00:54:00Z'
+updated_date: '2026-11-16T14:55:00Z'
 labels:
   - ui
   - admin
@@ -28,3 +30,16 @@ Lista de consulta posterior, reunida em 16/11/2026 a partir dos pareceres do coo
 <!-- AC:BEGIN -->
 - [ ] #1 Cada item acima foi convertido em tarefa própria, descartado com motivo ou implementado
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-16T14:55:00Z
+
+---
+
+Início: branch `chore/issue-144-observacoes-e-pendencias-das-issue` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->

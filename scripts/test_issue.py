@@ -189,6 +189,52 @@ print("{}")
         self.assertIn("mudanças não commitadas", result.stderr)
         self.assertEqual(self.git("tag"), "")
 
+    def stale_main(self):
+        # ISSUE-144 scenario: main keeps the task as Aberta (as at branch time) while the branch
+        # later records the acceptance. Rebuild the base commit as Aberta and rebase the branch on it.
+        branch = f"fix/{self.prefix}-001-teste"
+        self.git("checkout", "-q", "main")
+        old_base = self.git("rev-parse", "HEAD")
+        self.task("Aberta", "")
+        self.git("commit", "-qa", "--amend", "-m", "base")
+        self.git("checkout", "-q", branch)
+        self.git("rebase", "-q", "--onto", "main", old_base)
+        self.task("Done", "Aceite: aprovada na branch.")
+        return branch
+
+    def test_publish_reads_acceptance_committed_on_the_branch(self):
+        self.stale_main()
+        self.git("commit", "-qam", f"{self.ref}: Registra aceite")
+        self.git("checkout", "-q", "main")
+        result = self.publish()
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertEqual(self.git("describe", "--tags"), "v0.8")
+
+    def test_publish_reads_acceptance_from_the_worktree(self):
+        self.fake_orca()
+        branch = self.stale_main()
+        self.git("commit", "-qam", f"{self.ref}: Registra aceite")
+        self.git("checkout", "-q", "main")
+        wt = str(self.root) + "-wt-accept"
+        self.git("worktree", "add", "-q", wt, branch)
+        self.addCleanup(lambda: subprocess.run(["git", "worktree", "remove", "--force", wt], cwd=self.root, capture_output=True))
+        result = self.publish()
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertEqual(self.git("describe", "--tags"), "v0.8")
+
+    def test_publish_commits_uncommitted_acceptance_inside_the_worktree(self):
+        self.fake_orca()
+        branch = self.stale_main()
+        self.git("stash", "-q")
+        self.git("checkout", "-q", "main")
+        wt = str(self.root) + "-wt-pending"
+        self.git("worktree", "add", "-q", wt, branch)
+        self.addCleanup(lambda: subprocess.run(["git", "worktree", "remove", "--force", wt], cwd=self.root, capture_output=True))
+        subprocess.run(["git", "stash", "pop", "-q"], cwd=wt, check=True)
+        result = self.publish()
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        self.assertIn(f"{self.ref}: Registra aceite", self.git("log", "--format=%s", "-6"))
+
     def test_worktree_starts_task_in_its_own_checkout(self):
         self.fake_orca()
         self.git("checkout", "-q", "main")
