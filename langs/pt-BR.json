@@ -1,4 +1,10 @@
 {
+  "admin.delete.question": "Você realmente deseja excluir o item \"{{.Name}}\"?",
+  "admin.delete.irreversible": "Não existe desfazer. Somente as escutas deste perfil serão removidas; o catálogo compartilhado e os outros perfis ficam intactos.",
+  "admin.delete.count": "Escutas a excluir em {{.Profile}}: {{.Count}}.",
+  "admin.delete.collaborations": "Faixas em colaboração com outros artistas não são removidas.",
+  "admin.delete.confirm": "Excluir escutas",
+
   "admin.manage.remove_alias": "Remover apelido {{.Alias}}",
   "admin.merge.search_hint": "Digite um nome para encontrar itens.",
   "admin.listen.offset": "Deslocamento UTC",

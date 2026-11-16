@@ -146,6 +146,11 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		h.fail(w, err)
 		return
 	}
+	// Personal deletion is a direct confirmation, including the old review link.
+	if len(parts) == 5 && r.Method == "GET" && (parts[4] == "delete" || parts[4] == "review" && r.URL.Query().Get("action") == "delete") {
+		h.reviewProfileDelete(w, r, identity, profile, kind, id)
+		return
+	}
 	if len(parts) == 5 && parts[4] == "review" && r.Method == "GET" {
 		h.reviewCatalog(w, r, identity, profile, kind, id)
 		return

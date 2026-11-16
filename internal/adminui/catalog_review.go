@@ -25,6 +25,8 @@ type catalogReviewView struct {
 	Kind, CSRF, Token, ReturnPath string
 	Plan                          db.CatalogPlan
 	Dialog                        bool
+	Personal                      *db.ProfileDeletePlan
+	Submission                    string
 }
 
 // reviewCatalog only reads data and issues a short-lived confirmation bound to the session and route.
@@ -74,7 +76,7 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 			return
 		}
 		request.ReplaceImage = replace == "1"
-	} else if request.Action != "delete" || len(q) != 1 {
+	} else {
 		h.fail(w, db.ErrInvalidInput)
 		return
 	}
@@ -158,6 +160,11 @@ func (h *Handler) confirmCatalog(w http.ResponseWriter, r *http.Request, identit
 	h.mu.Unlock()
 	if !ok || time.Now().After(review.Expires) {
 		h.fail(w, db.ErrConflict)
+		return
+	}
+	// A personal plan never reaches the global catalog mutation path.
+	if review.Personal != nil {
+		h.confirmProfileDelete(w, r, identity, p, form, *review.Personal)
 		return
 	}
 	store, ok := h.store.(admin.CatalogMutationStore)

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Deleting a track, album or artist now removes only that profile's matching listens, after a confirmation that shows the count and cannot be undone; the shared catalog and other profiles are untouched, and tracks shared with other artists are kept when an artist is deleted (ISSUE-143).
+
 ## [0.23] - 2026-11-16
 
 - The history × opens listen details and an irreversible-deletion confirmation; the list and counts update without reloading (ISSUE-141).

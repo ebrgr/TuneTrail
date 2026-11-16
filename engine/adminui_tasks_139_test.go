@@ -135,7 +135,8 @@ func TestManagementTaskPages139(t *testing.T) {
 				require.Contains(t, body, `value="merge"`)
 				require.NotContains(t, body, `value="delete"`)
 			case "delete":
-				require.Contains(t, body, `value="delete"`)
+				// Deletion now confirms personal listens directly (ISSUE-143).
+				require.Contains(t, body, `data-delete-count=`)
 				require.NotContains(t, body, `name="merge_query"`)
 			case "add-listen":
 				require.Contains(t, body, `/listen-add"`)
@@ -286,11 +287,13 @@ func TestManagementCatalogDestinations139(t *testing.T) {
 			require.Equal(t, 200, review.Code)
 			v.Set("plan", taskField139(t, review, "plan"))
 			v.Set("csrf_token", taskField139(t, review, "csrf_token"))
+			// Personal deletion requires a submission ticket and preserves the survivor catalog row.
+			v.Set("submission_token", taskField139(t, review, "submission_token"))
 			out = taskRequest139(a, "POST", "/second/manage/track/"+target+"/confirm", a.cookie, v, nil)
 			require.Equal(t, 303, out.Code)
 			require.Equal(t, "/second", out.Header().Get("Location"))
-			_, err := a.store.GetTrack(context.Background(), db.GetTrackOpts{ID: 12})
-			require.ErrorIs(t, err, db.ErrNotFound)
+			_, err := a.store.GetTrack(context.Background(), db.GetTrackOpts{ID: map[string]int32{"12": 12, "13": 13}[target]})
+			require.NoError(t, err)
 		})
 	}
 }

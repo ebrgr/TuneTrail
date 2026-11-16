@@ -5,6 +5,11 @@
   --task-border:color-mix(in srgb,var(--color-fg) 60%,var(--color-bg));
   max-width:600px; color-scheme:dark;
 }
+.media-task-dialog[data-task="delete"] { max-width:460px; }
+.media-task-dialog .profile-delete { overflow-wrap:anywhere; }
+.media-task-dialog .profile-delete h2 { margin-top:12px; color:var(--color-fg); }
+.media-task-dialog .profile-delete form { justify-content:flex-end; align-items:center; }
+.media-task-dialog .profile-delete [data-task-cancel] { padding:12px; min-height:44px; }
 .media-task-dialog[data-task="edit"] { max-width:1000px; }
 html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
 .media-task-dialog #media-task-title { padding-right:36px; }

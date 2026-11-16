@@ -1,4 +1,10 @@
 {
+  "admin.delete.question": "Do you really want to delete the item \"{{.Name}}\"?",
+  "admin.delete.irreversible": "This cannot be undone. Only listens in this profile will be removed; the shared catalog and other profiles stay intact.",
+  "admin.delete.count": "Listens to delete in {{.Profile}}: {{.Count}}.",
+  "admin.delete.collaborations": "Tracks in collaboration with other artists are not removed.",
+  "admin.delete.confirm": "Delete listens",
+
   "admin.manage.remove_alias": "Remove alias {{.Alias}}",
   "admin.merge.search_hint": "Type a name to find items.",
   "admin.listen.offset": "UTC offset",

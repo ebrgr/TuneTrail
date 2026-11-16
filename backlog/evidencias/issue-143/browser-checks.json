@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "12 capturas: três tipos × Yuu/Pearl × desktop/celular; contagens, foco preso, Esc e foco devolvido",
+    "Cancelar fecha o diálogo sem navegar nem enviar mutação",
+    "Falha de rede mostra recuperação e não repete o POST; reabrir consulta o estado e emite novos tokens",
+    "Sessão expirada no banco entre abrir e confirmar não altera escutas e mostra erro",
+    "artist: clique real remove 1 escutas, resposta concorda com contagem e navega para /alpha",
+    "Resposta perdida após confirmação efetivamente processada mostra erro sem reenviar automaticamente",
+    "track: clique real remove 6 escutas, resposta concorda com contagem e navega para /alpha",
+    "album: clique real remove 1 escutas, resposta concorda com contagem e navega para /beta",
+    "Sem JavaScript: confirmação com zero escutas funciona e retorna ao perfil; catálogo e beta permanecem"
+  ],
+  "errors": []
+}

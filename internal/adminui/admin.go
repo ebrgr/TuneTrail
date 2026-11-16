@@ -70,6 +70,7 @@ type pendingCatalogPlan struct {
 	RouteID     int32
 	Kind        string
 	Plan        db.CatalogPlan
+	Personal    *db.ProfileDeletePlan
 	Expires     time.Time
 }
 

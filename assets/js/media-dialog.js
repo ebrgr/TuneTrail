@@ -218,6 +218,8 @@
     returnFocus = null;
   });
   dialog.addEventListener('click', event => {
+    // Cancel closes this confirmation without issuing another request.
+    if (event.target.closest('[data-task-cancel]')) { event.preventDefault(); dialog.close(); return; }
     const link = event.target.closest('a[href]');
     if (!link || link.hasAttribute('data-task-page') || link.hasAttribute('download') ||
         link.target && link.target !== '_self' || !plainClick(event) || !allowed(new URL(link.href))) return;
@@ -243,7 +245,8 @@
     section?.setAttribute('aria-busy', 'true');
     if (section) section.inert = true;
     try {
-      const url = new URL(form.action);
+      // Read the attribute so named form controls cannot shadow the URL.
+      const url = new URL(form.getAttribute('action'), location.href);
       if (!allowed(url)) throw Error('Invalid search');
       url.search = new URLSearchParams(new FormData(form)).toString();
       url.searchParams.set('partial', '1');
@@ -292,7 +295,8 @@
   window.TuneTrailEnhance.install(dialog, {submit(form, submitter) {
     if (!activation || dialog.hasAttribute('aria-busy')) return;
     if (form.matches('[data-live-search]')) { search(form); return; }
-    const url = new URL(form.action);
+    // A control named action shadows HTMLFormElement.action (legacy review forms).
+    const url = new URL(form.getAttribute('action'), location.href);
     if (!allowed(url)) { failure(); focusTitle(); return; }
     const data = new FormData(form);
     if (submitter?.name) data.set(submitter.name, submitter.value);

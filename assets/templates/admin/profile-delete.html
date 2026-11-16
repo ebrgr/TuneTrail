@@ -1,0 +1,37 @@
+{{define "manage/profile-delete"}}
+  <div id="task" class="admin-main" data-section>
+    {{template "manage/profile-delete-content" .}}
+  </div>
+{{end}}
+
+{{define "manage/profile-delete-content"}}
+  <section class="profile-delete">
+    {{if .Dialog}}<h2>{{else}}<h1>{{end}}{{trn
+      "admin.delete.question"
+      "Do you really want to delete the item \"{{.Name}}\"?"
+      "Name" .Personal.Name
+    }}{{if .Dialog}}</h2>{{else}}</h1>{{end}}
+    <p>{{tr
+      "admin.delete.irreversible"
+      "This cannot be undone. Only listens in this profile will be removed; the shared catalog and other profiles stay intact."
+    }}</p>
+    <p data-delete-count="{{.Personal.Count}}">{{trn
+      "admin.delete.count"
+      "Listens to delete in {{.Profile}}: {{.Count}}."
+      "Profile" .Profile.DisplayName "Count" .Personal.Count
+    }}</p>
+    {{if eq .Kind "artist"}}
+      <p>{{tr "admin.delete.collaborations" "Tracks in collaboration with other artists are not removed."}}</p>
+    {{end}}
+    <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.RouteID}}/confirm">
+      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+      <input type="hidden" name="submission_token" value="{{.Submission}}">
+      <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+      <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+      <input type="hidden" name="plan" value="{{.Token}}">
+      <input type="hidden" name="confirm" value="1">
+      <button type="submit">{{tr "admin.delete.confirm" "Delete listens"}}</button>
+      <a href="{{.ReturnPath}}" data-task-cancel>{{tr "admin.text.cancel" "Cancel"}}</a>
+    </form>
+  </section>
+{{end}}

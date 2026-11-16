@@ -4,6 +4,7 @@
   "admin/templates/head.html": "templates/shared/head.html",
   "admin/templates/manage.html": "templates/admin/manage.html",
   "admin/templates/nav.html": "templates/shared/nav.html",
+  "admin/templates/profile-delete.html": "templates/admin/profile-delete.html",
   "admin/templates/profile-review.html": "templates/admin/profile-review.html",
   "admin/templates/settings.html": "templates/admin/settings.html",
   "public/palettes.json": "themes/palettes.json",

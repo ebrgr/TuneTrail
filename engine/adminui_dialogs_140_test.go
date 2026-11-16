@@ -19,7 +19,8 @@ func TestMediaTaskDialog140(t *testing.T) {
 		require.Equal(t, 200, w.Code, w.Body.String())
 		require.Equal(t, "task", w.Header().Get("X-TuneTrail-Fragment"))
 		require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
-		if task == "merge" || task == "delete" {
+		// Personal deletion now issues its required submission ticket immediately (ISSUE-143).
+		if task == "merge" {
 			require.Empty(t, w.Header().Get("X-TuneTrail-Submission"))
 		} else {
 			require.NotEmpty(t, w.Header().Get("X-TuneTrail-Submission"))

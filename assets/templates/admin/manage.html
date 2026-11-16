@@ -402,20 +402,6 @@
           </form>
 {{end}}
 
-{{define "manage/delete"}}
-  <section id="delete">
-    <h2>{{tr "admin.text.review_deletion" "Review deletion"}}</h2>
-    <p>{{tr
-      "admin.text.these_operations_affect_the_shared_catalog_review_the_impact_before_confirming"
-      "These operations affect the shared catalog. Review the impact before confirming."
-    }}</p>
-          <form method="get" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.ID}}/review">
-            <input type="hidden" name="action" value="delete">
-            <button>{{tr "admin.text.review_deletion" "Review deletion"}}</button>
-          </form>
-  </section>
-{{end}}
-
 {{define "manage/index"}}
   <ul>
     <li id="aliases">
@@ -469,8 +455,6 @@
             {{template "manage/listen" .}}
           {{- else if eq .Task "merge"}}
             {{template "manage/merge" .}}
-          {{- else if eq .Task "delete"}}
-            {{template "manage/delete" .}}
           {{- else if eq .Task "image"}}
             {{template "manage/image" .}}
           {{- end}}

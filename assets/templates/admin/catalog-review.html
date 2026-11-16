@@ -35,6 +35,7 @@
 {{- end}}
 
 {{- define "manage/review-content"}}
+{{- if .Personal}}{{template "manage/profile-delete-content" .}}{{else}}
           {{- if .Dialog}}<h2>{{else}}<h1>{{end}}{{trn
             "admin.review.title"
             "Review {{.Action}}: {{.Kind}}"
@@ -52,14 +53,6 @@
             "Destination and surviving ID:"}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
           <p>{{tr "admin.review.source_tracks" "Source-linked tracks:"}} {{.Plan.SourceTracks}}{{tr "admin.review.albums" "; albums:"}} {{.Plan.SourceAlbums}}
             {{- tr "admin.review.listens" "; listens:"}} {{.Plan.SourceListens}}.</p>
-          {{- if eq .Plan.Action "delete"}}
-            <p>{{tr "admin.review.deleted_albums" "Albums deleted by this action:"}} {{.Plan.RemovedAlbums}}
-              {{- tr "admin.review.deleted_tracks" "; tracks deleted by this action:"}} {{.Plan.RemovedTracks}}
-              {{- tr "admin.review.deleted_listens" "; listens deleted:"}} {{.Plan.RemovedListens}}{{tr
-              "admin.review.orphan_warning"
-              ". Removing an artist can also remove albums with no remaining album artist."
-            }}</p>
-          {{- else}}
             <p>{{tr "admin.review.duplicates" "Duplicate listens in the same profile and second:"}} {{.Plan.DuplicateListens}}
               {{- tr "admin.review.profiles_separate" ". Listens from different profiles stay separate."}}</p>
             <p>{{tr
@@ -75,7 +68,6 @@
               "admin.review.track_policy"
               "Source listens move to the destination track. Track artist relations, duration and aliases are not transferred; source artists may be associated with the destination album."
             }}{{end}}</p>
-          {{- end}}
           <h2>{{tr "admin.text.source_metadata_and_relations" "Source metadata and relations"}}</h2>
           <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.SourceMBID}}{{.Plan.SourceMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
           <p>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}
@@ -142,4 +134,5 @@
             }}</button>
           </form>
           <p><a href="{{.ReturnPath}}">{{tr "admin.text.cancel" "Cancel"}}</a></p>
+{{- end}}
 {{- end}}

@@ -1,0 +1,106 @@
+python3 scripts/issue.py review 143 -m "Verificação: make check verde (12/12 E2E); exclusão só de escutas do perfil em uma transação, contagem/revalidação, catálogo e outros perfis preservados; testes de segurança e rollback pelo roteador principal; Chrome real com foco/Esc, rede, sessão expirada no banco, resposta perdida sem retry e navegação; 12 capturas Yuu/Pearl desktop/celular. Critérios 2–6 verificados, #1 aguarda aceite visual; revisão do diff pelo coordenador conforme decisão do usuário."
+CGO_ENABLED=0 go vet ./...
+CGO_ENABLED=0 go test -count=1 ./... -timeout 60s
+ok  	github.com/ebrgr/TuneTrail/cmd/api	0.919s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	0.339s
+?   	github.com/ebrgr/TuneTrail/db/migrations_sqlite	[no test files]
+ok  	github.com/ebrgr/TuneTrail/engine	9.999s
+ok  	github.com/ebrgr/TuneTrail/engine/handlers	0.629s
+ok  	github.com/ebrgr/TuneTrail/engine/middleware	0.777s
+ok  	github.com/ebrgr/TuneTrail/imagecache	0.918s
+ok  	github.com/ebrgr/TuneTrail/internal/admin	1.873s
+ok  	github.com/ebrgr/TuneTrail/internal/adminui	1.425s
+ok  	github.com/ebrgr/TuneTrail/internal/adminweb	1.374s
+ok  	github.com/ebrgr/TuneTrail/internal/catalog	1.641s
+ok  	github.com/ebrgr/TuneTrail/internal/cfg	1.817s
+ok  	github.com/ebrgr/TuneTrail/internal/db	1.312s
+ok  	github.com/ebrgr/TuneTrail/internal/db/sqlite	3.750s
+ok  	github.com/ebrgr/TuneTrail/internal/export	1.443s
+ok  	github.com/ebrgr/TuneTrail/internal/i18n	1.508s
+ok  	github.com/ebrgr/TuneTrail/internal/imagefetch	1.160s
+ok  	github.com/ebrgr/TuneTrail/internal/imagepipeline	1.291s
+ok  	github.com/ebrgr/TuneTrail/internal/images	1.204s
+ok  	github.com/ebrgr/TuneTrail/internal/imagework	1.166s
+?   	github.com/ebrgr/TuneTrail/internal/importer	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/listenbrainz	1.282s
+ok  	github.com/ebrgr/TuneTrail/internal/listening	1.230s
+?   	github.com/ebrgr/TuneTrail/internal/logger	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/mbz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/memkv	1.295s
+?   	github.com/ebrgr/TuneTrail/internal/models	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/relay	1.122s
+ok  	github.com/ebrgr/TuneTrail/internal/summary	1.137s
+ok  	github.com/ebrgr/TuneTrail/internal/utils	1.210s
+?   	github.com/ebrgr/TuneTrail/internal/version	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webassets	1.646s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	1.235s
+ok  	github.com/ebrgr/TuneTrail/internal/webui	1.601s
+ok  	github.com/ebrgr/TuneTrail/queue	1.261s
+?   	github.com/ebrgr/TuneTrail/scripts/experiments/tls034	[no test files]
+?   	github.com/ebrgr/TuneTrail/testing_init	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.413s
+{
+  "files": 147,
+  "differences": [],
+  "exit_code": 0
+}
+python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.004s
+
+OK
+CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+CGO_ENABLED=0 go test -count=1 ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.987s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	0.149s
+ok  	github.com/ebrgr/TuneTrail/internal/listening	0.366s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	0.266s
+node --check assets/js/theme.js
+node --check assets/js/ui.js
+node --check assets/js/theme-picker.js
+node --check assets/js/nav.js
+node --check assets/js/search.js
+node --check assets/js/media-dialog.js
+node --check assets/js/enhance.js
+node --check assets/js/live.js
+node --check assets/js/admin.js
+node --test internal/webui/theme.test.mjs
+✔ unavailable storage and invalid saved JSON leave a usable default (2.119292ms)
+✔ custom colors survive startup and reset clears inline overrides (0.645292ms)
+✔ incomplete and injected palettes cannot set arbitrary CSS (0.252709ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38.195166
+python3 -m unittest scripts/test_check_web_style.py
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.006s
+
+OK
+python3 scripts/check_web_style.py
+CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
+python3 scripts/e2e.py --binary ./tunetrail
+PASS  web-assets     1.1s
+PASS  multiuser      1.2s
+PASS  admin          2.1s
+PASS  public         0.4s
+PASS  permissions    1.0s
+PASS  isolation      2.2s
+PASS  migration      1.8s
+PASS  standalone     0.2s
+PASS  legacy-env     0.2s
+PASS  shutdown       0.7s
+PASS  vscode         0.0s
+PASS  tools          7.2s
+e2e: 12/12 journeys passed
+$ make check
+ISSUE-143 aguardando aceite do usuário
+AVISO ao usuário: ISSUE-143 — Excluir item só do perfil, com confirmação irreversível está em Aguardando aceite.
+  Verificação: Verificação: make check verde (12/12 E2E); exclusão só de escutas do perfil em uma transação, contagem/revalidação, catálogo e outros perfis preservados; testes de segurança e rollback pelo roteador principal; Chrome real com foco/Esc, rede, sessão expirada no banco, resposta perdida sem retry e navegação; 12 capturas Yuu/Pearl desktop/celular. Critérios 2–6 verificados, #1 aguarda aceite visual; revisão do diff pelo coordenador conforme decisão do usuário.
+  Para publicar: registrar o aceite (Done) e rodar make issue.publish ISSUE=143

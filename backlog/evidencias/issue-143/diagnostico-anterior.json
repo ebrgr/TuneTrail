@@ -1,0 +1,17 @@
+{
+  "baseline": "main v0.22; binary and assets before ISSUE-143; disposable fixture only",
+  "stalled": {
+    "errors": [
+      "Failed to construct 'URL': Invalid URL"
+    ],
+    "reviewRequests": 0,
+    "shadow": {
+      "actionIsInput": true,
+      "attribute": "/alpha/manage/track/1/review"
+    }
+  },
+  "uncheckedConfirmationValid": false,
+  "checkedConfirmationStatus": 204,
+  "checkedConfirmationNavigation": "/alpha",
+  "betaListensAfterGlobalDelete": 1
+}
