@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Navegação com barra inferior no celular, lateral de ícones no tablet e rótulos recolhíveis com período no desktop (ISSUE-071).
+
 ## [0.27] - 2026-11-16
 
 - Corrige a identificação por aliases secundários de faixas e recusa associações ambíguas ou com MusicBrainz IDs conflitantes (ISSUE-131).

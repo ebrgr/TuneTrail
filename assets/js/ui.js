@@ -11,7 +11,11 @@
   function closeDialog(dialog) { dialog.close(); }
   document.addEventListener('click', event => {
     const trigger = event.target.closest('[data-dialog]');
-    if (trigger) openDialog(trigger.dataset.dialog, trigger);
+    if (trigger && document.getElementById(trigger.dataset.dialog)) {
+      // ISSUE-071: links retain document navigation when scripts or dialogs are unavailable.
+      event.preventDefault();
+      openDialog(trigger.dataset.dialog, trigger);
+    }
     const close = event.target.closest('[data-close]');
     if (close) closeDialog(close.closest('dialog'));
   });
@@ -65,3 +69,13 @@
   }
   ['pointerover','pointerout','focusin','focusout'].forEach(type => document.addEventListener(type, tooltip));
 })();
+
+// ISSUE-071: Escape closes the native disclosure and restores its summary focus.
+document.querySelectorAll('.nav-more').forEach(more => {
+  more.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || event.defaultPrevented || !more.open || document.querySelector(':popover-open,dialog[open]')) return;
+    more.open = false;
+    more.querySelector('summary').focus();
+    event.preventDefault();
+  });
+});

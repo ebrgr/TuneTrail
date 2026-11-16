@@ -6,117 +6,88 @@
     {{- else}}{{initials .Name}}{{end}}</span>
 {{end}}
 
+{{/* ISSUE-071: real links and native disclosure keep all destinations usable without scripts. */}}
 {{define "partial/sidebar"}}
-  {{$admin := eq .Kind "admin"}}
   <nav class="sidebar" aria-label="{{tr "ui.main_navigation" "Main navigation"}}">
-    <div class="nav-group">
-      {{if $admin}}
-        {{/* Administration has no profile or search dialogs: both controls are links. */}}
-        <a
-          class="nav-button"
-          href="/"
-          aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}{{if .Profile}}: {{.Profile.Name}}{{end}}"
-          data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
-        >{{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}</a>
-        {{if .Profile}}
-          <a
-            class="nav-button"
-            href="/{{.Profile.Slug}}/search"
-            aria-label="{{tr "ui.search" "Search"}}"
-            data-tip="{{tr "ui.search" "Search"}}"
-          >{{icon "Search"}}</a>
-        {{end}}
-      {{else}}
-        {{/* Provide essential document navigation when dialog scripts are unavailable. */}}
-        <noscript>
-          <style>.sidebar button[data-dialog]{display:none}</style>
-          <a
-            class="nav-button"
-            href="/"
-            aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
-            data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
-          >{{icon "UsersRound"}}</a>
-          {{if and (eq .Kind "live") .Profile}}
-            <a
-              class="nav-button"
-              href="/{{.Profile.Slug}}/search"
-              aria-label="{{tr "ui.search" "Search"}}"
-              data-tip="{{tr "ui.search" "Search"}}"
-            >{{icon "Search"}}</a>
-          {{end}}
-        </noscript>
-        <button
-          class="nav-button"
-          data-dialog="profiles-dialog"
-          aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}{{if .Profile}}: {{.Profile.Name}}{{end}}"
-          data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
-        >{{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}</button>
-        {{if .Profile}}
-          <button
-            class="nav-button"
-            data-dialog="search-dialog"
-            aria-label="{{tr "ui.search" "Search"}}"
-            data-tip="{{tr "ui.search" "Search"}} /"
-          >{{icon "Search"}}</button>
-        {{end}}
-      {{end}}
-      <span class="nav-spacer"></span>
-      <a
-        class="nav-button"
-        href="{{if .Profile}}/{{.Profile.Slug}}{{else}}/{{end}}"
-        aria-label="{{tr "ui.home" "Home"}}"
-        data-tip="{{tr "ui.home" "Home"}}"
-      >{{icon "House"}}</a>
+    <div class="nav-profile">
+      <a class="nav-button" href="/"
+        aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+        data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+        {{if ne .Kind "admin"}}data-dialog="profiles-dialog"{{end}}>
+        {{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}
+        <span class="nav-label">{{if .Profile}}{{.Profile.Name}}{{else}}{{tr "ui.choose_a_profile" "Choose a profile"}}{{end}}</span>
+      </a>
+    </div>
+    <div class="nav-destinations">
+      <a class="nav-button" href="{{if .Profile}}/{{.Profile.Slug}}{{.Query}}{{else}}/{{end}}"
+        aria-label="{{tr "ui.home" "Home"}}" data-tip="{{tr "ui.home" "Home"}}">
+        {{icon "House"}}<span class="nav-label">{{tr "ui.home" "Home"}}</span>
+      </a>
       {{if .Profile}}
+        <a class="nav-button" href="{{if eq .Kind "preview"}}/{{.Profile.Slug}}{{.Query}}#rankings{{else}}/{{.Profile.Slug}}/chart/top/artists{{.Query}}{{end}}"
+          aria-label="{{tr "ui.rankings" "Rankings"}}" data-tip="{{tr "ui.rankings" "Rankings"}}">
+          {{icon "Music2"}}<span class="nav-label">{{tr "ui.rankings" "Rankings"}}</span>
+        </a>
+        <a class="nav-button" href="{{if eq .Kind "preview"}}/{{.Profile.Slug}}{{.Query}}#history{{else}}/{{.Profile.Slug}}/listens{{.Query}}{{end}}"
+          aria-label="{{tr "ui.history" "History"}}" data-tip="{{tr "ui.history" "History"}}">
+          {{icon "History"}}<span class="nav-label">{{tr "ui.history" "History"}}</span>
+        </a>
         {{if eq .Kind "preview"}}
-          <button
-            class="nav-button"
-            data-dialog="feature-dialog"
-            aria-label="{{tr "ui.rewind" "Rewind"}}"
-            data-tip="{{tr "ui.rewind" "Rewind"}}"
-          >{{icon "History"}}</button>
+          <button class="nav-button" data-dialog="search-dialog"
+            aria-label="{{tr "ui.search" "Search"}}" data-tip="{{tr "ui.search" "Search"}}">
+            {{icon "Search"}}<span class="nav-label">{{tr "ui.search" "Search"}}</span>
+          </button>
         {{else}}
-          <a
-            class="nav-button"
-            href="/{{.Profile.Slug}}/rewind"
-            aria-label="{{tr "ui.rewind" "Rewind"}}"
-            data-tip="{{tr "ui.rewind" "Rewind"}}"
-          >{{icon "History"}}</a>
+          <a class="nav-button" href="/{{.Profile.Slug}}/search{{.Query}}"
+            aria-label="{{tr "ui.search" "Search"}}" data-dialog="search-dialog" data-tip="{{tr "ui.search" "Search"}}">
+            {{icon "Search"}}<span class="nav-label">{{tr "ui.search" "Search"}}</span>
+          </a>
         {{end}}
       {{end}}
+      <details class="nav-more">
+        <summary class="nav-button" aria-label="{{tr "ui.more" "More"}}" data-tip="{{tr "ui.more" "More"}}">
+          {{icon "Plus"}}<span class="nav-label">{{tr "ui.more" "More"}}</span>
+        </summary>
+        <div class="nav-options">
+          {{/* Keep profile switching reachable on mobile, including administrator sessions. */}}
+          <a class="nav-button" href="/" aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+            {{if ne .Kind "admin"}}data-dialog="profiles-dialog"{{end}}>
+            {{icon "UsersRound"}}<span>{{tr "ui.choose_listening_profile" "Choose listening profile"}}</span>
+          </a>
+          <button class="nav-button" type="button" popovertarget="theme-panel"
+            aria-label="{{tr "ui.appearance_language" "Theme and language"}}">
+            {{icon "Palette"}}<span>{{tr "ui.appearance_language" "Theme and language"}}</span>
+          </button>
+          {{if eq .Kind "preview"}}
+            <button class="nav-button" type="button" data-nav-toggle aria-controls="nav-admin" aria-expanded="false"
+              aria-label="{{tr "ui.administration" "Administration"}}">
+              {{icon "Settings2"}}<span>{{tr "ui.administration" "Administration"}}</span>
+            </button>
+            <noscript><p>{{tr "ui.preview_no_admin" "This preview has no administration."}}</p></noscript>
+          {{else}}
+            <a class="nav-button" href="/admin{{with .Profile}}?profile={{.ID}}{{end}}" data-nav-toggle aria-controls="nav-admin"
+              aria-label="{{tr "ui.administration" "Administration"}}">
+              {{icon "Settings2"}}<span>{{tr "ui.administration" "Administration"}}</span>
+            </a>
+            {{if .Profile}}
+              <a class="nav-button" href="/{{.Profile.Slug}}/rewind" aria-label="{{tr "ui.rewind" "Rewind"}}">
+                {{icon "History"}}<span>{{tr "ui.rewind" "Rewind"}}</span>
+              </a>
+            {{end}}
+          {{end}}
+        </div>
+      </details>
     </div>
-    <div class="nav-group">
-      {{/* ISSUE-110: the native popover opens the theme panel with keyboard and without JavaScript. */}}
-      <button
-        class="nav-button"
-        type="button"
-        popovertarget="theme-panel"
-        aria-label="{{tr "ui.theme" "Theme"}}"
-        data-tip="{{tr "ui.theme" "Theme"}} \"
-      >{{icon "Palette"}}</button>
-      {{/* ISSUE-123: opens the second sidebar. Without JavaScript the link leads to
-           administration, where the server renders the second sidebar open. */}}
-      {{if eq .Kind "preview"}}
-        <button
-          class="nav-button"
-          type="button"
-          data-nav-toggle
-          aria-controls="nav-admin"
-          aria-expanded="false"
-          aria-label="{{tr "ui.administration" "Administration"}}"
-          data-tip="{{tr "ui.administration" "Administration"}}"
-        >{{icon "Settings2"}}</button>
-      {{else}}
-        <a
-          class="nav-button"
-          href="/admin{{with .Profile}}?profile={{.ID}}{{end}}"
-          data-nav-toggle
-          aria-controls="nav-admin"
-          aria-label="{{tr "ui.administration" "Administration"}}"
-          data-tip="{{tr "ui.administration" "Administration"}}"
-        >{{icon "Settings2"}}</a>
-      {{end}}
-    </div>
+    {{if .Profile}}
+      <div class="nav-periods" role="group" aria-label="{{tr "ui.time_period" "Time period"}}">
+        {{range .PeriodLinks}}
+          <a href="{{.URL}}" {{if .Selected}}aria-current="true"{{end}}>{{tr .Label .Fallback}}</a>
+        {{end}}
+      </div>
+    {{end}}
+    <label class="nav-collapse"><input type="checkbox" checked aria-label="{{tr "ui.navigation_labels" "Navigation labels"}}">
+      <span>{{tr "ui.navigation_labels" "Navigation labels"}}</span>
+    </label>
   </nav>
   {{template "partial/admin-sidebar" .}}
 {{end}}
@@ -137,7 +108,11 @@
           <span class="sr-only">{{tr "ui.admin_signed_in" "Administrator signed in"}}</span>
         </a>
       {{else}}
-        {{template "partial/avatar" .Profile}}
+        {{/* ISSUE-071: the compact mobile avatar remains a real profile-switching link. */}}
+        <a class="profile-switch" href="/" aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
+          {{if ne .Kind "admin"}}data-dialog="profiles-dialog"{{end}}>
+          {{template "partial/avatar" .Profile}}
+        </a>
       {{end}}
       <div class="profile-identity">
         <strong>{{.Profile.Name}}</strong>
@@ -163,7 +138,7 @@
           aria-disabled="true"
           aria-label="{{tr "ui.preview_no_admin" "This preview has no administration."}}"
           data-tip="{{tr "ui.preview_no_admin" "This preview has no administration."}}"
-        >{{icon "LogIn"}}</button>
+        >{{icon "LogIn"}}<span class="nav-label">{{tr "ui.sign_in" "Sign in"}}</span></button>
       {{else if .Admin}}
         <a
           class="nav-button"
@@ -171,21 +146,21 @@
           {{if eq .Current "account"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.account" "Account"}}"
           data-tip="{{tr "ui.account" "Account"}}"
-        >{{icon "LockKeyhole"}}</a>
+        >{{icon "LockKeyhole"}}<span class="nav-label">{{tr "ui.account" "Account"}}</span></a>
         <a
           class="nav-button"
           href="/admin?section=profiles{{with .Profile}}&profile={{.ID}}{{end}}"
           {{if eq .Current "profiles"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.manage_profiles" "Profiles"}}"
           data-tip="{{tr "ui.manage_profiles" "Profiles"}}"
-        >{{icon "UserRoundCog"}}</a>
+        >{{icon "UserRoundCog"}}<span class="nav-label">{{tr "ui.manage_profiles" "Profiles"}}</span></a>
         <a
           class="nav-button"
           href="/admin/settings{{with .Profile}}?profile={{.ID}}{{end}}"
           {{if eq .Current "settings"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.server_configuration" "Server configuration"}}"
           data-tip="{{tr "ui.server_configuration" "Server configuration"}}"
-        >{{icon "Server"}}</a>
+        >{{icon "Server"}}<span class="nav-label">{{tr "ui.server_configuration" "Server configuration"}}</span></a>
       {{else}}
         <a
           class="nav-button"
@@ -193,7 +168,7 @@
           {{if .Open}}aria-current="page"{{end}}
           aria-label="{{tr "ui.sign_in" "Sign in"}}"
           data-tip="{{tr "ui.sign_in" "Sign in"}}"
-        >{{icon "LogIn"}}</a>
+        >{{icon "LogIn"}}<span class="nav-label">{{tr "ui.sign_in" "Sign in"}}</span></a>
       {{end}}
     </div>
     <div class="nav-group">
@@ -204,7 +179,7 @@
         rel="noopener"
         aria-label="{{tr "ui.about" "About"}} TuneTrail {{.Version}} ({{tr "ui.opens_new_tab" "opens in a new tab"}})"
         data-tip="TuneTrail {{.Version}} ↗"
-      >{{icon "Info"}}</a>
+      >{{icon "Info"}}<span class="nav-label">{{tr "ui.about" "About"}}</span></a>
     </div>
   </nav>
 {{end}}

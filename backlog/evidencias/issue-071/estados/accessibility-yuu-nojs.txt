@@ -1,0 +1,18 @@
+- navigation "Main navigation":
+  - link "Home":
+    - /url: /alpha?period=all_time&tz=UTC
+  - link "Rankings":
+    - /url: /alpha/chart/top/artists?period=all_time&tz=UTC
+  - link "History":
+    - /url: /alpha/listens?period=all_time&tz=UTC
+  - link "Search":
+    - /url: /alpha/search?period=all_time&tz=UTC
+  - group:
+    - text: More
+    - link "Choose listening profile":
+      - /url: /
+    - button "Theme and language"
+    - link "Administration":
+      - /url: /admin?profile=1
+    - link "Rewind":
+      - /url: /alpha/rewind

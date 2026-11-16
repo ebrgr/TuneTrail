@@ -1,0 +1,10 @@
+make check: PASS (includes ui.check); e2e: 12/12 journeys passed
+make ui.check: PASS
+python3 scripts/check_web_style.py: PASS
+git diff --check on source changes (excluding byte-exact generated reference): PASS
+validate_navigation_071.cjs: PASS, 72 views with and without JavaScript
+validate_responsive.cjs: PASS, 598 views, zero horizontal overflow
+AST graph rebuilt for this worktree; DefaultPeriods consumers verified.
+Before/after: 132 PNGs each, Yuu/Pearl at 320/360/390/768/1024/1440.
+Accessibility: keyboard and Chromium accessibility tree checked; manual VoiceOver not run.
+AC4 visual acceptance remains pending. No push, merge, publish or Done.

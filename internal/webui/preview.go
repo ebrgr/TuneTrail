@@ -87,20 +87,34 @@ type Page struct {
 
 // Nav adapts public and preview pages to the shared sidebar (ISSUE-122).
 func (p Page) Nav() webassets.Nav {
-	nav := webassets.Nav{Kind: "preview", Version: p.Version}
+	nav := webassets.Nav{Kind: "preview", Version: p.Version, Period: p.Period}
 	if p.Live {
 		nav.Kind = "live"
 	}
 	if p.Profile != nil {
 		nav.Profile = &webassets.NavProfile{ID: int64(p.Profile.ID), Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon}
 	}
+	nav.PeriodLinks = nav.DefaultPeriods()
 	return nav
 }
 
 // Nav adds the administrator session, which only live pages resolve (ISSUE-109, ISSUE-123).
 func (p LivePage) Nav() webassets.Nav {
 	nav := p.Page.Nav()
+	// ISSUE-071: reuse filtered period links on lists and keep the timezone across destinations.
 	nav.Admin = p.Admin
+	nav.Timezone = p.Timezone
+	nav.PeriodLinks = nav.DefaultPeriods()
+	if len(p.Periods) > 0 {
+		nav.PeriodLinks = nil
+		for _, link := range p.Periods {
+			label := link.Label
+			if link.Key == "all_time" {
+				label = "All"
+			}
+			nav.PeriodLinks = append(nav.PeriodLinks, webassets.NavPeriod{URL: link.URL, Label: "period." + link.Key, Fallback: label, Selected: link.Key == p.Period})
+		}
+	}
 	return nav
 }
 

@@ -537,6 +537,8 @@ func adminNav(p *models.ListeningProfile, signedIn bool, current string) webasse
 			nav.Profile.Icon = *p.AvatarIcon
 		}
 	}
+	// ISSUE-071: administration also exposes period navigation for its selected profile.
+	nav.PeriodLinks = nav.DefaultPeriods()
 	return nav
 }
 

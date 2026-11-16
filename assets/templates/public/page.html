@@ -178,7 +178,8 @@
           <a href="?period={{$period}}" {{if eq $page.Period $period}}aria-current="true"{{end}}>{{if eq $period "all_time"}}All{{else}}{{$period}}{{end}}</a>
         {{end}}
       </nav>
-      <div class="home-blocks">
+      {{/* ISSUE-071: native preview destinations use stable section anchors. */}}
+      <div class="home-blocks" id="rankings">
         {{template "partial/preview-artist-card" .}}
         {{template "partial/preview-album-card" .}}
         <section class="tracks">
@@ -207,7 +208,7 @@
             </ol>
           {{end}}
         </section>
-        <section class="last-played">
+        <section class="last-played" id="history">
           <h3 class="section-title"><button class="section-link" data-dialog="feature-dialog">Last played <span>→</span></button></h3>
           {{if eq .State "error"}}
             <p class="error">Error: Demonstration error</p>

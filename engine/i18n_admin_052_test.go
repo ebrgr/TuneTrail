@@ -37,7 +37,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	require.Contains(t, pt.Body.String(), "Importar e exportar")
 	require.Contains(t, pt.Body.String(), "Salvar relay")
 	require.Contains(t, pt.Body.String(), `aria-label="Navegação principal"`)
-	require.Contains(t, pt.Body.String(), `data-tip="Tema \"`) // ISSUE-110: theme icon replaces About
+	require.Contains(t, pt.Body.String(), `aria-label="Tema e idioma"`) // ISSUE-071: visible label in More.
 	require.Contains(t, pt.Header().Get("Cache-Control"), "no-store")
 	actions := regexp.MustCompile(`action="[^"]+"`)
 	require.Equal(t, actions.FindAllString(en.Body.String(), -1), actions.FindAllString(pt.Body.String(), -1))

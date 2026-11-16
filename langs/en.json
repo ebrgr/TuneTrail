@@ -1,4 +1,10 @@
 {
+  "ui.rankings": "Rankings",
+  "ui.history": "History",
+  "ui.more": "More",
+  "ui.appearance_language": "Theme and language",
+  "ui.navigation_labels": "Navigation labels",
+
   "admin.delete.question": "Do you really want to delete the item \"{{.Name}}\"?",
   "admin.delete.irreversible": "This cannot be undone. Only listens in this profile will be removed; the shared catalog and other profiles stay intact.",
   "admin.delete.count": "Listens to delete in {{.Profile}}: {{.Count}}.",

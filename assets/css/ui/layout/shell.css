@@ -1,101 +1,104 @@
-/* Layout: application shell, sidebars, navigation and footer. */
+/* ISSUE-071: mobile navigation reserves its complete safe-area footprint. */
 @layer layout {
-
-/* Apply shared spacing and surface tokens at this size. */
+:root {
+  --nav-width: 4.5rem;
+  --nav-bottom: calc(4.5rem + env(safe-area-inset-bottom,0px))
+}
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh
+  min-height: 100vh;
+  padding-bottom: var(--nav-bottom)
 }
-
-/* Constrain this region without requiring a fixed layout width. */
 .app-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1;
   width: 100%;
   min-width: 0;
   margin: 0 auto
 }
-
-/* Constrain this region without requiring a fixed layout width. */
 .sidebar {
   z-index: 50;
-  display: flex;
-  justify-content: space-between;
+  position: fixed;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  padding: 8px 16px 0;
   background: var(--color-bg);
   color: var(--color-fg-secondary);
-  border-bottom: 1px solid var(--color-bg-tertiary)
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-1) calc(var(--space-2) + env(safe-area-inset-bottom,0px))
 }
-/* ISSUE-123: second sidebar. On narrow screens it is a row below the first one. */
-.sidebar-secondary[hidden] {
-  display: none
-}
-/* Overlay mode starts closed; hide the server-open bar until nav.js applies that state. */
-html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
-  display: none
-}
-.nav-disabled {
-  opacity: .55;
-  cursor: default
-}
-
-/* Apply shared spacing and surface tokens at this size. */
-.nav-group {
+.nav-profile,.nav-periods,.nav-collapse { display: none; }
+.nav-destinations {
   display: flex;
-  gap: var(--space-4)
+  justify-content: space-around;
+  gap: var(--space-1)
 }
-
-/* Apply shared spacing and surface tokens at this size. */
-.nav-spacer {
-  display: none
-}
-
-/* Apply shared spacing and surface tokens at this size. */
+.nav-destinations>.nav-button,.nav-more { flex: 1; min-width: 0; }
 .nav-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: var(--space-2);
-  border-radius: 6px;
+  gap: var(--space-1);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
   transition: background-color .1s,color .1s
 }
-.nav-button>svg {
-  width: 18px;
-  height: 18px
+.nav-destinations>.nav-button,.nav-more>summary { flex-direction: column; }
+.nav-button>svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { font-size: var(--step--1); }
+.nav-button:hover { background: var(--color-bg-tertiary); color: var(--color-fg); }
+.nav-button:focus-visible,.nav-periods a:focus-visible,.nav-collapse:focus-within {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 2px
 }
-.nav-button:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-fg)
+.nav-more>summary { list-style: none; width: 100%; cursor: pointer; }
+.nav-more>summary::-webkit-details-marker { display: none; }
+.nav-options {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  right: var(--space-2);
+  width: min(20rem,calc(100vw - var(--space-4)));
+  max-height: calc(100dvh - var(--nav-bottom) - var(--space-4));
+  overflow-y: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-overlay)
 }
+.nav-options .nav-button { justify-content: flex-start; gap: var(--space-3); }
+.sidebar-secondary[hidden] { display: none; }
+/* ISSUE-123: administration remains a separate landmark above the mobile dock. */
+.sidebar.sidebar-secondary {
+  z-index: 49;
+  bottom: var(--nav-bottom);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  max-height: calc(100dvh - var(--nav-bottom));
+  overflow-y: auto
+}
+.sidebar-secondary .nav-group { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.sidebar-secondary .nav-label { display: none; }
+body:has(#nav-admin:not([hidden])) .app-shell { padding-bottom: calc(var(--nav-bottom) + 5rem); }
+html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary { display: none; }
+.nav-disabled { opacity: .55; cursor: default; }
 footer {
-  margin: 0 auto;
-  padding: 80px 16px 40px;
+  margin: auto auto 0;
+  padding: 80px var(--space-4) var(--space-7);
   text-align: center;
   color: var(--color-fg-tertiary);
   font-size: 14px
 }
-footer svg {
-  display: inline-block;
-  vertical-align: middle;
-  width: 14px;
-  height: 14px;
-  margin-bottom: 4px
-}
-footer a:hover {
-  text-decoration: underline
-}
-
-/* Constrain this region without requiring a fixed layout width. */
-.preview-tools {
-  margin-top: var(--space-4);
-  max-width: min(100%,40.625rem);
-  font-size: 12px
-}
-
+footer svg { display: inline-block; vertical-align: middle; width: 14px; height: 14px; margin-bottom: 4px; }
+footer a:hover { text-decoration: underline; }
 /* Apply shared spacing and surface tokens at this size. */
 .preview-tools nav {
   display: flex;
@@ -107,76 +110,80 @@ footer a:hover {
   margin: 12px 0
 }
 
-/* Apply shared spacing and surface tokens at this size. */
-.nav-layout {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2)
-}
-.nav-layout legend {
-  padding: 0 4px;
-  color: var(--color-fg-secondary)
-}
+
+.nav-layout { display: flex; flex-direction: column; gap: var(--space-2); }
+.nav-layout legend { padding: 0 var(--space-1); color: var(--color-fg-secondary); }
+/* A compact identity stays in document flow above mobile content. */
+.profile-header { padding: var(--space-3) var(--space-4); }
 @media(min-width:40rem) {
-  .app-shell {
-    flex-direction: row
+  .app-shell,body:has(#nav-admin:not([hidden])) .app-shell { flex-direction: row; padding-bottom: 0; }
+  .app-content { margin-left: var(--nav-width); width: calc(100% - var(--nav-width)); }
+  .sidebar {
+    top: 0;
+    bottom: auto;
+    width: var(--nav-width);
+    height: 100dvh;
+    padding: var(--space-4) var(--space-2);
+    border-top: 0;
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4)
   }
-  .app-content {
-    margin-left: 58px
-  }
-  /* Second sidebar beside the first: pushes the content by default, or opens over it
-     when the browser preference (theme panel) is "overlay". */
+  .nav-profile { display: block; }
+  .nav-destinations { flex-direction: column; justify-content: flex-start; gap: var(--space-3); }
+  .nav-destinations>.nav-button,.nav-more { flex: none; }
+  .sidebar .nav-label { display: none; }
+  .nav-profile .nav-button,.nav-destinations>.nav-button { width: 100%; }
+  .nav-options { bottom: auto; top: 0; left: calc(100% + var(--space-2)); right: auto; }
+  .nav-more { position: relative; }
   .sidebar.sidebar-secondary {
-    left: 58px;
-    z-index: 49
+    left: var(--nav-width);
+    top: 0;
+    bottom: auto;
+    max-height: none;
+    z-index: 49;
+    padding: var(--space-4) var(--space-2)
   }
+  .sidebar-secondary .nav-group { flex-direction: column; flex-wrap: nowrap; }
+  .sidebar-secondary .nav-group:last-child { margin-top: auto; }
   body:has(#nav-admin:not([hidden])) .app-content {
-    margin-left: 116px
+    margin-left: calc(var(--nav-width) + 4.5rem);
+    width: calc(100% - var(--nav-width) - 4.5rem)
   }
   html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
-    margin-left: 58px
+    margin-left: var(--nav-width);
+    width: calc(100% - var(--nav-width))
   }
-
-/* Apply shared spacing and surface tokens at this size. */
-  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary {
-    z-index: 60;
-    box-shadow: var(--shadow-overlay)
-  }
+  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary { z-index: 60; box-shadow: var(--shadow-overlay); }
+  .nav-button[data-tip]::after { left: calc(100% + var(--space-4)); bottom: 0; }
   body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
-    left: calc(100% + 80px)
-  }
-
-/* Constrain this region without requiring a fixed layout width. */
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    width: auto;
-    padding: 40px 12px;
-    border-bottom: 0;
-    border-right: 1px solid var(--color-bg-tertiary);
-    flex-direction: column
-  }
-  .nav-group {
-    flex-direction: column
-  }
-  .nav-spacer {
-    display: flex
-  }
-  .nav-button[data-tip]::after {
-    left: calc(100% + 22px);
-    bottom: 4px
+    left: calc(100% + 6rem)
   }
 }
-
-
-/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
-
-/* Apply shared spacing and surface tokens at this size. */
- .sidebar { padding-bottom:var(--space-2); }
-
-/* Apply shared spacing and surface tokens at this size. */
-.app-content { flex:1; }
-
+/* Labels can be collapsed by keyboard or pointer with the native checkbox, even offline. */
+@media(min-width:64rem) {
+  body { --nav-width: 14rem; }
+  body:has(.nav-collapse input:not(:checked)) { --nav-width: 4.5rem; }
+  body:has(.nav-collapse input:checked) .sidebar:not(.sidebar-secondary) { overflow-y: auto; }
+  .sidebar .nav-label { display: inline; overflow-wrap: anywhere; }
+  .nav-destinations>.nav-button,.nav-more>summary,.nav-profile .nav-button {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3)
+  }
+  .nav-options { position: static; width: 100%; max-height: none; margin-top: var(--space-2); box-shadow: none; }
+  .nav-options .nav-button { flex-wrap: wrap; }
+  .nav-periods { display: flex; flex-direction: column; gap: var(--space-1); }
+  .nav-periods a { min-height: 44px; display: flex; align-items: center; padding: var(--space-2); }
+  .nav-periods a[aria-current] { color: var(--color-fg); background: var(--color-bg-tertiary); border-radius: var(--radius-sm); }
+  .nav-collapse { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-top: auto; font-size: var(--step--1); }
+  .nav-collapse input { min-width: 44px; min-height: 44px; }
+  .sidebar.sidebar-secondary { width: 4.5rem; }
+  .sidebar-secondary .nav-label { display: none; }
+  body:has(.nav-collapse input:not(:checked)) .sidebar:not(.sidebar-secondary) .nav-label,
+  body:has(.nav-collapse input:not(:checked)) .nav-periods,
+  body:has(.nav-collapse input:not(:checked)) .nav-collapse span { display: none; }
+  body:has(.nav-collapse input:not(:checked)) .nav-options { position: fixed; left: var(--nav-width); top: auto; bottom: var(--space-4); width: 16rem; }
+}
 }

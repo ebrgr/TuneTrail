@@ -2,6 +2,7 @@ package webassets
 
 import (
 	"html/template"
+	"net/url"
 	"strings"
 )
 
@@ -13,8 +14,10 @@ type NavProfile struct {
 
 // Nav is the data for the shared "partial/sidebar" template (ISSUE-122).
 type Nav struct {
-	Kind    string // live, preview or admin: selects dialogs or links for the same controls
-	Profile *NavProfile
+	Period, Timezone string // ISSUE-071: carry the selection in navigation URLs, without browser storage.
+	PeriodLinks      []NavPeriod
+	Kind             string // live, preview or admin: selects dialogs or links for the same controls
+	Profile          *NavProfile
 	// Second sidebar (ISSUE-123): administration links for a valid session, open on
 	// administration pages, with the current item and the version shown in About.
 	Admin   bool
@@ -53,4 +56,43 @@ func Initials(name string) string {
 		}
 	}
 	return strings.ToUpper(string(letters))
+}
+
+// NavPeriod is a translated server-rendered period destination.
+type NavPeriod struct {
+	URL, Label, Fallback string
+	Selected             bool
+}
+
+// Query preserves only the period and timezone when changing navigation destinations.
+func (n Nav) Query() string {
+	q := url.Values{}
+	if n.Period != "" {
+		q.Set("period", n.Period)
+	}
+	if n.Timezone != "" {
+		q.Set("tz", n.Timezone)
+	}
+	if len(q) == 0 {
+		return ""
+	}
+	return "?" + q.Encode()
+}
+
+// DefaultPeriods supplies a selector on pages without their own period links.
+func (n Nav) DefaultPeriods() []NavPeriod {
+	if n.Profile == nil {
+		return nil
+	}
+	var links []NavPeriod
+	for _, period := range []string{"day", "week", "month", "year", "all_time"} {
+		label := period
+		if period == "all_time" {
+			label = "All"
+		}
+		dest := n
+		dest.Period = period
+		links = append(links, NavPeriod{URL: "/" + n.Profile.Slug + dest.Query(), Label: "period." + period, Fallback: label, Selected: n.Period == period})
+	}
+	return links
 }

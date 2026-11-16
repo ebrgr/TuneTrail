@@ -1,0 +1,1956 @@
+/* Reset: browser defaults normalised like the original Tailwind preflight. */
+/* Cascade order for the whole bundle; later layers win regardless of specificity. */
+@layer reset, tokens, base, layout, components, pages, utilities;
+@layer reset {
+/* Roadmap 1: explicit equivalents of the existing app's CSS/Tailwind rules. */
+*,::before,::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid
+}
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  font-family: Jost,Inter,ui-sans-serif,system-ui,sans-serif
+}
+body,h1,h2,h3,h4,h5,p,ol,ul {
+  margin: 0
+}
+button,input,textarea,select {
+  font: inherit;
+  color: inherit
+}
+button {
+  background: none;
+  padding: 0;
+  text-align: inherit;
+  cursor: pointer
+}
+button:disabled {
+  cursor: default
+}
+a {
+  color: inherit;
+  text-decoration: none
+}
+img,svg {
+  display: block
+}
+img {
+  max-width: 100%;
+  height: auto
+}
+ol,ul {
+  padding: 0;
+  list-style: none
+}
+/* Differences found in the first React/Go screenshot pass. */
+button {
+  text-transform: inherit
+}
+}
+/* Shared design scale: colours remain owned by themes.css. */
+@layer tokens {
+
+/* Apply shared spacing and surface tokens at this size. */
+:root {
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --step--1: clamp(.75rem,.7rem + .25vw,.875rem);
+  --step-0: clamp(.875rem,.8rem + .375vw,1rem);
+  --step-1: clamp(1rem,.9rem + .5vw,1.25rem);
+  --step-2: clamp(1.25rem,1rem + 1.25vw,1.75rem);
+  --step-3: clamp(1.75rem,1.25rem + 2.5vw,2.5rem);
+  --step-4: clamp(2rem,1.25rem + 3.75vw,3.5rem);
+  --step-5: clamp(2.25rem,1rem + 6.25vw,4.875rem);
+  --radius-sm: .375rem;
+  --radius-md: .5rem;
+  --radius-lg: .875rem;
+  --shadow-card: 0 .25rem 1rem rgb(0 0 0 / .12);
+  --shadow-overlay: .25rem 0 1rem rgb(0 0 0 / .35);
+  --border-radius: var(--radius-md);
+  --color-border: var(--color-bg-tertiary);
+  --header-xl: var(--step-5);
+  --header-lg: var(--step-3);
+  --header-line-height: 1.15;
+  --media-action-icon: 1.375rem;
+}
+/* The same three viewport thresholds are used throughout the application. */
+@media(min-width:40rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  :root { --media-action-icon:1.875rem; }
+}
+}
+/* Base: element typography, focus, text colours, cards and native controls. */
+@layer base {
+html,body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  transition: background-color .3s ease
+}
+
+/* Use the shared type scale at this reading size. */
+body {
+  min-height: 100vh;
+  font-size: var(--step-0)
+}
+h1,h2,h3,h4,h5,.header-font {
+  font-family: 'League Spartan',sans-serif
+}
+h1 {
+  font-size: var(--header-xl);
+  font-weight: 600;
+  line-height: var(--header-line-height)
+}
+h2 {
+  font-size: var(--header-lg);
+  font-weight: 600
+}
+
+/* Use the shared type scale at this reading size. */
+h3 {
+  font-size: var(--step-1);
+  text-transform: uppercase;
+  font-weight: 400
+}
+
+/* Use the shared type scale at this reading size. */
+h4 {
+  font-size: var(--step-0);
+  font-weight: 600
+}
+a,div {
+  transition: color .1s ease
+}
+a:hover,button.media-title:hover {
+  color: var(--color-fg-secondary)
+}
+:is(a,button,input,select,textarea):focus-visible {
+  outline: 1px solid var(--color-fg-tertiary);
+  outline-offset: 2px
+}
+.primary {
+  color: var(--color-primary)
+}
+.secondary {
+  color: var(--color-fg-secondary)
+}
+.error {
+  color: var(--color-error)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md)
+}
+.offset {
+  margin-left: 24px
+}
+summary {
+  cursor: pointer
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.noscript {
+  padding: var(--space-4);
+  text-align: center
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+textarea {
+  resize: vertical;
+  background: var(--color-bg);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: 6px;
+  width: min(100%,18.75rem);
+  max-width: 100%;
+  height: 450px;
+  padding: 20px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+button.large-button {
+  padding: .8rem 2rem;
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--color-bg)
+}
+button.large-button:hover {
+  background: var(--color-bg-tertiary)
+}
+body:has(dialog[open]) {
+  overflow: hidden
+}
+.cover-failed {
+  background: var(--color-bg-tertiary);
+  object-fit: contain!important
+}
+@media(prefers-reduced-motion:reduce) {
+  *,::before,::after {
+    animation: none!important;
+    transition: none!important
+  }
+}
+
+/* Keep dropdown arrows inset consistently while retaining native select behavior. */
+
+/* Apply shared spacing and surface tokens at this size. */
+select:not([multiple]):not([size]) {
+  --select-arrow: linear-gradient(45deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%), linear-gradient(135deg,
+    transparent 40%,
+    currentColor 40%,
+    currentColor 60%,
+    transparent 60%);
+  appearance: none;
+  background-image: var(--select-arrow);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+@media (forced-colors: active) {
+  select:not([multiple]):not([size]) { appearance: auto; background-image: none; }
+}
+}
+/* ISSUE-071: mobile navigation reserves its complete safe-area footprint. */
+@layer layout {
+:root {
+  --nav-width: 4.5rem;
+  --nav-bottom: calc(4.5rem + env(safe-area-inset-bottom,0px))
+}
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: var(--nav-bottom)
+}
+.app-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto
+}
+.sidebar {
+  z-index: 50;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--color-bg);
+  color: var(--color-fg-secondary);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-2) var(--space-1) calc(var(--space-2) + env(safe-area-inset-bottom,0px))
+}
+.nav-profile,.nav-periods,.nav-collapse { display: none; }
+.nav-destinations {
+  display: flex;
+  justify-content: space-around;
+  gap: var(--space-1)
+}
+.nav-destinations>.nav-button,.nav-more { flex: 1; min-width: 0; }
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: var(--space-1);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: background-color .1s,color .1s
+}
+.nav-destinations>.nav-button,.nav-more>summary { flex-direction: column; }
+.nav-button>svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-label { font-size: var(--step--1); }
+.nav-button:hover { background: var(--color-bg-tertiary); color: var(--color-fg); }
+.nav-button:focus-visible,.nav-periods a:focus-visible,.nav-collapse:focus-within {
+  outline: 2px solid var(--color-fg);
+  outline-offset: 2px
+}
+.nav-more>summary { list-style: none; width: 100%; cursor: pointer; }
+.nav-more>summary::-webkit-details-marker { display: none; }
+.nav-options {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  right: var(--space-2);
+  width: min(20rem,calc(100vw - var(--space-4)));
+  max-height: calc(100dvh - var(--nav-bottom) - var(--space-4));
+  overflow-y: auto;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-overlay)
+}
+.nav-options .nav-button { justify-content: flex-start; gap: var(--space-3); }
+.sidebar-secondary[hidden] { display: none; }
+/* ISSUE-123: administration remains a separate landmark above the mobile dock. */
+.sidebar.sidebar-secondary {
+  z-index: 49;
+  bottom: var(--nav-bottom);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+  max-height: calc(100dvh - var(--nav-bottom));
+  overflow-y: auto
+}
+.sidebar-secondary .nav-group { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.sidebar-secondary .nav-label { display: none; }
+body:has(#nav-admin:not([hidden])) .app-shell { padding-bottom: calc(var(--nav-bottom) + 5rem); }
+html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary { display: none; }
+.nav-disabled { opacity: .55; cursor: default; }
+footer {
+  margin: auto auto 0;
+  padding: 80px var(--space-4) var(--space-7);
+  text-align: center;
+  color: var(--color-fg-tertiary);
+  font-size: 14px
+}
+footer svg { display: inline-block; vertical-align: middle; width: 14px; height: 14px; margin-bottom: 4px; }
+footer a:hover { text-decoration: underline; }
+/* Apply shared spacing and surface tokens at this size. */
+.preview-tools nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3)
+}
+.preview-tools p {
+  margin: 12px 0
+}
+
+
+.nav-layout { display: flex; flex-direction: column; gap: var(--space-2); }
+.nav-layout legend { padding: 0 var(--space-1); color: var(--color-fg-secondary); }
+/* A compact identity stays in document flow above mobile content. */
+.profile-header { padding: var(--space-3) var(--space-4); }
+@media(min-width:40rem) {
+  .app-shell,body:has(#nav-admin:not([hidden])) .app-shell { flex-direction: row; padding-bottom: 0; }
+  .app-content { margin-left: var(--nav-width); width: calc(100% - var(--nav-width)); }
+  .sidebar {
+    top: 0;
+    bottom: auto;
+    width: var(--nav-width);
+    height: 100dvh;
+    padding: var(--space-4) var(--space-2);
+    border-top: 0;
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4)
+  }
+  .nav-profile { display: block; }
+  .nav-destinations { flex-direction: column; justify-content: flex-start; gap: var(--space-3); }
+  .nav-destinations>.nav-button,.nav-more { flex: none; }
+  .sidebar .nav-label { display: none; }
+  .nav-profile .nav-button,.nav-destinations>.nav-button { width: 100%; }
+  .nav-options { bottom: auto; top: 0; left: calc(100% + var(--space-2)); right: auto; }
+  .nav-more { position: relative; }
+  .sidebar.sidebar-secondary {
+    left: var(--nav-width);
+    top: 0;
+    bottom: auto;
+    max-height: none;
+    z-index: 49;
+    padding: var(--space-4) var(--space-2)
+  }
+  .sidebar-secondary .nav-group { flex-direction: column; flex-wrap: nowrap; }
+  .sidebar-secondary .nav-group:last-child { margin-top: auto; }
+  body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: calc(var(--nav-width) + 4.5rem);
+    width: calc(100% - var(--nav-width) - 4.5rem)
+  }
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
+    margin-left: var(--nav-width);
+    width: calc(100% - var(--nav-width))
+  }
+  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary { z-index: 60; box-shadow: var(--shadow-overlay); }
+  .nav-button[data-tip]::after { left: calc(100% + var(--space-4)); bottom: 0; }
+  body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
+    left: calc(100% + 6rem)
+  }
+}
+/* Labels can be collapsed by keyboard or pointer with the native checkbox, even offline. */
+@media(min-width:64rem) {
+  body { --nav-width: 14rem; }
+  body:has(.nav-collapse input:not(:checked)) { --nav-width: 4.5rem; }
+  body:has(.nav-collapse input:checked) .sidebar:not(.sidebar-secondary) { overflow-y: auto; }
+  .sidebar .nav-label { display: inline; overflow-wrap: anywhere; }
+  .nav-destinations>.nav-button,.nav-more>summary,.nav-profile .nav-button {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3)
+  }
+  .nav-options { position: static; width: 100%; max-height: none; margin-top: var(--space-2); box-shadow: none; }
+  .nav-options .nav-button { flex-wrap: wrap; }
+  .nav-periods { display: flex; flex-direction: column; gap: var(--space-1); }
+  .nav-periods a { min-height: 44px; display: flex; align-items: center; padding: var(--space-2); }
+  .nav-periods a[aria-current] { color: var(--color-fg); background: var(--color-bg-tertiary); border-radius: var(--radius-sm); }
+  .nav-collapse { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-top: auto; font-size: var(--step--1); }
+  .nav-collapse input { min-width: 44px; min-height: 44px; }
+  .sidebar.sidebar-secondary { width: 4.5rem; }
+  .sidebar-secondary .nav-label { display: none; }
+  body:has(.nav-collapse input:not(:checked)) .sidebar:not(.sidebar-secondary) .nav-label,
+  body:has(.nav-collapse input:not(:checked)) .nav-periods,
+  body:has(.nav-collapse input:not(:checked)) .nav-collapse span { display: none; }
+  body:has(.nav-collapse input:not(:checked)) .nav-options { position: fixed; left: var(--nav-width); top: auto; bottom: var(--space-4); width: 16rem; }
+}
+}
+/* Components: avatar, profile header, identity and administrator badge. */
+@layer components {
+.nav-button .avatar {
+  width: 18px;
+  height: 18px;
+  min-width: 18px
+}
+.nav-button .avatar svg {
+  width: 9px;
+  height: 9px
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  font-size: 12px
+}
+.avatar svg {
+  width: 50%;
+  height: 50%
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.profile-header {
+  width: 100%;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-border)
+}
+/* ISSUE-109: administrator session badge. The link pads the 32px avatar to a 44px
+   touch target without moving the header; the badge keeps 3:1 against the background. */
+.admin-avatar-link,.profile-switch {
+  position: relative;
+  display: inline-flex;
+  padding: 6px;
+  margin: -6px;
+  border-radius: 50%;
+  color: inherit
+}
+.admin-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  box-shadow: 0 0 0 2px var(--color-bg)
+}
+.admin-badge svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.5
+}
+/* Pearl's primary blue is under 3:1 on its background; its darker info blue keeps 4.33:1. */
+[data-theme="pearl"] .admin-badge {
+  background: var(--color-info)
+}
+.profile-identity {
+  min-width: 0;
+  display: block
+}
+.profile-identity strong,.profile-identity>span {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis
+}
+.profile-identity strong {
+  font-weight: 600
+}
+.profile-identity>span {
+  font-size: 12px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .profile-header {
+    padding-left: 40px;
+    padding-right: 40px
+  }
+}
+.profile-header .profile-identity>span {
+  line-height: 16px
+}
+}
+/* Components: section titles, section links and the period selector. */
+@layer components {
+
+/* Apply shared spacing and surface tokens at this size. */
+.section-title {
+  color: var(--color-fg-secondary)
+}
+.section-link:hover {
+  color: var(--color-fg)
+}
+.section-link>span {
+  opacity: 0;
+  transition: opacity .1s
+}
+.section-link:hover>span,.section-link:focus-visible>span {
+  opacity: 1
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.period-selector {
+  display: flex;
+  gap: var(--space-2);
+  padding: 8px 12px;
+  font-size: 14px;
+  max-width: 100%
+}
+.period-selector a {
+  /* ISSUE-071: period links remain touch targets when the sidebar selector is hidden. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  text-transform: uppercase;
+  color: var(--color-fg-tertiary);
+  white-space: nowrap
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.period-selector a:not(:last-child) {
+  padding-right: clamp(8px,4vw,32px)
+}
+.period-selector a[aria-current],.period-selector a:hover {
+  color: var(--color-fg)
+}
+@media(min-width:40rem) {
+  .section-title {
+    margin-bottom: 4px
+  }
+
+/* Use the shared type scale at this reading size. */
+  .period-selector {
+    font-size: 16px;
+    padding: 8px 24px
+  }
+}
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Constrain this region without requiring a fixed layout width. */
+ .period-selector { width:min(100%,28rem); flex-wrap:wrap; justify-content:space-between; gap:var(--space-2); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.period-selector a:not(:last-child) { padding-right:0; }
+
+}
+/* Components: media items, ranked lists and listen tables. */
+@layer components {
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start
+}
+.feature-list>.media {
+  padding: 0 24px 24px;
+  width: 100%
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.media {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3)
+}
+.media-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start
+}
+.media-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere
+}
+
+/* Use the shared type scale at this reading size. */
+.media-meta,.media-artist {
+  color: var(--color-fg-secondary);
+  font-size: 12px;
+  overflow-wrap: anywhere
+}
+.feature-list:not(.album-list) .media-artist {
+  display: none
+}
+.art-button {
+  flex-shrink: 0
+}
+.medium .art-button,.medium img {
+  width: 90px;
+  height: 90px
+}
+.small .art-button,.small img {
+  width: 56px;
+  height: 56px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.media img,.listens img {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-bg-tertiary);
+  object-fit: cover
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.empty {
+  margin-top: var(--space-5)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.tracks {
+  /* Sits beside the two 350px cards once a 400px column fits; otherwise wraps full-width. */
+  flex: 1 1 400px;
+  width: 100%;
+  max-width: min(100%,46.875rem);
+  min-width: 0
+}
+.ranked-list {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px
+}
+.ranked-list li {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 13px;
+  padding: 4px 0 10px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--color-bg-tertiary)
+}
+.ranked-list li:last-child {
+  border-bottom: 0
+}
+.rank {
+  width: 32px;
+  padding-right: 12px;
+  flex-shrink: 0;
+  text-align: right;
+  color: var(--color-fg-secondary)
+}
+.rank.primary {
+  color: var(--color-primary)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.ranked-list .media {
+  flex: 1;
+  min-width: 0;
+  gap: var(--space-2);
+  padding-right: 12px
+}
+.plays {
+  width: 75px;
+  flex-shrink: 0;
+  text-align: right;
+  color: var(--color-fg-secondary)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.last-played {
+  width: 100%;
+  max-width: min(100%,46.875rem);
+  font-size: 13px
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.listens {
+  border-collapse: collapse;
+  margin-top: var(--space-5);
+  width: 100%
+}
+.listens td {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-bg-tertiary)
+}
+.listens tr:last-child td {
+  border-bottom: 0
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.listens td:first-child {
+  width: 32px;
+  min-width: 32px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.listens td:nth-child(2) {
+  padding: var(--space-2);
+  overflow-wrap: anywhere
+}
+.listens img {
+  width: 32px;
+  height: 32px;
+  max-width: none
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.listens td.listen-time {
+  text-align: right;
+  white-space: nowrap;
+  color: var(--color-fg-tertiary);
+  padding-right: 8px
+}
+.now-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  vertical-align: middle;
+  margin-right: 8px
+}
+@media(min-width:40rem) {
+  .media-meta,.media-artist {
+    font-size: 14px
+  }
+  .ranked-list li,.last-played {
+    font-size: 15px
+  }
+  .listens td:first-child {
+    min-width: 44px
+  }
+  .listens td.listen-time {
+    padding-right: 16px;
+    font-size: 14px
+  }
+}
+@media(min-width:64rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
+  .last-played {
+    max-width: min(100%,75rem)
+  }
+}
+@media(min-width:90rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
+  .tracks {
+    max-width: min(100%,28.125rem)
+  }
+}
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Size this region independently so its children can query available space. */
+ .tracks,.last-played { width:100%; max-width:100%; container:media-list / inline-size; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.tracks { flex-basis:24rem; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.ranked-list li { flex-wrap:wrap; }
+@container media-list (min-width:26rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .ranked-list li { flex-wrap:nowrap; gap:var(--space-2); }
+
+/* Use the shared type scale at this reading size. */
+  .media-meta,.media-artist { font-size:var(--step-0); }
+}
+
+}
+/* Components: activity heatmap and its legend. */
+@layer components {
+.activity {
+  max-width: 100%
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.activity-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  min-width: 0;
+  padding: var(--space-4);
+  max-width: 100%
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.activity-calendar {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2)
+}
+
+/* Let columns adapt to the available reading space. */
+.day-labels,.activity-cells {
+  display: grid;
+  grid-template-rows: repeat(7,9px);
+  gap: 2px
+}
+
+/* Use the shared type scale at this reading size. */
+.day-labels span {
+  font-size: 8px;
+  color: var(--color-fg-secondary);
+  line-height: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: var(--space-4)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.activity-cells {
+  grid-auto-flow: column;
+  grid-auto-columns: 9px
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.activity-slot,.activity-cell {
+  display: block;
+  width: 9px;
+  height: 9px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.activity-cell {
+  border-radius: 2px;
+  border: 1px solid var(--color-bg-tertiary);
+  background: var(--color-bg-secondary)
+}
+.activity-cell.filled {
+  background: var(--color-primary);
+  border: 0
+}
+.activity-footer {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  font-size: 11px;
+  color: var(--color-fg-secondary)
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 4px
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  background: var(--color-primary);
+  border: .5px solid var(--color-bg-tertiary)
+}
+.legend i:first-of-type {
+  margin-left: 4px
+}
+.legend i:last-of-type {
+  margin-right: 4px
+}
+
+@container heatmap (min-width:25rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
+  .activity-card {
+    min-width: 0;
+        padding: 24px 28px 20px
+  }
+
+/* Let columns adapt to the available reading space. */
+  .day-labels,.activity-cells {
+    grid-template-rows: repeat(7,10px)
+  }
+  .activity-cells {
+    grid-auto-columns: 10px
+  }
+  .activity-slot,.activity-cell {
+    width: 10px;
+    height: 10px
+  }
+
+/* Use the shared type scale at this reading size. */
+  .day-labels span {
+    font-size: 11px
+  }
+  .legend i {
+    width: 9px;
+    height: 9px
+  }
+}
+@container heatmap (min-width:32rem) {
+  .day-labels,.activity-cells {
+    gap: 3px
+  }
+}
+.day-labels span {
+  margin-top: 0;
+  transform: translateY(8px)
+}
+
+.activity-cell {
+  transform: translateY(8px)
+}
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Size this region independently so its children can query available space. */
+ .activity { width:100%; min-width:0; container:heatmap / inline-size; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.activity-card { width:100%; height:auto; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.activity-calendar { max-width:100%; overflow-x:auto; padding-bottom:var(--space-2); flex-shrink:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.old-week { display:none; }
+@container heatmap (min-width:25rem) { .old-week { display:block; } }
+
+}
+/* Shared tooltip appearance; each surface owns placement. Labels also have accessible names. */
+@layer components {
+
+/* Apply shared spacing and surface tokens at this size. */
+.nav-button[data-tip]::after,.media-actions [data-tip]::after {
+  content:attr(data-tip); position:absolute; white-space:nowrap;
+  padding:8px 12px; border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
+  background:var(--color-bg); color:var(--color-fg); line-height:1.5;
+  opacity:0; pointer-events:none; transition:opacity .1s;
+}
+.nav-button:is(:hover,:focus-visible)::after,
+
+/* Apply shared spacing and surface tokens at this size. */
+html[data-media-tooltips] .media-actions [data-tip]:focus-visible::after { opacity:1; }
+@media(hover:hover) { html[data-media-tooltips] .media-actions [data-tip]:hover::after { opacity:1; } }
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+ .nav-button[data-tip]::after { content:none; }
+@media(min-width:40rem) { .nav-button[data-tip]::after { content:attr(data-tip); } }
+
+/* ISSUE-071: visible desktop labels replace duplicate hover tooltips. */
+@media(min-width:64rem) {
+ body:has(.nav-collapse input:checked) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after { content:none; }
+}
+
+}
+/* Components: native dialogs and the profile switcher. */
+@layer components {
+
+/* Constrain this region without requiring a fixed layout width. */
+dialog {
+  margin: auto;
+  color: var(--color-fg);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  width: calc(100% - 16px);
+  max-width: min(100%,37.5rem);
+  max-height: 80vh;
+  overflow: auto
+}
+dialog::backdrop {
+  background: rgb(0 0 0/.9)
+}
+dialog[open] {
+  animation: dialog-in .1s ease
+}
+dialog h2 {
+  margin-bottom: 20px
+}
+
+/* Use the shared type scale at this reading size. */
+.close-dialog {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 20px;
+  color: var(--color-fg-tertiary)
+}
+.close-dialog:hover {
+  color: var(--color-fg)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.profile-dialog {
+  max-width: min(100%,30rem)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.profile-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.profile-options a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: 6px
+}
+.profile-options a:hover {
+  background: var(--color-bg-tertiary)
+}
+.profile-options .avatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px
+}
+.profile-options .profile-identity {
+  flex: 1
+}
+.profile-options .profile-identity>span {
+  font-size: 14px
+}
+.profile-options> a>svg {
+  width: 18px;
+  height: 18px
+}
+
+/* Use the shared type scale at this reading size. */
+.all-profiles {
+  display: inline-block;
+  margin-top: var(--space-5);
+  font-size: 14px
+}
+@media(min-width:40rem) {
+  .close-dialog {
+    top: 12px;
+    right: 16px
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(.95)
+  }
+  to {
+    opacity: 1;
+    transform: scale(1)
+  }
+}
+}
+/* Components: theme panel popover, swatches and custom theme form. */
+@layer components {
+/* ISSUE-110: theme panel as a native popover. Older browsers ignore :popover-open and drop
+   that rule, so the panel stays hidden instead of showing inline. */
+.theme-panel[popover] {
+  display: none
+}
+.theme-panel[popover]:popover-open {
+  display: block
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.theme-panel {
+  margin: auto;
+  color: var(--color-fg);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  width: calc(100% - 16px);
+  max-width: min(100%,37.5rem);
+  max-height: 80vh;
+  overflow: auto
+}
+.theme-panel::backdrop {
+  background: rgb(0 0 0/.6)
+}
+/* ISSUE-123: colors, sidebar layout and language as bordered sections, like .card. */
+.theme-panel h2 {
+  margin: 0 0 4px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.panel-section {
+  margin: 16px 0 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md)
+}
+.panel-section h3 {
+  margin: 0;
+  font-size: 16px
+}
+.panel-section .language-picker {
+  margin: 0
+}
+.custom-theme-details {
+  margin-top: 20px
+}
+.custom-theme-details summary {
+  cursor: pointer;
+  color: var(--color-fg-secondary)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.theme-heading {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-3)
+}
+.reset-theme {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px
+}
+.reset-theme:hover {
+  background: var(--color-bg-tertiary)
+}
+
+/* Let columns adapt to the available reading space. */
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2)
+}
+
+/* Use the shared type scale at this reading size. */
+.theme-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  border: 2px solid;
+  padding: var(--space-3);
+  border-radius: 6px;
+  font-size: 12px
+}
+.theme-option>span:first-child {
+  text-transform: capitalize
+}
+.theme-option[aria-pressed=true] {
+  outline: 1px solid var(--color-primary);
+  outline-offset: 1px
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.swatches {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%
+}
+.swatches i {
+  width: 28.57%;
+  max-width: 50px;
+  height: 30px;
+  border-radius: 6px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.custom-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 20px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary)
+}
+.theme-status {
+  font-size: 14px
+}
+@media(min-width:40rem) {
+  .theme-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr))
+  }
+  .theme-option {
+    padding: 20px;
+    font-size: 14px
+  }
+}
+}
+/* Components: instant search dialog and result cards. */
+@layer components {
+/* ISSUE-107: search dialog anchored to the top like the original Koito; the heading and
+   field stay in place (sticky) while the titled result cards grow and scroll below. */
+
+/* Constrain this region without requiring a fixed layout width. */
+.search-dialog {
+  margin: 48px auto auto;
+  width: calc(100% - 16px);
+  max-width: min(100%,37.5rem);
+  max-height: calc(100vh - 64px);
+  max-height: calc(100dvh - 64px);
+  padding: 0;
+  /* Solid theme background (light themes too), so page text never shows behind titles
+     and gaps and the titles keep the theme's text contrast. */
+  background: var(--color-bg);
+  border: 0;
+  border-radius: var(--radius-md);
+  overflow-y: auto
+}
+.search-dialog::backdrop {
+  background: rgb(0 0 0/.9);
+  backdrop-filter: blur(6px)
+}
+.search-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 16px 0;
+  background: var(--color-bg)
+}
+.search-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between
+}
+.search-head-row .close-dialog {
+  position: static;
+  margin: 0 8px 8px 0
+}
+h2.search-section-title,
+
+/* Use the shared type scale at this reading size. */
+.search-section-title {
+  margin: 0 0 8px;
+  padding-left: 24px;
+  font-size: 16px;
+  text-transform: uppercase;
+  color: var(--color-fg)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.search-box {
+  position: relative;
+  padding: var(--space-5);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.search-box input {
+  display: block;
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.search-box [data-search-submit] {
+  margin-top: var(--space-3)
+}
+[data-instant-search][data-enhanced] [data-search-submit] {
+  display: none
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.search-card {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--radius-md)
+}
+
+/* Let columns adapt to the available reading space. */
+.search-card.search-artists {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
+  gap: var(--space-4)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.search-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 6px;
+  border-radius: 6px
+}
+.search-option img {
+  flex-shrink: 0;
+  border-radius: 6px;
+  object-fit: cover
+}
+.search-tracks .search-option img {
+  width: 75px;
+  height: 75px
+}
+.search-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0
+}
+.search-subtitle {
+  color: var(--color-fg-secondary)
+}
+.search-option.search-artist {
+  position: relative;
+  display: block;
+  padding: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--color-bg-tertiary)
+}
+.search-artist img {
+  width: 100%;
+  height: 100%
+}
+.search-artist::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,var(--color-bg-secondary) 0%,transparent 60%)
+}
+.search-artist-name {
+  position: absolute;
+  left: 12px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3
+}
+[role=option][aria-selected=true] .search-option,
+
+/* Apply shared spacing and surface tokens at this size. */
+.search-option:hover {
+  background: var(--color-bg-tertiary)
+}
+[role=option][aria-selected=true] .search-artist {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px
+}
+.search-all {
+  display: inline-block;
+  margin: 0 0 16px 24px
+}
+.search-hint {
+  margin: 0;
+  padding: 0 24px 16px;
+  color: var(--color-fg-secondary)
+}
+}
+/* Components: language picker form. */
+@layer components {
+/* A native form keeps language selection available without JavaScript. */
+.language-picker{display:flex;align-items:end;justify-content:flex-start;flex-wrap:wrap;gap:.65rem;margin:1.5rem 0;color:var(--color-fg-secondary)}
+.language-picker label{display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.language-picker select,.language-picker button {
+  min-height:44px;
+  border:1px solid var(--color-bg-tertiary);
+  border-radius:7px;
+  background-color:var(--color-bg-secondary);
+  color:var(--color-fg);
+  padding:8px 12px
+}
+.language-picker select{padding-right:2.5rem}.language-picker button{cursor:pointer}
+}
+/* Pages: home overview, hero and highlight blocks. */
+@layer pages {
+.home {
+  display: flex;
+  flex-grow: 1;
+  justify-content: center;
+  padding-bottom: 16px;
+  width: 100%
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.home-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-7);
+  min-height: 0;
+  min-width: 0;
+  margin: 32px 16px 0
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  max-width: 100%
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.stats-columns {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-5)
+}
+.stats b {
+  font-family: 'League Spartan',sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px
+}
+.stats-columns>div {
+  min-width: 0
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.home-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-7);
+  width: 100%;
+  max-width: 100%
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.feature-section {
+  width: min(100%,22rem);
+  max-width: 100%
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.feature-card {
+  max-width: 100%
+}
+.hero {
+  position: relative
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.hero>img {
+  width: min(100%,22rem);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md) var(--radius-md) 0 0
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background-image: linear-gradient(to top,
+    var(--color-bg-secondary) 0%,
+    color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,
+    color-mix(in srgb,var(--color-bg-secondary) 95%,transparent) 12%,
+    color-mix(in srgb,var(--color-bg-secondary) 86%,transparent) 20%,
+    color-mix(in srgb,var(--color-bg-secondary) 72%,transparent) 28%,
+    color-mix(in srgb,var(--color-bg-secondary) 55%,transparent) 36%,
+    color-mix(in srgb,var(--color-bg-secondary) 37%,transparent) 44%,
+    color-mix(in srgb,var(--color-bg-secondary) 22%,transparent) 51%,
+    color-mix(in srgb,var(--color-bg-secondary) 11%,transparent) 57%,
+    color-mix(in srgb,var(--color-bg-secondary) 4%,transparent) 61%,
+    color-mix(in srgb,var(--color-bg-secondary) 1%,transparent) 63.5%,
+    transparent 65%)
+}
+.hero-caption {
+  position: absolute;
+  bottom: 32px;
+  left: 20px;
+  right: 16px
+}
+.hero-caption h5 {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-shadow: 0 1px 2px #0004
+}
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Constrain this region without requiring a fixed layout width. */
+ .overview { width:100%; gap:var(--space-7); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.home-inner { width:100%; margin:var(--space-6) 0 0; padding-inline:var(--space-4); }
+
+/* Let columns adapt to the available reading space. */
+.home-blocks { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,22rem),1fr)); align-items:start; }
+
+/* Size this region independently so its children can query available space. */
+.feature-section { width:100%; container:card / inline-size; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.feature-card { width:100%; box-shadow:var(--shadow-card); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.hero>img { width:100%; }
+@container card (min-width:24rem) {
+
+/* Let columns adapt to the available reading space. */
+  .feature-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .feature-list>.media { padding:var(--space-3); }
+}
+@media(min-width:40rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .home-inner { padding-inline:var(--space-7); margin-top:var(--space-7); }
+}
+@media(min-width:64rem) {
+
+/* Let columns adapt to the available reading space. */
+  .overview { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-8); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .home-inner { gap:var(--space-8); }
+}
+@media(min-width:90rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
+  .home-inner { max-width:90rem; }
+}
+}
+/* Pages: profile selection. */
+@layer pages {
+
+/* Constrain this region without requiring a fixed layout width. */
+.profile-selection {
+  width: 100%;
+  max-width: 56rem;
+  padding: 48px 24px;
+  min-height: 80vh
+}
+.eyebrow {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--color-fg-secondary)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.profile-selection h1 {
+  margin-top: var(--space-3)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.intro {
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-7);
+  color: var(--color-fg-secondary)
+}
+
+/* Let columns adapt to the available reading space. */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.profile-card {
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0
+}
+.profile-card:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-fg)
+}
+.profile-card .avatar {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  font-size: 18px
+}
+.profile-card .profile-identity>span {
+  font-size: 14px
+}
+.text-link {
+  text-decoration: underline
+}
+
+/* Use the shared type scale at this reading size. */
+.admin-entry {
+  display: inline-block;
+  margin-top: var(--space-7);
+  font-size: 14px;
+  color: var(--color-fg-secondary)
+}
+@media(min-width:40rem) {
+  .profile-selection {
+    padding-top: 80px;
+    padding-bottom: 80px
+  }
+
+/* Let columns adapt to the available reading space. */
+  .profile-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr))
+  }
+}
+@media(min-width:64rem) {
+  .profile-grid {
+    grid-template-columns: repeat(3,minmax(0,1fr))
+  }
+}
+}
+/* Pages: listings, filters, pagination and the search page. */
+@layer pages {
+/* Real profile pages; all links remain ordinary document navigation. */
+
+/* Constrain this region without requiring a fixed layout width. */
+.listing { width: calc(100% - 32px); max-width: min(100%,62.5rem); margin: 32px auto; min-height: 65vh; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.listing h1 { margin-bottom: var(--space-5); }
+
+/* Use the shared type scale at this reading size. */
+.date-range { margin-top: var(--space-2); color: var(--color-fg-secondary); font-size: 14px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.pagination { display:flex; justify-content:center; align-items:center; gap: var(--space-7); margin:24px 0; }
+.pagination [aria-disabled] { color:var(--color-fg-tertiary); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap: var(--space-3); margin:24px 0; }
+.listing-filters label { display:flex; flex-direction:column; font-size:14px; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.listing-filters input,.listing-filters select {
+  background:var(--color-bg);
+  color:var(--color-fg);
+  border:1px solid var(--color-border);
+  border-radius:6px;
+  padding: var(--space-2);
+  max-width: min(100%,6.875rem);
+}
+/* ISSUE-107: the full search page field fills the row; the button stays at its side. */
+.search-page-form {
+  flex-wrap: nowrap
+}
+.search-page-form label {
+  flex: 1;
+  min-width: 0
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.search-page-form input {
+  width: 100%;
+  max-width: none;
+  padding: var(--space-3)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.see-more { display:block; text-align:center; margin-top: var(--space-2); color:var(--color-fg-secondary); }
+
+/* History actions retain a keyboard and touch target when enhanced into confirmation links. */
+
+/* Constrain this region without requiring a fixed layout width. */
+.delete-listen {
+  display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px;
+  color:var(--color-fg-tertiary); padding: var(--space-2);
+}
+.delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
+
+/* History actions remain accessible through normal navigation without JavaScript. */
+.listen-manage{display:block;font-size:11px;color:var(--color-fg-tertiary);margin-top:2px}
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Apply shared spacing and surface tokens at this size. */
+ .pagination { gap:var(--space-5); flex-wrap:wrap; }
+
+/* Use the shared type scale at this reading size. */
+.listing .listens { font-size:var(--step--1); }
+@media(min-width:40rem) { .pagination { gap:var(--space-7); } }
+
+}
+/* Pages: artist, album and track pages with their graphs. */
+@layer pages {
+/* Scoped media reading pages; graphs and management are integrated separately. */
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-detail { width:100%; padding:48px 40px; min-width:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-heading { position:relative; display:flex; flex-wrap:wrap; gap: var(--space-6); align-items:start; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-cover { width:clamp(12rem,30vw,24rem);
+  height:auto;
+  aspect-ratio:1;
+  max-width:100%;
+  object-fit:cover;
+  border:1px solid var(--color-border);
+  border-radius:var(--border-radius);
+  }
+.media-cover[data-artwork-drop] { transition:outline-color .15s ease, filter .15s ease; }
+.media-cover[data-artwork-drop][data-drop-active] { outline:3px solid var(--color-primary); outline-offset:4px; filter:brightness(1.08); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-heading-text { flex:1; min-width:0; }
+
+/* Use the shared type scale at this reading size. */
+.media-type { font-size:24px; margin-bottom: var(--space-2); }
+
+/* Use the shared type scale at this reading size. */
+.media-heading h1 { font-size:clamp(32px,5vw,72px); line-height:1.1; overflow-wrap:anywhere; margin:16px 0; }
+.media-overall-rank { color:var(--color-fg-secondary); font-size:20px; font-weight:500; white-space:nowrap; }
+.media-heading-text p { margin-bottom:6px; }
+.media-heading-text .media-artist { font-size:inherit; }
+/* Match Koito's icon size and sequence; reserve accessible, non-overlapping targets. */
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-actions { position:absolute; top:0; right:calc(40px - (44px - var(--media-action-icon))/2); display:flex; gap:0; align-items:center; }
+.media-actions a { position:relative; display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
+.media-actions [data-tip]::after { top:calc(100% + 8px); right:0; z-index:70; }
+.media-actions a:hover { color:var(--color-fg); }
+.media-actions svg { width:var(--media-action-icon); height:var(--media-action-icon); }
+.media-heading:not(:has(.media-actions a)) { padding-top:0; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-reading-blocks { display:flex; flex-wrap:wrap; align-items:start; gap:40px 80px; margin-top: var(--space-8); max-width: min(100%,87.5rem); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-top-tracks { width:min(100%,28rem); max-width:100%; }
+.media-history { flex:1; min-width:min(350px,100%); max-width:100%; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-top-tracks .section-title,.media-history .section-title { margin-bottom: var(--space-5); }
+.media-albums { margin-top:56px; }
+
+/* Let columns adapt to the available reading space. */
+.media-album-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,20rem),1fr)); gap: var(--space-6); margin-top: var(--space-6); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-album-grid>.media { width:100%; max-width:100%; }
+/* Narrow desktop headers cannot fit the media type beside five action targets. */
+
+
+/* Graphs share numeric data with the API and expose values without JavaScript. */
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-graphs { display:flex; flex-wrap:wrap; gap: var(--space-7); align-items:start; margin-top: var(--space-7); }
+.media-graphs>section { min-width:0; max-width:100%; }
+.media-graphs .section-title { margin-bottom:20px; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-interest { width:min(100%,35rem); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.interest-card { padding: var(--space-5); }
+.interest-svg { display:block; width:100%; height:120px; overflow:hidden; }
+
+/* Use the shared type scale at this reading size. */
+.graph-values { margin-top: var(--space-3); font-size:12px; color:var(--color-fg-secondary); }
+.graph-values summary { cursor:pointer; padding:8px 0; }
+.graph-values summary:focus-visible { outline:2px solid var(--color-primary); outline-offset:3px; }
+.graph-table-scroll { max-width:100%; overflow-x:auto; }
+.graph-values table { width:100%; border-collapse:collapse; }
+.graph-values caption { text-align:left; margin:8px 0; }
+.graph-values th,.graph-values td { padding:6px 8px; text-align:left; border-bottom:1px solid var(--color-border); }
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Apply shared spacing and surface tokens at this size. */
+ .media-detail { padding:var(--space-5) var(--space-4); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-heading { padding-top:3.5rem; }
+.media-heading-text { flex-basis:100%; }
+.media-actions { right:0; }
+
+/* Use the shared type scale at this reading size. */
+.media-heading h1 { font-size:var(--step-5); }
+
+/* Use the shared type scale at this reading size. */
+.media-type { font-size:var(--step-2); }
+@media(min-width:40rem) { .media-detail { padding:var(--space-8) var(--space-7); } }
+@media(min-width:64rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .media-heading { padding-top:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .media-heading-text { flex-basis:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .media-heading:has(.media-actions) { padding-top:3.5rem; }
+}
+
+}
+/* Pages: rewind. */
+@layer pages {
+/* Rewind uses links and a GET form so selection also works without JavaScript. */
+
+/* Constrain this region without requiring a fixed layout width. */
+.rewind-layout { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap: var(--space-7); margin:40px auto; width:min(95%,1200px); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.rewind-controls { width: min(100%,15.625rem); max-width:100%; }
+.rewind-controls h2 { font-size:20px; margin:20px 0 12px; }
+.rewind-year-nav { display:grid; grid-template-columns:44px 1fr 44px; align-items:center; text-align:center; margin:0 0 16px; }
+.rewind-year-nav h2 { margin:0; }
+.rewind-year-nav a, .rewind-year-nav span { display:grid; place-items:center; min-height:44px; font-size:28px; }
+.rewind-year-nav a:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-modes { display:flex; justify-content:center; gap: var(--space-3); margin-bottom:20px; }
+
+/* Let columns adapt to the available reading space. */
+.rewind-options { display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap: var(--space-2);
+  max-height:240px;
+  overflow:auto;
+  margin-bottom: var(--space-4);
+  }
+.rewind-months { max-height:none; overflow:visible; }
+.rewind-choice { display:block; text-align:center; border-radius:var(--border-radius); padding:8px 12px; }
+.rewind-choice[aria-disabled] { color:var(--color-fg-tertiary); }
+.rewind-choice[href]:hover { background:var(--color-bg-secondary); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-time-form { display:flex; flex-wrap:wrap; align-items:center; gap: var(--space-3); margin-top:20px; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.rewind-content { flex:1; min-width:0; max-width: min(100%,48.75rem); }
+.rewind-content h1 { font-size:clamp(28px,4vw,42px); overflow-wrap:anywhere; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-card { padding:24px 32px 40px; display:flex; flex-direction:column; gap:28px; }
+.rewind-header { text-align:center; }
+.rewind-header .date-range { margin-top:4px; }
+.rewind-header::after { content:""; display:block; width:70%; height:2px; margin:12px auto 0; background:var(--color-primary); transform:translateX(-8%); }
+.rewind-group h2 { font-size:18px; color:var(--color-fg-secondary); text-transform:uppercase; margin-bottom:6px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-group-content { display:flex; flex-wrap:wrap; gap:20px; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.rewind-group-content img { width: min(100%,13.125rem); height:210px; max-width:100%; object-fit:cover; border-radius:var(--border-radius); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.rewind-group-items { min-width:0; flex:1; overflow-wrap:anywhere; }
+.rewind-group-items span { color:var(--color-fg-secondary); }
+.rewind-top h3 { font-size:clamp(22px,3vw,36px); line-height:1.1; margin-bottom:2px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-top { margin-bottom: var(--space-2); }
+.rewind-group-items p { line-height:1.4; margin-bottom:4px; }
+.rewind-group-items p:last-child { margin-bottom:0; }
+
+/* Let columns adapt to the available reading space. */
+.rewind-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.rewind-stats b { display:inline-block; position:relative; font-size:24px; margin-right:6px; }
+.rewind-stats b::after { content:""; position:absolute; left:-10px; bottom:-3px; width:100%; height:2px; background:var(--color-primary); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-empty { margin-top: var(--space-5); }
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Constrain this region without requiring a fixed layout width. */
+ .rewind-controls { width:min(100%,25rem); }
+.rewind-content { flex-basis:100%; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.rewind-card { padding:var(--space-5) var(--space-4); }
+.rewind-stats { grid-template-columns:1fr; }
+.rewind-group-content { flex-direction:column; }
+.rewind-group-items { flex-basis:auto; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.rewind-group-content img { width:min(100%,13rem); height:auto; aspect-ratio:1; }
+@media(min-width:40rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .rewind-card { padding:var(--space-5) var(--space-6) var(--space-7); }
+
+/* Let columns adapt to the available reading space. */
+  .rewind-stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .rewind-group-content { flex-direction:row; }
+}
+@media(min-width:64rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
+  .rewind-controls { width:min(100%,16rem); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .rewind-content { flex-basis:0; }
+}
+
+}
+/* Utilities: always win over components (hidden, screen-reader only). */
+@layer utilities {
+[hidden] {
+  display: none!important
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap
+}
+}

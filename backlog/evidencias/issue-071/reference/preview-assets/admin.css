@@ -1,0 +1,372 @@
+/* Administration pages: loaded after ui.css, inside its pages layer. */
+/* Repeats ui.css's layer order so this sheet keeps the same cascade if ever loaded alone. */
+@layer reset, tokens, base, layout, components, pages, utilities;
+@layer pages {
+/* Administration shares the public shell's typography, theme variables and spacing. */
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-shell {
+  max-width: min(100%,73.75rem);
+  margin:0 auto;
+  padding:48px 44px 24px 116px;
+  min-height:100vh
+}
+.admin-main {
+  width:100%;
+  min-width:0
+}
+
+/* Use the shared type scale at this reading size. */
+.admin-main h1 {
+  font-size:2.2rem;
+  margin:0 0 24px;
+  font-weight:600;
+  letter-spacing:-.025em
+}
+
+/* Use the shared type scale at this reading size. */
+.admin-main h2 {
+  font-size:1.5rem;
+  margin:0 0 18px
+}
+
+/* Use the shared type scale at this reading size. */
+.admin-main h3 {
+  font-size:1.25rem;
+  margin:32px 0 14px;
+  border-bottom:1px solid var(--color-bg-tertiary);
+  padding-bottom:8px
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main p {
+  margin:12px 0;
+  color:var(--color-fg-secondary)
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main section {
+  background:var(--color-bg-secondary);
+  border-radius:14px;
+  padding:28px;
+  margin:24px 0
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main form {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:end;
+  gap:14px;
+  margin:18px 0
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-main label {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:.95rem;
+  min-width:0;
+  flex:1 1 11.25rem
+}
+.admin-main label:has(input[type=checkbox]) {
+  flex-direction:row;
+  align-items:center;
+  flex-basis:100%;
+  gap:10px
+}
+.admin-main input:not([type=checkbox]),.admin-main select {
+  width:100%;
+  padding:10px 12px;
+  background:var(--color-bg);
+  border:1px solid var(--color-bg-tertiary);
+  border-radius:7px;
+  min-height:44px
+}
+.admin-main input[type=checkbox] {
+  accent-color:var(--color-primary);
+  width:18px;
+  height:18px;
+  flex-shrink:0
+}
+.admin-main button,.admin-main .admin-button {
+  display:inline-block;
+  background:var(--color-primary);
+  color:var(--color-bg);
+  font-weight:600;
+  line-height:1.2;
+  border-radius:7px;
+  padding:12px 18px;
+  min-height:44px
+}
+.admin-main button:disabled {
+  opacity:.6
+}
+.admin-main a {
+  color:var(--color-primary);
+  text-decoration:underline;
+  text-underline-offset:3px
+}
+.admin-main ul {
+  padding-left:22px;
+  list-style:disc;
+  margin:16px 0
+}
+.admin-main li {
+  margin:10px 0
+}
+.admin-main li form {
+  margin:8px 0
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main details {
+  margin:14px 0;
+  padding:14px 18px;
+  background:var(--color-bg-secondary);
+  border-radius:9px
+}
+.admin-main section details {
+  background:var(--color-bg)
+}
+.admin-main summary {
+  cursor:pointer;
+  font-weight:500
+}
+.admin-main code {
+  overflow-wrap:anywhere;
+  user-select:all
+}
+.admin-main [role=alert] {
+  border-left:3px solid var(--color-error);
+  padding:12px 18px;
+  background:var(--color-bg-secondary);
+  color:var(--color-error)
+}
+.admin-main [role=status] {
+  border-left:3px solid var(--color-success);
+  padding:12px 18px;
+  background:var(--color-bg-secondary)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-sidebar {
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+  width:clamp(3.625rem,6vw,4.75rem);
+  background:var(--color-bg-secondary);
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:24px 10px;
+  flex-direction:column;
+  z-index:20;
+  border-right:1px solid var(--color-bg-tertiary)
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-sidebar>a {
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  font-size:1.7rem;
+  color:var(--color-fg-secondary);
+  border-radius:var(--radius-md)
+}
+.admin-sidebar>a[aria-current] {
+  color:var(--color-primary);
+  background:var(--color-bg-tertiary)
+}
+.admin-sidebar>span {
+  flex:1
+}
+
+/* Use the shared type scale at this reading size. */
+.admin-footer {
+  margin-top: var(--space-8);
+  color:var(--color-fg-tertiary);
+  font-size:.85rem;
+  text-align:center
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.skip-link {
+  position:fixed;
+  left:90px;
+  top:-100px;
+  background:var(--color-primary);
+  color:var(--color-bg);
+  padding:10px;
+  z-index:100
+}
+.skip-link:focus {
+  top:10px
+}
+.admin-main [data-drop-active] {
+  outline:2px dashed var(--color-primary)
+}
+
+
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-sections{display:flex;flex-wrap:wrap;gap: var(--space-4);padding:14px 0}.admin-main :target{scroll-margin-top:24px}.admin-main h3{text-transform:none}
+/* Pearl's light background cannot be used as text on its blue primary colour. */
+html[data-theme="pearl"] .admin-main button,html[data-theme="pearl"] .admin-main .admin-button,html[data-theme="pearl"] .skip-link{color:var(--color-fg)}
+html[data-theme="pearl"] .admin-main a{color:#00538a}
+html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
+
+/* ISSUE-071: keep administration and its footer clear of the mobile navigation dock. */
+body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
+body[data-admin-ui]:has(#nav-admin:not([hidden])) { padding-bottom: calc(var(--nav-bottom) + 5rem); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-shell{max-width: min(100%,73.75rem);margin:0 auto;padding:48px 44px 24px;min-height:100vh}
+@media(min-width:40rem){
+ body[data-admin-ui],body[data-admin-ui]:has(#nav-admin:not([hidden])) { padding-bottom:0; }
+ .admin-shell{margin-left:var(--nav-width);padding-left:44px} }
+/* ISSUE-123: administration renders the second sidebar open; follow the layout preference.
+   The profile header spans the page above the content, as on public pages. */
+@media(min-width:40rem) {
+  body > .profile-header {
+    width: auto;
+    margin-left: var(--nav-width)
+  }
+  body:has(#nav-admin:not([hidden])) .admin-shell,
+
+/* Apply shared spacing and surface tokens at this size. */
+  body:has(#nav-admin:not([hidden])) > .profile-header {
+    margin-left: calc(var(--nav-width) + 4.5rem)
+  }
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .admin-shell,
+
+/* Apply shared spacing and surface tokens at this size. */
+  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) > .profile-header {
+    margin-left: var(--nav-width)
+  }
+}
+
+/* Server configuration reuses the administrative shell and stacks field state clearly. */
+.admin-main .server-settings-form {
+  display:block
+}
+.admin-main .server-setting {
+  margin:14px 0;
+  padding:20px
+}
+.admin-main .server-setting label {
+  font-weight:600;
+  display:block
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-main .server-setting input,.admin-main .server-setting select {
+  max-width:42rem;
+  margin-top: var(--space-2)
+}
+
+/* Let columns adapt to the available reading space. */
+.server-setting-state {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));
+  gap:10px;
+  margin-top: var(--space-3)
+}
+.server-setting-state div {
+  min-width:0
+}
+.server-setting-state dt {
+  font-size:.8rem;
+  color:var(--color-fg-secondary)
+}
+.server-setting-state dd {
+  margin:3px 0;
+  overflow-wrap:anywhere
+}
+.server-setting-override {
+  font-weight:600
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.server-settings-actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap: var(--space-3);
+  margin:20px 0
+}
+
+/* Administrative backgrounds also need the shared inset arrow. */
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main select:not([multiple]):not([size]) {
+  background-image: var(--select-arrow);
+  background-position: calc(100% - 20px) center, calc(100% - 15px) center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+@media (forced-colors: active) {
+  .admin-main select:not([multiple]):not([size]) { background-image: none; }
+}
+/* Deprecated KOITO_* override on the settings page (ISSUE-111). The notice uses the
+   theme's warning colour: border at least 3:1 and a 12% tint behind the text. The red
+   mark mixes 35% of the text colour so it stays at least 4.5:1 on that tint in every
+   palette (worst: rosebud 4.78); without color-mix the plain colours are used. */
+.server-setting-override-deprecated {
+  border:1px solid var(--color-warning);
+  border-left-width:4px;
+  border-radius:.5rem;
+  padding:.6rem .8rem;
+  background:var(--color-bg);
+  background:color-mix(in srgb,var(--color-warning) 12%,var(--color-bg))
+}
+.setting-deprecated{color:var(--color-error);color:color-mix(in srgb,var(--color-error) 65%,var(--color-fg));font-weight:700;letter-spacing:.03em}
+}
+/* The generic focus ring used to lose to ui.css's :is(a,button,input,select,textarea):focus-visible
+   by specificity; it stays in the base layer so that comparison is unchanged. */
+@layer base {
+:focus-visible {
+  outline:2px solid var(--color-primary);
+  outline-offset:4px
+}
+
+}
+@layer pages {
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Apply shared spacing and surface tokens at this size. */
+ .admin-shell { padding:var(--space-6) var(--space-4); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main form { flex-direction:column; align-items:stretch; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.admin-main label { flex:initial; width:100%; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main p { overflow-wrap:anywhere; }
+
+/* Use the shared type scale at this reading size. */
+.admin-main h1 { font-size:var(--step-4); }
+
+/* Use the shared type scale at this reading size. */
+.admin-main h2 { font-size:var(--step-2); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.admin-main section { padding:var(--space-4); border-radius:var(--radius-lg); }
+@media(min-width:40rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .admin-shell { padding:var(--space-8) var(--space-7); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .admin-main form { flex-direction:row; align-items:end; }
+
+/* Constrain this region without requiring a fixed layout width. */
+  .admin-main label { flex:1 1 11rem; width:auto; }
+}
+
+}

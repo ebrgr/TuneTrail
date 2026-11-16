@@ -25,6 +25,12 @@
   max-width: 100%
 }
 .period-selector a {
+  /* ISSUE-071: period links remain touch targets when the sidebar selector is hidden. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   text-transform: uppercase;
   color: var(--color-fg-tertiary);
   white-space: nowrap

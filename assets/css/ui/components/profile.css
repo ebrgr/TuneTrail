@@ -44,7 +44,7 @@
 }
 /* ISSUE-109: administrator session badge. The link pads the 32px avatar to a 44px
    touch target without moving the header; the badge keeps 3:1 against the background. */
-.admin-avatar-link {
+.admin-avatar-link,.profile-switch {
   position: relative;
   display: inline-flex;
   padding: 6px;
