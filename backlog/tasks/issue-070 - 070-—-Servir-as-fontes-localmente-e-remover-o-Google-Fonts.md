@@ -1,11 +1,11 @@
 ---
 id: ISSUE-070
 title: 070 — Servir as fontes localmente e remover o Google Fonts
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T19:09:00Z'
+updated_date: '2026-11-16T19:20:00Z'
 labels:
   - ui
 milestone: m-10
@@ -40,7 +40,7 @@ Usar comparação controlada da 065 no mesmo tema, viewport e dados fictícios. 
 - [x] #1 Nenhuma requisição externa de fontes (CSS, preconnects, imports ou arquivos) nas páginas públicas, prévia e administração.
 - [x] #2 Fontes locais carregam com rede externa bloqueada; pesos/estilos, acentos e licenças documentados e verificados.
 - [x] #3 Inventário de arquivos, origem, hash e tamanho total registrado; TTF antigos só removidos após conferir consumidores.
-- [ ] #4 Retrospectiva com pesos e estilos (família, peso, caixa, itálico) iguais à referência Koito, sem regressão global dos headings; tamanhos alterados só após a medição em três larguras e confirmação do usuário
+- [x] #4 Retrospectiva com pesos e estilos (família, peso, caixa, itálico) iguais à referência Koito, sem regressão global dos headings; tamanhos alterados só após a medição em três larguras e confirmação do usuário
 - [x] #5 Licença OFL verificada por família (Reserved Font Name), url() das fontes com hash e licenças fora das rotas servidas
 <!-- AC:END -->
 
@@ -107,6 +107,15 @@ created: 2026-11-16T19:09:00Z
 ---
 
 Verificação: fontes locais e acentos confirmados por CDP com rede externa bloqueada em público/prévia/admin; MIME/nosniff e OFL privados verificados; inventário final 983.452 bytes WOFF2 e três capturas Yuu 1440px registrados. make check e ui.check verdes, e2e 12/12, revisão própria APROVADO. Medidas em 390/768/1440 preservam tamanhos. AC4 permanece desmarcado até confirmação do usuário. Sem dúvidas pendentes, push, merge, publish ou Done.
+
+---
+
+author: ebrgr
+created: 2026-11-16T19:20:00Z
+
+---
+
+Aceite do usuário (2026-11-16) após ver as capturas antes/depois da retrospectiva e a Home. Decisão: manter os tamanhos atuais (título 42/36, rótulo 18 em 1440px); aceita apenas pesos, caixa e itálico alinhados ao Koito. Qualquer igualar de tamanho (título 36, rótulo 16, regra de título longo >28 caracteres) fica fora desta issue. Publicação e push dependem de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
