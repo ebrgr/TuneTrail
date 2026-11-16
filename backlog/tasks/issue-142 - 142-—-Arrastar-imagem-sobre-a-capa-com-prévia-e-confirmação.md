@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-16T14:49:00Z'
+updated_date: '2026-11-16T14:51:00Z'
 labels:
   - ui
   - imagens
@@ -71,6 +71,15 @@ created: 2026-11-16T14:49:00Z
 ---
 
 Aceite: aprovada pelo usuário em 16/11/2026 após teste manual do arrasto. Critérios #1 a #3 verificados no teste manual; #4 (capturas desktop e celular) não foi produzido, aceite visual dado pelo usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-16T14:51:00Z
+
+---
+
+Publicação: versão 0.25 (tag `v0.25`), branch `feat/issue-142-arrastar-imagem-sobre-a-capa` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
