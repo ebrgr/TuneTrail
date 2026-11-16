@@ -37,3 +37,20 @@ func TestResponsiveNavigationDestinations(t *testing.T) {
 		}
 	}
 }
+
+// TestNavigationLabelsBelongToThemePanel keeps the no-script default and the sidebar free of a checkbox.
+func TestNavigationLabelsBelongToThemePanel(t *testing.T) {
+	h, err := NewHandler(pageStore(t), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := pageRequest(h, "/alpha").Body.String()
+	for _, want := range []string{`data-nav-labels-choice`, `name="nav-labels" value="labels" checked`, `name="nav-labels" value="icons"`, `class="nav-periods-menu"`} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("missing %s", want)
+		}
+	}
+	if strings.Contains(body, `class="nav-collapse"`) || strings.Contains(body, `data-nav-labels="icons"`) {
+		t.Fatal("unexpected sidebar checkbox or non-default server labels")
+	}
+}

@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Navegação com barra inferior no celular, lateral de ícones no tablet e rótulos recolhíveis com período no desktop (ISSUE-071).
+- Navegação com barra inferior no celular, lateral de ícones no tablet e escolha de rótulos no menu de tema com período no desktop (ISSUE-071).
 
 ## [0.27] - 2026-11-16
 

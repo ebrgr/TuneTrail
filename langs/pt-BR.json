@@ -1,9 +1,12 @@
 {
+  "ui.with_labels": "Com rótulos",
+  "ui.icons_only": "Só ícones",
+
   "ui.rankings": "Rankings",
   "ui.history": "Histórico",
   "ui.more": "Mais",
   "ui.appearance_language": "Tema e idioma",
-  "ui.navigation_labels": "Rótulos de navegação",
+  "ui.navigation_labels": "Rótulos da navegação",
 
   "admin.delete.question": "Você realmente deseja excluir o item \"{{.Name}}\"?",
   "admin.delete.irreversible": "Não existe desfazer. Somente as escutas deste perfil serão removidas; o catálogo compartilhado e os outros perfis ficam intactos.",

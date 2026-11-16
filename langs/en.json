@@ -1,4 +1,7 @@
 {
+  "ui.with_labels": "With labels",
+  "ui.icons_only": "Icons only",
+
   "ui.rankings": "Rankings",
   "ui.history": "History",
   "ui.more": "More",

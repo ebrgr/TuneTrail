@@ -15,3 +15,14 @@ APROVADO para envio a aceite. Auditoria executada pelo próprio agente, sem dele
 O grafo AST foi atualizado a partir desta worktree. A consulta DefaultPeriods confirmou os consumidores Page.Nav, LivePage.Nav e adminNav; não há mudança de autenticação, banco, API ou dependências externas.
 
 Limitações: a árvore de acessibilidade foi verificada automaticamente no Chromium; não houve teste manual com VoiceOver. O aceite visual permanece com o usuário (AC #4 desmarcado). As demonstrações da prévia e a troca de cores continuam com os limites de JavaScript preexistentes.
+
+
+## Revisão incremental da ressalva
+
+[OK] assets/templates/shared/nav.html — checkbox removido da lateral; controle no painel compartilhado; período nativo em Mais nas faixas de ícones, sem alterar a barra inferior.
+[OK] assets/css/ui/layout/shell.css — faixa de 58px compartilhada pelo tablet e desktop só-ícones; offsets do conteúdo/admin e tooltips coerentes.
+[OK] assets/css/ui/components/activity.css — calendário largo distribui as colunas dentro da largura disponível; datas/dados permanecem inalterados.
+[OK] scripts/validate_navigation_071.cjs — dois estados de rótulos, teclado/AX/44px/offsets/heatmap; somente duas imagens Yuu/1440, sem alterar antes/depois.
+[RISCO] Persistência no servidor pendente por instrução explícita do usuário: conf.toml não tem campos de UI; decisão entre extensão do arquivo atual, arquivo novo ou banco/env registrada na tarefa. A escolha de rótulos é temporária no documento, e nav-layout ainda usa seu mecanismo anterior. Não considerar esse requisito concluído.
+
+Revisão própria, sem delegação ou nova persona. Nenhum bloqueador adicional no diff de UI; AC #4 preservado sem marcação.

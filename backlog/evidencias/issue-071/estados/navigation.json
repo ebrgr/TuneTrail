@@ -1,11 +1,13 @@
 {
   "browser": "157.0.8103.51",
+  "serverPersistence": "pending configuration contract; labels preview is document-only",
   "entries": [
     {
       "name": "public/home",
       "width": 320,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -68,6 +70,7 @@
       "width": 320,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -110,6 +113,7 @@
       "width": 320,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -167,6 +171,7 @@
       "width": 360,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -229,6 +234,7 @@
       "width": 360,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -271,6 +277,7 @@
       "width": 360,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -328,6 +335,7 @@
       "width": 390,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -390,6 +398,7 @@
       "width": 390,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -432,6 +441,7 @@
       "width": 390,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -489,41 +499,42 @@
       "width": 768,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -544,6 +555,11 @@
         {
           "name": "Rewind",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -556,26 +572,27 @@
       "width": 768,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -603,41 +620,42 @@
       "width": 768,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -653,6 +671,11 @@
         {
           "name": "Administration",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -665,6 +688,7 @@
       "width": 1024,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -674,82 +698,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -762,6 +781,7 @@
       "width": 1024,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -771,37 +791,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -814,6 +829,7 @@
       "width": 1024,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -823,77 +839,72 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -906,6 +917,7 @@
       "width": 1440,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -915,82 +927,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -1003,6 +1010,7 @@
       "width": 1440,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -1012,37 +1020,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -1055,6 +1058,7 @@
       "width": 1440,
       "theme": "yuu",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -1064,77 +1068,72 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -1147,6 +1146,7 @@
       "width": 320,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -1209,6 +1209,7 @@
       "width": 320,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -1251,6 +1252,7 @@
       "width": 320,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -1308,6 +1310,7 @@
       "width": 360,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -1370,6 +1373,7 @@
       "width": 360,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -1412,6 +1416,7 @@
       "width": 360,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -1469,6 +1474,7 @@
       "width": 390,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -1531,6 +1537,7 @@
       "width": 390,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -1573,6 +1580,7 @@
       "width": 390,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -1630,41 +1638,42 @@
       "width": 768,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -1685,6 +1694,11 @@
         {
           "name": "Rewind",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -1697,26 +1711,27 @@
       "width": 768,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -1744,41 +1759,42 @@
       "width": 768,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -1794,6 +1810,11 @@
         {
           "name": "Administration",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -1806,6 +1827,7 @@
       "width": 1024,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -1815,82 +1837,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -1903,6 +1920,7 @@
       "width": 1024,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -1912,37 +1930,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -1955,6 +1968,7 @@
       "width": 1024,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -1964,77 +1978,72 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -2047,6 +2056,7 @@
       "width": 1440,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -2056,82 +2066,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -2144,6 +2149,7 @@
       "width": 1440,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -2153,37 +2159,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -2196,6 +2197,7 @@
       "width": 1440,
       "theme": "pearl",
       "javaScriptEnabled": false,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -2205,77 +2207,72 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -2288,6 +2285,7 @@
       "width": 320,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -2350,6 +2348,7 @@
       "width": 320,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -2392,6 +2391,171 @@
       "width": 320,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
+      "geometry": {
+        "x": 0,
+        "y": 835,
+        "width": 320,
+        "height": 65
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Rankings",
+          "width": 60.8125,
+          "height": 48
+        },
+        {
+          "name": "History",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Search",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "More",
+          "width": 52.796875,
+          "height": 48
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 286,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 320,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 835,
+        "width": 320,
+        "height": 65
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Rankings",
+          "width": 60.8125,
+          "height": 48
+        },
+        {
+          "name": "History",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Search",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "More",
+          "width": 52.796875,
+          "height": 48
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 286,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 320,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 835,
+        "width": 320,
+        "height": 65
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 158,
+          "height": 48
+        },
+        {
+          "name": "More",
+          "width": 150,
+          "height": 48
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 286,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 320,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -2449,6 +2613,7 @@
       "width": 360,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -2511,6 +2676,7 @@
       "width": 360,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -2553,6 +2719,171 @@
       "width": 360,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
+      "geometry": {
+        "x": 0,
+        "y": 834.859375,
+        "width": 360,
+        "height": 65.140625
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Rankings",
+          "width": 68.8125,
+          "height": 48.140625
+        },
+        {
+          "name": "History",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Search",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "More",
+          "width": 60.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 360,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.859375,
+        "width": 360,
+        "height": 65.140625
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Rankings",
+          "width": 68.8125,
+          "height": 48.140625
+        },
+        {
+          "name": "History",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Search",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "More",
+          "width": 60.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 360,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.859375,
+        "width": 360,
+        "height": 65.140625
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 178,
+          "height": 48.140625
+        },
+        {
+          "name": "More",
+          "width": 170,
+          "height": 48.140625
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 360,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -2610,6 +2941,7 @@
       "width": 390,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -2672,6 +3004,7 @@
       "width": 390,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -2714,6 +3047,171 @@
       "width": 390,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
+      "geometry": {
+        "x": 0,
+        "y": 834.75,
+        "width": 390,
+        "height": 65.25
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Rankings",
+          "width": 74.8125,
+          "height": 48.25
+        },
+        {
+          "name": "History",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Search",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "More",
+          "width": 66.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 390,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.75,
+        "width": 390,
+        "height": 65.25
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Rankings",
+          "width": 74.8125,
+          "height": 48.25
+        },
+        {
+          "name": "History",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Search",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "More",
+          "width": 66.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 390,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.75,
+        "width": 390,
+        "height": 65.25
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 193,
+          "height": 48.25
+        },
+        {
+          "name": "More",
+          "width": 185,
+          "height": 48.25
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 390,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -2771,41 +3269,42 @@
       "width": 768,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -2826,6 +3325,11 @@
         {
           "name": "Rewind",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -2838,26 +3342,27 @@
       "width": 768,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -2885,41 +3390,42 @@
       "width": 768,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -2935,6 +3441,200 @@
         {
           "name": "Administration",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 768,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 768,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 768,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -2947,6 +3647,7 @@
       "width": 1024,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -2956,82 +3657,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -3044,6 +3740,7 @@
       "width": 1024,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -3053,37 +3750,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -3096,6 +3788,7 @@
       "width": 1024,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -3105,77 +3798,261 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
+          "width": 211,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 1024,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 1024,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 1024,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
           "height": 44
         }
       ],
@@ -3188,6 +4065,7 @@
       "width": 1440,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -3197,82 +4075,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -3285,6 +4158,7 @@
       "width": 1440,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -3294,37 +4168,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -3337,6 +4206,7 @@
       "width": 1440,
       "theme": "yuu",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -3346,77 +4216,261 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
+          "width": 211,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 1440,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 1440,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 1440,
+      "theme": "yuu",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
           "height": 44
         }
       ],
@@ -3429,6 +4483,7 @@
       "width": 320,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -3491,6 +4546,7 @@
       "width": 320,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -3533,6 +4589,171 @@
       "width": 320,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
+      "geometry": {
+        "x": 0,
+        "y": 835,
+        "width": 320,
+        "height": 65
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Rankings",
+          "width": 60.8125,
+          "height": 48
+        },
+        {
+          "name": "History",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Search",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "More",
+          "width": 52.796875,
+          "height": 48
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 286,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 320,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 835,
+        "width": 320,
+        "height": 65
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Rankings",
+          "width": 60.8125,
+          "height": 48
+        },
+        {
+          "name": "History",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "Search",
+          "width": 60.796875,
+          "height": 48
+        },
+        {
+          "name": "More",
+          "width": 52.796875,
+          "height": 48
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 286,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 320,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 835,
+        "width": 320,
+        "height": 65
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 158,
+          "height": 48
+        },
+        {
+          "name": "More",
+          "width": 150,
+          "height": 48
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 286,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 286,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 320,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
       "geometry": {
         "x": 0,
         "y": 835,
@@ -3590,6 +4811,7 @@
       "width": 360,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -3652,6 +4874,7 @@
       "width": 360,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -3694,6 +4917,171 @@
       "width": 360,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
+      "geometry": {
+        "x": 0,
+        "y": 834.859375,
+        "width": 360,
+        "height": 65.140625
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Rankings",
+          "width": 68.8125,
+          "height": 48.140625
+        },
+        {
+          "name": "History",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Search",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "More",
+          "width": 60.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 360,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.859375,
+        "width": 360,
+        "height": 65.140625
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Rankings",
+          "width": 68.8125,
+          "height": 48.140625
+        },
+        {
+          "name": "History",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Search",
+          "width": 68.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "More",
+          "width": 60.796875,
+          "height": 48.140625
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 360,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.859375,
+        "width": 360,
+        "height": 65.140625
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 178,
+          "height": 48.140625
+        },
+        {
+          "name": "More",
+          "width": 170,
+          "height": 48.140625
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 360,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
       "geometry": {
         "x": 0,
         "y": 834.859375,
@@ -3751,6 +5139,7 @@
       "width": 390,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -3813,6 +5202,7 @@
       "width": 390,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -3855,6 +5245,171 @@
       "width": 390,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
+      "geometry": {
+        "x": 0,
+        "y": 834.75,
+        "width": 390,
+        "height": 65.25
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Rankings",
+          "width": 74.8125,
+          "height": 48.25
+        },
+        {
+          "name": "History",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Search",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "More",
+          "width": 66.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 390,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.75,
+        "width": 390,
+        "height": 65.25
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Rankings",
+          "width": 74.8125,
+          "height": 48.25
+        },
+        {
+          "name": "History",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Search",
+          "width": 74.796875,
+          "height": 48.25
+        },
+        {
+          "name": "More",
+          "width": 66.796875,
+          "height": 48.25
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 390,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 834.75,
+        "width": 390,
+        "height": 65.25
+      },
+      "targets": [
+        {
+          "name": "Home",
+          "width": 193,
+          "height": 48.25
+        },
+        {
+          "name": "More",
+          "width": 185,
+          "height": 48.25
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 390,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
       "geometry": {
         "x": 0,
         "y": 834.75,
@@ -3912,41 +5467,42 @@
       "width": 768,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -3967,6 +5523,11 @@
         {
           "name": "Rewind",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -3979,26 +5540,27 @@
       "width": 768,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -4026,41 +5588,42 @@
       "width": 768,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
-        "width": 72,
+        "width": 58,
         "height": 900
       },
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "History",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
           "name": "More",
-          "width": 55,
+          "width": 45,
           "height": 44
         },
         {
@@ -4076,6 +5639,200 @@
         {
           "name": "Administration",
           "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 768,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 768,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 768,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 92.796875,
           "height": 44
         }
       ],
@@ -4088,6 +5845,7 @@
       "width": 1024,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -4097,82 +5855,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -4185,6 +5938,7 @@
       "width": 1024,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -4194,37 +5948,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -4237,6 +5986,7 @@
       "width": 1024,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -4246,77 +5996,261 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
+          "width": 211,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 1024,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 1024,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 1024,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
           "height": 44
         }
       ],
@@ -4329,6 +6263,7 @@
       "width": 1440,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -4338,82 +6273,77 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "Rewind",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
-          "height": 44
-        },
-        {
-          "name": "Navigation labels",
-          "width": 44,
+          "width": 211,
           "height": 44
         }
       ],
@@ -4426,6 +6356,7 @@
       "width": 1440,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -4435,37 +6366,32 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
-        },
-        {
-          "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Administration",
+          "width": 193,
           "height": 44
         }
       ],
@@ -4478,6 +6404,7 @@
       "width": 1440,
       "theme": "pearl",
       "javaScriptEnabled": true,
+      "navLabels": "labels",
       "geometry": {
         "x": 0,
         "y": 0,
@@ -4487,77 +6414,261 @@
       "targets": [
         {
           "name": "Choose listening profile",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Home",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Rankings",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "History",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Search",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "More",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "Choose listening profile",
-          "width": 189,
+          "width": 193,
           "height": 62
         },
         {
           "name": "Theme and language",
-          "width": 189,
-          "height": 62
+          "width": 193,
+          "height": 44
         },
         {
           "name": "Administration",
-          "width": 189,
+          "width": 193,
           "height": 44
         },
         {
           "name": "day",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "week",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "month",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "year",
-          "width": 207,
+          "width": 211,
           "height": 44
         },
         {
           "name": "All",
-          "width": 207,
+          "width": 211,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "public/home",
+      "width": 1440,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
           "height": 44
         },
         {
-          "name": "Navigation labels",
-          "width": 44,
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Rewind",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "admin/account",
+      "width": 1440,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        }
+      ],
+      "accessibleTree": true,
+      "keyboard": true,
+      "footerClear": true
+    },
+    {
+      "name": "preview/home",
+      "width": 1440,
+      "theme": "pearl",
+      "javaScriptEnabled": true,
+      "navLabels": "icons",
+      "geometry": {
+        "x": 0,
+        "y": 0,
+        "width": 58,
+        "height": 900
+      },
+      "targets": [
+        {
+          "name": "Choose listening profile",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Home",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Rankings",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "History",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Search",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "More",
+          "width": 45,
+          "height": 44
+        },
+        {
+          "name": "Choose listening profile",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Theme and language",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Administration",
+          "width": 302,
+          "height": 44
+        },
+        {
+          "name": "Time period",
+          "width": 94.296875,
           "height": 44
         }
       ],

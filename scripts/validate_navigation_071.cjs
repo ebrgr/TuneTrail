@@ -14,7 +14,8 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
  const entries=[];
  try{
-  for(const javaScriptEnabled of [false,true])for(const theme of ['yuu','pearl'])for(const width of [320,360,390,768,1024,1440]){
+  for(const javaScriptEnabled of [false,true])for(const theme of ['yuu','pearl'])for(const width of [320,360,390,768,1024,1440])
+   for(const navLabels of javaScriptEnabled?['labels','icons']:['labels']){
    const context=await browser.newContext({javaScriptEnabled,viewport:{width,height:900},reducedMotion:'reduce'});
    await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
    const page=await context.newPage();
@@ -22,12 +23,30 @@ const server=http.createServer((req,res)=>{
     await page.goto(`${origin}/${name}.html`,{waitUntil:'load'});
     // No-script fixtures use the server's built-in theme; set its equivalent CSS state for both palettes.
     await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
-    const bar=page.locator('.sidebar').first(),summary=bar.locator('summary');
+    // ISSUE-071: exercise the panel without pretending the pending server preference is persistent.
+    if(javaScriptEnabled&&navLabels==='icons'){
+     await page.keyboard.press('\\');
+     await page.locator('[data-nav-labels-choice] input[value="icons"]').check();
+     await page.keyboard.press('Escape');
+    }
+    const bar=page.locator('.sidebar').first(),summary=bar.locator('.nav-more>summary');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),false,`${name} ${width} overflow`);
     const geometry=await bar.boundingBox();
     if(width<640){assert.equal(Math.round(geometry.y+geometry.height),900);assert.equal(Math.round(geometry.width),width);}
-    else assert.equal(Math.round(geometry.width),width<1024?72:224);
-    if(width>=1024)assert.equal(await summary.evaluate(e=>getComputedStyle(e,'::after').content),'none','visible labels suppress tooltips');
+    else assert.equal(Math.round(geometry.width),width<1024||navLabels==='icons'?58:224);
+    if(width>=1024&&navLabels==='labels')assert.equal(await summary.evaluate(e=>getComputedStyle(e,'::after').content),'none','visible labels suppress tooltips');
+    assert.equal(await bar.locator('.nav-collapse').count(),0,'no label checkbox remains in the sidebar');
+    if(width===1440){
+     for(const calendar of await page.locator('.activity-calendar').all()){
+      const fits=await calendar.evaluate(e=>{
+       const right=e.getBoundingClientRect().right;
+       return e.scrollWidth<=e.clientWidth+1&&[...e.querySelectorAll('.activity-slot')].every(c=>c.getBoundingClientRect().right<=right+1);
+      });
+      assert.ok(fits,'wide heatmap shows every week without right-edge clipping');
+     }
+     const identity=page.locator('.profile-identity strong');
+     if(await identity.count())assert.notEqual(await bar.locator('.nav-profile .nav-label').textContent(),await identity.first().textContent());
+    }
     // Native summary opens with Enter and exposes ordinary controls in reading order.
     await summary.focus();await page.keyboard.press('Enter');
     const palette=bar.locator('[popovertarget="theme-panel"]');
@@ -49,31 +68,31 @@ const server=http.createServer((req,res)=>{
     assert.ok(moreNode,'native summary has an accessible expansion state');
     assert.equal(moreNode.properties.find(p=>p.name==='expanded').value.value,true);
     await cdp.detach();
+    if(width>=640&&(width<1024||navLabels==='icons')&&await bar.locator('.nav-periods-menu').count()){
+     const periods=bar.locator('.nav-periods-menu');
+     await periods.locator('summary').focus();await page.keyboard.press('Enter');
+     assert.equal(await periods.locator('a').first().isVisible(),true,'icon rail retains a native period selector');
+     await page.keyboard.press('Enter');await palette.focus();
+    }
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('#theme-panel').evaluate(e=>e.matches(':popover-open')),true);
     await page.keyboard.press('Escape');
-    if(width===390&&name==='public/home'){
-     await page.screenshot({path:path.join(out,`more-${theme}-${javaScriptEnabled?'js':'nojs'}.png`)});
-     fs.writeFileSync(path.join(out,`accessibility-${theme}-${javaScriptEnabled?'js':'nojs'}.txt`),tree);
-    }
     if(javaScriptEnabled){
      const toggle=bar.locator('[data-nav-toggle]');
      if(await page.locator('#nav-admin').isVisible())await toggle.click();
-     if(!(await bar.locator('details').evaluate(e=>e.open))){await summary.focus();await page.keyboard.press('Enter');}
+     if(!(await bar.locator('.nav-more').evaluate(e=>e.open))){await summary.focus();await page.keyboard.press('Enter');}
      await toggle.click();
      assert.equal(await page.locator('#nav-admin').isVisible(),true);
      if(width>=640)assert.equal(Math.round((await page.locator('#nav-admin').boundingBox()).height),900);
      for(const target of await page.locator('#nav-admin a,#nav-admin button').all()){
       if(await target.isVisible()){const box=await target.boundingBox();assert.ok(box.width>=44&&box.height>=44,'secondary target');}
      }
-     assert.equal(await bar.locator('details').getAttribute('open'),null,'More closes before secondary opens');
+     assert.equal(await bar.locator('.nav-more').getAttribute('open'),null,'More closes before secondary opens');
      if(name==='public/home'&&width===1440){
       const margin=()=>page.locator('.app-content').evaluate(e=>parseFloat(getComputedStyle(e).marginLeft));
-      assert.equal(await margin(),296,'push reserves both sidebars');
-      await page.screenshot({path:path.join(out,`admin-push-${theme}.png`)});
+      assert.equal(await margin(),navLabels==='icons'?116:282,'push reserves both sidebars');
       await page.evaluate(()=>document.documentElement.dataset.navLayout='overlay');
-      assert.equal(await margin(),224,'overlay preserves the primary sidebar offset');
-      await page.screenshot({path:path.join(out,`admin-overlay-${theme}.png`)});
+      assert.equal(await margin(),navLabels==='icons'?58:224,'overlay preserves the primary sidebar offset');
       await page.evaluate(()=>delete document.documentElement.dataset.navLayout);
      }
      await page.keyboard.press('Escape');assert.equal(await page.locator('#nav-admin').isVisible(),false);
@@ -81,19 +100,28 @@ const server=http.createServer((req,res)=>{
     }
     // Close disclosure before inspecting footer clearance and the collapsed desktop state.
     await summary.focus();await page.keyboard.press('Enter');
-    if(width>=1024){
-     await bar.locator('input[type=checkbox]').uncheck();
-     assert.equal(Math.round((await bar.boundingBox()).width),72);
-     if(width===1440&&name==='public/home')await page.screenshot({path:path.join(out,`collapsed-${theme}-${javaScriptEnabled?'js':'nojs'}.png`)});
+    if(width>=1024&&javaScriptEnabled){
+     const other=navLabels==='icons'?'labels':'icons';
+     await page.keyboard.press('\\');
+     await page.locator(`[data-nav-labels-choice] input[value="${other}"]`).check();
+     assert.equal(Math.round((await bar.boundingBox()).width),other==='icons'?58:224);
+     assert.equal(await page.evaluate(()=>localStorage.getItem('nav-labels')),null,'no browser-only persistence is introduced');
+     await page.locator(`[data-nav-labels-choice] input[value="${navLabels}"]`).check();
+     await page.keyboard.press('Escape');
+     if(width===1440&&theme==='yuu'&&name==='public/home'){
+      await page.evaluate(()=>document.activeElement.blur());
+      await page.mouse.move(700,850);
+      await page.screenshot({path:path.join(out,`desktop-yuu-${navLabels}.png`)});
+     }
     }
     await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
     const footer=await page.locator('footer').boundingBox();
     if(width<640){const dock=await (await page.locator('#nav-admin').isVisible()?page.locator('#nav-admin'):bar).boundingBox();assert.ok(footer.y+footer.height<=dock.y+1,`${name} ${width}: footer under dock ${JSON.stringify({footer,dock})}`);}
-    entries.push({name,width,theme,javaScriptEnabled,geometry,targets,accessibleTree:true,keyboard:true,footerClear:true});
+    entries.push({name,width,theme,javaScriptEnabled,navLabels,geometry,targets,accessibleTree:true,keyboard:true,footerClear:true});
    }
    await context.close();
   }
-  fs.writeFileSync(path.join(out,'navigation.json'),JSON.stringify({browser:browser.version(),entries},null,2)+'\n');
+  fs.writeFileSync(path.join(out,'navigation.json'),JSON.stringify({browser:browser.version(),serverPersistence:'pending configuration contract; labels preview is document-only',entries},null,2)+'\n');
   console.log(`PASS ${entries.length} navigation views, native disclosure, keyboard, accessible tree, targets and footer`);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});

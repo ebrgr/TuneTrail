@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T18:18:00Z'
+updated_date: '2026-11-16T18:51:00Z'
 labels:
   - ui
 milestone: m-10
@@ -102,6 +102,33 @@ created: 2026-11-16T18:18:00Z
 ---
 
 Precisão da evidência: a checagem de whitespace passou no diff de fontes; reference/ é um espelho de bytes exportados e preserva espaços dos templates e CRLF dos SVGs existentes. Essa referência é comparada sem normalização por ui.reference.check, que passou. Registro detalhado em backlog/evidencias/issue-071/README.md.
+
+---
+
+author: codex
+created: 2026-11-16T18:43:00Z
+
+---
+
+Aceite com ressalva informado pelo usuário: barra inferior aprovada e preservada. Ajustar escolha de rótulos para o painel de tema com preferência local aplicada antes do paint; padrão com rótulos/sem JS. Faixa de ícones de 58px também no desktop, com recuos coerentes. Corrigir duplicação do nome e heatmap desktop se simples; manter AC4 desmarcado e retornar a Aguardando aceite após verificação.
+
+---
+
+author: codex
+created: 2026-11-16T18:46:00Z
+
+---
+
+Pendência de persistência solicitada pelo usuário: existe conf.toml com SettingsStore (internal/cfg/settings_store.go), mas tomlDocument/managedDefaults (internal/cfg/toml.go) não possuem campos de preferências de interface; Save rejeita campos não suportados. DEFAULT_THEME é configuração de ambiente, e nav-layout atual usa localStorage. Não foi inventado novo formato/arquivo nem persistência global sem contrato. Opções: (1) arquivo novo exclusivo de UI; (2) estender o conf.toml existente com campos de navegação, reutilizando validação, revisões e gravação atômica; (3) preferências por perfil no banco ou variáveis de ambiente. Recomendação: opção 2 para padrão global do servidor, com gravação administrativa autenticada e valores renderizados no html; banco caso a intenção seja preferência por perfil. Decidir escopo global x perfil e autorizar extensão do esquema antes da persistência. Restante do ajuste continua; rótulos no painel mudam só o documento atual, sem nova gravação local; nav-layout mantém por enquanto seu mecanismo anterior. Capturas limitadas a duas em 1440px/Yuu, antes e demais imagens preservados.
+
+---
+
+author: codex
+created: 2026-11-16T18:51:00Z
+
+---
+
+Verificação da ressalva: controle Rótulos da navegação no painel de tema; checkbox removido da lateral; modos de ícones de 58px no tablet/desktop, tooltips e aria-label preservados; período nativo acessível em Mais. Nome do perfil sem duplicação e heatmap inteiro em 1440px. make check e ui.check verdes, 12/12 jornadas; 108 vistas de navegação com/sem JS e com/sem rótulos; 598 vistas sem overflow. Só duas imagens atualizadas em estados/desktop-yuu-{labels,icons}.png (1440px/Yuu); antes, 132 depois e demais imagens preservados. Revisão incremental própria registrada. PENDENTE: persistência global/perfil e renderização das preferências salvas pelo servidor, pois conf.toml não tem contrato de UI; opções e recomendação de extensão do conf.toml registradas no comentário anterior e README. Nova escolha de rótulos é temporária no documento; nav-layout conserva mecanismo anterior. AC4 não marcado. Sem push, merge, publish ou Done.
 
 ---
 <!-- COMMENTS:END -->

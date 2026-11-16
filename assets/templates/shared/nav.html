@@ -15,7 +15,7 @@
         data-tip="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
         {{if ne .Kind "admin"}}data-dialog="profiles-dialog"{{end}}>
         {{if .Profile}}{{template "partial/avatar" .Profile}}{{else}}{{icon "UsersRound"}}{{end}}
-        <span class="nav-label">{{if .Profile}}{{.Profile.Name}}{{else}}{{tr "ui.choose_a_profile" "Choose a profile"}}{{end}}</span>
+        <span class="nav-label">{{tr "ui.choose_a_profile" "Choose a profile"}}</span>
       </a>
     </div>
     <div class="nav-destinations">
@@ -75,6 +75,15 @@
               </a>
             {{end}}
           {{end}}
+          {{if .PeriodLinks}}
+            {{/* ISSUE-071: icon rails retain a native period selector inside More. */}}
+            <details class="nav-periods-menu">
+              <summary class="nav-button" aria-label="{{tr "ui.time_period" "Time period"}}">{{tr "ui.time_period" "Time period"}}</summary>
+              {{range .PeriodLinks}}
+                <a class="nav-button" href="{{.URL}}" {{if .Selected}}aria-current="true"{{end}}>{{tr .Label .Fallback}}</a>
+              {{end}}
+            </details>
+          {{end}}
         </div>
       </details>
     </div>
@@ -85,9 +94,6 @@
         {{end}}
       </div>
     {{end}}
-    <label class="nav-collapse"><input type="checkbox" checked aria-label="{{tr "ui.navigation_labels" "Navigation labels"}}">
-      <span>{{tr "ui.navigation_labels" "Navigation labels"}}</span>
-    </label>
   </nav>
   {{template "partial/admin-sidebar" .}}
 {{end}}
@@ -244,6 +250,12 @@
       </details>
       <p class="theme-status" role="status" aria-live="polite" data-theme-status></p>
     </section>
+    {{/* ISSUE-071: desktop labels share the theme panel with nav-layout; persistence awaits the server contract. */}}
+    <fieldset class="panel-section nav-layout" data-nav-labels-choice>
+      <legend>{{tr "ui.navigation_labels" "Navigation labels"}}</legend>
+      <label><input type="radio" name="nav-labels" value="labels" checked> {{tr "ui.with_labels" "With labels"}}</label>
+      <label><input type="radio" name="nav-labels" value="icons"> {{tr "ui.icons_only" "Icons only"}}</label>
+    </fieldset>
     <fieldset class="panel-section nav-layout" data-nav-layout-choice>
       <legend>{{tr "ui.sidebar_layout" "Administration sidebar"}}</legend>
       <label><input type="radio" name="nav-layout" value="push" checked> {{tr "ui.sidebar_push" "Push the content aside"}}</label>

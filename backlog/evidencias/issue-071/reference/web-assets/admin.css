@@ -239,7 +239,7 @@ body[data-admin-ui]:has(#nav-admin:not([hidden])) { padding-bottom: calc(var(--n
 
 /* Apply shared spacing and surface tokens at this size. */
   body:has(#nav-admin:not([hidden])) > .profile-header {
-    margin-left: calc(var(--nav-width) + 4.5rem)
+    margin-left: calc(var(--nav-width) + var(--nav-rail-width))
   }
   html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .admin-shell,
 

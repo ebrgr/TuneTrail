@@ -48,6 +48,17 @@
       try { localStorage.setItem('nav-layout', value); } catch {}
     });
   }
+  // ISSUE-071: preview labels on this document; server persistence awaits the configuration contract.
+  const labelsChoice = panel.querySelector('[data-nav-labels-choice]');
+  if (labelsChoice) {
+    const selected = document.documentElement.dataset.navLabels === 'icons' ? 'icons' : 'labels';
+    labelsChoice.querySelector(`input[value="${selected}"]`).checked = true;
+    labelsChoice.addEventListener('change', event => {
+      const value = event.target.value === 'icons' ? 'icons' : 'labels';
+      if (value === 'icons') document.documentElement.dataset.navLabels = 'icons';
+      else delete document.documentElement.dataset.navLabels;
+    });
+  }
   let opener = null;
   document.addEventListener('keydown', event => {
     if (event.key !== '\\' || event.ctrlKey || event.metaKey || event.altKey) return;
