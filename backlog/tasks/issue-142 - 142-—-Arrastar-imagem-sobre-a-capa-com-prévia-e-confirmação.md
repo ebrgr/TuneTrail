@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-16T14:36:00Z'
+updated_date: '2026-11-16T14:43:00Z'
 labels:
   - ui
   - imagens
@@ -15,6 +15,7 @@ dependencies:
   - ISSUE-140
 references:
   - backlog/evidencias/issue-108/avaliacao-codex.md
+  - backlog/evidencias/issue-142/reviewer.md
 priority: medium
 type: feature
 ordinal: 155000
@@ -52,6 +53,15 @@ created: 2026-11-16T14:36:00Z
 ---
 
 Implementação: o drop agora é limitado à capa de mídia para administradores; abre a tarefa de imagem existente, injeta o arquivo no mesmo formulário sem POST, mostra prévia local, oferece confirmar/cancelar e revoga object URLs ao cancelar, trocar ou concluir. O refresh autoritativo do cabeçalho atualiza src/srcset sem recarregar a página. Validações de tipo, tamanho e quantidade dão erro claro sem retry. Verificações: node --check, git diff --check e testes de internal/adminui com TUNETRAIL_WEB_DIR passaram; make check não concluiu porque o sandbox bloqueia bind TCP em testes existentes; graphify AST também foi bloqueado ao criar cache externo. Critérios #1–#3 não marcados por falta de execução em navegador/integração; #4 permanece pendente para aceite visual.
+
+---
+
+author: claude
+created: 2026-11-16T14:43:00Z
+
+---
+
+Parecer do Reviewer: 1 bug corrigido (link da tarefa buscado fora do escopo do header; o arrasto não fazia nada), 2 riscos menores registrados. Detalhes em backlog/evidencias/issue-142/reviewer.md. make check verde. Pendente: verificação manual do arrasto e aceite visual (#4).
 
 ---
 <!-- COMMENTS:END -->
