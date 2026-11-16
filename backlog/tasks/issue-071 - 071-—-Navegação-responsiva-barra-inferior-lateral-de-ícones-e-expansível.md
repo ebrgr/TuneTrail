@@ -4,7 +4,7 @@ title: '071 — Navegação responsiva: barra inferior, lateral de ícones e exp
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T01:12:00Z'
+updated_date: '2026-11-16T17:56:00Z'
 labels:
   - ui
 milestone: m-10
@@ -29,7 +29,7 @@ Passos:
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Decisão do usuário sobre a barra inferior registrada
+- [x] #1 Decisão do usuário sobre a barra inferior registrada
 - [ ] #2 Três padrões de navegação conforme a largura, sem JavaScript
 - [ ] #3 Alvos de toque de pelo menos 44×44px
 - [ ] #4 Capturas e aceite visual
@@ -44,6 +44,15 @@ created: 2026-11-14T01:12:00Z
 ---
 
 Coordenar com a ISSUE-110: no celular, o modal de tema e idioma (Palette) e o submenu de administração (Settings2) ficam no destino 'Mais' da barra inferior.
+
+---
+
+author: ebrgr
+created: 2026-11-16T17:56:00Z
+
+---
+
+Decisão do usuário (2026-11-16): ACEITA a barra de navegação inferior fixa no celular (<40rem), mudando a identidade herdada do Koito (doc-010 §10, item 2). Destino 'Mais' reúne tema/idioma e configurações/admin (coordenar com ISSUE-110).
 
 ---
 <!-- COMMENTS:END -->
