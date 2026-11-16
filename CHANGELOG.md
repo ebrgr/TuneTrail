@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.23] - 2026-11-16
+
 - The history × opens listen details and an irreversible-deletion confirmation; the list and counts update without reloading (ISSUE-141).
 
 ## [0.22] - 2026-11-16

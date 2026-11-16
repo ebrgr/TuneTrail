@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-16T00:45:00Z'
+updated_date: '2026-11-16T00:46:00Z'
 labels:
   - ui
   - admin
@@ -91,6 +91,15 @@ created: 2026-11-16T00:45:00Z
 ---
 
 Aceite: aprovada pelo usuário em 15/11/2026 (pedido de publicação).
+
+---
+
+author: ebrgr
+created: 2026-11-16T00:46:00Z
+
+---
+
+Publicação: versão 0.23 (tag `v0.23`), branch `feat/issue-141-escuta-individual-no-historico-com` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
