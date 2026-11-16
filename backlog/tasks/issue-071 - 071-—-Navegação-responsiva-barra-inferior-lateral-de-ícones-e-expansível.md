@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T18:57:00Z'
+updated_date: '2026-11-16T18:58:00Z'
 labels:
   - ui
 milestone: m-10
@@ -138,6 +138,15 @@ created: 2026-11-16T18:57:00Z
 ---
 
 Aceite visual do usuário (2026-11-16) da barra inferior (celular) e das laterais, com a ressalva atendida: opção 'Rótulos da navegação' no painel de tema (>64rem, só ícones igual ao intermediário). Persistência das opções de tema no conf.toml NÃO incluída: promovida a nova issue por decisão do usuário. Rótulos valem só no documento; empurrar/sobrepor segue no navegador. Publicação e push dependem de autorização à parte.
+
+---
+
+author: ebrgr
+created: 2026-11-16T18:58:00Z
+
+---
+
+Publicação: versão 0.28 (tag `v0.28`), branch `feat/issue-071-navegacao-responsiva-barra-inferior-lateral` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
