@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.27] - 2026-11-16
+
 - Corrige a identificação por aliases secundários de faixas e recusa associações ambíguas ou com MusicBrainz IDs conflitantes (ISSUE-131).
 
 - Pages now adapt with fluid typography, shared spacing, three screen breakpoints and cards that respond to their available space (ISSUE-069).

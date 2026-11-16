@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T17:36:00Z'
+updated_date: '2026-11-16T17:38:00Z'
 labels:
   - ui
 milestone: m-10
@@ -88,6 +88,15 @@ created: 2026-11-16T17:36:00Z
 ---
 
 Aceite visual do usuário (2026-11-16) após comparação antes/depois em Yuu e Pearl (backlog/evidencias/issue-069/comparacao.html). Ressalva registrada: o 'antes' é a referência histórica 065, então ícone de tema e Top Tracks na Home não são da 069. Publicação (make issue.publish) e push dependem de autorização à parte.
+
+---
+
+author: ebrgr
+created: 2026-11-16T17:38:00Z
+
+---
+
+Publicação: versão 0.27 (tag `v0.27`), branch `feat/issue-069-tokens-de-design-tres-pontos` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
