@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.26] - 2026-11-16
+
+- No user-visible changes (ISSUE-144).
+
 ## [0.25] - 2026-11-16
 
 - Administrators can drag a new album or artist cover onto its image, preview it, and confirm or cancel before the existing artwork form is submitted (ISSUE-142).

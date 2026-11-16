@@ -60,4 +60,13 @@ created: 2026-11-16T14:59:00Z
 Aceite: aprovada pelo usuário em 16/11/2026.
 
 ---
+
+author: ebrgr
+created: 2026-11-16T14:59:00Z
+
+---
+
+Publicação: versão 0.26 (tag `v0.26`), branch `chore/issue-144-observacoes-e-pendencias-das-issue` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->
