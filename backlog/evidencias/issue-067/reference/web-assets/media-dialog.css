@@ -93,7 +93,16 @@ html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
 .media-task-dialog .artwork-upload :is(input[type=file],input[type=url]) { min-height:56px; }
 .media-task-dialog .artwork-upload small { margin:6px 0 0; color:var(--color-fg-secondary); }
 .media-task-dialog .artwork-upload small + label { margin-top:20px; }
-.media-task-dialog .artwork-upload button { align-self:flex-start; margin-top:20px; }
+.media-task-dialog .artwork-upload .artwork-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+.media-task-dialog .artwork-upload .artwork-actions :is(button,a) { margin-top:0; }
+.media-task-dialog .artwork-upload .artwork-actions a {
+  display:inline-flex; align-items:center; min-height:44px; padding:10px 16px;
+  border:1px solid var(--task-border); border-radius:8px; color:var(--color-fg); text-decoration:none;
+}
+.media-task-dialog .artwork-preview {
+  display:block; width:min(240px,100%); aspect-ratio:1; object-fit:cover; margin-top:20px;
+  border:1px solid var(--task-border); border-radius:6px;
+}
 @media(min-width:640px) {
   .media-task-dialog[data-task="edit"] .manage-section > form { max-width:60%; }
 }

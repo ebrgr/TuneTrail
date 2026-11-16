@@ -20,6 +20,7 @@
         alt="{{$media.Title}}"
         fetchpriority="high"
         data-cover
+        {{if .Admin}}data-artwork-drop{{end}}
       >
       <div class="media-heading-text">
         <p class="media-type">{{tr (printf "media.%s" $media.Kind) $media.Type}}</p>
@@ -135,7 +136,7 @@
         data-tip="{{tr "media.action.edit" "Edit item"}}"
         title="{{tr "media.action.edit" "Edit item"}}">{{icon "Pencil"}}</a>
       {{- if ne $media.Kind "track"}}
-        <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/image"
+        <a data-media-task data-artwork-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/image"
           aria-label="{{tr "media.action.image" "Replace image"}}"
         data-tip="{{tr "media.action.image" "Replace image"}}"
         title="{{tr "media.action.image" "Replace image"}}">{{icon "Image"}}</a>

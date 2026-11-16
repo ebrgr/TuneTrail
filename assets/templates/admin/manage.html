@@ -398,7 +398,10 @@
             <label>{{tr "admin.text.image" "Image"}} <input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
             <small>{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
             <label>{{tr "admin.text.or_image_url" "Or image URL"}} <input name="image_url" value="{{.Values.Get "image_url"}}" type="url"></label>
-            <button>{{tr "admin.text.replace_artwork" "Replace artwork"}}</button>
+            <div class="artwork-actions">
+              <button>{{tr "admin.text.replace_artwork" "Replace artwork"}}</button>
+              <a href="{{.ReturnTo}}" data-task-cancel>{{tr "admin.text.cancel" "Cancel"}}</a>
+            </div>
           </form>
 {{end}}
 

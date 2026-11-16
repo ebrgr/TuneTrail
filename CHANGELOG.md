@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Administrators can drag a new album or artist cover onto its image, preview it, and confirm or cancel before the existing artwork form is submitted (ISSUE-142).
+
 ## [0.24] - 2026-11-16
 
 - Deleting a track, album or artist now removes only that profile's matching listens, after a confirmation that shows the count and cannot be undone; the shared catalog and other profiles are untouched, and tracks shared with other artists are kept when an artist is deleted (ISSUE-143).

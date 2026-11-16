@@ -13,6 +13,11 @@
   let searchController = null;
   let searchTimer = null;
   let searchVersion = 0;
+  const artworkMaxBytes = 10 * 1024 * 1024;
+  const artworkTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+  let pendingArtworkFile = null;
+  let artworkPreviewURL = '';
+  let pendingArtworkError = '';
   // Debounced reads never consume or mint mutation tickets, and cannot outlive their task.
   function cancelSearch() {
     clearTimeout(searchTimer);
@@ -24,6 +29,69 @@
   let base = '';
   let listenOpener = null;
   let returnFocus = null;
+  // Release the local preview so cancelled or replaced artwork never pins a blob in memory.
+  function clearArtworkPreview() {
+    if (artworkPreviewURL) URL.revokeObjectURL(artworkPreviewURL);
+    artworkPreviewURL = '';
+    content.querySelector('[data-artwork-preview]')?.remove();
+  }
+  // Keep client-side drop feedback aligned with the server's accepted upload envelope.
+  function artworkError(fileCount, file) {
+    if (fileCount !== 1) return 'Drop exactly one image file.';
+    if (!artworkTypes.has(file.type)) return 'Choose a JPEG, PNG or static WebP image.';
+    if (file.size > artworkMaxBytes) return 'The image must be 10 MB or smaller.';
+    return '';
+  }
+  // Put a dropped or keyboard-selected file into the existing multipart form without submitting it.
+  function applyArtworkFile(file) {
+    const form = content.querySelector('form.artwork-upload');
+    const input = form?.querySelector('input[type=file][name=image]');
+    if (!form || !input) return;
+    if (!file) {
+      pendingArtworkFile = null;
+      input.value = '';
+      status.textContent = pendingArtworkError;
+      return;
+    }
+    const error = artworkError(1, file);
+    pendingArtworkError = error;
+    if (error) {
+      pendingArtworkFile = null;
+      input.value = '';
+      status.textContent = error;
+      return;
+    }
+    try {
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      input.files = transfer.files;
+    } catch {
+      pendingArtworkFile = null;
+      status.textContent = 'This browser cannot prepare the dropped image. Use the file picker.';
+      return;
+    }
+    pendingArtworkFile = file;
+    pendingArtworkError = '';
+    const urlInput = form.querySelector('input[name=image_url]');
+    if (urlInput) {
+      urlInput.setAttribute('value', '');
+      urlInput.value = '';
+    }
+    clearArtworkPreview();
+    artworkPreviewURL = URL.createObjectURL(file);
+    const preview = document.createElement('img');
+    preview.className = 'artwork-preview';
+    preview.dataset.artworkPreview = '';
+    preview.alt = 'Selected artwork preview';
+    preview.src = artworkPreviewURL;
+    form.append(preview);
+    status.textContent = 'Preview ready. Confirm to replace the artwork.';
+  }
+  // Apply a queued drop after the server-rendered task fragment arrives.
+  function installArtworkPreview() {
+    if (pendingArtworkFile) applyArtworkFile(pendingArtworkFile);
+    if (pendingArtworkError) status.textContent = pendingArtworkError;
+  }
   // Progressive controls use the same authenticated task URL as the no-script fallback.
   function listenControls() {
     document.querySelectorAll('.listen-manage').forEach(link => {
@@ -54,6 +122,9 @@
     content.inert = false;
     status.textContent = '';
     dialog.removeAttribute('aria-busy');
+    clearArtworkPreview();
+    pendingArtworkFile = null;
+    pendingArtworkError = '';
   }
   function failure(destination = taskURL) {
     content.replaceChildren();
@@ -157,10 +228,13 @@
       if (template.content.childElementCount !== 1 || !next || next.id !== fragment || !next.matches('[data-section]')) throw Error('Invalid structure');
       content.replaceChildren(next);
       status.textContent = next.querySelector('[data-section-message]')?.textContent.trim() || '';
+      installArtworkPreview();
       focusTitle();
       if (mutation && response.ok) {
         try { await refresh(controller.signal); }
         catch { if (owner === activation && !owner.signal.aborted) status.textContent = dialog.dataset.refreshError; }
+        clearArtworkPreview();
+        pendingArtworkFile = null;
       }
     } catch {
       // Never replay a mutation after a timeout; reopening obtains authoritative state and fresh tokens.
@@ -171,8 +245,11 @@
       if (owner === activation) { content.inert = false; dialog.removeAttribute('aria-busy'); }
     }
   }
-  function open(link) {
+  // Open the ordinary image task and optionally carry an unsubmitted local drop into it.
+  function open(link, file = null, error = '') {
     clear();
+    pendingArtworkFile = file;
+    pendingArtworkError = error;
     base = link.pathname.replace(/\/[^/]+$/, '');
     listenOpener = link.hasAttribute('data-listen-task') ? link.closest('tr') : null;
     returnFocus = null;
@@ -193,6 +270,27 @@
     if (!ready) { event.preventDefault(); revalidate(); return; }
     event.preventDefault();
     open(link);
+  });
+  // A public media page exposes this handler only for an authenticated administrator.
+  document.addEventListener('dragover', event => {
+    const cover = event.target.closest?.('img[data-artwork-drop]');
+    if (!cover) return;
+    event.preventDefault();
+    cover.dataset.dropActive = '1';
+  });
+  document.addEventListener('dragleave', event => {
+    const cover = event.target.closest?.('img[data-artwork-drop]');
+    if (cover && !cover.contains(event.relatedTarget)) delete cover.dataset.dropActive;
+  });
+  document.addEventListener('drop', event => {
+    const cover = event.target.closest?.('img[data-artwork-drop]');
+    if (!cover) return;
+    event.preventDefault();
+    delete cover.dataset.dropActive;
+    const link = cover.closest('.media-heading')?.querySelector('a[data-artwork-task]');
+    if (!link || !ready) return;
+    const files = [...(event.dataTransfer?.files || [])];
+    open(link, files.length === 1 ? files[0] : null, artworkError(files.length, files[0]));
   });
   // Keep Tab within task controls, including the wrap through browser chrome in Chromium.
   dialog.addEventListener('keydown', event => {
@@ -228,6 +326,18 @@
     const url = new URL(link.href);
     url.searchParams.set('partial', '1');
     request(url);
+  });
+  dialog.addEventListener('change', event => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.name !== 'image') return;
+    const file = input.files?.[0];
+    if (input.files?.length !== 1 || !file) {
+      applyArtworkFile(null);
+      pendingArtworkError = 'Choose exactly one image file.';
+      status.textContent = pendingArtworkError;
+      return;
+    }
+    applyArtworkFile(file);
   });
   // Only results are swapped while typing: retain the field, caret and public URL.
   async function search(form) {
