@@ -1,11 +1,11 @@
 ---
 id: ISSUE-140
 title: 140 — Barra de ações nas páginas de mídia com diálogos por tarefa
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-15T23:31:00Z'
+updated_date: '2026-11-16T00:11:00Z'
 labels:
   - ui
   - admin
@@ -39,7 +39,7 @@ Recorte B da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 - [x] #2 Visitantes não recebem ícones de gestão no HTML; administrador os vê na primeira pintura, sem consulta de papel
 - [x] #3 Cada ícone abre só a sua tarefa em diálogo (foco preso, Esc, foco devolvido) e, sem JavaScript, a página da tarefa; erro, rede e sessão expirada são recuperáveis
 - [x] #4 Trocar imagem atualiza a capa sem recarregar; editar atualiza o cabeçalho; resposta antiga não preenche diálogo novo e o botão Voltar não restaura formulário ativo
-- [ ] #5 Capturas lado a lado com o Koito original (desktop e celular) e aceite visual do usuário
+- [x] #5 Capturas lado a lado com o Koito original (desktop e celular) e aceite visual do usuário
 - [x] #6 Todos os formulários dos diálogos usam botões e campos do tema
 - [x] #7 Adicionar escuta: data e hora, botão responsivo e fuso horário opcional abaixo
 - [x] #8 Editar item e Mesclar no padrão do Koito, com lista dinâmica e responsiva na mescla
@@ -109,6 +109,15 @@ created: 2026-11-15T23:31:00Z
 ---
 
 Verificação: ajustes 6–9 concluídos; make check com 12/12 E2E, jornadas Chrome sem erros de JavaScript, 72 capturas de diálogos em Yuu/Pearl desktop/celular, contraste de controles nos 12 temas, fuso opcional/erro sem gravação, busca dinâmica com cancelamento e recuperação, tooltip/foco e regressão do editor completo. Comparação das áreas de controle: 20 visualizações/21.934 elementos sem diferenças. Sem novas chamadas ao Reviewer conforme instrução do usuário; critérios 1–4 e 6–9 verificados, #5 aguarda aceite visual. Sem push/merge/publicação e sem mudar a semântica de Excluir ou o × do histórico.
+
+---
+
+author: claude
+created: 2026-11-16T00:11:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 15/11/2026, com autorização para push.
 
 ---
 <!-- COMMENTS:END -->
