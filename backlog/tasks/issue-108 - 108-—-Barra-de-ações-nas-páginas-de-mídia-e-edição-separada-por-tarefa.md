@@ -1,10 +1,10 @@
 ---
 id: ISSUE-108
 title: 108 — Barra de ações nas páginas de mídia e edição separada por tarefa
-status: Planejada
+status: Done
 assignee: []
 created_date: '2026-11-14T01:06:00Z'
-updated_date: '2026-11-15T20:13:00Z'
+updated_date: '2026-11-16T14:51:00Z'
 labels:
   - ui
   - admin
@@ -44,12 +44,12 @@ Segurança: páginas e fragmentos novos com as mesmas regras de sessão, origem,
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Cabeçalho de faixa, álbum e artista com barra de ícones na ordem e posição do Koito, nos dois tamanhos de tela
-- [ ] #2 Visitantes não veem ícones de gestão; admin vê sem requisição extra nem atraso
-- [ ] #3 Cada ícone abre só a sua tarefa em diálogo; sem JavaScript abre a página da tarefa
-- [ ] #4 Página de gestão antiga vira índice; endereços antigos continuam funcionando
-- [ ] #5 Arrastar imagem sobre a capa troca a imagem com confirmação (álbum e artista)
-- [ ] #6 Testes de permissão, CSRF e perfil para páginas e fragmentos novos
+- [x] #1 Cabeçalho de faixa, álbum e artista com barra de ícones na ordem e posição do Koito, nos dois tamanhos de tela
+- [x] #2 Visitantes não veem ícones de gestão; admin vê sem requisição extra nem atraso
+- [x] #3 Cada ícone abre só a sua tarefa em diálogo; sem JavaScript abre a página da tarefa
+- [x] #4 Página de gestão antiga vira índice; endereços antigos continuam funcionando
+- [x] #5 Arrastar imagem sobre a capa troca a imagem com confirmação (álbum e artista)
+- [x] #6 Testes de permissão, CSRF e perfil para páginas e fragmentos novos
 - [ ] #7 Capturas lado a lado com o Koito (desktop e celular) e aceite visual do usuário
 <!-- AC:END -->
 
@@ -89,6 +89,15 @@ created: 2026-11-15T20:13:00Z
 ---
 
 Decisões finais do usuário em 15/11/2026: compatibilidade com endereços antigos preservada (ISSUE-139); detalhes da escuta aprovados (ISSUE-141); referência visual é a última versão do Koito em http://127.0.0.1:4111/artist/1, /album/1 e /track/1, com a barra de ícones inicialmente abaixo da barra superior, no canto superior direito (ISSUE-140). Sem decisões pendentes.
+
+---
+
+author: claude
+created: 2026-11-16T14:51:00Z
+
+---
+
+Aceite: fechada a pedido do usuário em 16/11/2026, com as quatro tarefas filhas Done e aceitas (ISSUE-139, 140, 141 e 142, esta última publicada na v0.25). Critérios #1 a #6 cobertos pelas tarefas filhas aceitas; #7 (capturas lado a lado com o Koito, desktop e celular) não foi produzido e fica sem marca.
 
 ---
 <!-- COMMENTS:END -->
