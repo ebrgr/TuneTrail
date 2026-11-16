@@ -558,5 +558,11 @@
     "other": "New artists"
   },
   "rewind.previous_year": "Previous year",
-  "rewind.next_year": "Next year"
+  "rewind.next_year": "Next year",
+  "admin.listen.delete_question": "Are you sure you want to delete this listen? This cannot be undone.",
+  "admin.listen.date_time": "Date and time",
+  "admin.listen.client": "Client",
+  "admin.listen.unknown_client": "Not recorded",
+  "admin.listen.delete_context": "Delete only this listen from {{.Profile}}.",
+  "media.dialog.reload_history": "Reload history"
 }

@@ -1,0 +1,325 @@
+{
+  "mode": "chrome",
+  "browser": "157.0.8103.51",
+  "fixtureOnly": true,
+  "checks": [
+    "second navigation reuses CSS/JS/JSON without body transfer",
+    "failed artwork uses a functioning versioned local SVG fallback",
+    "actual bfcache document, query and scroll restored",
+    "profile selection ignores unresolved week preference and preserves bfcache",
+    "unknown timezone preference uses the server fallback without restore loops",
+    "two bfcache cycles restore one administrative control per row",
+    "logout while away removes restored mutation controls",
+    "server-side expiry without client cookie change removes controls",
+    "Confirmed listen deletion works after restoration with fresh authorization",
+    "offline restoration keeps public snapshot without mutation controls",
+    "restored locale mismatch reloads with the current HttpOnly language preference",
+    "administrative history revalidates expired session and does not reuse forms"
+  ],
+  "cache": {
+    "first": [
+      {
+        "url": "/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4",
+        "transfer": 4723,
+        "bytes": 4423
+      },
+      {
+        "url": "/web-assets/ui.css?v=f4b8b38a7e377e322006a51fa0f1e2c4a20084bc5c1a81417a06ca0a393811fa",
+        "transfer": 38145,
+        "bytes": 37845
+      },
+      {
+        "url": "/web-assets/theme.js?v=0c593fb63234b2c4c4d8a9657c42c8a5bfbb5a0184422f7b59ac2707c347798a",
+        "transfer": 3029,
+        "bytes": 2729
+      },
+      {
+        "url": "/web-assets/theme-picker.js?v=2a7c560c283c563fea7209a8b8244b98170eb46b5b0e712ebf41a438c5a583b1",
+        "transfer": 4075,
+        "bytes": 3775
+      },
+      {
+        "url": "/web-assets/nav.js?v=5b5589a73f4b9ef414aef5c020186951c947e3850ba52c2263cbbee8cba1977c",
+        "transfer": 1721,
+        "bytes": 1421
+      },
+      {
+        "url": "/web-assets/ui.js?v=b568572c79f965781c2076d16fa3a5b359893f6a526de2d01db11a7bb3024408",
+        "transfer": 3687,
+        "bytes": 3387
+      },
+      {
+        "url": "/web-assets/live.js?v=8556a42a1fec73006c3694ff811230eb39ad57d1a2275a38bc23c7c23c9f2527",
+        "transfer": 5316,
+        "bytes": 5016
+      },
+      {
+        "url": "/web-assets/search.js?v=61928d55f830e5b1b39b99b56805c949a0fe9f6a3888ced653436d231f998b45",
+        "transfer": 4632,
+        "bytes": 4332
+      },
+      {
+        "url": "/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5",
+        "transfer": 4918,
+        "bytes": 4618
+      }
+    ],
+    "second": [
+      {
+        "url": "/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4",
+        "transfer": 0,
+        "bytes": 4423
+      },
+      {
+        "url": "/web-assets/theme.js?v=0c593fb63234b2c4c4d8a9657c42c8a5bfbb5a0184422f7b59ac2707c347798a",
+        "transfer": 0,
+        "bytes": 2729
+      },
+      {
+        "url": "/web-assets/ui.css?v=f4b8b38a7e377e322006a51fa0f1e2c4a20084bc5c1a81417a06ca0a393811fa",
+        "transfer": 0,
+        "bytes": 37845
+      },
+      {
+        "url": "/web-assets/theme-picker.js?v=2a7c560c283c563fea7209a8b8244b98170eb46b5b0e712ebf41a438c5a583b1",
+        "transfer": 0,
+        "bytes": 3775
+      },
+      {
+        "url": "/web-assets/nav.js?v=5b5589a73f4b9ef414aef5c020186951c947e3850ba52c2263cbbee8cba1977c",
+        "transfer": 0,
+        "bytes": 1421
+      },
+      {
+        "url": "/web-assets/ui.js?v=b568572c79f965781c2076d16fa3a5b359893f6a526de2d01db11a7bb3024408",
+        "transfer": 0,
+        "bytes": 3387
+      },
+      {
+        "url": "/web-assets/live.js?v=8556a42a1fec73006c3694ff811230eb39ad57d1a2275a38bc23c7c23c9f2527",
+        "transfer": 0,
+        "bytes": 5016
+      },
+      {
+        "url": "/web-assets/search.js?v=61928d55f830e5b1b39b99b56805c949a0fe9f6a3888ced653436d231f998b45",
+        "transfer": 0,
+        "bytes": 4332
+      },
+      {
+        "url": "/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5",
+        "transfer": 0,
+        "bytes": 4618
+      }
+    ],
+    "originRequests": [
+      {
+        "phase": "first",
+        "url": "/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4",
+        "bytes": 4423,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/ui.css?v=f4b8b38a7e377e322006a51fa0f1e2c4a20084bc5c1a81417a06ca0a393811fa",
+        "bytes": 37845,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/theme.js?v=0c593fb63234b2c4c4d8a9657c42c8a5bfbb5a0184422f7b59ac2707c347798a",
+        "bytes": 2729,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/theme-picker.js?v=2a7c560c283c563fea7209a8b8244b98170eb46b5b0e712ebf41a438c5a583b1",
+        "bytes": 3775,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/nav.js?v=5b5589a73f4b9ef414aef5c020186951c947e3850ba52c2263cbbee8cba1977c",
+        "bytes": 1421,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/ui.js?v=b568572c79f965781c2076d16fa3a5b359893f6a526de2d01db11a7bb3024408",
+        "bytes": 3387,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/live.js?v=8556a42a1fec73006c3694ff811230eb39ad57d1a2275a38bc23c7c23c9f2527",
+        "bytes": 5016,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/search.js?v=61928d55f830e5b1b39b99b56805c949a0fe9f6a3888ced653436d231f998b45",
+        "bytes": 4332,
+        "status": 200
+      },
+      {
+        "phase": "first",
+        "url": "/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5",
+        "bytes": 4618,
+        "status": 200
+      }
+    ]
+  },
+  "history": [
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study",
+      "persisted": true
+    },
+    {
+      "path": "/cache-study",
+      "persisted": false
+    },
+    {
+      "path": "/admin",
+      "persisted": false
+    },
+    {
+      "path": "/cache-study/search",
+      "persisted": false
+    },
+    {
+      "path": "/admin",
+      "persisted": true
+    },
+    {
+      "path": "/admin",
+      "persisted": false
+    }
+  ]
+}

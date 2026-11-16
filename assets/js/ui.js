@@ -43,8 +43,13 @@
       image.src = text.coverFallbackUrl;
     }
   };
+  // Captured error events also cover artwork inserted by an authoritative history refresh.
+  document.addEventListener('error', event => {
+    const image = event.target;
+    if (image instanceof HTMLImageElement && image.matches('img[data-cover],img[data-avatar-image]') &&
+        !image.classList.contains('cover-failed')) failImage(image);
+  }, true);
   document.querySelectorAll('img[data-cover],img[data-avatar-image]').forEach(image => {
-    image.addEventListener('error', () => { if (!image.classList.contains('cover-failed')) failImage(image); });
     if (image.complete && !image.naturalWidth) failImage(image);
   });
 })();

@@ -32,6 +32,7 @@
           {{if .Error}}
             <p role="alert">{{.Error}}</p>
           {{end}}
+          {{- if ne .Task "listen"}}
           <p>{{trn
             "admin.manage.context"
             "Changes to the catalog affect all profiles. Context: {{.Name}} ({{.Slug}}, ID {{.ID}})."
@@ -42,6 +43,7 @@
             "ID"
             .Profile.ID
           }}</p>
+          {{- end}}
           <p class="sr-only" role="status" aria-live="polite" data-enhance-status></p>
           {{template "manage/task-content" . -}}
         </main>
@@ -322,7 +324,20 @@
           {{if .FocusListen}}
             <section id="selected-listen">
               <h2>{{trn "admin.manage.delete_listen" "Delete this listen for {{.Name}}" "Name" .Profile.DisplayName}}</h2>
-              <p>{{.Name}} — {{(.FocusListen.Time.In .Location).Format "2006-01-02 15:04:05 MST"}}</p>
+              <p>{{tr "admin.listen.delete_question" "Are you sure you want to delete this listen? This cannot be undone."}}</p>
+              <dl class="listen-details">
+                <dt>{{tr "media.track" "Track"}}</dt>
+                <dd><a href="/{{.Profile.Slug}}/track/{{.ID}}">{{.Name}}</a></dd>
+                <dt>{{tr "ui.artists" "Artists"}}</dt>
+                <dd>{{range $i,$artist:=.Artists}}{{if $i}}, {{end}}<a href="/{{$.Profile.Slug}}/artist/{{.ID}}">{{.Name}}</a>{{end}}</dd>
+                <dt>{{tr "media.album" "Album"}}</dt>
+                <dd><a href="/{{.Profile.Slug}}/album/{{.AlbumID}}">{{.AlbumName}}</a></dd>
+                <dt>{{tr "admin.listen.date_time" "Date and time"}}</dt>
+                <dd><time datetime="{{(.FocusListen.Time.In .Location).Format "2006-01-02T15:04:05Z07:00"}}">
+                  {{- (.FocusListen.Time.In .Location).Format "2006-01-02 15:04:05 MST"}}</time> · {{.Timezone}}</dd>
+                <dt>{{tr "admin.listen.client" "Client"}}</dt>
+                <dd>{{if .FocusListen.Client}}{{.FocusListen.Client}}{{else}}{{tr "admin.listen.unknown_client" "Not recorded"}}{{end}}</dd>
+              </dl>
               <form method="post" action="/{{.Profile.Slug}}/manage/track/{{.ID}}/listen-delete">
                 <input type="hidden" name="csrf_token" value="{{.CSRF}}">
                 {{if .Submission}}
@@ -431,7 +446,11 @@
 {{- define "manage/task"}}
   <div id="task" class="admin-main" data-section>
     {{template "manage/message" .}}
-    <p>{{if eq .Task "add-listen"}}{{trn "admin.listen.profile_context" "Add a listen only to {{.Profile}}." "Profile" .Profile.DisplayName}}{{else}}
+    <p>{{if eq .Task "listen"}}
+      {{- trn "admin.listen.delete_context" "Delete only this listen from {{.Profile}}." "Profile" .Profile.DisplayName -}}
+    {{else if eq .Task "add-listen"}}
+      {{- trn "admin.listen.profile_context" "Add a listen only to {{.Profile}}." "Profile" .Profile.DisplayName -}}
+    {{else}}
       {{tr "admin.dialog.catalog_context" "Catalog changes affect all profiles."}}{{end}}</p>
     {{template "manage/task-content" . -}}
   </div>

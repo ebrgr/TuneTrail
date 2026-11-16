@@ -34,6 +34,7 @@ type mediaView struct {
 	Kind                            string
 	ID                              int32
 	Name, MBID, CSRF, Error, Notice string
+	AlbumName                       string
 	SuggestedURL                    string
 	MergeQuery                      string
 	MergeCandidates                 []mergeCandidate
@@ -175,7 +176,7 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 			section = "merge-results"
 		case dialogRequested(r) && r.Header.Get("X-TuneTrail-Search") == "artists" && kind == "track" && len(parts) == 5 && parts[4] == "edit" && r.URL.Query().Has("artist_query"):
 			section = "artist-results"
-		case dialogRequested(r) && len(parts) == 5 && parts[4] != "listen" && parts[4] != "listens":
+		case dialogRequested(r) && len(parts) == 5 && parts[4] != "listens":
 			section = "task"
 		case r.URL.Query().Has("artist_query") && kind == "track" && (len(parts) == 4 || parts[4] == "edit"):
 			section = "artists"
@@ -209,6 +210,9 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 		}
 	} else {
 		task = actionTask(action)
+		if action == "listen-delete" && dialogRequested(r) {
+			task = "listen"
+		}
 		// Legacy section requests keep their existing composition.
 		if section != "" && section != "task" {
 			task = ""
@@ -240,6 +244,13 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 					}
 				}
 			}
+		}
+	}
+	// A rejected deletion keeps the selected listen and its original history context.
+	if r.Method == "POST" && task == "listen" && form != nil {
+		query.Set("listen_at", form.SingleValue("unix"))
+		if back := adminweb.SafeHistoryReturn(form.SingleValue("return_to"), profile.Slug); back != "" {
+			query.Set("history_return", back)
 		}
 	}
 	if query.Get("tz") != "" {
@@ -294,6 +305,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 				err = e
 				break
 			}
+			v.AlbumName = album.Title
 			if album.MbzID != nil {
 				v.SuggestedURL = "https://coverartarchive.org/release/" + album.MbzID.String() + "/front"
 			}
@@ -670,6 +682,12 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 		_, err = admin.ReplaceArtwork(r.Context(), h.store, identity.User, kind, id, f.SingleValue("image_url"), reader, admin.ArtworkClient{})
 	default:
 		textError(w, "item not found", http.StatusNotFound)
+		return
+	}
+	// A deleted listen has no detail fragment; acknowledge it without rerendering a missing record.
+	if err == nil && action == "listen-delete" && dialogRequested(r) {
+		w.Header().Set("X-TuneTrail-Listen-Deleted", f.SingleValue("unix"))
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	// Dialog mutations refresh the task, keeping its return context and issuing a fresh ticket.

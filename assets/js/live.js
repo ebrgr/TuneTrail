@@ -24,17 +24,17 @@
     }
   } catch {}
   if (changed) {location.reload();return;}
-  document.querySelectorAll('.period-selector a').forEach(link => link.addEventListener('click', () => {
-    if (body.dataset.section !== 'home') return;
+  // Delegation survives a history snapshot refresh after deleting a listen.
+  document.addEventListener('click', event => {
+    const link = event.target.closest('.period-selector a');
+    if (!link || body.dataset.section !== 'home') return;
     try {localStorage.setItem(`period_selection_${body.dataset.profileId}:home`,new URL(link.href).searchParams.get('period'));} catch {}
-  }));
+  });
   // Apply the selected display option using the existing GET form.
   const rewindForm = document.querySelector('[data-rewind-time-form]');
   rewindForm?.querySelector('input[name=show_time]')?.addEventListener('change', () => rewindForm.requestSubmit());
   // Each activation owns its requests; suspended documents must not retain authority.
-  const slug = body.dataset.profileSlug;
   let active = null;
-  const removeControls = () => document.querySelectorAll('[data-listen-controls]').forEach(cell => cell.remove());
 
   // Bound request lifetimes, including body reads and sibling fetches, to one activation.
   async function requestScope(parent, operation) {
@@ -51,35 +51,16 @@
     }
   }
 
-  // Install one mutation cell per row only after the active session is confirmed.
-  function addControls() {
-    document.querySelectorAll('tr[data-track-id][data-unix]').forEach(row => {
-      const cell = document.createElement('td');
-      cell.dataset.listenControls = '';
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = '×';
-      button.className = 'delete-listen';
-      button.setAttribute('aria-label', body.dataset.i18nDeleteLabel);
-      cell.append(button);
-      row.append(cell);
-    });
-  }
-
   // The server marks administrator sessions with data-admin (ISSUE-109); no role fetch is needed.
   const admin = 'admin' in body.dataset;
 
   // Restore authority and compare server-resolved context without trusting preference cookies.
   async function activate(restored) {
     active?.abort();
-    removeControls();
     const controller = new AbortController();
     active = controller;
     window.TuneTrailTheme?.refresh();
-    if (!restored) {
-      if (slug && admin) addControls();
-      return;
-    }
+    if (!restored) return;
     try {
       await requestScope(controller, async signal => {
         const head = await fetch(location.href, {signal, cache: 'no-store', credentials: 'same-origin', method: 'HEAD'});
@@ -98,56 +79,18 @@
             (session && session !== String(admin))) {
           location.reload(); return;
         }
-        if (head.ok && slug && admin) addControls();
       });
     } catch {
-      // Keep the public snapshot available, with no mutation controls, on failure.
-      if (active === controller) removeControls();
+      // The dialog controller owns sensitive controls and its independent session revalidation.
     }
   }
 
   addEventListener('pagehide', () => {
     active?.abort();
     active = null;
-    removeControls();
   });
   addEventListener('pageshow', event => { if (event.persisted) activate(true); });
 
-  // One delegated listener reads the current activation instead of a suspended controller.
-  document.addEventListener('click', async event => {
-    const button = event.target.closest('.delete-listen');
-    if (!button || !active || active.signal.aborted || button.disabled) return;
-    if (!confirm(body.dataset.i18nDeleteConfirm)) return;
-    const controller = active;
-    const row = button.closest('tr[data-track-id][data-unix]');
-    if (!row) return;
-    button.disabled = true;
-    // A pending reload keeps the button disabled until the document unloads.
-    let reloading = false;
-    const target = new URL(`/apis/web/v1/profiles/${encodeURIComponent(slug)}/listens`, location.origin);
-    target.searchParams.set('track_id', row.dataset.trackId);
-    target.searchParams.set('unix', row.dataset.unix);
-    try {
-      await requestScope(controller, async signal => {
-        const response = await fetch(target, {method: 'DELETE', signal, cache: 'no-store', credentials: 'same-origin'});
-        if (!response.ok) throw Error(body.dataset.i18nDeleteError);
-        if (active === controller && !signal.aborted) { reloading = true; location.reload(); }
-      });
-    } catch {
-      if (active !== controller) return;
-      // An active timeout has an uncertain outcome; show status but never replay the DELETE.
-      let message = document.getElementById('listen-status');
-      if (!message) {
-        message = document.createElement('p');
-        message.id = 'listen-status';
-        message.setAttribute('role', 'status');
-        row.closest('table').after(message);
-      }
-      message.textContent = body.dataset.i18nDeleteError;
-    } finally {
-      if (!reloading && button.isConnected && active === controller) button.disabled = false;
-    }
-  });
   // A history navigation may rebuild the page from the HTTP cache without the bfcache;
   // revalidate it like a restore so a stale badge or controls never survive a logout.
   activate(performance.getEntriesByType('navigation')[0]?.type === 'back_forward');

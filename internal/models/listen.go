@@ -8,4 +8,6 @@ import (
 type Listen struct {
 	Time  time.Time   `json:"time"`
 	Track SimpleTrack `json:"track"`
+	// Client identifies the application that submitted this listen.
+	Client string `json:"client,omitempty"`
 }

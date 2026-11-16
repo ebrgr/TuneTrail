@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- The history × opens listen details and an irreversible-deletion confirmation; the list and counts update without reloading (ISSUE-141).
+
 ## [0.22] - 2026-11-16
 
 - Media pages now offer administrator action icons with tooltips and themed task dialogs, live merge search, optional listen timezone, and artwork and heading updates without reloading (ISSUE-140).

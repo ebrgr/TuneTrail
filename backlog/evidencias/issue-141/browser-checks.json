@@ -1,0 +1,14 @@
+{
+  "browser": "157.0.8103.51",
+  "fixtureOnly": true,
+  "checks": [
+    "Home, listens, track, album and artist × desktop/mobile × Yuu/Pearl: details, no separate Manage, native dialog, Tab, Esc, restored focus and no overflow",
+    "Network failure offers a normal page fallback; reopening recovers; closed requests cannot restore stale content",
+    "Final media listen yields count zero and empty history without navigation; ordinary public route remains unavailable",
+    "No confirmation returns 400; reopening rotates authorization; confirmed POST removes one row without reload and leaves beta intact",
+    "Home statistics, scroll and focus update after deletion; refreshed period links retain preferences and newly failed covers use the local fallback",
+    "No JavaScript retains Manage, uses the shared confirmation page and returns to the originating media page",
+    "Real server-side expiry rejects the dialog read and fallback reaches sign-in without inserting a login document",
+    "Visitors receive neither Manage nor ×"
+  ]
+}

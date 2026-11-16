@@ -3,7 +3,7 @@
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{.Theme}}">
     <head>
       {{template "partial/head" (head "live" (printf "%s - TuneTrail" .Title))}}
-      {{- if and .Media .Admin}}
+      {{- if and .Admin (or .Media (eq .Section "home") (eq .Section "listens"))}}
       <link rel="stylesheet" href="{{asset "media-dialog.css"}}">
       <script defer src="{{asset "enhance.js"}}"></script>
       <script defer src="{{asset "media-dialog.js"}}"></script>
@@ -12,8 +12,6 @@
     <body
       data-cover-fallback-url="{{asset "icons/Disc3.svg"}}"
       data-i18n-delete-label="{{tr "js.delete_label" "Delete listening record"}}"
-      data-i18n-delete-confirm="{{tr "js.delete_confirm" "Delete this listening record?"}}"
-      data-i18n-delete-error="{{tr "js.delete_error" "Unable to delete this listening record. Please retry."}}"
       {{- /* data-assets is only a marker for the validation scripts (validate_webui.py, validate_multiuser.py); keep it. */}}
       data-assets="/web-assets"
       data-ui-generation="{{uiGeneration}}"
@@ -81,6 +79,22 @@
         </div>
       </div>
       {{template "partial/dialogs" .}}
+    {{- if and .Admin (or .Media (eq .Section "home") (eq .Section "listens"))}}
+      <dialog id="media-task-dialog" class="media-task-dialog" aria-labelledby="media-task-title"
+        data-search-error="{{tr "media.dialog.search_error" "Unable to search. Try again."}}"
+        data-search-updated="{{tr "media.dialog.search_updated" "Search results updated."}}"
+        data-loading="{{tr "media.dialog.loading" "Loading…"}}"
+        data-error="{{tr "media.dialog.error" "Unable to complete the request. Reopen the task to check its current state, or open the task page."}}"
+        data-refresh-error="{{tr "media.dialog.refresh_error" "Changes saved. Reload the page to refresh its information."}}"
+        data-reload-history="{{tr "media.dialog.reload_history" "Reload history"}}"
+        data-open-page="{{tr "media.dialog.open_page" "Open task page"}}">
+        <button type="button" class="close-dialog" data-task-close aria-label="{{tr "media.dialog.close" "Close"}}">×</button>
+        <h2 id="media-task-title" tabindex="-1"></h2>
+        <p role="status" data-task-status></p>
+        <div data-task-content></div>
+      </dialog>
+    {{- end}}
+
     </body>
   </html>
 {{end}}
@@ -338,11 +352,13 @@
           <tr data-track-id="{{.Item.ID}}" data-unix="{{.Unix}}">
             <td><a href="{{.Item.URL}}"><img src="{{.Item.Image.Small}}" width="32" height="32" alt="{{.Item.Title}}" data-cover></a></td>
             <td>{{template "partial/artists" .Item}} — <a href="{{.Item.URL}}">{{.Item.Title}}</a></td>
-            <td class="listen-time"><time datetime="{{.Time.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .Time}}">{{.Relative}}</time><a
+            <td class="listen-time">
+              <time datetime="{{.Time.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .Time}}">{{.Relative}}</time>{{if $page.Admin}}<a
               class="listen-manage"
-              href="/{{$page.Profile.Slug}}/manage/track/{{.Item.ID}}?listen_at={{.Unix}}&amp;history_return={{urlquery $page.CurrentURL}}#selected-listen"
+              href="{{printf "/%s/manage/track/%d/listen?listen_at=%d&tz=%s&history_return=%s"
+                $page.Profile.Slug .Item.ID .Unix (urlquery $page.Timezone) (urlquery $page.CurrentURL)}}"
               aria-label="{{tr "ui.manage_this_listening_record" "Manage this listening record"}}"
-            >{{tr "ui.manage" "Manage"}}</a></td>
+            >{{tr "ui.manage" "Manage"}}</a>{{end}}</td>
           </tr>
         {{end}}
       </tbody>

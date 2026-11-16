@@ -56,7 +56,8 @@ func TestPublicTranslationsKeepMediaAndProtocolStable(t *testing.T) {
 	require.Contains(t, home, ">Top tracks</a>")
 	require.Contains(t, home, ">Top albums</a>")
 	require.Contains(t, home, "Faixas mais ouvidas")
-	require.Contains(t, home, "data-i18n-delete-confirm=\"Excluir esta reprodução?\"")
+	// The history action label remains localized; confirmation copy is now in the protected task.
+	require.Contains(t, home, "data-i18n-delete-label=\"Excluir reprodução\"")
 	missing := get("/default/track/99999", "pt-BR")
 	require.Equal(t, 404, missing.Code)
 	require.Contains(t, missing.Body.String(), "Não encontrado")

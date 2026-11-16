@@ -558,5 +558,11 @@
     "other": "Novos artistas"
   },
   "rewind.previous_year": "Ano anterior",
-  "rewind.next_year": "Próximo ano"
+  "rewind.next_year": "Próximo ano",
+  "admin.listen.delete_question": "Tem certeza de que deseja excluir esta escuta? Não existe desfazer.",
+  "admin.listen.date_time": "Data e hora",
+  "admin.listen.client": "Cliente",
+  "admin.listen.unknown_client": "Não registrado",
+  "admin.listen.delete_context": "Exclua apenas esta escuta de {{.Profile}}.",
+  "media.dialog.reload_history": "Recarregar histórico"
 }

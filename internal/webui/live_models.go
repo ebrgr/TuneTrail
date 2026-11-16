@@ -38,7 +38,8 @@ type Pager struct {
 type LivePage struct {
 	CurrentURL string
 	// Admin is true only for a valid administrator session cookie (ISSUE-109).
-	Admin bool
+	Admin           bool
+	AllowEmptyMedia bool
 	Page
 	Title, Section, Error, DateRange, Timezone string
 	Status                                     int

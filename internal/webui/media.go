@@ -19,6 +19,7 @@ import (
 
 func isMediaKind(kind string) bool { return kind == "artist" || kind == "album" || kind == "track" }
 
+// serveMedia retains the public route while an authenticated history refresh may render its empty state.
 func (h *Pages) serveMedia(w http.ResponseWriter, r *http.Request, p LivePage, parts []string) {
 	if len(parts) != 3 {
 		h.fail(w, p, 404)
@@ -40,6 +41,7 @@ func (h *Pages) serveMedia(w http.ResponseWriter, r *http.Request, p LivePage, p
 	loc := webquery.Timezone(r)
 	p.Options.Timeframe = db.Timeframe{Period: db.PeriodAllTime, Timezone: loc}
 	p.Timezone, p.Period, p.Section = loc.String(), "all_time", "media"
+	p.AllowEmptyMedia = p.Admin && r.Header.Get("X-TuneTrail-History-Refresh") == "1"
 	if err := h.loadMedia(r.Context(), &p, parts[1], int32(id)); err != nil {
 		status := 500
 		if errors.Is(err, db.ErrNotFound) {
@@ -49,13 +51,17 @@ func (h *Pages) serveMedia(w http.ResponseWriter, r *http.Request, p LivePage, p
 		h.fail(w, p, status)
 		return
 	}
-	// A selected listen returns to the corresponding filtered personal history.
-	returnQuery := url.Values{"period": {"all_time"}, parts[1] + "_id": {strconv.FormatInt(id, 10)}, "tz": {loc.String()}}
-	p.CurrentURL = "/" + url.PathEscape(p.Profile.Slug) + "/listens?" + returnQuery.Encode()
+	// Selected listens return to the media page, preserving its effective display zone.
+	returnURL := *r.URL
+	returnQuery := returnURL.Query()
+	returnQuery.Set("tz", loc.String())
+	returnURL.RawQuery = returnQuery.Encode()
+	p.CurrentURL = returnURL.RequestURI()
 	p.Title = p.Media.Title
 	h.render(w, p)
 }
 
+// loadMedia reads personal counts; only an empty refresh may fall back to global metadata.
 func (h *Pages) loadMedia(ctx context.Context, p *LivePage, kind string, id int32) error {
 	slug := p.Profile.Slug
 	m := &MediaPage{Kind: kind}
@@ -64,22 +70,44 @@ func (h *Pages) loadMedia(ctx context.Context, p *LivePage, kind string, id int3
 	switch kind {
 	case "artist":
 		a, err := h.store.GetArtist(ctx, db.GetArtistOpts{ID: id})
+		if errors.Is(err, db.ErrNotFound) && p.AllowEmptyMedia {
+			a, err = h.store.GetArtist(db.WithoutProfile(ctx), db.GetArtistOpts{ID: id})
+			if err == nil {
+				a.ListenCount, a.TimeListened, a.FirstListen, a.AllTimeRank = 0, 0, 0, 0
+			}
+		}
 		if err != nil {
 			return err
 		}
 		m.Item, m.Type, m.TimeListened, first, mbid = artistItem(slug, a, a.AllTimeRank), "Artist", a.TimeListened, a.FirstListen, a.MbzID
 	case "album":
 		a, err := h.store.GetAlbum(ctx, db.GetAlbumOpts{ID: id})
+		if errors.Is(err, db.ErrNotFound) && p.AllowEmptyMedia {
+			a, err = h.store.GetAlbum(db.WithoutProfile(ctx), db.GetAlbumOpts{ID: id})
+			if err == nil {
+				a.ListenCount, a.TimeListened, a.FirstListen, a.AllTimeRank = 0, 0, 0, 0
+			}
+		}
 		if err != nil {
 			return err
 		}
 		m.Item, m.Type, m.TimeListened, first, mbid = albumItem(slug, a, a.AllTimeRank), "Album", a.TimeListened, a.FirstListen, a.MbzID
 	case "track":
 		t, err := h.store.GetTrack(ctx, db.GetTrackOpts{ID: id})
+		if errors.Is(err, db.ErrNotFound) && p.AllowEmptyMedia {
+			t, err = h.store.GetTrack(db.WithoutProfile(ctx), db.GetTrackOpts{ID: id})
+			if err == nil {
+				t.ListenCount, t.TimeListened, t.FirstListen, t.AllTimeRank = 0, 0, 0, 0
+			}
+		}
 		if err != nil {
 			return err
 		}
-		a, err := h.store.GetAlbum(ctx, db.GetAlbumOpts{ID: t.AlbumID})
+		albumContext := ctx
+		if p.AllowEmptyMedia && t.ListenCount == 0 {
+			albumContext = db.WithoutProfile(ctx)
+		}
+		a, err := h.store.GetAlbum(albumContext, db.GetAlbumOpts{ID: t.AlbumID})
 		if err != nil {
 			return fmt.Errorf("album for track %d unavailable: %v", id, err)
 		}

@@ -100,3 +100,14 @@ html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
   .media-task-dialog .manage-result > small { flex-basis:100%; }
 }
 }
+/* The selected listen shares page content and theme tokens with all media tasks. */
+@layer components {
+.media-task-dialog #selected-listen > h2 { display:none; }
+.media-task-dialog .listen-details { display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px 20px; margin:20px 0; }
+.media-task-dialog .listen-details dt { color:var(--color-fg-secondary); }
+.media-task-dialog .listen-details dd { margin:0; overflow-wrap:anywhere; }
+@media(max-width:480px) {
+  .media-task-dialog .listen-details { grid-template-columns:minmax(0,1fr); gap:6px; }
+  .media-task-dialog .listen-details dd { margin-bottom:10px; }
+}
+}

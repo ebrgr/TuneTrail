@@ -31,7 +31,11 @@
 }
 .see-more { display:block; text-align:center; margin-top:8px; color:var(--color-fg-secondary); }
 @media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
-.delete-listen { color:var(--color-fg-tertiary); padding:8px; }
+/* History actions retain a keyboard and touch target when enhanced into confirmation links. */
+.delete-listen {
+  display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px;
+  color:var(--color-fg-tertiary); padding:8px;
+}
 .delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
 
 /* History actions remain accessible through normal navigation without JavaScript. */

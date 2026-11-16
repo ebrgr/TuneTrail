@@ -41,20 +41,6 @@
         {{end}}
       </div>
     </header>
-    {{- if .Admin}}
-      <dialog id="media-task-dialog" class="media-task-dialog" aria-labelledby="media-task-title"
-        data-search-error="{{tr "media.dialog.search_error" "Unable to search. Try again."}}"
-        data-search-updated="{{tr "media.dialog.search_updated" "Search results updated."}}"
-        data-loading="{{tr "media.dialog.loading" "Loading…"}}"
-        data-error="{{tr "media.dialog.error" "Unable to complete the request. Reopen the task to check its current state, or open the task page."}}"
-        data-refresh-error="{{tr "media.dialog.refresh_error" "Changes saved. Reload the page to refresh its information."}}"
-        data-open-page="{{tr "media.dialog.open_page" "Open task page"}}">
-        <button type="button" class="close-dialog" data-task-close aria-label="{{tr "media.dialog.close" "Close"}}">×</button>
-        <h2 id="media-task-title" tabindex="-1"></h2>
-        <p role="status" data-task-status></p>
-        <div data-task-content></div>
-      </dialog>
-    {{- end}}
     <div class="media-reading-blocks">
       {{if ne $media.Kind "track"}}
         <section class="media-top-tracks" aria-label="{{tr "ui.top_tracks" "Top tracks"}}">

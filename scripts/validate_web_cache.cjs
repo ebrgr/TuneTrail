@@ -260,8 +260,10 @@ async function run(driver, origin) {
   await goto(search); await driver.back();
   await wait(`${controls}>0 && window.__cachePersisted === true`, 'delete after restoration');
   await driver.evaluate('document.querySelector(".delete-listen").click()');
-  await wait(`${rows} < ${count}`, 'DELETE after restoration');
-  check('DELETE works after restoration with a fresh controller');
+  await wait('!!document.querySelector("#selected-listen")', 'listen confirmation after restoration');
+  await driver.evaluate('document.querySelector("#selected-listen input[name=confirm]").checked=true; document.querySelector("#selected-listen form").requestSubmit()');
+  await wait(`${rows} < ${count}`, 'confirmed deletion after restoration');
+  check('Confirmed listen deletion works after restoration with fresh authorization');
 
   if (driver.offline) {
     assert.equal(await login(), 204);

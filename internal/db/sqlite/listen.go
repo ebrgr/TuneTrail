@@ -78,8 +78,10 @@ type listenRow struct {
 	listenedAt int64
 	trackID    int32
 	title      string
+	client     string
 }
 
+// GetListensPaginated includes the original client in each profile-scoped history record.
 func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*db.PaginatedResponse[*models.Listen], error) {
 	if opts.Limit == 0 {
 		opts.Limit = defaultItemsPerPage
@@ -123,7 +125,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 	switch {
 	case opts.TrackID > 0:
 		rows, err = s.queryContext(ctx, `
-			SELECT l.listened_at, l.track_id, t.title
+			SELECT l.listened_at, l.track_id, t.title, COALESCE(l.client, '')
 			FROM listens l
 			JOIN tracks_with_title t ON l.track_id = t.id
 			WHERE l.listened_at BETWEEN ? AND ? AND t.id = ?
@@ -132,7 +134,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		)
 	case opts.AlbumID > 0:
 		rows, err = s.queryContext(ctx, `
-			SELECT l.listened_at, l.track_id, t.title
+			SELECT l.listened_at, l.track_id, t.title, COALESCE(l.client, '')
 			FROM listens l
 			JOIN tracks_with_title t ON l.track_id = t.id
 			WHERE l.listened_at BETWEEN ? AND ? AND t.release_id = ?
@@ -141,7 +143,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		)
 	case opts.ArtistID > 0:
 		rows, err = s.queryContext(ctx, `
-			SELECT l.listened_at, l.track_id, t.title
+			SELECT l.listened_at, l.track_id, t.title, COALESCE(l.client, '')
 			FROM listens l
 			JOIN tracks_with_title t ON l.track_id = t.id
 			JOIN artist_tracks at2 ON t.id = at2.track_id
@@ -151,7 +153,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		)
 	default:
 		rows, err = s.queryContext(ctx, `
-			SELECT l.listened_at, l.track_id, t.title
+			SELECT l.listened_at, l.track_id, t.title, COALESCE(l.client, '')
 			FROM listens l
 			JOIN tracks_with_title t ON l.track_id = t.id
 			WHERE l.listened_at BETWEEN ? AND ?
@@ -166,7 +168,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 	var raw []listenRow
 	for rows.Next() {
 		var r listenRow
-		if err := rows.Scan(&r.listenedAt, &r.trackID, &r.title); err != nil {
+		if err := rows.Scan(&r.listenedAt, &r.trackID, &r.title, &r.client); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -183,7 +185,8 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 	listens := make([]*models.Listen, 0, len(raw))
 	for _, r := range raw {
 		l := &models.Listen{
-			Time: time.Unix(r.listenedAt, 0).UTC(),
+			Time:   time.Unix(r.listenedAt, 0).UTC(),
+			Client: r.client,
 			Track: models.SimpleTrack{
 				ID:    r.trackID,
 				Title: r.title,

@@ -21,7 +21,28 @@
     searchVersion++;
     content.querySelectorAll('.manage-search-results').forEach(section => { section.inert = false; section.removeAttribute('aria-busy'); });
   }
-  const base = document.querySelector('[data-media-task]')?.pathname.replace(/\/[^/]+$/, '');
+  let base = '';
+  let listenOpener = null;
+  let returnFocus = null;
+  // Progressive controls use the same authenticated task URL as the no-script fallback.
+  function listenControls() {
+    document.querySelectorAll('.listen-manage').forEach(link => {
+      link.hidden = true;
+      const row = link.closest('tr');
+      if (row.querySelector('[data-listen-controls]')) return;
+      const cell = row.insertCell();
+      cell.dataset.listenControls = '';
+      const action = document.createElement('a');
+      action.href = link.href;
+      action.textContent = '×';
+      action.className = 'delete-listen';
+      action.dataset.mediaTask = '';
+      action.dataset.listenTask = '';
+      action.setAttribute('aria-label', document.body.dataset.i18nDeleteLabel);
+      cell.append(action);
+    });
+  }
+  listenControls();
   const plainClick = event => event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 
   // Closing or navigating away invalidates every outstanding response, including body reads.
@@ -34,13 +55,13 @@
     status.textContent = '';
     dialog.removeAttribute('aria-busy');
   }
-  function failure() {
+  function failure(destination = taskURL) {
     content.replaceChildren();
     status.textContent = dialog.dataset.error;
     const link = document.createElement('a');
-    link.href = taskURL;
+    link.href = destination;
     link.dataset.taskPage = '';
-    link.textContent = dialog.dataset.openPage;
+    link.textContent = destination === taskURL ? dialog.dataset.openPage : dialog.dataset.reloadHistory;
     content.append(link);
   }
   function allowed(url) {
@@ -62,6 +83,27 @@
     document.title = next.title;
   }
 
+  // Replace the public snapshot after a confirmed deletion; the dialog lives outside this main.
+  async function refreshHistory(signal) {
+    const response = await fetch(location.href, {signal, cache:'no-store', credentials:'same-origin',
+      headers:{'X-TuneTrail-History-Refresh':'1'}});
+    if (!response.ok || response.redirected) throw Error('History unavailable');
+    const next = new DOMParser().parseFromString(await response.text(), 'text/html');
+    if (signal.aborted) return;
+    if (!next.body.hasAttribute('data-admin') || next.body.dataset.profileSlug !== document.body.dataset.profileSlug ||
+        !next.querySelector('main')) throw Error('Context changed');
+    const current = document.querySelector('main');
+    const scroll = {left:scrollX, top:scrollY};
+    const rows = [...current.querySelectorAll('tr[data-track-id][data-unix]')];
+    const index = rows.indexOf(listenOpener);
+    current.replaceWith(next.querySelector('main'));
+    listenControls();
+    const controls = [...document.querySelectorAll('[data-listen-task]')];
+    returnFocus = controls[Math.min(index, controls.length - 1)] || document.querySelector('main h1,main h3,main');
+    if (returnFocus && returnFocus.tabIndex < 0) returnFocus.tabIndex = -1;
+    scrollTo(scroll);
+  }
+
   // A dialog request has a bounded lifetime and validates the fragment before inserting any form.
   async function request(url, init = {}, mutation = false) {
     if (!activation || activation.signal.aborted) return;
@@ -79,6 +121,23 @@
       const response = await fetch(url, {...init, signal: controller.signal, cache: 'no-store', credentials: 'same-origin', redirect: 'manual',
         headers: {...init.headers, 'X-TuneTrail-Partial': '1', 'X-TuneTrail-Dialog': '1'}});
       if (owner !== activation || controller.signal.aborted) return;
+      if (response.status === 204 && mutation && listenOpener &&
+          response.headers.get('X-TuneTrail-Listen-Deleted') === listenOpener.dataset.unix) {
+        // If refresh fails the deletion remains acknowledged; never offer its consumed form again.
+        content.replaceChildren();
+        try {
+          await refreshHistory(controller.signal);
+          if (owner === activation && !controller.signal.aborted) dialog.close();
+        } catch {
+          if (owner === activation && !owner.signal.aborted) {
+            listenOpener.remove();
+            failure(location.href);
+            status.textContent = dialog.dataset.refreshError;
+            focusTitle();
+          }
+        }
+        return;
+      }
       const target = response.headers.get('X-TuneTrail-Navigate');
       if (response.status === 204 && target && mutation) {
         const destination = new URL(target, location.href);
@@ -114,6 +173,9 @@
   }
   function open(link) {
     clear();
+    base = link.pathname.replace(/\/[^/]+$/, '');
+    listenOpener = link.hasAttribute('data-listen-task') ? link.closest('tr') : null;
+    returnFocus = null;
     opener = link.href;
     taskURL = link.href;
     dialog.dataset.task = new URL(taskURL).pathname.split('/').at(-1);
@@ -152,7 +214,8 @@
     if (dialog.open) return; // A queued close event must not clear a newly opened task.
     clear();
     const link = [...document.querySelectorAll('[data-media-task]')].find(link => link.href === opener);
-    link?.focus({preventScroll: true});
+    (returnFocus || link)?.focus({preventScroll: true});
+    returnFocus = null;
   });
   dialog.addEventListener('click', event => {
     const link = event.target.closest('a[href]');
@@ -252,12 +315,14 @@
     const timer = setTimeout(() => controller.abort(), 10000);
     ready = false;
     document.querySelectorAll('[data-media-task]').forEach(link => { link.hidden = true; });
+    document.querySelectorAll('[data-listen-controls]').forEach(cell => cell.remove());
     try {
       const response = await fetch(location.href, {method: 'HEAD', signal: controller.signal, cache: 'no-store', credentials: 'same-origin'});
       if (validation !== controller || controller.signal.aborted) return;
       if (!response.ok || response.redirected || response.headers.get('X-TuneTrail-Admin') !== 'true' ||
           response.headers.get('X-TuneTrail-UI-Generation') !== document.body.dataset.uiGeneration) { location.reload(); return; }
       ready = true;
+      listenControls();
       document.querySelectorAll('[data-media-task]').forEach(link => { link.hidden = false; });
     } catch { /* Keep management hidden until another successful revalidation or navigation. */ }
     finally { clearTimeout(timer); }
@@ -268,6 +333,7 @@
     if (dialog.open) dialog.close();
     clear();
     document.querySelectorAll('[data-media-task]').forEach(link => { link.hidden = true; });
+    document.querySelectorAll('[data-listen-controls]').forEach(cell => cell.remove());
   });
   addEventListener('pageshow', event => { if (event.persisted) revalidate(); });
   if (performance.getEntriesByType('navigation')[0]?.type === 'back_forward') revalidate();
