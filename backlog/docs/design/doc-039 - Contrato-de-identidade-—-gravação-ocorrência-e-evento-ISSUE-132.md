@@ -11,11 +11,11 @@ tags:
 ---
 **ISSUE-132 · Advisor · 16/11/2026 · Base: `75b1aff` (ISSUE-131 aceita, ainda não publicada).**
 
-Proposta para aceite. Este documento não autoriza migração, implementação nem mudança de retenção. Complementa o doc-036; não repete a investigação da ISSUE-116 nem a correção da ISSUE-131.
+Contrato aceito pelo usuário em 16/11/2026 e formalizado na decision-008. Este documento não autoriza publicação nem escolhe prazo de retenção ou guarda de payload bruto. Complementa o doc-036; não repete a investigação da ISSUE-116 nem a correção da ISSUE-131.
 
 ## Parecer e limite do estudo
 
-**Parecer do Advisor: APROVADO para planejamento, com decisões de produto pendentes de aceite.** Separar gravação, ocorrência e evento é necessário para preservar o lançamento ouvido e reunir gravações no ranking. A implementação deve aguardar o contrato de retenção/payload da ISSUE-079, a coordenação de schema da ISSUE-080 e o aceite deste contrato. A ISSUE-132 não resolve as ISSUE-079/092 por antecipação.
+**Parecer do Advisor: APROVADO para planejamento. Contrato aceito pelo usuário em 16/11/2026.** Separar gravação, ocorrência e evento é necessário para preservar o lançamento ouvido e reunir gravações no ranking. A implementação deve aguardar o contrato de retenção/payload da ISSUE-079, a coordenação de schema da ISSUE-080; o aceite deste contrato já foi registrado. A ISSUE-132 não resolve as ISSUE-079/092 por antecipação.
 
 O estudo foi executado diretamente pelo Advisor, sem delegação. Artefatos limitados ao Backlog e fixtures conceituais; nenhuma alteração de produção. Não há mudança de versão ou CHANGELOG.
 
@@ -116,7 +116,7 @@ BatchEnvelope leva perfil derivado da autenticação, source_instance_id, refer�
 
 | Etapa | Responsável e alvos previstos |
 | --- | --- |
-| Aceitar identidade e preparar fixture | ISSUE-132: este doc-039 e evidências. Registrar ADR accepted somente após aceite; critério #4 permanece pendente. |
+| Aceitar identidade e preparar fixture | ISSUE-132: este doc-039 e evidências. ADR accepted registrada como decision-008 após aceite; critério #4 cumprido. |
 | Fechar retenção e payload | ISSUE-079: envelope/razões/retention em backlog/docs/design. Sem prazo de retenção ou armazenamento indiscriminado de bruto decidido aqui. |
 | Persistir ledger e outbox | ISSUE-080: db/migrations_sqlite, internal/db/db.go, opts.go e sqlite/bootstrap.go; versão coordenada, backup e restauração. |
 | Evoluir identidade musical | ISSUE-133: migração incremental, models/track.go, sqlite/track.go, aliases e FKs; preservar IDs. Aplicação precisa continuar utilizável entre 133 e 135, com camada de compatibilidade ou plano de corte transacional documentado. |
@@ -127,7 +127,7 @@ BatchEnvelope leva perfil derivado da autenticação, source_instance_id, refer�
 
 Não adicionar dependência circular entre 079 e 132: são contratos coordenados. 133 já depende de 080/132; 134 já depende de 081/133. A 081 exige comportamento observável preservado, mas pendências e ACK após recebimento mudam a semântica do erro atual: ajustar explicitamente seu critério ao aceitar o contrato, sem fingir neutralidade. A 135 precisa reconhecer o balde sem lançamento na igualdade dos totais.
 
-## Riscos e decisões para aceite
+## Riscos e limites do contrato aceito
 
 1. **Retenção/payload (079):** propor mínimo estruturado suficiente para reprocessar (textos recebidos, IDs declarados e origem, data/precisão, cliente, referência da fonte e razões), sem tokens/cookies. Bruto completo e prazos exigem decisão do usuário. Recebimentos não resolvidos não podem ser podados como auditoria expirada antes dessa decisão; nenhum prazo é fixado neste estudo. Purga/exclusão deve impedir ressurreição por replay sem guardar payload sensível indefinidamente.
 2. **Sem ID confiável:** impossível distinguir automaticamente reenvio idêntico de repetição legítima indistinguível. Proposta conservadora: pending_duplicate; nunca afirmar exatamente uma vez nesse cenário.

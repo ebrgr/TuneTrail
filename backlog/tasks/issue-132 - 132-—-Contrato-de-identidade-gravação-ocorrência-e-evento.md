@@ -1,11 +1,11 @@
 ---
 id: ISSUE-132
 title: '132 — Contrato de identidade: gravação, ocorrência e evento'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-16T16:32:00Z'
+updated_date: '2026-11-16T17:06:00Z'
 labels:
   - catalogo
   - banco
@@ -17,6 +17,9 @@ references:
   - backlog/evidencias/issue-132/fixture-identidade.sql
   - backlog/evidencias/issue-132/resultado-fixture.txt
   - backlog/evidencias/issue-132/parecer-reviewer.md
+  - >-
+    backlog/decisions/decision-008 -
+    Identidade-musical-separada-em-gravação-ocorrência-e-evento.md
 documentation:
   - doc-036
   - doc-039
@@ -33,9 +36,9 @@ Recorte 2 do estudo da ISSUE-116 (doc-036). Definir o contrato de identidade e d
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 Fixtures distinguem gravação, ocorrência e evento
-- [ ] #2 Decididos: álbum ausente, colisão no mesmo segundo e revisão
+- [x] #2 Decididos: álbum ausente, colisão no mesmo segundo e revisão
 - [x] #3 Exemplo A/B: 2 escutas na gravação e 1 em cada álbum, sem vazamento entre dois perfis
-- [ ] #4 Decisão registrada em backlog/decisions após aceite
+- [x] #4 Decisão registrada em backlog/decisions após aceite
 - [x] #5 Contrato define preservação durável e revisão/reprocessamento de eventos com alias ambíguo ou MBIDs conflitantes, sem associação silenciosa, com fixtures e isolamento por perfil
 - [x] #6 Contrato define a resposta da API ListenBrainz para conflitos e a continuidade/retomada da importação Last.fm, incluindo prevenção de perda e duplicação de escutas
 <!-- AC:END -->
@@ -94,6 +97,15 @@ created: 2026-11-16T16:32:00Z
 ---
 
 Verificação: doc-039 e fixture conceitual concluídos; 21 verificações passaram. Estudo disponível para aceite das propostas sobre álbum ausente, colisões e revisão; retenção/payload dependem da ISSUE-079. Nenhuma decisão de arquitetura marcada accepted; critério 4 será cumprido após aceite explícito.
+
+---
+
+author: codex
+created: 2026-11-16T17:06:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 16/11/2026. Contrato doc-039 aceito e formalizado na decision-008 (accepted); álbum ausente, colisões e revisão definidos. Todos os critérios cumpridos. Implementação encaminhada às tarefas dependentes; ISSUE-079 mantém retenção/payload pendentes. Sem alteração de runtime ou publicação.
 
 ---
 <!-- COMMENTS:END -->

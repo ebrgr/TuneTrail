@@ -4,7 +4,7 @@ title: 133 — Migração aditiva para gravações e ocorrências com IDs compat
 status: Aberta
 assignee: []
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-15T16:44:00Z'
+updated_date: '2026-11-16T17:06:00Z'
 labels:
   - banco
 milestone: m-11
@@ -13,6 +13,7 @@ dependencies:
   - ISSUE-080
 documentation:
   - doc-036
+  - doc-039
 type: feature
 ordinal: 146000
 ---
@@ -30,3 +31,16 @@ Recorte 3 do estudo da ISSUE-116 (doc-036). Migração aditiva: faixas atuais vi
 - [ ] #3 IDs e URLs anteriores continuam válidos
 - [ ] #4 Interrupção simulada reverte a transação; restauração do backup comprovada
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: codex
+created: 2026-11-16T17:06:00Z
+
+---
+
+Contrato da ISSUE-132 aceito (decision-008). Planejar ocorrências sem lançamento, múltiplas ocorrências por gravação/lançamento, eventos com identidade própria e migração 1:1 preservando IDs/URLs. Coordenar ledger com ISSUE-080. Exigir ponte de compatibilidade ou corte coordenado entre leitores/escritores antes de habilitar o novo modelo.
+
+---
+<!-- COMMENTS:END -->
