@@ -1,11 +1,11 @@
 ---
 id: ISSUE-071
 title: '071 — Navegação responsiva: barra inferior, lateral de ícones e expansível'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T18:51:00Z'
+updated_date: '2026-11-16T18:57:00Z'
 labels:
   - ui
 milestone: m-10
@@ -36,7 +36,7 @@ Passos:
 - [x] #1 Decisão do usuário sobre a barra inferior registrada
 - [x] #2 Três padrões de navegação conforme a largura, sem JavaScript
 - [x] #3 Alvos de toque de pelo menos 44×44px
-- [ ] #4 Capturas e aceite visual
+- [x] #4 Capturas e aceite visual
 <!-- AC:END -->
 
 ## Comments
@@ -129,6 +129,15 @@ created: 2026-11-16T18:51:00Z
 ---
 
 Verificação da ressalva: controle Rótulos da navegação no painel de tema; checkbox removido da lateral; modos de ícones de 58px no tablet/desktop, tooltips e aria-label preservados; período nativo acessível em Mais. Nome do perfil sem duplicação e heatmap inteiro em 1440px. make check e ui.check verdes, 12/12 jornadas; 108 vistas de navegação com/sem JS e com/sem rótulos; 598 vistas sem overflow. Só duas imagens atualizadas em estados/desktop-yuu-{labels,icons}.png (1440px/Yuu); antes, 132 depois e demais imagens preservados. Revisão incremental própria registrada. PENDENTE: persistência global/perfil e renderização das preferências salvas pelo servidor, pois conf.toml não tem contrato de UI; opções e recomendação de extensão do conf.toml registradas no comentário anterior e README. Nova escolha de rótulos é temporária no documento; nav-layout conserva mecanismo anterior. AC4 não marcado. Sem push, merge, publish ou Done.
+
+---
+
+author: ebrgr
+created: 2026-11-16T18:57:00Z
+
+---
+
+Aceite visual do usuário (2026-11-16) da barra inferior (celular) e das laterais, com a ressalva atendida: opção 'Rótulos da navegação' no painel de tema (>64rem, só ícones igual ao intermediário). Persistência das opções de tema no conf.toml NÃO incluída: promovida a nova issue por decisão do usuário. Rótulos valem só no documento; empurrar/sobrepor segue no navegador. Publicação e push dependem de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
