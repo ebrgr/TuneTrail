@@ -1,11 +1,11 @@
 ---
 id: ISSUE-144
 title: 144 — Observações e pendências das ISSUE-139 a 143
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T00:54:00Z'
-updated_date: '2026-11-16T14:58:00Z'
+updated_date: '2026-11-16T14:59:00Z'
 labels:
   - ui
   - admin
@@ -49,6 +49,15 @@ created: 2026-11-16T14:58:00Z
 ---
 
 Verificação: item 6 implementado em scripts/issue.py (publish lê o registro na worktree ou na branch e commita aceite pendente da worktree), com 3 testes novos que falham no código antigo e passam no novo (35/35 em scripts/test_issue.py); make check verde. Item 7: analisar-tunetrail.sh passou a validar .git com -e (backup .bak-issue144 ao lado do script). Itens 1 a 5 convertidos nas ISSUE-148 (contagem 0), 149 (exclusão global morta), 150 (página vazia para o admin, decisão do usuário), 151 (vocabulário escuta) e 152 (layout da página de imagem sem JS).
+
+---
+
+author: claude
+created: 2026-11-16T14:59:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 16/11/2026.
 
 ---
 <!-- COMMENTS:END -->
