@@ -24,6 +24,16 @@ Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do G
 - Se o parecer já existe em `backlog/evidencias/<issue>/` ou como `[HANDOFF]` no `ai-memory`, leia-o em vez de refazer a auditoria. Reaudite só o que mudou desde o parecer.
 - Delegue só quando valer o custo: configuração, rotas e CRUDs simples não precisam de Advisor; o próprio agente revisa.
 
+## Despacho pelo Orca (quando o Orca é o editor)
+Se a sessão roda no Orca (terminais e worktrees gerenciados por ele), delegue a outro agente **pelo Orca**, nunca com `codex exec`/`claude -p` por fora: o usuário precisa enxergar e acompanhar o terminal do agente. O fluxo é um só, uma delegação por tarefa:
+1. **Worktree e agente:** `make issue.worktree ISSUE=N AGENT=codex` (ou `AGENT=claude`). Cria a worktree `<tipo>/issue-NNN-slug` a partir da `main`, liga `.agents/` e os estudos locais (`orca.yaml` + `scripts/orca-setup.sh`), marca a tarefa "Em andamento" dentro da worktree e abre o agente num terminal do Orca. Não use `make issue.start` neste caso: ele troca a branch do checkout principal. A árvore principal pode ter mudanças não commitadas; a worktree parte da `main`.
+2. **Prompt autocontido:** o `make` não envia prompt. Pegue o handle com `orca terminal list --json` e envie o prompt com `orca terminal send --terminal <handle> --text "<prompt>" --enter`. O prompt deve ter o texto da issue, os arquivos-alvo, as restrições, a regra anti-recursão e os limites (sem push, merge, publish ou Done). Para prompt longo, grave-o como `[PLANO ISSUE-NNN]` no `ai-memory` e envie só a referência.
+3. **Acompanhar sem polling:** `orca terminal wait --terminal <handle> --for tui-idle` e depois `orca terminal read --terminal <handle>`. Para os demais comandos (`worktree`, `agent launch`, navegador), consulte a skill `orca-cli`.
+4. **Reviewer após a implementação:** quando o agente terminar e a mudança estiver commitada na worktree, rode o Reviewer (`/.agents/reviewer.md`) sobre o diff da branch da tarefa, executando-o você mesmo, sem delegar de novo. Só depois envie para aceite (`make issue.review`).
+5. **Publicar:** `make issue.publish` remove a worktree limpa; ele recusa se houver mudanças não commitadas.
+- Fora do Orca (terminal comum), continue usando `make issue.start` e delegue pela CLI, uma vez.
+- O agente despachado trabalha numa worktree: o `make check` e o commit dependem das permissões do sandbox dele. Se ele não conseguir commitar ou abrir portas de teste, quem despachou termina o commit e roda o `make check`.
+
 ## Níveis de delegação (Advisor)
 | Tipo de revisão | `@Sol` (Codex) | `@Opus` (Claude) |
 | --- | --- | --- |
