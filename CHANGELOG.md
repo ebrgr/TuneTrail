@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- A lista "Last played" da Home volta a ocupar toda a largura e a lateral do desktop passa a ser só de ícones por padrão, com a opção de rótulos no painel de tema; a Retrospectiva substitui o Histórico na barra e o menu (+) fecha ao clicar fora (ISSUE-154).
+- A lista "Last played" da Home volta a ocupar toda a largura e a lateral do desktop passa a ser só de ícones por padrão, com a opção de rótulos no painel de tema; a Retrospectiva substitui o Histórico na barra e o menu (+) fecha ao clicar fora; o gráfico de atividade tem largura máxima igual à do gráfico de interesse e se ajusta à janela sem barras de rolagem (ISSUE-154).
 ## [0.29] - 2026-11-16
 
 ### Changed

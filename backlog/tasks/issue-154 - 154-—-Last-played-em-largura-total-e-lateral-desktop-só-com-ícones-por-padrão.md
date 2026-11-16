@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T19:25:00Z'
-updated_date: '2026-11-16T20:02:00Z'
+updated_date: '2026-11-16T20:23:00Z'
 labels:
   - ui
 milestone: m-10
@@ -55,6 +55,15 @@ created: 2026-11-16T20:02:00Z
 ---
 
 Ajuste pedido pelo usuário (2026-11-16): o menu (+) fecha ao clicar fora (pointerdown fora do .nav-more) e a Retrospectiva substitui o Histórico na barra, saindo do menu (+); o histórico já aparece na Home. Verificado no navegador com os dados reais (cópia do banco): abre ao clicar, fecha ao clicar fora, alterna pelo próprio botão; Rewind aparece uma vez na barra e 0 vezes no menu. make check verde (12/12), referência regenerada.
+
+---
+
+author: claude
+created: 2026-11-16T20:23:00Z
+
+---
+
+Ajuste pedido pelo usuário (2026-11-16): o gráfico de atividade passa a ter largura máxima de 35rem (igual ao gráfico de interesse ao longo do tempo) e as células escalam com o cartão (36 semanas, 26 em cartões estreitos), sem barras de rolagem nem semanas cortadas. Verificado na página /evertonberger/track/37 e na Home em 320 a 1920px: sem rolagem interna nem da página. make check verde.
 
 ---
 <!-- COMMENTS:END -->

@@ -65,6 +65,8 @@
 /* Apply shared spacing and surface tokens at this size. */
 .media-graphs { display:flex; flex-wrap:wrap; gap: var(--space-7); align-items:start; margin-top: var(--space-7); }
 .media-graphs>section { min-width:0; max-width:100%; }
+/* ISSUE-154: keep the activity card at the width of the interest chart (35rem). */
+.media-graphs>.activity { max-width:min(100%,35rem); }
 .media-graphs .section-title { margin-bottom:20px; }
 
 /* Constrain this region without requiring a fixed layout width. */
