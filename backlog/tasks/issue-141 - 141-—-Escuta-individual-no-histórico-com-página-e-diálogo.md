@@ -1,11 +1,11 @@
 ---
 id: ISSUE-141
 title: 141 — Escuta individual no histórico com página e diálogo
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-16T00:36:00Z'
+updated_date: '2026-11-16T00:45:00Z'
 labels:
   - ui
   - admin
@@ -82,6 +82,15 @@ created: 2026-11-16T00:36:00Z
 ---
 
 Verificação: make check verde com 12/12 E2E, testes pelo roteador com tickets obrigatórios e isolamento de dois perfis, Chrome real em home/listens/faixa/álbum/artista (Yuu/Pearl, desktop/celular), confirmação, foco/Esc, rede, sessão expirada, fallback sem JS, contagens/estado vazio sem recarga e bfcache. Relatório/capturas em backlog/evidencias/issue-141/relatorio.md. Revisão do diff fica com o coordenador por decisão do usuário; aceite visual e aceite final pendentes.
+
+---
+
+author: claude
+created: 2026-11-16T00:45:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 15/11/2026 (pedido de publicação).
 
 ---
 <!-- COMMENTS:END -->
