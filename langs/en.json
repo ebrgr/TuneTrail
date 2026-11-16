@@ -230,6 +230,7 @@
   "admin.text.icon": "Icon",
   "admin.text.photo": "Photo",
   "admin.text.jpeg_png_or_static_webp": "JPEG, PNG or static WebP.",
+  "admin.text.drag_drop_image_hint": "You can drag and drop an image here!",
   "admin.text.profile_administration": "Profile administration",
   "admin.text.profile": "Profile",
   "admin.text.keys": "Keys",

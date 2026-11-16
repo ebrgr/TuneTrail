@@ -396,7 +396,8 @@
             <input type="hidden" name="return_to" value="{{.ReturnTo}}">
             <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
             <label>{{tr "admin.text.image" "Image"}} <input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
-            <small>{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
+            <small>{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}
+              {{tr "admin.text.drag_drop_image_hint" "You can drag and drop an image here!"}}</small>
             <label>{{tr "admin.text.or_image_url" "Or image URL"}} <input name="image_url" value="{{.Values.Get "image_url"}}" type="url"></label>
             <div class="artwork-actions">
               <button>{{tr "admin.text.replace_artwork" "Replace artwork"}}</button>
