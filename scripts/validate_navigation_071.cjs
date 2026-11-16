@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{
  const entries=[];
  try{
   for(const javaScriptEnabled of [false,true])for(const theme of ['yuu','pearl'])for(const width of [320,360,390,768,1024,1440])
-   for(const navLabels of javaScriptEnabled?['labels','icons']:['labels']){
+   for(const navLabels of javaScriptEnabled?['icons','labels']:['icons']){
    const context=await browser.newContext({javaScriptEnabled,viewport:{width,height:900},reducedMotion:'reduce'});
    await context.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
    const page=await context.newPage();
@@ -23,10 +23,10 @@ const server=http.createServer((req,res)=>{
     await page.goto(`${origin}/${name}.html`,{waitUntil:'load'});
     // No-script fixtures use the server's built-in theme; set its equivalent CSS state for both palettes.
     await page.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);
-    // ISSUE-071: exercise the panel without pretending the pending server preference is persistent.
-    if(javaScriptEnabled&&navLabels==='icons'){
+    // ISSUE-154: icons-only is the default state; exercise the panel without pretending the pending server preference is persistent.
+    if(javaScriptEnabled&&navLabels==='labels'){
      await page.keyboard.press('\\');
-     await page.locator('[data-nav-labels-choice] input[value="icons"]').check();
+     await page.locator('[data-nav-labels-choice] input[value="labels"]').check();
      await page.keyboard.press('Escape');
     }
     const bar=page.locator('.sidebar').first(),summary=bar.locator('.nav-more>summary');

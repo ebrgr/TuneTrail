@@ -250,11 +250,11 @@
       </details>
       <p class="theme-status" role="status" aria-live="polite" data-theme-status></p>
     </section>
-    {{/* ISSUE-071: desktop labels share the theme panel with nav-layout; persistence awaits the server contract. */}}
+    {{/* ISSUE-154: icons-only is the default; desktop labels share the theme panel with nav-layout; persistence awaits the server contract. */}}
     <fieldset class="panel-section nav-layout" data-nav-labels-choice>
       <legend>{{tr "ui.navigation_labels" "Navigation labels"}}</legend>
-      <label><input type="radio" name="nav-labels" value="labels" checked> {{tr "ui.with_labels" "With labels"}}</label>
-      <label><input type="radio" name="nav-labels" value="icons"> {{tr "ui.icons_only" "Icons only"}}</label>
+      <label><input type="radio" name="nav-labels" value="labels"> {{tr "ui.with_labels" "With labels"}}</label>
+      <label><input type="radio" name="nav-labels" value="icons" checked> {{tr "ui.icons_only" "Icons only"}}</label>
     </fieldset>
     <fieldset class="panel-section nav-layout" data-nav-layout-choice>
       <legend>{{tr "ui.sidebar_layout" "Administration sidebar"}}</legend>

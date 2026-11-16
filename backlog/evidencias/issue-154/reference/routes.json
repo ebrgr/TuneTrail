@@ -1,0 +1,117 @@
+[
+  {
+    "Name": "admin/account",
+    "Route": "/admin?section=account",
+    "Status": 200
+  },
+  {
+    "Name": "admin/album",
+    "Route": "/alpha/manage/album/1",
+    "Status": 200
+  },
+  {
+    "Name": "admin/artist",
+    "Route": "/alpha/manage/artist/1",
+    "Status": 200
+  },
+  {
+    "Name": "admin/delete",
+    "Route": "/admin/profile/1/delete-review",
+    "Status": 200
+  },
+  {
+    "Name": "admin/login",
+    "Route": "/admin",
+    "Status": 200
+  },
+  {
+    "Name": "admin/merge",
+    "Route": "/alpha/manage/track/1/review?action=merge\u0026to=2",
+    "Status": 200
+  },
+  {
+    "Name": "admin/profiles",
+    "Route": "/admin?profile=1",
+    "Status": 200
+  },
+  {
+    "Name": "admin/settings",
+    "Route": "/admin/settings",
+    "Status": 200
+  },
+  {
+    "Name": "admin/track",
+    "Route": "/alpha/manage/track/1",
+    "Status": 200
+  },
+  {
+    "Name": "preview/home",
+    "Route": "/demo?period=all_time",
+    "Status": 200
+  },
+  {
+    "Name": "preview/profiles",
+    "Route": "/",
+    "Status": 200
+  },
+  {
+    "Name": "public/album",
+    "Route": "/alpha/album/1?tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/albums",
+    "Route": "/alpha/chart/top/albums?period=all_time\u0026tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/artist",
+    "Route": "/alpha/artist/1?tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/artists",
+    "Route": "/alpha/chart/top/artists?period=all_time\u0026tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/empty",
+    "Route": "/empty?tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/home",
+    "Route": "/alpha?period=all_time\u0026tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/listens",
+    "Route": "/alpha/listens?period=all_time\u0026tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/profiles",
+    "Route": "/",
+    "Status": 200
+  },
+  {
+    "Name": "public/rewind",
+    "Route": "/alpha/rewind?year=2024\u0026month=5\u0026tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/rewind-year",
+    "Route": "/alpha/rewind?year=2024\u0026tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/track",
+    "Route": "/alpha/track/1?tz=UTC",
+    "Status": 200
+  },
+  {
+    "Name": "public/tracks",
+    "Route": "/alpha/chart/top/tracks?period=all_time\u0026tz=UTC",
+    "Status": 200
+  }
+]

@@ -162,26 +162,26 @@ footer a:hover { text-decoration: underline; }
     left: calc(100% + 6rem)
   }
 }
-/* ISSUE-071: the html attribute controls desktop labels; no scripts means labels stay visible. */
+/* ISSUE-154: desktop is icons-only by default; data-nav-labels="labels" (theme panel) shows labels. */
 @media(min-width:64rem) {
-  html:not([data-nav-labels="icons"]) body { --nav-width: 14rem; }
-  html:not([data-nav-labels="icons"]) .sidebar:not(.sidebar-secondary) { overflow-y: auto; }
-  html:not([data-nav-labels="icons"]) .sidebar:not(.sidebar-secondary) .nav-label { display: inline; overflow-wrap: anywhere; }
-  html:not([data-nav-labels="icons"]) :is(.nav-destinations>.nav-button,.nav-more>summary,.nav-profile .nav-button) {
+  html[data-nav-labels="labels"] body { --nav-width: 14rem; }
+  html[data-nav-labels="labels"] .sidebar:not(.sidebar-secondary) { overflow-y: auto; }
+  html[data-nav-labels="labels"] .sidebar:not(.sidebar-secondary) .nav-label { display: inline; overflow-wrap: anywhere; }
+  html[data-nav-labels="labels"] :is(.nav-destinations>.nav-button,.nav-more>summary,.nav-profile .nav-button) {
     flex-direction: row;
     justify-content: flex-start;
     gap: var(--space-3)
   }
-  html:not([data-nav-labels="icons"]) .nav-options {
+  html[data-nav-labels="labels"] .nav-options {
     position: static;
     width: 100%;
     max-height: none;
     margin-top: var(--space-2);
     box-shadow: none
   }
-  html:not([data-nav-labels="icons"]) .nav-options .nav-button { flex-wrap: wrap; }
-  html:not([data-nav-labels="icons"]) .nav-periods-menu { display:none; }
-  html:not([data-nav-labels="icons"]) .nav-periods { display: flex; flex-direction: column; gap: var(--space-1); }
+  html[data-nav-labels="labels"] .nav-options .nav-button { flex-wrap: wrap; }
+  html[data-nav-labels="labels"] .nav-periods-menu { display:none; }
+  html[data-nav-labels="labels"] .nav-periods { display: flex; flex-direction: column; gap: var(--space-1); }
   .nav-periods a { min-height: 44px; display: flex; align-items: center; padding: var(--space-2); }
   .nav-periods a[aria-current] { color: var(--color-fg); background: var(--color-bg-tertiary); border-radius: var(--radius-sm); }
   .sidebar.sidebar-secondary { width: var(--nav-rail-width); }

@@ -45,12 +45,12 @@ func TestNavigationLabelsBelongToThemePanel(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := pageRequest(h, "/alpha").Body.String()
-	for _, want := range []string{`data-nav-labels-choice`, `name="nav-labels" value="labels" checked`, `name="nav-labels" value="icons"`, `class="nav-periods-menu"`} {
+	for _, want := range []string{`data-nav-labels-choice`, `name="nav-labels" value="labels"`, `name="nav-labels" value="icons" checked`, `class="nav-periods-menu"`} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("missing %s", want)
 		}
 	}
-	if strings.Contains(body, `class="nav-collapse"`) || strings.Contains(body, `data-nav-labels="icons"`) {
+	if strings.Contains(body, `class="nav-collapse"`) || strings.Contains(body, `data-nav-labels="labels"`) {
 		t.Fatal("unexpected sidebar checkbox or non-default server labels")
 	}
 }

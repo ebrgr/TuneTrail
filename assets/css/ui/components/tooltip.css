@@ -19,9 +19,9 @@ html[data-media-tooltips] .media-actions [data-tip]:focus-visible::after { opaci
  .nav-button[data-tip]::after { content:none; }
 @media(min-width:40rem) { .nav-button[data-tip]::after { content:attr(data-tip); } }
 
-/* ISSUE-071: visible desktop labels replace duplicate hover tooltips. */
+/* ISSUE-154: visible desktop labels (opt-in) replace duplicate hover tooltips. */
 @media(min-width:64rem) {
- html:not([data-nav-labels="icons"]) body .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after { content:none; }
+ html[data-nav-labels="labels"] body .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after { content:none; }
 }
 
 }

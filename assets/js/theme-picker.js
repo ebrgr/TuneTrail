@@ -48,14 +48,14 @@
       try { localStorage.setItem('nav-layout', value); } catch {}
     });
   }
-  // ISSUE-071: preview labels on this document; server persistence awaits the configuration contract.
+  // ISSUE-154: icons-only is the default; labels are opt-in on this document (persistence: ISSUE-153).
   const labelsChoice = panel.querySelector('[data-nav-labels-choice]');
   if (labelsChoice) {
-    const selected = document.documentElement.dataset.navLabels === 'icons' ? 'icons' : 'labels';
+    const selected = document.documentElement.dataset.navLabels === 'labels' ? 'labels' : 'icons';
     labelsChoice.querySelector(`input[value="${selected}"]`).checked = true;
     labelsChoice.addEventListener('change', event => {
-      const value = event.target.value === 'icons' ? 'icons' : 'labels';
-      if (value === 'icons') document.documentElement.dataset.navLabels = 'icons';
+      const value = event.target.value === 'labels' ? 'labels' : 'icons';
+      if (value === 'labels') document.documentElement.dataset.navLabels = 'labels';
       else delete document.documentElement.dataset.navLabels;
     });
   }

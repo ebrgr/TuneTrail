@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- A lista "Last played" da Home volta a ocupar toda a largura e a lateral do desktop passa a ser só de ícones por padrão, com a opção de rótulos no painel de tema (ISSUE-154).
 ## [0.29] - 2026-11-16
 
 ### Changed
