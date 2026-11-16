@@ -1,11 +1,11 @@
 ---
 id: ISSUE-142
 title: 142 — Arrastar imagem sobre a capa com prévia e confirmação
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-16T14:43:00Z'
+updated_date: '2026-11-16T14:49:00Z'
 labels:
   - ui
   - imagens
@@ -29,9 +29,9 @@ Recorte D da ISSUE-108 (avaliação do Codex em backlog/evidencias/issue-108/ava
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Nada é enviado antes de confirmar; cancelar preserva a capa e libera a prévia
-- [ ] #2 Arquivo inválido, grande, múltiplo, sessão expirada e falha de rede têm resposta clara, sem repetição automática
-- [ ] #3 Ao concluir, a capa e as variantes de tamanho são atualizadas sem recarregar; foco preservado; alternativa por teclado funciona
+- [x] #1 Nada é enviado antes de confirmar; cancelar preserva a capa e libera a prévia
+- [x] #2 Arquivo inválido, grande, múltiplo, sessão expirada e falha de rede têm resposta clara, sem repetição automática
+- [x] #3 Ao concluir, a capa e as variantes de tamanho são atualizadas sem recarregar; foco preservado; alternativa por teclado funciona
 - [ ] #4 Capturas em desktop e celular e aceite visual do usuário
 <!-- AC:END -->
 
@@ -62,6 +62,15 @@ created: 2026-11-16T14:43:00Z
 ---
 
 Parecer do Reviewer: 1 bug corrigido (link da tarefa buscado fora do escopo do header; o arrasto não fazia nada), 2 riscos menores registrados. Detalhes em backlog/evidencias/issue-142/reviewer.md. make check verde. Pendente: verificação manual do arrasto e aceite visual (#4).
+
+---
+
+author: claude
+created: 2026-11-16T14:49:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 16/11/2026 após teste manual do arrasto. Critérios #1 a #3 verificados no teste manual; #4 (capturas desktop e celular) não foi produzido, aceite visual dado pelo usuário.
 
 ---
 <!-- COMMENTS:END -->
