@@ -10,3 +10,9 @@ var ErrInvalidInput = errors.New("invalid input")
 
 // ErrConflict marks a stale credential or confirmation snapshot.
 var ErrConflict = errors.New("data changed")
+
+// ErrAmbiguousTrack marks multiple tracks matching the supplied alias and credits.
+var ErrAmbiguousTrack = errors.New("ambiguous track identity")
+
+// ErrTrackIdentityConflict marks incompatible recording IDs for a matched track.
+var ErrTrackIdentityConflict = errors.New("conflicting track identity")

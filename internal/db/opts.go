@@ -93,6 +93,9 @@ type UpdateTrackOpts struct {
 	Duration      int32
 	AddArtists    []int32
 	RemoveArtists []int32
+
+	// OnlyFillMusicBrainzID prevents ingestion from replacing an existing identity.
+	OnlyFillMusicBrainzID bool
 }
 
 type UpdateArtistOpts struct {

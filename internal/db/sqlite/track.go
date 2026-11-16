@@ -107,30 +107,50 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 	return &track, nil
 }
 
-// trackByTrackInfo finds a track by title + release + all artist IDs. Mirrors GetTrackByTrackInfo.
+// trackByTrackInfo matches every exact alias and requires all supplied artists, in any order.
 func (s *Sqlite) trackByTrackInfo(ctx context.Context, title string, releaseID int32, artistIDs []int32) (int32, error) {
 	if len(artistIDs) == 0 {
 		return 0, errors.New("trackByTrackInfo: no artist IDs provided")
 	}
-	placeholders := strings.Repeat("?,", len(artistIDs))
-	placeholders = placeholders[:len(placeholders)-1]
+	artistIDs = slices.Clone(artistIDs)
+	slices.Sort(artistIDs)
+	artistIDs = slices.Compact(artistIDs)
+	placeholders := strings.TrimSuffix(strings.Repeat("?,", len(artistIDs)), ",")
 	query := fmt.Sprintf(`
-		SELECT t.id FROM tracks_with_title t
+		SELECT t.id FROM tracks t
 		JOIN artist_tracks at2 ON at2.track_id = t.id
-		WHERE t.title = ? AND t.release_id = ? AND at2.artist_id IN (%s)
+		WHERE EXISTS (SELECT 1 FROM track_aliases ta WHERE ta.track_id=t.id AND ta.alias=?)
+		AND t.release_id = ? AND at2.artist_id IN (%s)
 		GROUP BY t.id
-		HAVING COUNT(DISTINCT at2.artist_id) = ?`, placeholders)
-
-	args := make([]any, 2+len(artistIDs)+1)
-	args[0] = title
-	args[1] = releaseID
-	for i, id := range artistIDs {
-		args[2+i] = id
+		HAVING COUNT(DISTINCT at2.artist_id) = ? LIMIT 2`, placeholders)
+	args := []any{title, releaseID}
+	for _, id := range artistIDs {
+		args = append(args, id)
 	}
-	args[2+len(artistIDs)] = len(artistIDs)
-
+	args = append(args, len(artistIDs))
+	rows, err := s.queryContext(ctx, query, args...)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
 	var id int32
-	return id, s.queryRowContext(ctx, query, args...).Scan(&id)
+	count := 0
+	for rows.Next() {
+		if err := rows.Scan(&id); err != nil {
+			return 0, err
+		}
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	if count == 0 {
+		return 0, sql.ErrNoRows
+	}
+	if count > 1 {
+		return 0, db.ErrAmbiguousTrack
+	}
+	return id, nil
 }
 
 func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.Track, error) {
@@ -248,6 +268,7 @@ func (s *Sqlite) AddArtistsToTrack(ctx context.Context, opts db.AddArtistsToTrac
 	return tx.Commit()
 }
 
+// UpdateTrack applies identity checks and metadata edits in one transaction.
 func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error {
 	if opts.ID == 0 {
 		return errors.New("UpdateTrack: track id not specified")
@@ -257,8 +278,8 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 		return fmt.Errorf("UpdateTrack: BeginTx: %w", err)
 	}
 	defer tx.Rollback()
-	var present int
-	err = tx.QueryRowContext(ctx, `SELECT 1 FROM tracks WHERE id=?`, opts.ID).Scan(&present)
+	var currentMBID sql.NullString
+	err = tx.QueryRowContext(ctx, `SELECT musicbrainz_id FROM tracks WHERE id=?`, opts.ID).Scan(&currentMBID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return db.ErrNotFound
 	}
@@ -267,6 +288,9 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 	}
 
 	if opts.MusicBrainzID != uuid.Nil {
+		if opts.OnlyFillMusicBrainzID && currentMBID.Valid && currentMBID.String != uuid.Nil.String() && currentMBID.String != opts.MusicBrainzID.String() {
+			return db.ErrTrackIdentityConflict
+		}
 		if _, err := tx.ExecContext(ctx,
 			`UPDATE tracks SET musicbrainz_id = ? WHERE id = ?`,
 			opts.MusicBrainzID.String(), opts.ID); err != nil {

@@ -21,6 +21,7 @@ type AssociateTrackOpts struct {
 	Mbzc       mbz.MusicBrainzCaller
 }
 
+// AssociateTrack resolves a recording ID or an unambiguous alias in its release context.
 func AssociateTrack(ctx context.Context, d db.TrackStore, opts AssociateTrackOpts) (*models.Track, error) {
 	l := logger.FromContext(ctx)
 	if opts.TrackName == "" {
@@ -42,42 +43,39 @@ func AssociateTrack(ctx context.Context, d db.TrackStore, opts AssociateTrackOpt
 	}
 }
 
-// If no match is found, will call matchTrackByTitleAndArtist and associate the Mbz ID with the result
+// matchTrackByMbzID fills missing IDs without replacing a concurrent identity.
 func matchTrackByMbzID(ctx context.Context, d db.TrackStore, opts AssociateTrackOpts) (*models.Track, error) {
-	l := logger.FromContext(ctx)
-	track, err := d.GetTrack(ctx, db.GetTrackOpts{
-		MusicBrainzID: opts.TrackMbzID,
-	})
+	track, err := d.GetTrack(ctx, db.GetTrackOpts{MusicBrainzID: opts.TrackMbzID})
 	if err == nil {
-		l.Debug().Msgf("Found track '%s' by MusicBrainz ID", track.Title)
-		return track, nil
-	} else if !errors.Is(err, db.ErrNotFound) {
-		return nil, fmt.Errorf("matchTrackByMbzID: %w", err)
-	} else {
-		l.Debug().Msgf("Track '%s' could not be found by MusicBrainz ID", opts.TrackName)
-		track, err := matchTrackByTrackInfo(ctx, d, opts)
-		if err != nil {
-			return nil, fmt.Errorf("matchTrackByMbzID: %w", err)
-		}
-		l.Debug().Msgf("Updating track '%s' with MusicBrainz ID %s", opts.TrackName, opts.TrackMbzID)
-		if track.MbzID == nil || *track.MbzID == uuid.Nil {
-			err := d.UpdateTrack(ctx, db.UpdateTrackOpts{
-				ID:            track.ID,
-				MusicBrainzID: opts.TrackMbzID,
-			})
-			if err != nil {
-				l.Err(err).Msg("matchArtistsByMBIDMappings: failed to update track with MusicBrainz ID")
-				return nil, fmt.Errorf("matchArtistsByMBIDMappings: %w", err)
-			}
-			l.Debug().Msgf("Updated track '%s' with MusicBrainz ID", track.Title)
-		} else {
-			l.Warn().Msgf("Attempted to update track %s with MusicBrainz ID, but an existing ID was already found", track.Title)
-		}
-		track.MbzID = &opts.TrackMbzID
 		return track, nil
 	}
+	if !errors.Is(err, db.ErrNotFound) {
+		return nil, fmt.Errorf("matchTrackByMbzID: %w", err)
+	}
+	track, err = matchTrackByTrackInfo(ctx, d, opts)
+	if err != nil {
+		return nil, fmt.Errorf("matchTrackByMbzID: %w", err)
+	}
+	if track.MbzID == nil || *track.MbzID == uuid.Nil {
+		if err := d.UpdateTrack(ctx, db.UpdateTrackOpts{
+			ID: track.ID, MusicBrainzID: opts.TrackMbzID, OnlyFillMusicBrainzID: true,
+		}); err != nil {
+			return nil, fmt.Errorf("matchTrackByMbzID: fill recording ID: %w", err)
+		}
+		track.MbzID = &opts.TrackMbzID
+	}
+	return track, nil
 }
 
+// validateTrackIdentity rejects incompatible recording IDs before returning a title match.
+func validateTrackIdentity(track *models.Track, incoming uuid.UUID) (*models.Track, error) {
+	if incoming != uuid.Nil && track.MbzID != nil && *track.MbzID != uuid.Nil && *track.MbzID != incoming {
+		return nil, fmt.Errorf("track %d: %w", track.ID, db.ErrTrackIdentityConflict)
+	}
+	return track, nil
+}
+
+// matchTrackByTrackInfo only creates a track after both title lookups report no match.
 func matchTrackByTrackInfo(ctx context.Context, d db.TrackStore, opts AssociateTrackOpts) (*models.Track, error) {
 	l := logger.FromContext(ctx)
 	// try provided track title
@@ -88,11 +86,11 @@ func matchTrackByTrackInfo(ctx context.Context, d db.TrackStore, opts AssociateT
 	})
 	if err == nil {
 		l.Debug().Msgf("Track '%s' found by title, release and artist match", track.Title)
-		return track, nil
+		return validateTrackIdentity(track, opts.TrackMbzID)
 	} else if !errors.Is(err, db.ErrNotFound) {
 		return nil, fmt.Errorf("matchTrackByTrackInfo: %w", err)
 	} else {
-		if opts.TrackMbzID != uuid.Nil {
+		if opts.TrackMbzID != uuid.Nil && opts.Mbzc != nil {
 			mbzTrack, err := opts.Mbzc.GetTrack(ctx, opts.TrackMbzID)
 			if err == nil {
 				track, err := d.GetTrack(ctx, db.GetTrackOpts{
@@ -101,10 +99,10 @@ func matchTrackByTrackInfo(ctx context.Context, d db.TrackStore, opts AssociateT
 					ArtistIDs: opts.ArtistIDs,
 				})
 				if err == nil {
-					if track.MbzID == nil || *track.MbzID == uuid.Nil || *track.MbzID == opts.TrackMbzID {
-						l.Debug().Msgf("Track '%s' found by MusicBrainz title, release and artist match", opts.TrackName)
-						return track, nil
-					}
+					return validateTrackIdentity(track, opts.TrackMbzID)
+				}
+				if !errors.Is(err, db.ErrNotFound) {
+					return nil, fmt.Errorf("matchTrackByTrackInfo: MusicBrainz title: %w", err)
 				}
 			}
 		}

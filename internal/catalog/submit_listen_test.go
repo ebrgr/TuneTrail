@@ -287,9 +287,7 @@ func TestSubmitListen_DoNotOverwriteMbzIDs(t *testing.T) {
 	store := newTestDB()
 	setupTestDataWithMbzIDs(store, t)
 
-	// artist gets matched with musicbrainz id
-	// release gets matched with mbz id
-	// track gets matched with mbz id
+	// A conflicting recording identity must reject the listen without replacing stored IDs.
 
 	ctx := context.Background()
 	mbzc := &mbz.MbzMockCaller{
@@ -317,16 +315,16 @@ func TestSubmitListen_DoNotOverwriteMbzIDs(t *testing.T) {
 	}
 
 	err := catalog.SubmitListen(ctx, store, opts)
-	require.NoError(t, err)
+	require.ErrorIs(t, err, db.ErrTrackIdentityConflict)
 
-	// Verify that the listen was saved
+	// Verify that the rejected listen was not saved
 	exists, err := store.RowExists(`
     SELECT EXISTS (
       SELECT 1 FROM listens
       WHERE track_id = $1
     )`, 1)
 	require.NoError(t, err)
-	assert.True(t, exists, "expected listen row to exist")
+	assert.False(t, exists, "conflicting listen must not be saved")
 
 	// verify that track, release group, and artist are existing ones and not duplicates
 	count, err := store.Count(`
