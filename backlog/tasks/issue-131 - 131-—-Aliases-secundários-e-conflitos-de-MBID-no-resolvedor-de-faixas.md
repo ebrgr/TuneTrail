@@ -1,11 +1,11 @@
 ---
 id: ISSUE-131
 title: 131 — Aliases secundários e conflitos de MBID no resolvedor de faixas
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-16T16:23:00Z'
+updated_date: '2026-11-16T16:24:00Z'
 labels:
   - catalogo
   - ingestao
@@ -13,6 +13,7 @@ milestone: m-11
 dependencies: []
 references:
   - backlog/evidencias/issue-131/verificacao.md
+  - backlog/evidencias/issue-131/parecer-reviewer.md
 documentation:
   - doc-036
 priority: medium
@@ -70,6 +71,24 @@ created: 2026-11-16T16:23:00Z
 ---
 
 Implementação: aliases exatos no mesmo lançamento, artistas sem dependência de ordem/repetição, erros explícitos para ambiguidade e MBIDs conflitantes, preenchimento de identidade transacional sem sobrescrita. Verificação: quatro regressões falham no código anterior; make check e race nos pacotes catalog/sqlite verdes. Recorte mantém rejeição de escutas conflitantes sem fila de pendências (ISSUE-132+).
+
+---
+
+author: codex
+created: 2026-11-16T16:23:00Z
+
+---
+
+Reviewer: APROVADO. Diff da implementação 7ee2d64 revisado diretamente, incluindo erros nos dois caminhos de título, deduplicação de artistas, fechamento de rows antes de outras consultas e preenchimento transacional do MBID. Impacto consultado no graphify e revisão deslop realizada. Sem itens obrigatórios.
+
+---
+
+author: ebrgr
+created: 2026-11-16T16:24:00Z
+
+---
+
+Verificação: make check verde, quatro testes de regressão falham no código anterior, testes race de catalog/sqlite verdes, rollback e concorrência cobertos; Reviewer APROVADO. Sem migração. Conflitos recusam a escuta; pendências duráveis ficam na ISSUE-132+. Evidências em backlog/evidencias/issue-131/.
 
 ---
 <!-- COMMENTS:END -->
