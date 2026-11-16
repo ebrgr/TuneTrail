@@ -1,11 +1,11 @@
 ---
 id: ISSUE-070
 title: 070 — Servir as fontes localmente e remover o Google Fonts
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T19:08:00Z'
+updated_date: '2026-11-16T19:09:00Z'
 labels:
   - ui
 milestone: m-10
@@ -98,6 +98,15 @@ created: 2026-11-16T19:08:00Z
 ---
 
 Inventário final computado nas onze páginas identificou League Spartan 500 em mídia/admin; incluído WOFF2 Medium upstream, sem síntese. Total final WOFF2: 983.452 bytes (corrige o total preliminar do comentário anterior). make check e ui.check repetidos e verdes, 12/12 e2e. Revisão própria/deslop APROVADO em backlog/evidencias/issue-070/revisao.md.
+
+---
+
+author: codex
+created: 2026-11-16T19:09:00Z
+
+---
+
+Verificação: fontes locais e acentos confirmados por CDP com rede externa bloqueada em público/prévia/admin; MIME/nosniff e OFL privados verificados; inventário final 983.452 bytes WOFF2 e três capturas Yuu 1440px registrados. make check e ui.check verdes, e2e 12/12, revisão própria APROVADO. Medidas em 390/768/1440 preservam tamanhos. AC4 permanece desmarcado até confirmação do usuário. Sem dúvidas pendentes, push, merge, publish ou Done.
 
 ---
 <!-- COMMENTS:END -->
