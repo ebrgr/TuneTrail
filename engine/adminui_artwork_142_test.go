@@ -15,6 +15,8 @@ func TestArtworkDropContract142(t *testing.T) {
 	require.Equal(t, 200, adminPage.Code, adminPage.Body.String())
 	require.Contains(t, adminPage.Body.String(), "data-artwork-drop")
 	require.Contains(t, adminPage.Body.String(), "data-artwork-task")
+	// The drop handler resolves the task link page-wide: exactly one must exist for an album page.
+	require.Equal(t, 1, strings.Count(adminPage.Body.String(), "data-artwork-task"))
 
 	visitorPage := taskRequest139(a, "GET", "/second/album/11", "", nil, nil)
 	require.Equal(t, 200, visitorPage.Code, visitorPage.Body.String())
@@ -43,4 +45,6 @@ func TestArtworkPreviewLifecycle142(t *testing.T) {
 	} {
 		require.True(t, strings.Contains(code, marker), "missing artwork lifecycle marker %q", marker)
 	}
+	// Regression: the link sits in the actions nav, not inside the cover's .media-heading header.
+	require.NotContains(t, code, ".media-heading')?.querySelector('a[data-artwork-task]')")
 }

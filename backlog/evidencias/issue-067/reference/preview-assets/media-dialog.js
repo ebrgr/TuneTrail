@@ -287,7 +287,8 @@
     if (!cover) return;
     event.preventDefault();
     delete cover.dataset.dropActive;
-    const link = cover.closest('.media-heading')?.querySelector('a[data-artwork-task]');
+    // The image task link lives in the actions nav, outside the cover's header, so look it up page-wide.
+    const link = document.querySelector('a[data-artwork-task]');
     if (!link || !ready) return;
     const files = [...(event.dataTransfer?.files || [])];
     open(link, files.length === 1 ? files[0] : null, artworkError(files.length, files[0]));
