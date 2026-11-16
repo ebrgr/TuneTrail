@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.22] - 2026-11-16
+
 - Media pages now offer administrator action icons with tooltips and themed task dialogs, live merge search, optional listen timezone, and artwork and heading updates without reloading (ISSUE-140).
 
 ## [0.21] - 2026-11-15

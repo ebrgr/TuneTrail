@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T20:04:00Z'
-updated_date: '2026-11-16T00:11:00Z'
+updated_date: '2026-11-16T00:12:00Z'
 labels:
   - ui
   - admin
@@ -118,6 +118,15 @@ created: 2026-11-16T00:11:00Z
 ---
 
 Aceite: aprovada pelo usuário em 15/11/2026, com autorização para push.
+
+---
+
+author: ebrgr
+created: 2026-11-16T00:12:00Z
+
+---
+
+Publicação: versão 0.22 (tag `v0.22`), branch `feat/issue-140-barra-de-acoes-nas-paginas` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
