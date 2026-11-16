@@ -1,0 +1,1187 @@
+{
+  "externalFonts": "blocked; no screenshots (Orca owns captures)",
+  "measurements": [
+    {
+      "phase": "before",
+      "width": 390,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "28px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "32.2px",
+        "width": 336.5,
+        "height": 32.1875
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 390,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "30px",
+        "width": 282.5,
+        "height": 30
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 390,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "27px",
+        "width": 336.5,
+        "height": 27
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 390,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "22px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "24.2px",
+        "width": 336.5,
+        "height": 24.1875
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica",
+          "isCustomFont": false,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 390,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "36px",
+        "width": 13.953125,
+        "height": 36
+      },
+      "rendered": [
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 390,
+      "selector": ".rewind-choice",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "14.2625px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "21.3937px",
+        "width": 181.25,
+        "height": 37.390625
+      },
+      "rendered": [
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Regular",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 768,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "30.72px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "35.328px",
+        "width": 608.5,
+        "height": 35.3125
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 768,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "30px",
+        "width": 312,
+        "height": 30
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 768,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "27px",
+        "width": 380.5,
+        "height": 27
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 768,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "23.04px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "25.344px",
+        "width": 380.5,
+        "height": 25.34375
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica",
+          "isCustomFont": false,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 768,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "36px",
+        "width": 13.953125,
+        "height": 36
+      },
+      "rendered": [
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 768,
+      "selector": ".rewind-choice",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "15.68px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "23.52px",
+        "width": 196,
+        "height": 39.53125
+      },
+      "rendered": [
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Regular",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 1440,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "42px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "48.3px",
+        "width": 714,
+        "height": 48.296875
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 1440,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "20px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "30px",
+        "width": 168,
+        "height": 30
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 1440,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "27px",
+        "width": 486,
+        "height": 27
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica-Bold",
+          "isCustomFont": false,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 1440,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "36px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "39.6px",
+        "width": 486,
+        "height": 39.59375
+      },
+      "rendered": [
+        {
+          "familyName": "Helvetica",
+          "postScriptName": "Helvetica",
+          "isCustomFont": false,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 1440,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "36px",
+        "width": 13.953125,
+        "height": 36
+      },
+      "rendered": [
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "phase": "before",
+      "width": 1440,
+      "selector": ".rewind-choice",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "24px",
+        "width": 124,
+        "height": 40
+      },
+      "rendered": [
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Regular",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "28px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "32.2px",
+        "width": 336.5,
+        "height": 32.1875
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan SemiBold",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "20px",
+        "weight": "500",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "30px",
+        "width": 282.5,
+        "height": 30
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Medium",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "27px",
+        "width": 336.5,
+        "height": 27
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "22px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "24.2px",
+        "width": 336.5,
+        "height": 24.1875
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan SemiBold",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "36px",
+        "width": 14.46875,
+        "height": 36
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 390,
+      "selector": ".rewind-choice",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "14.2625px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "21.3937px",
+        "width": 181.25,
+        "height": 37.390625
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 768,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "30.72px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "35.328px",
+        "width": 608.5,
+        "height": 35.3125
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan SemiBold",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 768,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "20px",
+        "weight": "500",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "30px",
+        "width": 312,
+        "height": 30
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Medium",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 768,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "27px",
+        "width": 380.5,
+        "height": 27
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 768,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "23.04px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "25.344px",
+        "width": 380.5,
+        "height": 25.34375
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan SemiBold",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 768,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "36px",
+        "width": 14.46875,
+        "height": 36
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 768,
+      "selector": ".rewind-choice",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "15.68px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "23.52px",
+        "width": 196,
+        "height": 39.53125
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1440,
+      "selector": ".rewind-content h1",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "42px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "48.3px",
+        "width": 714,
+        "height": 48.296875
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan SemiBold",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 20
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1440,
+      "selector": ".rewind-year-nav h2",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "20px",
+        "weight": "500",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "30px",
+        "width": 168,
+        "height": 30
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Medium",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1440,
+      "selector": ".rewind-group h2",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "18px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "uppercase",
+        "lineHeight": "27px",
+        "width": 486,
+        "height": 27
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1440,
+      "selector": ".rewind-top h3",
+      "computed": {
+        "family": "\"League Spartan\", sans-serif",
+        "size": "36px",
+        "weight": "600",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "39.6px",
+        "width": 486,
+        "height": 39.59375
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan SemiBold",
+          "postScriptName": "LeagueSpartan-SemiBold",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1440,
+      "selector": ".rewind-stats b",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "24px",
+        "weight": "700",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "36px",
+        "width": 14.46875,
+        "height": 36
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "JostRoman-Bold",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "phase": "after",
+      "width": 1440,
+      "selector": ".rewind-choice",
+      "computed": {
+        "family": "Jost, Inter, ui-sans-serif, system-ui, sans-serif",
+        "size": "16px",
+        "weight": "400",
+        "style": "normal",
+        "transform": "none",
+        "lineHeight": "24px",
+        "width": 124,
+        "height": 40
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "route": "/public/home.html",
+      "width": 390,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-Bold.woff2?v=908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-Regular.woff2?v=0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03"
+      ]
+    },
+    {
+      "route": "/preview/home.html",
+      "width": 390,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-Regular.woff2?v=0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+        "http://127.0.0.1:14172/preview-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-Bold.woff2?v=908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/preview-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "route": "/admin/login.html",
+      "width": 390,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03"
+      ]
+    },
+    {
+      "route": "/admin/settings.html",
+      "width": 390,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03"
+      ]
+    },
+    {
+      "probe": {
+        "family": "Jost",
+        "style": "normal",
+        "width": 390
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 67
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Jost",
+        "style": "italic",
+        "width": 390
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Italic",
+          "isCustomFont": true,
+          "glyphCount": 67
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Inter",
+        "style": "normal",
+        "width": 390
+      },
+      "rendered": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable_opsz140000_wght",
+          "isCustomFont": true,
+          "glyphCount": 66
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Inter",
+        "style": "italic",
+        "width": 390
+      },
+      "rendered": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariableItalic_opsz140000_wght",
+          "isCustomFont": true,
+          "glyphCount": 66
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "League Spartan",
+        "style": "normal",
+        "width": 390
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 67
+        }
+      ]
+    },
+    {
+      "route": "/public/home.html",
+      "width": 768,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-Bold.woff2?v=908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-Regular.woff2?v=0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03"
+      ]
+    },
+    {
+      "route": "/preview/home.html",
+      "width": 768,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/preview-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-Regular.woff2?v=0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-Bold.woff2?v=908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/preview-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "route": "/admin/login.html",
+      "width": 768,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/web-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "route": "/admin/settings.html",
+      "width": 768,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/web-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "probe": {
+        "family": "Jost",
+        "style": "normal",
+        "width": 768
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Jost",
+        "style": "italic",
+        "width": 768
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Italic",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Inter",
+        "style": "normal",
+        "width": 768
+      },
+      "rendered": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable_opsz140000_wght",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Inter",
+        "style": "italic",
+        "width": 768
+      },
+      "rendered": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariableItalic_opsz140000_wght",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "League Spartan",
+        "style": "normal",
+        "width": 768
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "route": "/public/home.html",
+      "width": 1440,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-Regular.woff2?v=0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-Bold.woff2?v=908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03"
+      ]
+    },
+    {
+      "route": "/preview/home.html",
+      "width": 1440,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/preview-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-Regular.woff2?v=0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-Bold.woff2?v=908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+        "http://127.0.0.1:14172/preview-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/preview-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "route": "/admin/login.html",
+      "width": 1440,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/web-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "route": "/admin/settings.html",
+      "width": 1440,
+      "external": [],
+      "fonts": [
+        "http://127.0.0.1:14172/web-assets/fonts/Jost-5.woff2?v=7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+        "http://127.0.0.1:14172/web-assets/fonts/LeagueSpartan-SemiBold.woff2?v=9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+        "http://127.0.0.1:14172/web-assets/fonts/InterVariable.woff2?v=693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+      ]
+    },
+    {
+      "probe": {
+        "family": "Jost",
+        "style": "normal",
+        "width": 1440
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Regular",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Jost",
+        "style": "italic",
+        "width": 1440
+      },
+      "rendered": [
+        {
+          "familyName": "Jost",
+          "postScriptName": "Jost-Italic",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Inter",
+        "style": "normal",
+        "width": 1440
+      },
+      "rendered": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariable_opsz140000_wght",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "Inter",
+        "style": "italic",
+        "width": 1440
+      },
+      "rendered": [
+        {
+          "familyName": "Inter Variable",
+          "postScriptName": "InterVariableItalic_opsz140000_wght",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    },
+    {
+      "probe": {
+        "family": "League Spartan",
+        "style": "normal",
+        "width": 1440
+      },
+      "rendered": [
+        {
+          "familyName": "League Spartan",
+          "postScriptName": "LeagueSpartan-Regular",
+          "isCustomFont": true,
+          "glyphCount": 68
+        }
+      ]
+    }
+  ]
+}

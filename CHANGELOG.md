@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- A interface carrega fontes locais, sem Google Fonts; a retrospectiva alinha pesos e caixa à referência Koito (ISSUE-070).
+
 ## [0.28] - 2026-11-16
 
 - Navegação com barra inferior no celular, lateral de ícones no tablet e escolha de rótulos no menu de tema com período no desktop (ISSUE-071).

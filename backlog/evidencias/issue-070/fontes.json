@@ -1,0 +1,233 @@
+{
+  "files": [
+    {
+      "file": "assets/fonts/Jost-0.woff2",
+      "source": "https://fonts.gstatic.com/s/jost/v20/92zUtBhPNqw73oHt5D4hTxM.woff2",
+      "bytes": 11924,
+      "sha256": "013098b0c5cd02ba9df0f917d2f9131c0c1ed2552ec878b56e5ad3c41691f734",
+      "family": "Jost",
+      "subfamily": "Italic",
+      "axes": {
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": false,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/Jost-1.woff2",
+      "source": "https://fonts.gstatic.com/s/jost/v20/92zUtBhPNqw73oHt7j4hTxM.woff2",
+      "bytes": 19436,
+      "sha256": "11391200629cbca418e8725426a9b8b3487de41079ad0425597b7ef6a34e3d27",
+      "family": "Jost",
+      "subfamily": "Italic",
+      "axes": {
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": false,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/Jost-2.woff2",
+      "source": "https://fonts.gstatic.com/s/jost/v20/92zUtBhPNqw73oHt4D4h.woff2",
+      "bytes": 30700,
+      "sha256": "0cadc07f42c10553256ae8fd50fe5eb8b09afe79443f68f50a977fdfc8d25ea8",
+      "family": "Jost",
+      "subfamily": "Italic",
+      "axes": {
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/Jost-3.woff2",
+      "source": "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oDd4iYl.woff2",
+      "bytes": 10140,
+      "sha256": "732ac61fdb7b964d3edfe40fe4a96aba1d1e34c349aebf0353118f8bda4aabdb",
+      "family": "Jost",
+      "subfamily": "Regular",
+      "axes": {
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": false,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/Jost-4.woff2",
+      "source": "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73ord4iYl.woff2",
+      "bytes": 17104,
+      "sha256": "312ef2b80cefd8d6fd0e8553536862e7103f80be117a5aeba333dac68e4c0a6a",
+      "family": "Jost",
+      "subfamily": "Regular",
+      "axes": {
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": false,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/Jost-5.woff2",
+      "source": "https://fonts.gstatic.com/s/jost/v20/92zatBhPNqw73oTd4g.woff2",
+      "bytes": 26576,
+      "sha256": "7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9",
+      "family": "Jost",
+      "subfamily": "Regular",
+      "axes": {
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/LeagueSpartan-Regular.woff2",
+      "source": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/webfonts/LeagueSpartan-Regular.woff2",
+      "bytes": 31740,
+      "sha256": "0b473d144097dd22f3381e137711d1e9417d7e21bf73c53d4834a74cd91c9417",
+      "family": "League Spartan",
+      "subfamily": "Regular",
+      "axes": {},
+      "weight": 400,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/LeagueSpartan-SemiBold.woff2",
+      "source": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/webfonts/LeagueSpartan-SemiBold.woff2",
+      "bytes": 31892,
+      "sha256": "9dbdb904322e447ec7e975a5f63831bf5a55febb6f0afe73944ecbcb10868e03",
+      "family": "League Spartan SemiBold",
+      "subfamily": "Regular",
+      "axes": {},
+      "weight": 600,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/LeagueSpartan-Bold.woff2",
+      "source": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/webfonts/LeagueSpartan-Bold.woff2",
+      "bytes": 31920,
+      "sha256": "908bcbc3dd3104306e554726c8618466d473250c3e255cf639de6fdea4e9f054",
+      "family": "League Spartan",
+      "subfamily": "Bold",
+      "axes": {},
+      "weight": 700,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/InterVariable.woff2",
+      "source": "https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/InterVariable.woff2",
+      "bytes": 352240,
+      "sha256": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3",
+      "family": "Inter Variable",
+      "subfamily": "Regular",
+      "axes": {
+        "opsz": [
+          14.0,
+          32.0
+        ],
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/InterVariable-Italic.woff2",
+      "source": "https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/InterVariable-Italic.woff2",
+      "bytes": 387976,
+      "sha256": "e564f652916db6c139570fefb9524a77c4d48f30c92928de9db19b6b5c7a262a",
+      "family": "Inter Variable",
+      "subfamily": "Italic",
+      "axes": {
+        "opsz": [
+          14.0,
+          32.0
+        ],
+        "wght": [
+          100.0,
+          900.0
+        ]
+      },
+      "weight": 400,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    },
+    {
+      "file": "assets/fonts/Jost-OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/jost/OFL.txt",
+      "bytes": 4384,
+      "sha256": "1af3438a4d5f0ed2bdbc5751a5a67ebf6d537334161184b7fbb68503ef0ea0c5"
+    },
+    {
+      "file": "assets/fonts/LeagueSpartan-OFL.txt",
+      "source": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/OFL.txt",
+      "bytes": 4402,
+      "sha256": "41c9980cacc325ccd1afa6553bcae038cc6c74fa519aff60bacb99e3854292ce"
+    },
+    {
+      "file": "assets/fonts/Inter-OFL.txt",
+      "source": "https://raw.githubusercontent.com/rsms/inter/master/LICENSE.txt",
+      "bytes": 4380,
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    {
+      "file": "assets/fonts/LeagueSpartan-Medium.ttf",
+      "source": "existing repository file; preserved (no runtime consumer)",
+      "bytes": 57540,
+      "sha256": "4e40c2ab9c8de16ede791f5f29ae02fc0be60877378d659924a31fafb127bf90"
+    },
+    {
+      "file": "assets/fonts/Jost-Regular.ttf",
+      "source": "existing repository file; preserved (no runtime consumer)",
+      "bytes": 61524,
+      "sha256": "5a2728ff94598c006a0f262d367216598076dc269fe20f78044843ef08b3842f"
+    },
+    {
+      "file": "assets/fonts/LeagueSpartan-Medium.woff2",
+      "source": "https://raw.githubusercontent.com/theleagueof/league-spartan/master/fonts/webfonts/LeagueSpartan-Medium.woff2",
+      "bytes": 31804,
+      "sha256": "b6e33e272593380de5feed5362432c5d38da39b1f8e0986762e6c065ec0d9e48",
+      "family": "League Spartan Medium",
+      "subfamily": "Regular",
+      "axes": {},
+      "weight": 500,
+      "portuguesePrecomposedCoverage": true,
+      "conversion": "none; original upstream bytes"
+    }
+  ],
+  "totalWoff2Bytes": 983452,
+  "totalDistributedFontDirectoryBytes": 1115682,
+  "reservedFontNames": {
+    "Jost": "No Reserved Font Name declaration in the copyright/license preamble; generic RFN definition is not a reservation. No local modification.",
+    "League Spartan": "No Reserved Font Name declaration in the copyright/license preamble; generic RFN definition is not a reservation. No local modification.",
+    "Inter": "No Reserved Font Name declaration in the copyright/license preamble; generic RFN definition is not a reservation. No local modification."
+  }
+}

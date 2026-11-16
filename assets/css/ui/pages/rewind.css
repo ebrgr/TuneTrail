@@ -9,7 +9,8 @@
 .rewind-controls { width: min(100%,15.625rem); max-width:100%; }
 .rewind-controls h2 { font-size:20px; margin:20px 0 12px; }
 .rewind-year-nav { display:grid; grid-template-columns:44px 1fr 44px; align-items:center; text-align:center; margin:0 0 16px; }
-.rewind-year-nav h2 { margin:0; }
+/* Match Koito typography without changing the existing 20px year size. */
+.rewind-year-nav h2 { margin:0; font-family:Jost,Inter,ui-sans-serif,system-ui,sans-serif; font-weight:500; }
 .rewind-year-nav a, .rewind-year-nav span { display:grid; place-items:center; min-height:44px; font-size:28px; }
 .rewind-year-nav a:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
 
@@ -41,7 +42,8 @@
 .rewind-header { text-align:center; }
 .rewind-header .date-range { margin-top:4px; }
 .rewind-header::after { content:""; display:block; width:70%; height:2px; margin:12px auto 0; background:var(--color-primary); transform:translateX(-8%); }
-.rewind-group h2 { font-size:18px; color:var(--color-fg-secondary); text-transform:uppercase; margin-bottom:6px; }
+/* Keep label size unchanged while matching the reference weight. */
+.rewind-group h2 { font-weight:400; font-size:18px; color:var(--color-fg-secondary); text-transform:uppercase; margin-bottom:6px; }
 
 /* Apply shared spacing and surface tokens at this size. */
 .rewind-group-content { display:flex; flex-wrap:wrap; gap:20px; }
@@ -52,7 +54,8 @@
 /* Constrain this region without requiring a fixed layout width. */
 .rewind-group-items { min-width:0; flex:1; overflow-wrap:anywhere; }
 .rewind-group-items span { color:var(--color-fg-secondary); }
-.rewind-top h3 { font-size:clamp(22px,3vw,36px); line-height:1.1; margin-bottom:2px; }
+/* Winners retain their current size, with reference weight and original casing. */
+.rewind-top h3 { font-weight:600; text-transform:none; font-size:clamp(22px,3vw,36px); line-height:1.1; margin-bottom:2px; }
 
 /* Apply shared spacing and surface tokens at this size. */
 .rewind-top { margin-bottom: var(--space-2); }

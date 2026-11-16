@@ -1,10 +1,11 @@
 ---
 id: ISSUE-070
 title: 070 — Servir as fontes localmente e remover o Google Fonts
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T15:00:00Z'
+updated_date: '2026-11-16T19:08:00Z'
 labels:
   - ui
 milestone: m-10
@@ -12,6 +13,7 @@ dependencies:
   - ISSUE-068
 references:
   - backlog/evidencias/issue-061/fontes-retrospectiva.md
+  - backlog/evidencias/issue-070/README.md
 priority: medium
 type: enhancement
 ordinal: 70000
@@ -35,11 +37,11 @@ Usar comparação controlada da 065 no mesmo tema, viewport e dados fictícios. 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Nenhuma requisição externa de fontes (CSS, preconnects, imports ou arquivos) nas páginas públicas, prévia e administração.
-- [ ] #2 Fontes locais carregam com rede externa bloqueada; pesos/estilos, acentos e licenças documentados e verificados.
-- [ ] #3 Inventário de arquivos, origem, hash e tamanho total registrado; TTF antigos só removidos após conferir consumidores.
+- [x] #1 Nenhuma requisição externa de fontes (CSS, preconnects, imports ou arquivos) nas páginas públicas, prévia e administração.
+- [x] #2 Fontes locais carregam com rede externa bloqueada; pesos/estilos, acentos e licenças documentados e verificados.
+- [x] #3 Inventário de arquivos, origem, hash e tamanho total registrado; TTF antigos só removidos após conferir consumidores.
 - [ ] #4 Retrospectiva com pesos e estilos (família, peso, caixa, itálico) iguais à referência Koito, sem regressão global dos headings; tamanhos alterados só após a medição em três larguras e confirmação do usuário
-- [ ] #5 Licença OFL verificada por família (Reserved Font Name), url() das fontes com hash e licenças fora das rotas servidas
+- [x] #5 Licença OFL verificada por família (Reserved Font Name), url() das fontes com hash e licenças fora das rotas servidas
 <!-- AC:END -->
 
 ## Comments
@@ -60,6 +62,42 @@ created: 2026-11-14T15:00:00Z
 ---
 
 Decisão do usuário em 14/11/2026 (via ISSUE-061, item 2 do parecer do Advisor): igualar o Koito nos pesos e estilos das fontes; tamanhos dependem da medição e de confirmação. Requisitos do Advisor (itens 4, 6, 11) registrados na descrição.
+
+---
+
+author: ebrgr
+created: 2026-11-16T19:00:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-070` na branch `feat/issue-070-servir-as-fontes-localmente-e` criada a partir de `main`.
+
+---
+
+author: advisor
+created: 2026-11-16T19:02:00Z
+
+---
+
+Parecer do Advisor (Modo B): APROVADO para execução com validação de licenças/RFN e referência Koito antes de decisões dependentes. Plano ai-memory 01a1e5bc-e22f-7cb0-8fae-4b1d44e0b6b4 (plans/issue-070-fontes-locais.md). Head compartilhado concentra Google Fonts; catálogo já oferece hash/MIME/nosniff. Criar faces e catálogo de fontes, preservar TTF, corrigir só tipografia da retrospectiva sem tamanhos, medir 390/768/1440 e verificar fonte real/rede bloqueada; evidências e checks antes do commit. AC4 aguarda usuário; sem publicação.
+
+---
+
+author: codex
+created: 2026-11-16T19:07:00Z
+
+---
+
+Implementação: fontes WOFF2 upstream locais (951.648 bytes), OFL/RFN e cobertura documentados; TTF preservados, URLs com hash e head sem Google em público/prévia/admin. Tipografia rewind limitada a família/peso/caixa, tamanhos preservados e medidos em 390/768/1440. Três capturas Yuu; CDP confirma fontes customizadas/acentos com rede externa bloqueada. AC4 segue desmarcado até confirmação do usuário. make check (12/12 e2e) e ui.check verdes.
+
+---
+
+author: codex
+created: 2026-11-16T19:08:00Z
+
+---
+
+Inventário final computado nas onze páginas identificou League Spartan 500 em mídia/admin; incluído WOFF2 Medium upstream, sem síntese. Total final WOFF2: 983.452 bytes (corrige o total preliminar do comentário anterior). make check e ui.check repetidos e verdes, 12/12 e2e. Revisão própria/deslop APROVADO em backlog/evidencias/issue-070/revisao.md.
 
 ---
 <!-- COMMENTS:END -->

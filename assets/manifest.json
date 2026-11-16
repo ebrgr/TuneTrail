@@ -52,6 +52,7 @@
   "public/static/theme.js": "js/theme.js",
   "public/static/ui.css": [
     "css/ui/reset.css",
+    "css/fonts.css",
     "css/ui/tokens.css",
     "css/ui/base.css",
     "css/ui/layout/shell.css",
@@ -86,5 +87,17 @@
   "public/static/icons/Image.svg": "icons/Image.svg",
   "public/static/icons/Merge.svg": "icons/Merge.svg",
   "public/static/icons/Plus.svg": "icons/Plus.svg",
-  "public/static/icons/Trash2.svg": "icons/Trash2.svg"
+  "public/static/icons/Trash2.svg": "icons/Trash2.svg",
+  "public/static/fonts/Jost-5.woff2": "fonts/Jost-5.woff2",
+  "public/static/fonts/Jost-1.woff2": "fonts/Jost-1.woff2",
+  "public/static/fonts/Jost-3.woff2": "fonts/Jost-3.woff2",
+  "public/static/fonts/Jost-4.woff2": "fonts/Jost-4.woff2",
+  "public/static/fonts/LeagueSpartan-Bold.woff2": "fonts/LeagueSpartan-Bold.woff2",
+  "public/static/fonts/Jost-2.woff2": "fonts/Jost-2.woff2",
+  "public/static/fonts/Jost-0.woff2": "fonts/Jost-0.woff2",
+  "public/static/fonts/InterVariable.woff2": "fonts/InterVariable.woff2",
+  "public/static/fonts/LeagueSpartan-SemiBold.woff2": "fonts/LeagueSpartan-SemiBold.woff2",
+  "public/static/fonts/InterVariable-Italic.woff2": "fonts/InterVariable-Italic.woff2",
+  "public/static/fonts/LeagueSpartan-Regular.woff2": "fonts/LeagueSpartan-Regular.woff2",
+  "public/static/fonts/LeagueSpartan-Medium.woff2": "fonts/LeagueSpartan-Medium.woff2"
 }

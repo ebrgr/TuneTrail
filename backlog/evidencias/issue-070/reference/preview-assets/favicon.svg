@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 1280 1280"
+   width="1280"
+   height="1280"
+   version="1.1"
+   id="svg41"
+   sodipodi:docname="icon.svg"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview41"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.18232663"
+     inkscape:cx="457.9693"
+     inkscape:cy="844.63799"
+     inkscape:window-width="1352"
+     inkscape:window-height="629"
+     inkscape:window-x="0"
+     inkscape:window-y="38"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg41" />
+  <title
+     id="title1">TuneTrail — logo vetorial editável</title>
+  <desc
+     id="desc1">Interpretação vetorial do ícone original; disco, sulcos, trilha, letras e marcadores separados.</desc>
+  <defs
+     id="defs16">
+    <radialGradient
+       id="base"
+       gradientTransform="scale(1.0043301,0.9956886)"
+       cx="617.82478"
+       cy="625.69763"
+       fx="617.82478"
+       fy="625.69763"
+       r="520.74514"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         stop-color="#37373a"
+         id="stop1" />
+      <stop
+         offset="1"
+         stop-color="#1e1f21"
+         id="stop2" />
+    </radialGradient>
+    <linearGradient
+       id="metal"
+       x1="0"
+       y1="0"
+       x2=".8"
+       y2="1">
+      <stop
+         stop-color="#807876"
+         id="stop3" />
+      <stop
+         offset=".23"
+         stop-color="#eee2dc"
+         id="stop4" />
+      <stop
+         offset=".5"
+         stop-color="#b3a5a1"
+         id="stop5" />
+      <stop
+         offset=".75"
+         stop-color="#f4e9df"
+         id="stop6" />
+      <stop
+         offset="1"
+         stop-color="#6e6561"
+         id="stop7" />
+    </linearGradient>
+    <radialGradient
+       id="record"
+       cx="617"
+       cy="622"
+       fx="617"
+       fy="622"
+       r="438"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         stop-color="#343436"
+         id="stop8" />
+      <stop
+         offset=".63"
+         stop-color="#202123"
+         id="stop9" />
+      <stop
+         offset="1"
+         stop-color="#101114"
+         id="stop10" />
+    </radialGradient>
+    <radialGradient
+       id="coral">
+      <stop
+         stop-color="#e98c76"
+         id="stop11" />
+      <stop
+         offset=".75"
+         stop-color="#dc725f"
+         id="stop12" />
+      <stop
+         offset="1"
+         stop-color="#b95145"
+         id="stop13" />
+    </radialGradient>
+    <linearGradient
+       id="trail"
+       x1="389.52739"
+       y1="265.33908"
+       x2="389.52739"
+       y2="855.43265"
+       gradientTransform="scale(0.90187944,1.1087957)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         stop-color="#f4e7dd"
+         id="stop14" />
+      <stop
+         offset=".48"
+         stop-color="#dbcbc2"
+         id="stop15" />
+      <stop
+         offset="1"
+         stop-color="#a99991"
+         id="stop16" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#metal"
+       id="linearGradient1"
+       x1="160"
+       y1="165"
+       x2="891.20001"
+       y2="1079"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#coral"
+       id="radialGradient1"
+       cx="617"
+       cy="622"
+       fx="617"
+       fy="622"
+       r="145"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#metal"
+       id="linearGradient2"
+       x1="579"
+       y1="584"
+       x2="639.8"
+       y2="660"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#metal"
+       id="linearGradient3"
+       x1="832.5"
+       y1="275.5"
+       x2="895.7"
+       y2="354.5"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#coral"
+       id="radialGradient3"
+       cx="872"
+       cy="315"
+       fx="872"
+       fy="315"
+       r="31.75"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#metal"
+       id="linearGradient4"
+       x1="634.5"
+       y1="810.5"
+       x2="697.7"
+       y2="889.5"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#coral"
+       id="radialGradient4"
+       cx="674"
+       cy="850"
+       fx="674"
+       fy="850"
+       r="31.75"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#metal"
+       id="linearGradient5"
+       x1="325.5"
+       y1="897.5"
+       x2="388.7"
+       y2="976.5"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#coral"
+       id="radialGradient5"
+       cx="365"
+       cy="937"
+       fx="365"
+       fy="937"
+       r="31.75"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     id="moldura"
+     transform="matrix(1.2253477,0,0,1.2253477,-118.40877,-120.17913)">
+    <rect
+       x="99"
+       y="106"
+       width="1043"
+       height="1034"
+       rx="197"
+       fill="url(#base)"
+       stroke="#bdb0aa"
+       stroke-width="3"
+       id="rect16"
+       style="fill:url(#base)" />
+  </g>
+  <g
+     id="disco"
+     transform="matrix(1.2253477,0,0,1.2253477,-118.40877,-120.17913)">
+    <circle
+       cx="617"
+       cy="622"
+       r="451"
+       fill="#08090a"
+       stroke="url(#metal)"
+       stroke-width="12"
+       id="circle16"
+       style="stroke:url(#linearGradient1)" />
+    <circle
+       cx="617"
+       cy="622"
+       r="437"
+       fill="url(#record)"
+       stroke="#464447"
+       stroke-width="2"
+       id="circle17"
+       style="fill:url(#record)" />
+    <g
+       id="sulcos"
+       fill="none"
+       stroke="#555358"
+       stroke-opacity="0.22"
+       stroke-width="1.4">
+      <circle
+         cx="617"
+         cy="622"
+         r="416"
+         id="circle18" />
+      <circle
+         cx="617"
+         cy="622"
+         r="394"
+         id="circle19" />
+      <circle
+         cx="617"
+         cy="622"
+         r="372"
+         id="circle20" />
+      <circle
+         cx="617"
+         cy="622"
+         r="350"
+         id="circle21" />
+      <circle
+         cx="617"
+         cy="622"
+         r="328"
+         id="circle22" />
+      <circle
+         cx="617"
+         cy="622"
+         r="306"
+         id="circle23" />
+      <circle
+         cx="617"
+         cy="622"
+         r="284"
+         id="circle24" />
+      <circle
+         cx="617"
+         cy="622"
+         r="262"
+         id="circle25" />
+      <circle
+         cx="617"
+         cy="622"
+         r="240"
+         id="circle26" />
+      <circle
+         cx="617"
+         cy="622"
+         r="218"
+         id="circle27" />
+      <circle
+         cx="617"
+         cy="622"
+         r="196"
+         id="circle28" />
+      <circle
+         cx="617"
+         cy="622"
+         r="174"
+         id="circle29" />
+    </g>
+  </g>
+  <g
+     id="rotulo"
+     transform="matrix(1.2253477,0,0,1.2253477,-118.40877,-120.17913)">
+    <circle
+       cx="617"
+       cy="622"
+       r="153"
+       fill="#131315"
+       id="circle30" />
+    <circle
+       cx="617"
+       cy="622"
+       r="144"
+       fill="url(#coral)"
+       stroke="#9e4b40"
+       stroke-width="2"
+       id="circle31"
+       style="fill:url(#radialGradient1)" />
+    <circle
+       cx="617"
+       cy="622"
+       r="35"
+       fill="#171719"
+       stroke="url(#metal)"
+       stroke-width="6"
+       id="circle32"
+       style="stroke:url(#linearGradient2)" />
+  </g>
+  <g
+     id="trilha"
+     fill="none"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     transform="matrix(1.2253477,0,0,1.2253477,-118.40877,-120.17913)">
+    <path
+       d="m 872,315 c -207,-35 -421,35 -484,110 -81,97 44,145 222,183 143,30 225,73 220,145 -5,76 -68,97 -156,97 -159,-5 -257,22 -309,87"
+       stroke="#08090a"
+       stroke-opacity="0.5"
+       stroke-width="31"
+       id="path33" />
+    <path
+       d="m 872,315 c -207,-35 -421,35 -484,110 -81,97 44,145 222,183 143,30 225,73 220,145 -5,76 -68,97 -156,97 -159,-5 -257,22 -309,87"
+       stroke="url(#trail)"
+       stroke-width="23"
+       id="path34"
+       style="stroke:url(#trail)" />
+    <path
+       d="m 872,310 c -207,-35 -421,35 -484,110 -81,97 44,145 222,183 143,30 225,73 220,145 -5,76 -68,97 -156,97 -159,-5 -257,22 -309,87"
+       stroke="#fff5ec"
+       stroke-opacity="0.33"
+       stroke-width="2"
+       id="path35" />
+  </g>
+  <g
+     id="marcadores"
+     transform="matrix(1.2253477,0,0,1.2253477,-118.40877,-120.17913)">
+    <g
+       id="marcador-superior">
+      <circle
+         cx="872"
+         cy="315"
+         r="37"
+         fill="#171719"
+         stroke="url(#metal)"
+         stroke-width="5"
+         id="circle36"
+         style="stroke:url(#linearGradient3)" />
+      <circle
+         cx="872"
+         cy="315"
+         r="31"
+         fill="url(#coral)"
+         stroke="#f5b7a4"
+         stroke-width="1.5"
+         id="circle37"
+         style="fill:url(#radialGradient3)" />
+    </g>
+    <g
+       id="marcador-meio">
+      <circle
+         cx="674"
+         cy="850"
+         r="37"
+         fill="#171719"
+         stroke="url(#metal)"
+         stroke-width="5"
+         id="circle38"
+         style="stroke:url(#linearGradient4)" />
+      <circle
+         cx="674"
+         cy="850"
+         r="31"
+         fill="url(#coral)"
+         stroke="#f5b7a4"
+         stroke-width="1.5"
+         id="circle39"
+         style="fill:url(#radialGradient4)" />
+    </g>
+    <g
+       id="marcador-inferior">
+      <circle
+         cx="365"
+         cy="937"
+         r="37"
+         fill="#171719"
+         stroke="url(#metal)"
+         stroke-width="5"
+         id="circle40"
+         style="stroke:url(#linearGradient5)" />
+      <circle
+         cx="365"
+         cy="937"
+         r="31"
+         fill="url(#coral)"
+         stroke="#f5b7a4"
+         stroke-width="1.5"
+         id="circle41"
+         style="fill:url(#radialGradient5)" />
+    </g>
+  </g>
+</svg>

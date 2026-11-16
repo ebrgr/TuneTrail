@@ -1,0 +1,52 @@
+[
+  {
+    "path": "/preview-assets/fonts/Jost-5.woff2",
+    "status": 200,
+    "headers": {
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "no-cache",
+      "Content-Length": "26576",
+      "Content-Type": "font/woff2",
+      "Etag": "\"7726a5cd6f3c0e876c028ea2a643d45f7aad4b0f164b70966c669f4a4668f4b9\"",
+      "X-Content-Type-Options": "nosniff",
+      "Date": "Mon, 16 Nov 2026 19:06:17 GMT",
+      "Connection": "close"
+    }
+  },
+  {
+    "path": "/preview-assets/fonts/Jost-OFL.txt",
+    "status": 404,
+    "headers": {
+      "Cache-Control": "no-store",
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+      "Date": "Mon, 16 Nov 2026 19:06:17 GMT",
+      "Content-Length": "19",
+      "Connection": "close"
+    }
+  },
+  {
+    "path": "/preview-assets/fonts/LeagueSpartan-OFL.txt",
+    "status": 404,
+    "headers": {
+      "Cache-Control": "no-store",
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+      "Date": "Mon, 16 Nov 2026 19:06:17 GMT",
+      "Content-Length": "19",
+      "Connection": "close"
+    }
+  },
+  {
+    "path": "/preview-assets/fonts/Inter-OFL.txt",
+    "status": 404,
+    "headers": {
+      "Cache-Control": "no-store",
+      "Content-Type": "text/plain; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+      "Date": "Mon, 16 Nov 2026 19:06:17 GMT",
+      "Content-Length": "19",
+      "Connection": "close"
+    }
+  }
+]
