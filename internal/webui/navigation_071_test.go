@@ -14,7 +14,7 @@ func TestResponsiveNavigationDestinations(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := pageRequest(h, "/alpha?period=month&tz=America%2FSao_Paulo").Body.String()
-	for _, route := range []string{"/alpha?period=month&tz=America%2FSao_Paulo", "/alpha/chart/top/artists?period=month&tz=America%2FSao_Paulo", "/alpha/listens?period=month&tz=America%2FSao_Paulo", "/alpha/search?period=month&tz=America%2FSao_Paulo"} {
+	for _, route := range []string{"/alpha?period=month&tz=America%2FSao_Paulo", "/alpha/chart/top/artists?period=month&tz=America%2FSao_Paulo", "/alpha/rewind", "/alpha/search?period=month&tz=America%2FSao_Paulo"} {
 		if !strings.Contains(html.UnescapeString(body), `href="`+route+`"`) {
 			t.Fatalf("missing %s", route)
 		}
@@ -24,6 +24,10 @@ func TestResponsiveNavigationDestinations(t *testing.T) {
 	}
 	if !strings.Contains(body, `<details class="nav-more">`) || !strings.Contains(body, `popovertarget="theme-panel"`) {
 		t.Fatal("missing native disclosure or theme control")
+	}
+	// ISSUE-154: the history link left the sidebar and Rewind appears once, outside the More menu.
+	if strings.Count(body, `href="/alpha/rewind"`) != 1 {
+		t.Fatal("rewind must appear exactly once in the navigation")
 	}
 	// Check both selected period selectors without depending on translated labels.
 	re := regexp.MustCompile(`<a href="([^"]+)" aria-current="true">`)

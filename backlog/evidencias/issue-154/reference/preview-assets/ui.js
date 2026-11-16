@@ -79,3 +79,10 @@ document.querySelectorAll('.nav-more').forEach(more => {
     event.preventDefault();
   });
 });
+
+// ISSUE-154: clicking or tapping outside the More menu closes it, without moving focus.
+document.addEventListener('pointerdown', event => {
+  document.querySelectorAll('.nav-more[open]').forEach(more => {
+    if (!more.contains(event.target)) more.open = false;
+  });
+});

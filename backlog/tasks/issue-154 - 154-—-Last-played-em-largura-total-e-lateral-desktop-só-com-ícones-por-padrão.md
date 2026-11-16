@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T19:25:00Z'
-updated_date: '2026-11-16T19:28:00Z'
+updated_date: '2026-11-16T20:02:00Z'
 labels:
   - ui
 milestone: m-10
@@ -46,6 +46,15 @@ created: 2026-11-16T19:28:00Z
 ---
 
 Verificação: Last played mede a mesma largura da grade da Home (886px em 1024, 1302px em 1440, 1360px em 1920) sem rolagem horizontal; acima de 64rem a lateral é só de ícones por padrão, com tooltip, e a opção do painel de tema ativa os rótulos; make check verde (12/12 e2e), validate_navigation_071 com 108 vistas. Referência ui.reference.check passou a apontar para backlog/evidencias/issue-154/reference. Aceite visual do usuário pendente (AC #4).
+
+---
+
+author: claude
+created: 2026-11-16T20:02:00Z
+
+---
+
+Ajuste pedido pelo usuário (2026-11-16): o menu (+) fecha ao clicar fora (pointerdown fora do .nav-more) e a Retrospectiva substitui o Histórico na barra, saindo do menu (+); o histórico já aparece na Home. Verificado no navegador com os dados reais (cópia do banco): abre ao clicar, fecha ao clicar fora, alterna pelo próprio botão; Rewind aparece uma vez na barra e 0 vezes no menu. make check verde (12/12), referência regenerada.
 
 ---
 <!-- COMMENTS:END -->

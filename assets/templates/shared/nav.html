@@ -28,9 +28,10 @@
           aria-label="{{tr "ui.rankings" "Rankings"}}" data-tip="{{tr "ui.rankings" "Rankings"}}">
           {{icon "Music2"}}<span class="nav-label">{{tr "ui.rankings" "Rankings"}}</span>
         </a>
-        <a class="nav-button" href="{{if eq .Kind "preview"}}/{{.Profile.Slug}}{{.Query}}#history{{else}}/{{.Profile.Slug}}/listens{{.Query}}{{end}}"
-          aria-label="{{tr "ui.history" "History"}}" data-tip="{{tr "ui.history" "History"}}">
-          {{icon "History"}}<span class="nav-label">{{tr "ui.history" "History"}}</span>
+        {{/* ISSUE-154: Rewind replaces History here; the listening history already sits on the home page. */}}
+        <a class="nav-button" href="/{{.Profile.Slug}}/rewind"
+          aria-label="{{tr "ui.rewind" "Rewind"}}" data-tip="{{tr "ui.rewind" "Rewind"}}">
+          {{icon "History"}}<span class="nav-label">{{tr "ui.rewind" "Rewind"}}</span>
         </a>
         {{if eq .Kind "preview"}}
           <button class="nav-button" data-dialog="search-dialog"
@@ -69,11 +70,6 @@
               aria-label="{{tr "ui.administration" "Administration"}}">
               {{icon "Settings2"}}<span>{{tr "ui.administration" "Administration"}}</span>
             </a>
-            {{if .Profile}}
-              <a class="nav-button" href="/{{.Profile.Slug}}/rewind" aria-label="{{tr "ui.rewind" "Rewind"}}">
-                {{icon "History"}}<span>{{tr "ui.rewind" "Rewind"}}</span>
-              </a>
-            {{end}}
           {{end}}
           {{if .PeriodLinks}}
             {{/* ISSUE-071: icon rails retain a native period selector inside More. */}}
