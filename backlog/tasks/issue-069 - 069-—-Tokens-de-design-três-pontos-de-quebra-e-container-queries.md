@@ -1,11 +1,11 @@
 ---
 id: ISSUE-069
 title: 069 — Tokens de design, três pontos de quebra e container queries
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-16T17:20:00Z'
+updated_date: '2026-11-16T17:36:00Z'
 labels:
   - ui
 milestone: m-10
@@ -40,7 +40,7 @@ Passos:
 - [x] #1 Sem rolagem horizontal de página em 320, 360, 390, 768, 1024 e 1440px
 - [x] #2 Somente os três pontos de quebra aprovados no CSS (verificado no ui.check)
 - [x] #3 Nenhuma largura fixa em px para blocos de layout
-- [ ] #4 Capturas antes/depois em Yuu e Pearl com aceite visual do usuário
+- [x] #4 Capturas antes/depois em Yuu e Pearl com aceite visual do usuário
 <!-- AC:END -->
 
 ## Comments
@@ -79,6 +79,15 @@ created: 2026-11-16T17:20:00Z
 ---
 
 Verificação: escopo original implementado após revogação da preservação visual. Tokens de espaço/tipografia fluida/raios/sombras, somente min-width 40/64/90rem nas media queries de layout, container queries em cards/heatmap/listas e blocos com limites intrínsecos. Checker integrado ao ui.check com 9 testes. make check aprovado (12/12 e2e), make ui.check aprovado, CSS parse e git diff --check aprovados; grafo AST atualizado (tokens.css ignorado pela heurística do extrator, revisado diretamente). BASE da ISSUE-065 capturada antes de editar: 132 PNGs em antes/. DEPOIS: 132 PNGs nos mesmos temas/larguras; 0 overflow horizontal. Auditoria adicional: 598 vistas/23 páginas/13 larguras/Yuu e Pearl, 0 falhas. Revisão direta/deslop registrada em revisao.md, sem delegação. ACs 1–3 verificados; AC4 permanece desmarcado, pois exige aceite visual do usuário. Sem push, merge, publish ou Done.
+
+---
+
+author: ebrgr
+created: 2026-11-16T17:36:00Z
+
+---
+
+Aceite visual do usuário (2026-11-16) após comparação antes/depois em Yuu e Pearl (backlog/evidencias/issue-069/comparacao.html). Ressalva registrada: o 'antes' é a referência histórica 065, então ícone de tema e Top Tracks na Home não são da 069. Publicação (make issue.publish) e push dependem de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
