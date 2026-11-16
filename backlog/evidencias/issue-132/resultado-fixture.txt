@@ -1,0 +1,22 @@
+PASS P1 A/B: two events
+PASS P1: recording count
+PASS P2: recording count
+PASS P1: album A count
+PASS P1: album B count
+PASS P2: album A count
+PASS P2: album B count
+PASS distinct source events in same second survive
+PASS two Intro occurrences in same album remain distinct
+PASS pending receipts do not count as listens
+PASS two receipts can identify one event
+PASS missing album remains unassigned
+PASS P1: album sum including unknown equals total
+PASS P2: album sum including unknown equals total
+PASS same receipt cannot create another listen
+PASS cross-profile link rejected
+PASS failed resolution rolls back event insertion
+PASS review replay produces one event
+PASS review selector does not cross profiles
+PASS foreign keys hold
+PASS SQLite integrity holds
+21 contract checks passed; no application database opened

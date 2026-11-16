@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Corrige a identificação por aliases secundários de faixas e recusa associações ambíguas ou com MusicBrainz IDs conflitantes (ISSUE-131).
+
 ## [0.26] - 2026-11-16
 
 - No user-visible changes (ISSUE-144).

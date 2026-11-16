@@ -1,0 +1,56 @@
+2026/11/16 13:21:46 OK   001_initial_schema.sql (2.16ms)
+2026/11/16 13:21:46 OK   002_unique_mbid.sql (3.29ms)
+2026/11/16 13:21:46 OK   003_listening_profiles.sql (2.91ms)
+2026/11/16 13:21:46 goose: successfully migrated database to version: 3
+{"level":"debug","message":"Associating track 'Secondary' by title and artist"}
+{"level":"debug","message":"Track 'Secondary' could not be found by title and artist match"}
+{"level":"info","message":"Created track 'Secondary' with title and artist"}
+--- FAIL: TestAssociateTrackAlias (0.01s)
+    associate_track_test.go:26:
+            Error Trace:    /Users/evertonberger/Projects/TuneTrail/internal/catalog/associate_track_test.go:26
+            Error:          Not equal:
+                            expected: int(1)
+                            actual  : int32(2)
+            Test:           TestAssociateTrackAlias
+{"level":"debug","message":"Associating track 'Supplied' by MusicBrainz recording ID"}
+{"level":"debug","message":"Track 'Supplied' could not be found by MusicBrainz ID"}
+{"level":"debug","message":"Associating track 'Supplied' by MusicBrainz recording ID"}
+{"level":"debug","message":"Track 'Supplied' could not be found by MusicBrainz ID"}
+{"level":"debug","message":"Associating track 'Supplied' by MusicBrainz recording ID"}
+{"level":"debug","message":"Track 'Supplied' could not be found by MusicBrainz ID"}
+{"level":"debug","message":"Track '' found by title, release and artist match"}
+{"level":"debug","message":"Updating track 'Supplied' with MusicBrainz ID 00000000-0000-0000-0000-000000001001"}
+{"level":"warn","message":"Attempted to update track  with MusicBrainz ID, but an existing ID was already found"}
+--- FAIL: TestAssociateTrackLookupFailures (0.00s)
+    associate_track_test.go:77:
+            Error Trace:    /Users/evertonberger/Projects/TuneTrail/internal/catalog/associate_track_test.go:77
+            Error:          Target error should be in err chain:
+                            expected: "conflicting track identity"
+                            in chain:
+            Test:           TestAssociateTrackLookupFailures
+FAIL
+FAIL    github.com/ebrgr/TuneTrail/internal/catalog 0.411s
+2026/11/16 13:21:46 OK   001_initial_schema.sql (765.71µs)
+2026/11/16 13:21:46 OK   002_unique_mbid.sql (1.33ms)
+2026/11/16 13:21:46 OK   003_listening_profiles.sql (1.24ms)
+2026/11/16 13:21:46 goose: successfully migrated database to version: 3
+--- FAIL: TestTrackAliasIdentity (0.01s)
+    track_identity_test.go:21:
+            Error Trace:    /Users/evertonberger/Projects/TuneTrail/internal/db/sqlite/track_identity_test.go:21
+            Error:          Received unexpected error:
+                            GetTrack: by track info: not found
+            Test:           TestTrackAliasIdentity
+2026/11/16 13:21:46 OK   001_initial_schema.sql (646.71µs)
+2026/11/16 13:21:46 OK   002_unique_mbid.sql (1.21ms)
+2026/11/16 13:21:46 OK   003_listening_profiles.sql (1.18ms)
+2026/11/16 13:21:46 goose: successfully migrated database to version: 3
+--- FAIL: TestFillTrackIdentityConcurrent (0.00s)
+    track_identity_test.go:59:
+            Error Trace:    /Users/evertonberger/Projects/TuneTrail/internal/db/sqlite/track_identity_test.go:59
+            Error:          Target error should be in err chain:
+                            expected: "conflicting track identity"
+                            in chain:
+            Test:           TestFillTrackIdentityConcurrent
+FAIL
+FAIL    github.com/ebrgr/TuneTrail/internal/db/sqlite   0.201s
+FAIL
