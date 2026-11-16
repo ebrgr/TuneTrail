@@ -8,15 +8,17 @@
 .theme-panel[popover]:popover-open {
   display: block
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .theme-panel {
   margin: auto;
   color: var(--color-fg);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-bg-tertiary);
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
   width: calc(100% - 16px);
-  max-width: 600px;
+  max-width: min(100%,37.5rem);
   max-height: 80vh;
   overflow: auto
 }
@@ -27,11 +29,13 @@
 .theme-panel h2 {
   margin: 0 0 4px
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .panel-section {
   margin: 16px 0 0;
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--color-bg-tertiary);
-  border-radius: 8px
+  border-radius: var(--radius-md)
 }
 .panel-section h3 {
   margin: 0;
@@ -47,11 +51,13 @@
   cursor: pointer;
   color: var(--color-fg-secondary)
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .theme-heading {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: center;
-  margin-bottom: 12px
+  margin-bottom: var(--space-3)
 }
 .reset-theme {
   padding: 8px 16px;
@@ -61,18 +67,22 @@
 .reset-theme:hover {
   background: var(--color-bg-tertiary)
 }
+
+/* Let columns adapt to the available reading space. */
 .theme-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px
+  gap: var(--space-2)
 }
+
+/* Use the shared type scale at this reading size. */
 .theme-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   border: 2px solid;
-  padding: 12px;
+  padding: var(--space-3);
   border-radius: 6px;
   font-size: 12px
 }
@@ -83,9 +93,11 @@
   outline: 1px solid var(--color-primary);
   outline-offset: 1px
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .swatches {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%
 }
 .swatches i {
@@ -94,14 +106,16 @@
   height: 30px;
   border-radius: 6px
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .custom-theme {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   padding: 20px;
-  margin-top: 12px;
-  border-radius: 8px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-md);
   background: var(--color-bg-secondary)
 }
 .theme-status {

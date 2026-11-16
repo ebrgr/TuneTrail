@@ -1,20 +1,32 @@
 /* Pages: listings, filters, pagination and the search page. */
 @layer pages {
 /* Real profile pages; all links remain ordinary document navigation. */
-.listing { width: calc(100% - 32px); max-width: 1000px; margin: 32px auto; min-height: 65vh; }
-.listing h1 { margin-bottom: 24px; }
-.date-range { margin-top: 8px; color: var(--color-fg-secondary); font-size: 14px; }
-.pagination { display:flex; justify-content:center; align-items:center; gap:40px; margin:24px 0; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.listing { width: calc(100% - 32px); max-width: min(100%,62.5rem); margin: 32px auto; min-height: 65vh; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.listing h1 { margin-bottom: var(--space-5); }
+
+/* Use the shared type scale at this reading size. */
+.date-range { margin-top: var(--space-2); color: var(--color-fg-secondary); font-size: 14px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.pagination { display:flex; justify-content:center; align-items:center; gap: var(--space-7); margin:24px 0; }
 .pagination [aria-disabled] { color:var(--color-fg-tertiary); }
-.listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin:24px 0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.listing-filters { display:flex; flex-wrap:wrap; align-items:end; gap: var(--space-3); margin:24px 0; }
 .listing-filters label { display:flex; flex-direction:column; font-size:14px; }
+
+/* Constrain this region without requiring a fixed layout width. */
 .listing-filters input,.listing-filters select {
   background:var(--color-bg);
   color:var(--color-fg);
   border:1px solid var(--color-border);
   border-radius:6px;
-  padding:8px;
-  max-width:110px;
+  padding: var(--space-2);
+  max-width: min(100%,6.875rem);
 }
 /* ISSUE-107: the full search page field fills the row; the button stays at its side. */
 .search-page-form {
@@ -24,20 +36,36 @@
   flex: 1;
   min-width: 0
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .search-page-form input {
   width: 100%;
   max-width: none;
-  padding: 12px
+  padding: var(--space-3)
 }
-.see-more { display:block; text-align:center; margin-top:8px; color:var(--color-fg-secondary); }
-@media (max-width:639px) { .pagination { gap:24px; } .listing .listens { font-size:12px; } }
+
+/* Apply shared spacing and surface tokens at this size. */
+.see-more { display:block; text-align:center; margin-top: var(--space-2); color:var(--color-fg-secondary); }
+
 /* History actions retain a keyboard and touch target when enhanced into confirmation links. */
+
+/* Constrain this region without requiring a fixed layout width. */
 .delete-listen {
   display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px;
-  color:var(--color-fg-tertiary); padding:8px;
+  color:var(--color-fg-tertiary); padding: var(--space-2);
 }
 .delete-listen:hover,.delete-listen:focus-visible { color:var(--color-error); }
 
 /* History actions remain accessible through normal navigation without JavaScript. */
 .listen-manage{display:block;font-size:11px;color:var(--color-fg-tertiary);margin-top:2px}
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Apply shared spacing and surface tokens at this size. */
+ .pagination { gap:var(--space-5); flex-wrap:wrap; }
+
+/* Use the shared type scale at this reading size. */
+.listing .listens { font-size:var(--step--1); }
+@media(min-width:40rem) { .pagination { gap:var(--space-7); } }
+
 }

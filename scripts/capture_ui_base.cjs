@@ -1,4 +1,4 @@
-/* Render the exported fictional reference in an isolated headless browser, never an operational server. */
+/* Render fictional fixtures on loopback; measure page overflow without rounding away a one-pixel defect. */
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const root=path.resolve(process.argv[2]),out=path.resolve(process.argv[3]);
@@ -23,7 +23,7 @@ try{for(const theme of ['yuu','pearl'])for(const width of [320,360,390,768,1024,
   await page.evaluate(()=>document.fonts.ready);if(missing.length)throw Error('Missing fixture assets '+missing.join(','));
   const actualTheme=await page.locator('html').getAttribute('data-theme');if(actualTheme!==theme)throw Error('theme mismatch '+actualTheme);
   const file=`${name.replace('/','-')}-${theme}-${width}.png`;await page.screenshot({path:path.join(out,file),animations:'disabled',fullPage:name==='public/rewind'});
-  entries.push({file,page:name,theme,width,height:900,overflow:await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),failedFonts:[...new Set(failed)]});
+  entries.push({file,page:name,theme,width,height:900,overflow:await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),failedFonts:[...new Set(failed)]});
   if(name==='public/rewind'&&[390,768,1440].includes(width)){
    const cdp=await context.newCDPSession(page);await cdp.send('DOM.enable');await cdp.send('CSS.enable');const {root:doc}=await cdp.send('DOM.getDocument');
    for(const selector of ['.rewind-content h1','.rewind-year-nav h2','.rewind-group h2','.rewind-top h3','.rewind-stats b','.rewind-choice']){

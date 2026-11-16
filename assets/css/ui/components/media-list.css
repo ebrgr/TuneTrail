@@ -9,10 +9,12 @@
   padding: 0 24px 24px;
   width: 100%
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .media {
   display: flex;
   align-items: center;
-  gap: 12px
+  gap: var(--space-3)
 }
 .media-text {
   min-width: 0;
@@ -27,6 +29,8 @@
   overflow: hidden;
   overflow-wrap: anywhere
 }
+
+/* Use the shared type scale at this reading size. */
 .media-meta,.media-artist {
   color: var(--color-fg-secondary);
   font-size: 12px;
@@ -46,19 +50,25 @@
   width: 56px;
   height: 56px
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .media img,.listens img {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-bg-tertiary);
   object-fit: cover
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .empty {
-  margin-top: 24px
+  margin-top: var(--space-5)
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .tracks {
   /* Sits beside the two 350px cards once a 400px column fits; otherwise wraps full-width. */
   flex: 1 1 400px;
   width: 100%;
-  max-width: 750px;
+  max-width: min(100%,46.875rem);
   min-width: 0
 }
 .ranked-list {
@@ -89,10 +99,12 @@
 .rank.primary {
   color: var(--color-primary)
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .ranked-list .media {
   flex: 1;
   min-width: 0;
-  gap: 8px;
+  gap: var(--space-2);
   padding-right: 12px
 }
 .plays {
@@ -101,14 +113,18 @@
   text-align: right;
   color: var(--color-fg-secondary)
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .last-played {
   width: 100%;
-  max-width: 750px;
+  max-width: min(100%,46.875rem);
   font-size: 13px
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .listens {
   border-collapse: collapse;
-  margin-top: 24px;
+  margin-top: var(--space-5);
   width: 100%
 }
 .listens td {
@@ -118,12 +134,16 @@
 .listens tr:last-child td {
   border-bottom: 0
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .listens td:first-child {
   width: 32px;
   min-width: 32px
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .listens td:nth-child(2) {
-  padding: 8px;
+  padding: var(--space-2);
   overflow-wrap: anywhere
 }
 .listens img {
@@ -131,6 +151,8 @@
   height: 32px;
   max-width: none
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .listens td.listen-time {
   text-align: right;
   white-space: nowrap;
@@ -162,13 +184,37 @@
   }
 }
 @media(min-width:64rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
   .last-played {
-    max-width: 1200px
+    max-width: min(100%,75rem)
   }
 }
-@media(min-width:96rem) {
+@media(min-width:90rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
   .tracks {
-    max-width: 450px
+    max-width: min(100%,28.125rem)
   }
 }
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Size this region independently so its children can query available space. */
+ .tracks,.last-played { width:100%; max-width:100%; container:media-list / inline-size; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.tracks { flex-basis:24rem; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.ranked-list li { flex-wrap:wrap; }
+@container media-list (min-width:26rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .ranked-list li { flex-wrap:nowrap; gap:var(--space-2); }
+
+/* Use the shared type scale at this reading size. */
+  .media-meta,.media-artist { font-size:var(--step-0); }
+}
+
 }

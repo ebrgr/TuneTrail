@@ -5,8 +5,11 @@ html,body {
   color: var(--color-fg);
   transition: background-color .3s ease
 }
+
+/* Use the shared type scale at this reading size. */
 body {
-  min-height: 100vh
+  min-height: 100vh;
+  font-size: var(--step-0)
 }
 h1,h2,h3,h4,h5,.header-font {
   font-family: 'League Spartan',sans-serif
@@ -20,13 +23,17 @@ h2 {
   font-size: var(--header-lg);
   font-weight: 600
 }
+
+/* Use the shared type scale at this reading size. */
 h3 {
-  font-size: 18px;
+  font-size: var(--step-1);
   text-transform: uppercase;
   font-weight: 400
 }
+
+/* Use the shared type scale at this reading size. */
 h4 {
-  font-size: 16px;
+  font-size: var(--step-0);
   font-weight: 600
 }
 a,div {
@@ -48,10 +55,12 @@ a:hover,button.media-title:hover {
 .error {
   color: var(--color-error)
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .card {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-bg-tertiary);
-  border-radius: 8px
+  border-radius: var(--radius-md)
 }
 .offset {
   margin-left: 24px
@@ -59,24 +68,30 @@ a:hover,button.media-title:hover {
 summary {
   cursor: pointer
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .noscript {
-  padding: 16px;
+  padding: var(--space-4);
   text-align: center
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 textarea {
   resize: vertical;
   background: var(--color-bg);
   border: 1px solid var(--color-bg-tertiary);
   border-radius: 6px;
-  width: 300px;
+  width: min(100%,18.75rem);
   max-width: 100%;
   height: 450px;
   padding: 20px
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 button.large-button {
   padding: .8rem 2rem;
   border: 1px solid var(--color-bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--color-bg)
 }
 button.large-button:hover {
@@ -97,6 +112,8 @@ body:has(dialog[open]) {
 }
 
 /* Keep dropdown arrows inset consistently while retaining native select behavior. */
+
+/* Apply shared spacing and surface tokens at this size. */
 select:not([multiple]):not([size]) {
   --select-arrow: linear-gradient(45deg,
     transparent 40%,

@@ -7,26 +7,32 @@
   padding-bottom: 16px;
   width: 100%
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .home-inner {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
+  gap: var(--space-7);
   min-height: 0;
   min-width: 0;
   margin: 32px 16px 0
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .overview {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: var(--space-7);
   max-width: 100%
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .stats-columns {
   display: flex;
-  gap: 24px;
-  margin-top: 24px
+  gap: var(--space-5);
+  margin-top: var(--space-5)
 }
 .stats b {
   font-family: 'League Spartan',sans-serif;
@@ -37,34 +43,44 @@
 .stats-columns>div {
   min-width: 0
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .home-blocks {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 40px;
+  gap: var(--space-7);
   width: 100%;
   max-width: 100%
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .feature-section {
-  width: 350px;
+  width: min(100%,22rem);
   max-width: 100%
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .feature-card {
-  max-width: 350px
+  max-width: 100%
 }
 .hero {
   position: relative
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .hero>img {
-  width: 350px;
+  width: min(100%,22rem);
   height: auto;
   aspect-ratio: 1;
-  border-radius: 8px 8px 0 0
+  border-radius: var(--radius-md) var(--radius-md) 0 0
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .hero-gradient {
   position: absolute;
   inset: 0;
-  border-radius: 8px 8px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   background-image: linear-gradient(to top,
     var(--color-bg-secondary) 0%,
     color-mix(in srgb,var(--color-bg-secondary) 99%,transparent) 5%,
@@ -96,53 +112,50 @@
   overflow-wrap: anywhere;
   text-shadow: 0 1px 2px #0004
 }
-@media(min-width:40rem) {
-  .home-inner {
-    margin: 40px 40px 0
-  }
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Constrain this region without requiring a fixed layout width. */
+ .overview { width:100%; gap:var(--space-7); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.home-inner { width:100%; margin:var(--space-6) 0 0; padding-inline:var(--space-4); }
+
+/* Let columns adapt to the available reading space. */
+.home-blocks { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,22rem),1fr)); align-items:start; }
+
+/* Size this region independently so its children can query available space. */
+.feature-section { width:100%; container:card / inline-size; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.feature-card { width:100%; box-shadow:var(--shadow-card); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.hero>img { width:100%; }
+@container card (min-width:24rem) {
+
+/* Let columns adapt to the available reading space. */
+  .feature-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .feature-list>.media { padding:var(--space-3); }
 }
-@media(min-width:48rem) {
-  .home-inner {
-    gap: 48px
-  }
-  .overview {
-    gap: 80px
-  }
+@media(min-width:40rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .home-inner { padding-inline:var(--space-7); margin-top:var(--space-7); }
 }
 @media(min-width:64rem) {
-  .overview {
-    flex-direction: row
-  }
+
+/* Let columns adapt to the available reading space. */
+  .overview { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-8); }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .home-inner { gap:var(--space-8); }
 }
-/* Match Tailwind's container maximums used on Home, without keeping its compiler. */
-@media(min-width:40rem) {
-  .home-blocks {
-    max-width: 640px
-  }
-}
-@media(min-width:48rem) {
-  .home-blocks {
-    max-width: 768px
-  }
-}
-@media(min-width:64rem) {
-  .home-blocks {
-    max-width: 1024px
-  }
-}
-@media(min-width:80rem) {
-  .home-blocks {
-    max-width: 1280px
-  }
-}
-@media(min-width:96rem) {
-  .home-blocks {
-    max-width: 1536px
-  }
-}
-@media(max-width:calc(40rem - 1px)) {
-  .overview {
-    width: 350px
-  }
+@media(min-width:90rem) {
+
+/* Constrain this region without requiring a fixed layout width. */
+  .home-inner { max-width:90rem; }
 }
 }

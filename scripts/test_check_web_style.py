@@ -46,6 +46,26 @@ class WebStyleTests(unittest.TestCase):
         (root / 'assets/css/a.css').write_text('a{}\n' * (check.CSS_LINES + 1))
         self.assertEqual([(str(p), n) for p, n in check.long_stylesheets(root)], [('assets/css/a.css', check.CSS_LINES + 1)])
 
+    def test_viewport_breakpoint_policy(self):
+        """Only the three canonical min-width queries may affect layout."""
+        for condition in ('(min-width:40rem)', '(min-width: 64rem)', '(min-width:90rem)',
+                          '(prefers-reduced-motion:reduce)', '(forced-colors:active)', '(hover:hover)'):
+            with self.subTest(condition=condition):
+                self.assertEqual(list(check.width_media_offenders(self.tree('', '@media '+condition+' {a{}}'))), [])
+        for condition in ('(min-width:48rem)', '(max-width:640px)', '(width >= 40rem)',
+                          '(min-width:640px)', '(min-width:40rem), (min-width:80rem)',
+                          '(min-width:40rem) and (max-width:90rem)', '(min-height:50rem)',
+                          '(orientation:landscape)', '(min-width:calc(40rem))'):
+            with self.subTest(condition=condition):
+                self.assertEqual(len(list(check.width_media_offenders(self.tree('', '@media '+condition+' {a{}}')))), 1)
+
+    def test_media_comments_multiline_and_escapes(self):
+        """Comments do not add queries or hide disallowed escaped feature names."""
+        css = '/* @media(max-width:1px) {} */\n@media\n(min-width: /* shared */40rem) {a{content:"@media(max-width:2px)"}}'
+        self.assertEqual(list(check.width_media_offenders(self.tree('', css))), [])
+        css = r'@m\65 dia (min-w\69 dth:48rem) {a{}}'
+        self.assertEqual(len(list(check.width_media_offenders(self.tree('', css)))), 1)
+
     def test_script_budget(self):
         root = self.tree('')
         (root / 'assets/js').mkdir(parents=True)

@@ -51,7 +51,33 @@ def over_budget(root=ROOT):
             yield name, size, budget
 
 
+def width_media_offenders(root=ROOT):
+    """Reject viewport size queries except the three mobile-first width thresholds.
+
+    Strip comments and strings before scanning, and decode CSS escapes so spelling
+    a feature differently cannot bypass the policy. Device/accessibility queries
+    remain independent of the layout breakpoint scale.
+    """
+    allowed = {'(min-width:40rem)', '(min-width:64rem)', '(min-width:90rem)'}
+    for path in sorted((root / 'assets/css').rglob('*.css')):
+        text = path.read_text()
+        text = re.sub(r'/\*.*?\*/', lambda m: '\n' * m[0].count('\n'), text, flags=re.S)
+        text = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', '""', text)
+        text = re.sub(r'\\([0-9a-fA-F]{1,6})[ \t]?', lambda m: chr(int(m[1], 16) or 0xfffd), text)
+        text = re.sub(r'\\([^\n])', r'\1', text)
+        for match in re.finditer(r'@media\b([^{};]*)', text, re.I):
+            condition = match[1].lower()
+            # Height/device-width/orientation queries would create another layout scale.
+            size = re.search(r'width|height|orientation|aspect-ratio', condition)
+            if not size:
+                continue
+            canonical = re.sub(r'\s+', '', condition)
+            if canonical not in allowed:
+                yield path.relative_to(root), text.count('\n', 0, match.start()) + 1, condition.strip()
+
+
 def main():
+    """Run readability, breakpoint and script-budget checks together for ui.check."""
     found = list(offenders())
     for path, number, length in found:
         print(f'{path}:{number}: {length} characters (limit {LIMIT})')
@@ -61,7 +87,10 @@ def main():
     heavy = list(over_budget())
     for path, size, budget in heavy:
         print(f'{path}: {size} bytes gzip (budget {budget})')
-    return 1 if found or long or heavy else 0
+    media = list(width_media_offenders())
+    for path, number, condition in media:
+        print(f'{path}:{number}: unsupported media query {condition}; use min-width 40rem, 64rem or 90rem')
+    return 1 if found or long or heavy or media else 0
 
 
 if __name__ == '__main__':

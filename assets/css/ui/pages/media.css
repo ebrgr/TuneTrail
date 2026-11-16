@@ -1,57 +1,114 @@
 /* Pages: artist, album and track pages with their graphs. */
 @layer pages {
 /* Scoped media reading pages; graphs and management are integrated separately. */
+
+/* Constrain this region without requiring a fixed layout width. */
 .media-detail { width:100%; padding:48px 40px; min-width:0; }
-.media-heading { position:relative; display:flex; flex-wrap:wrap; gap:32px; align-items:start; }
-.media-cover { width:385px; height:385px; max-width:100%; object-fit:cover; border:1px solid var(--color-border); border-radius:var(--border-radius); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-heading { position:relative; display:flex; flex-wrap:wrap; gap: var(--space-6); align-items:start; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-cover { width:clamp(12rem,30vw,24rem);
+  height:auto;
+  aspect-ratio:1;
+  max-width:100%;
+  object-fit:cover;
+  border:1px solid var(--color-border);
+  border-radius:var(--border-radius);
+  }
 .media-cover[data-artwork-drop] { transition:outline-color .15s ease, filter .15s ease; }
 .media-cover[data-artwork-drop][data-drop-active] { outline:3px solid var(--color-primary); outline-offset:4px; filter:brightness(1.08); }
+
+/* Constrain this region without requiring a fixed layout width. */
 .media-heading-text { flex:1; min-width:0; }
-.media-type { font-size:24px; margin-bottom:8px; }
+
+/* Use the shared type scale at this reading size. */
+.media-type { font-size:24px; margin-bottom: var(--space-2); }
+
+/* Use the shared type scale at this reading size. */
 .media-heading h1 { font-size:clamp(32px,5vw,72px); line-height:1.1; overflow-wrap:anywhere; margin:16px 0; }
 .media-overall-rank { color:var(--color-fg-secondary); font-size:20px; font-weight:500; white-space:nowrap; }
 .media-heading-text p { margin-bottom:6px; }
 .media-heading-text .media-artist { font-size:inherit; }
 /* Match Koito's icon size and sequence; reserve accessible, non-overlapping targets. */
+
+/* Apply shared spacing and surface tokens at this size. */
 .media-actions { position:absolute; top:0; right:calc(40px - (44px - var(--media-action-icon))/2); display:flex; gap:0; align-items:center; }
 .media-actions a { position:relative; display:grid; place-items:center; width:44px; height:44px; color:var(--color-fg-secondary); }
 .media-actions [data-tip]::after { top:calc(100% + 8px); right:0; z-index:70; }
 .media-actions a:hover { color:var(--color-fg); }
 .media-actions svg { width:var(--media-action-icon); height:var(--media-action-icon); }
 .media-heading:not(:has(.media-actions a)) { padding-top:0; }
-.media-reading-blocks { display:flex; flex-wrap:wrap; align-items:start; gap:40px 80px; margin-top:48px; max-width:1400px; }
-.media-top-tracks { width:450px; max-width:100%; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-reading-blocks { display:flex; flex-wrap:wrap; align-items:start; gap:40px 80px; margin-top: var(--space-8); max-width: min(100%,87.5rem); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-top-tracks { width:min(100%,28rem); max-width:100%; }
 .media-history { flex:1; min-width:min(350px,100%); max-width:100%; }
-.media-top-tracks .section-title,.media-history .section-title { margin-bottom:24px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-top-tracks .section-title,.media-history .section-title { margin-bottom: var(--space-5); }
 .media-albums { margin-top:56px; }
-.media-album-grid { display:flex; flex-wrap:wrap; gap:32px; margin-top:32px; }
-.media-album-grid>.media { width:330px; max-width:100%; }
+
+/* Let columns adapt to the available reading space. */
+.media-album-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,20rem),1fr)); gap: var(--space-6); margin-top: var(--space-6); }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-album-grid>.media { width:100%; max-width:100%; }
 /* Narrow desktop headers cannot fit the media type beside five action targets. */
-@media(min-width:768px) and (max-width:60rem) {
-  .media-heading:has(.media-actions) { padding-top:56px; }
-}
-@media(max-width:767px) {
-  .media-detail { padding:24px 16px; }
-  .media-heading { padding-top:56px; }
-  .media-actions { right:0; }
-  .media-cover { width:280px; height:280px; }
-  .media-heading-text { flex-basis:100%; }
-  .media-heading h1 { font-size:32px; }
-  .media-type { font-size:20px; }
-  .media-history .listens { font-size:12px; }
-}
+
+
 /* Graphs share numeric data with the API and expose values without JavaScript. */
-.media-graphs { display:flex; flex-wrap:wrap; gap:40px; align-items:start; margin-top:40px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-graphs { display:flex; flex-wrap:wrap; gap: var(--space-7); align-items:start; margin-top: var(--space-7); }
 .media-graphs>section { min-width:0; max-width:100%; }
 .media-graphs .section-title { margin-bottom:20px; }
-.media-interest { width:550px; }
-.interest-card { padding:24px; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-interest { width:min(100%,35rem); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.interest-card { padding: var(--space-5); }
 .interest-svg { display:block; width:100%; height:120px; overflow:hidden; }
-.graph-values { margin-top:12px; font-size:12px; color:var(--color-fg-secondary); }
+
+/* Use the shared type scale at this reading size. */
+.graph-values { margin-top: var(--space-3); font-size:12px; color:var(--color-fg-secondary); }
 .graph-values summary { cursor:pointer; padding:8px 0; }
 .graph-values summary:focus-visible { outline:2px solid var(--color-primary); outline-offset:3px; }
 .graph-table-scroll { max-width:100%; overflow-x:auto; }
 .graph-values table { width:100%; border-collapse:collapse; }
 .graph-values caption { text-align:left; margin:8px 0; }
 .graph-values th,.graph-values td { padding:6px 8px; text-align:left; border-bottom:1px solid var(--color-border); }
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Apply shared spacing and surface tokens at this size. */
+ .media-detail { padding:var(--space-5) var(--space-4); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-heading { padding-top:3.5rem; }
+.media-heading-text { flex-basis:100%; }
+.media-actions { right:0; }
+
+/* Use the shared type scale at this reading size. */
+.media-heading h1 { font-size:var(--step-5); }
+
+/* Use the shared type scale at this reading size. */
+.media-type { font-size:var(--step-2); }
+@media(min-width:40rem) { .media-detail { padding:var(--space-8) var(--space-7); } }
+@media(min-width:64rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  .media-heading { padding-top:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .media-heading-text { flex-basis:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+  .media-heading:has(.media-actions) { padding-top:3.5rem; }
+}
+
 }

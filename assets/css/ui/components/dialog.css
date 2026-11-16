@@ -1,14 +1,16 @@
 /* Components: native dialogs and the profile switcher. */
 @layer components {
+
+/* Constrain this region without requiring a fixed layout width. */
 dialog {
   margin: auto;
   color: var(--color-fg);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-bg-tertiary);
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
   width: calc(100% - 16px);
-  max-width: 600px;
+  max-width: min(100%,37.5rem);
   max-height: 80vh;
   overflow: auto
 }
@@ -21,6 +23,8 @@ dialog[open] {
 dialog h2 {
   margin-bottom: 20px
 }
+
+/* Use the shared type scale at this reading size. */
 .close-dialog {
   position: absolute;
   top: 4px;
@@ -31,19 +35,25 @@ dialog h2 {
 .close-dialog:hover {
   color: var(--color-fg)
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .profile-dialog {
-  max-width: 480px
+  max-width: min(100%,30rem)
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .profile-options {
   display: flex;
   flex-direction: column;
-  gap: 8px
+  gap: var(--space-2)
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .profile-options a {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--space-3);
+  padding: var(--space-3);
   border-radius: 6px
 }
 .profile-options a:hover {
@@ -64,9 +74,11 @@ dialog h2 {
   width: 18px;
   height: 18px
 }
+
+/* Use the shared type scale at this reading size. */
 .all-profiles {
   display: inline-block;
-  margin-top: 24px;
+  margin-top: var(--space-5);
   font-size: 14px
 }
 @media(min-width:40rem) {

@@ -1,10 +1,14 @@
 /* Layout: application shell, sidebars, navigation and footer. */
 @layer layout {
+
+/* Apply shared spacing and surface tokens at this size. */
 .app-shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .app-content {
   display: flex;
   flex-direction: column;
@@ -13,6 +17,8 @@
   min-width: 0;
   margin: 0 auto
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .sidebar {
   z-index: 50;
   display: flex;
@@ -35,19 +41,25 @@ html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary {
   opacity: .55;
   cursor: default
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .nav-group {
   display: flex;
-  gap: 16px
+  gap: var(--space-4)
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .nav-spacer {
   display: none
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .nav-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 8px;
+  padding: var(--space-2);
   border-radius: 6px;
   transition: background-color .1s,color .1s
 }
@@ -76,24 +88,30 @@ footer svg {
 footer a:hover {
   text-decoration: underline
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .preview-tools {
-  margin-top: 16px;
-  max-width: 650px;
+  margin-top: var(--space-4);
+  max-width: min(100%,40.625rem);
   font-size: 12px
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .preview-tools nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px
+  gap: var(--space-3)
 }
 .preview-tools p {
   margin: 12px 0
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .nav-layout {
   display: flex;
   flex-direction: column;
-  gap: 8px
+  gap: var(--space-2)
 }
 .nav-layout legend {
   padding: 0 4px;
@@ -118,13 +136,17 @@ footer a:hover {
   html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
     margin-left: 58px
   }
+
+/* Apply shared spacing and surface tokens at this size. */
   html[data-nav-layout="overlay"] .sidebar.sidebar-secondary {
     z-index: 60;
-    box-shadow: 4px 0 16px rgb(0 0 0/.35)
+    box-shadow: var(--shadow-overlay)
   }
   body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
     left: calc(100% + 80px)
   }
+
+/* Constrain this region without requiring a fixed layout width. */
   .sidebar {
     position: fixed;
     left: 0;
@@ -147,9 +169,14 @@ footer a:hover {
     bottom: 4px
   }
 }
-@media(max-width:calc(40rem - 1px)) {
-  .sidebar {
-    padding-bottom: 6px
-  }
-}
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Apply shared spacing and surface tokens at this size. */
+ .sidebar { padding-bottom:var(--space-2); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.app-content { flex:1; }
+
 }

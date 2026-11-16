@@ -32,12 +32,14 @@
   height: 100%;
   object-fit: cover
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .profile-header {
   width: 100%;
   padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   border-bottom: 1px solid var(--color-border)
 }
 /* ISSUE-109: administrator session badge. The link pads the 32px avatar to a 44px

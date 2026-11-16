@@ -1,0 +1,24 @@
+{
+  "make check": {
+    "exit_code": 0,
+    "e2e": "12/12"
+  },
+  "make ui.check": {
+    "exit_code": 0
+  },
+  "web style unit tests": {
+    "passed": 9
+  },
+  "responsive": {
+    "views": 598,
+    "failures": 0
+  },
+  "git diff --check": {
+    "exit_code": 0
+  },
+  "graphify AST": {
+    "exit_code": 0,
+    "note": "Extractor reports tokens.css skipped by its sensitive-name heuristic; CSS was inspected directly."
+  },
+  "visual_acceptance": "pending user; AC4 unchecked"
+}

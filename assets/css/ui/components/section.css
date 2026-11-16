@@ -1,5 +1,7 @@
 /* Components: section titles, section links and the period selector. */
 @layer components {
+
+/* Apply shared spacing and surface tokens at this size. */
 .section-title {
   color: var(--color-fg-secondary)
 }
@@ -13,9 +15,11 @@
 .section-link:hover>span,.section-link:focus-visible>span {
   opacity: 1
 }
+
+/* Constrain this region without requiring a fixed layout width. */
 .period-selector {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   padding: 8px 12px;
   font-size: 14px;
   max-width: 100%
@@ -25,6 +29,8 @@
   color: var(--color-fg-tertiary);
   white-space: nowrap
 }
+
+/* Apply shared spacing and surface tokens at this size. */
 .period-selector a:not(:last-child) {
   padding-right: clamp(8px,4vw,32px)
 }
@@ -35,19 +41,21 @@
   .section-title {
     margin-bottom: 4px
   }
+
+/* Use the shared type scale at this reading size. */
   .period-selector {
     font-size: 16px;
     padding: 8px 24px
   }
 }
-@media(max-width:calc(40rem - 1px)) {
-  .period-selector {
-    width: 352px;
-    justify-content: space-between;
-    gap: 0
-  }
-  .period-selector a:not(:last-child) {
-    padding-right: 0
-  }
-}
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Constrain this region without requiring a fixed layout width. */
+ .period-selector { width:min(100%,28rem); flex-wrap:wrap; justify-content:space-between; gap:var(--space-2); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.period-selector a:not(:last-child) { padding-right:0; }
+
 }

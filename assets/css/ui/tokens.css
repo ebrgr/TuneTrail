@@ -1,23 +1,39 @@
-/* Tokens: layout custom properties; theme colours come from themes.css. */
+/* Shared design scale: colours remain owned by themes.css. */
 @layer tokens {
-:root {
-  --border-radius: 8px;
-  --color-border: var(--color-bg-tertiary);
-  --header-xl: 36px;
-  --header-lg: 28px;
-  --header-line-height: 3rem
-}
-@media(min-width:60rem) {
-  :root {
-    --header-xl: 78px;
-    --header-lg: 36px;
-    --header-line-height: 1.3em
-  }
-}
-}
 
-/* Media action glyphs follow the reference in both viewport sizes. */
-@layer tokens {
-:root { --media-action-icon:30px; }
-@media(max-width:767px) { :root { --media-action-icon:22px; } }
+/* Apply shared spacing and surface tokens at this size. */
+:root {
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --step--1: clamp(.75rem,.7rem + .25vw,.875rem);
+  --step-0: clamp(.875rem,.8rem + .375vw,1rem);
+  --step-1: clamp(1rem,.9rem + .5vw,1.25rem);
+  --step-2: clamp(1.25rem,1rem + 1.25vw,1.75rem);
+  --step-3: clamp(1.75rem,1.25rem + 2.5vw,2.5rem);
+  --step-4: clamp(2rem,1.25rem + 3.75vw,3.5rem);
+  --step-5: clamp(2.25rem,1rem + 6.25vw,4.875rem);
+  --radius-sm: .375rem;
+  --radius-md: .5rem;
+  --radius-lg: .875rem;
+  --shadow-card: 0 .25rem 1rem rgb(0 0 0 / .12);
+  --shadow-overlay: .25rem 0 1rem rgb(0 0 0 / .35);
+  --border-radius: var(--radius-md);
+  --color-border: var(--color-bg-tertiary);
+  --header-xl: var(--step-5);
+  --header-lg: var(--step-3);
+  --header-line-height: 1.15;
+  --media-action-icon: 1.375rem;
+}
+/* The same three viewport thresholds are used throughout the application. */
+@media(min-width:40rem) {
+
+/* Apply shared spacing and surface tokens at this size. */
+  :root { --media-action-icon:1.875rem; }
+}
 }

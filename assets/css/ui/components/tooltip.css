@@ -1,13 +1,22 @@
 /* Shared tooltip appearance; each surface owns placement. Labels also have accessible names. */
 @layer components {
+
+/* Apply shared spacing and surface tokens at this size. */
 .nav-button[data-tip]::after,.media-actions [data-tip]::after {
   content:attr(data-tip); position:absolute; white-space:nowrap;
-  padding:8px 12px; border:1px solid var(--color-bg-tertiary); border-radius:8px;
+  padding:8px 12px; border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
   background:var(--color-bg); color:var(--color-fg); line-height:1.5;
   opacity:0; pointer-events:none; transition:opacity .1s;
 }
 .nav-button:is(:hover,:focus-visible)::after,
+
+/* Apply shared spacing and surface tokens at this size. */
 html[data-media-tooltips] .media-actions [data-tip]:focus-visible::after { opacity:1; }
 @media(hover:hover) { html[data-media-tooltips] .media-actions [data-tip]:hover::after { opacity:1; } }
-@media(max-width:calc(40rem - 1px)) { .nav-button[data-tip]::after { content:none; } }
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+ .nav-button[data-tip]::after { content:none; }
+@media(min-width:40rem) { .nav-button[data-tip]::after { content:attr(data-tip); } }
+
 }
