@@ -7,33 +7,36 @@ O remoto `origin` aponta para o repositório TuneTrail. Não é necessário Dock
 Este arquivo serve como um guia de *como trabalhar neste repositório*. Para evitar que o conteúdo fique defasado, ele propositalmente **não** repete informações documentadas em outros lugares — consulte esses documentos e, em seguida, siga as convenções abaixo.
 
 # Subagentes Disponíveis
-Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do Git (`.git/info/exclude`). Não adicione esses arquivos a commits.
+Os agentes e skills ficam em **`/.agents/`**, diretório local mantido fora do Git (`.git/info/exclude`). Não adicione esses arquivos a commits. Leia uma skill somente quando a tarefa a exigir.
 
-**`/.agents/reviewer.md`** - Persona do Reviewer. Antes do commit de uma implementação, audita o diff local da branch (bugs, segurança, desempenho e qualidade) e emite parecer APROVADO ou com itens obrigatórios; o parecer fica em `backlog/evidencias/<issue>/`.
+- **`/.agents/reviewer.md`** — Reviewer. Antes do commit, audita o diff local (bugs, segurança, desempenho, qualidade) e emite `APROVADO` ou itens obrigatórios; o parecer fica em `backlog/evidencias/<issue>/`.
+- **`/.agents/advisor.md`** — Advisor. Revisão crítica de lógica, concorrência ou algoritmos densos, e plano de implementação. É acionado pelo usuário (@Sol no Codex, @Opus no Claude).
+- **`/.agents/golang-master/SKILL.md`** — Go de produção: erros, concorrência, `context`, tipos, testes, estrutura de módulos.
+- **`/.agents/deslop/SKILL.md`** — Revisar diff em busca de complexidade acidental ou ruído de código gerado.
+- **`/.agents/issue-first/SKILL.md`** — Ciclo de uma tarefa do Backlog.md com `make issue.*`.
+- **`/.agents/changelog/SKILL.md`** — Quando e como escrever entradas no `CHANGELOG.md`.
+- **`/.agents/ui-craft/SKILL.md`** — Projetar, construir e revisar UI.
+- **graphify** — Navegação e manutenção do código (seção `graphify` abaixo).
 
-**`/.agents/advisor.md`** - Persona do Advisor. Quando o Codex Terra ou o Claude Sonnet identificar problemas de lógica, concorrência ou algoritmos de alta densidade, ele deve sugerir ao usuário a delegação para o subagente, @Sol no Codex ou @Opus no Claude, essa persona.
+## Regra anti-recursão (economia de tokens)
+- **Quem recebeu a delegação executa; não re-delega.** Se você é o Reviewer, o Advisor, @Sol ou @Opus, ou foi chamado por outro agente, faça o trabalho você mesmo. É proibido invocar `claude -p`, `codex exec`, outro subagente ou outra persona para repetir a mesma análise.
+- Só o agente de **nível superior** (o que conversa com o usuário) decide delegar, e delega **uma vez** por tarefa. Uma delegação já feita não é refeita para "confirmar".
+- Se o parecer já existe em `backlog/evidencias/<issue>/` ou como `[HANDOFF]` no `ai-memory`, leia-o em vez de refazer a auditoria. Reaudite só o que mudou desde o parecer.
+- Delegue só quando valer o custo: configuração, rotas e CRUDs simples não precisam de Advisor; o próprio agente revisa.
 
-**`/.agents/golang-master/SKILL.md`** - Escrever ou revisar Go de produção: erros, concorrência, `context`, tipos, genéricos, testes, benchmarks e estrutura de módulos.
+## Níveis de delegação (Advisor)
+| Tipo de revisão | `@Sol` (Codex) | `@Opus` (Claude) |
+| --- | --- | --- |
+| Configuração, rotas, CRUDs simples (opcional) | `effort=low` | `effort=medium` |
+| Criptografia, finanças, mensageria, algoritmos matemáticos (obrigatório) | `effort=medium` | `effort=high` |
 
-**`/.agents/deslop/SKILL.md`** - Revisar um diff em busca de complexidade acidental ou ruído de código gerado; ler a skill para gerar código melhor quando possível.
+## Protocolo Multi-Agente (Claude ↔ Codex) — Memória e economia
+Os dois CLIs trabalham no mesmo repositório. Use `ai-memory` e `graphify` antes de ler arquivos inteiros. O Backlog.md continua sendo o registro oficial; o `ai-memory` guarda apenas o resumo curto para a troca entre agentes, sem duplicar o texto da issue.
 
-**`/.agents/issue-first/SKILL.md`** - Ciclo de uma tarefa do Backlog.md: registrar, iniciar a branch, enviar para aceite e publicar com `make issue.*`.
-
-**`/.agents/changelog/SKILL.md`** - Quando e como escrever entradas no `CHANGELOG.md`.
-
-**`/.agents/ui-craft/SKILL.md`** - Orientações para projetar, construir e revisar UI: páginas, componentes, formulários e estados de carregamento e erro.
-
-**graphify** - Use para manutenção do código
-
-
-## Regras de Delegação para o @Sol (Advisor)
-- Para revisões de arquivos de configuração, rotas e CRUDs simples: delegar para `@sol` com effort=low`.
-- Para revisões de lógica de criptografia, manipulação financeira, sistemas de mensageria ou algoritmos matemáticos: delegar obrigatoriamente para `@sol` com `effort=medium`.
-
-
-## Regras de Delegação para o @Opus (Advisor)
-- Para revisões de arquivos de configuração, rotas e CRUDs simples: delegar para `@Opus` com effort=medium`.
-- Para revisões de lógica de criptografia, manipulação financeira, sistemas de mensageria ou algoritmos matemáticos: delegar obrigatoriamente para `@Opus` com `effort=high`.
+1. **Início de sessão ou issue:** antes de planejar ou editar, consulte o `ai-memory` (`memory_query`) pelo `ISSUE-NNN` ou módulo afetado. Depois use `graphify query` para achar dependências e só então abra os arquivos.
+2. **Plano para outro agente executar:** grave no `ai-memory` com tag `[PLANO ISSUE-NNN]`: **Objetivo** (1 linha); **Arquivos-alvo** (caminhos e funções exatos); **Restrições** (o que NÃO alterar e edge cases). Não despeje planos no chat; confirme só o ID salvo. O plano completo, se necessário, vai na tarefa do Backlog.
+3. **Handoff ao trocar de agente ou CLI:** registre `[HANDOFF ISSUE-NNN]`: **Feito** (arquivos e motivo técnico); **Pendente** (próximo passo imediato); **Alertas** (riscos, débitos, testes quebrados).
+4. **Auditoria cruzada:** (a) leia `[PLANO]` e `[HANDOFF]` da issue; (b) rode `git diff` só nos arquivos listados; (c) valide o impacto estrutural no `graphify`. Saída: apenas `[BUG]`, `[RISCO]` ou `[OK]`, com arquivo e linha. Sem elogios e sem reescrever código que já funciona.
 
 ## Leia isto primeiro (não duplique o conteúdo aqui)
 
@@ -85,15 +88,10 @@ Ferramenta instalada no sistema (`brew install backlog-md`); a configuração fi
 
 ## graphify
 
-This project has a knowledge graph at /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/ with god nodes, community structure, and cross-file relationships.
+Grafo do projeto fora do repositório. Abaixo, `G` = `/Users/evertonberger/.local/share/tunetrail-graphify`; o binário é `G/bin/graphify` (também no PATH) e o grafo fica em `G/analysis/graphify-out/`.
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
-
-Rules:
-- When /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json exists, run `/Users/evertonberger/.local/share/tunetrail-graphify/bin/graphify query "<question>" --graph /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located. Use `/Users/evertonberger/.local/share/tunetrail-graphify/bin/graphify path "<A>" "<B>" --graph /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json` for relationships and `/Users/evertonberger/.local/share/tunetrail-graphify/bin/graphify explain "<concept>" --graph /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `/Users/evertonberger/.local/share/tunetrail-graphify/analisar-tunetrail.sh` to keep the graph current (AST-only, no API cost).
-- The `/graphify` skill is installed for Claude Code and Codex, and `graphify` is on the PATH. In this repository the graph lives outside the project: always pass `--graph /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json` to `query`, `path` and `explain`, and rebuild only with the script above. Never run `/graphify .`, `graphify extract .` or any semantic (LLM) extraction inside the repository; `.graphifyignore` keeps `backlog/docs/estudos-locais/` and `.agents/` out of any scan as a second safeguard.
-- A committed /Users/evertonberger/.local/share/tunetrail-graphify/analysis/graphify-out/graph.json is rewritten whole on every build, so a large diff to it in a pull request is expected. Do not flag it as churn or suggest skipping the graph rebuild or its hooks.
+- Antes do primeiro grep, busca ou leitura de fonte numa pergunta sobre o código, rode `graphify query "<pergunta>" --graph G/analysis/graphify-out/graph.json`. Use `path "<A>" "<B>"` para relações e `explain "<conceito>"` para um conceito (sempre com `--graph`). Leia arquivos brutos apenas nas linhas que o grafo já localizou. Repasse esta regra a todo subagente que explore código.
+- Para navegação ampla use `G/analysis/graphify-out/wiki/index.md`; `GRAPH_REPORT.md` só para revisão ampla de arquitetura.
+- Depois de alterar código, rode `/Users/evertonberger/.local/share/tunetrail-graphify/analisar-tunetrail.sh` (AST, sem custo de API). Nunca rode `/graphify .`, `graphify extract .` ou extração semântica (LLM) dentro do repositório; `.graphifyignore` mantém `backlog/docs/estudos-locais/` e `.agents/` fora de qualquer varredura.
+- Arquivos sujos em `graphify-out/` e um diff grande no `graph.json` (reescrito inteiro a cada build) são esperados; não os sinalize como ruído. Só ignore o grafo se a tarefa for sobre saída incorreta ou se o usuário pedir.
+- `/graphify` digitado pelo usuário: use a skill instalada antes de qualquer outra coisa.
