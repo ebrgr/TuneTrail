@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T22:44:00Z'
-updated_date: '2026-11-16T00:55:00Z'
+updated_date: '2026-11-16T00:56:00Z'
 labels:
   - admin
   - catalogo
@@ -100,6 +100,15 @@ created: 2026-11-16T00:55:00Z
 ---
 
 Aceite: aprovada pelo usuário em 16/11/2026.
+
+---
+
+author: ebrgr
+created: 2026-11-16T00:56:00Z
+
+---
+
+Publicação: versão 0.24 (tag `v0.24`), branch `feat/issue-143-excluir-item-so-do-perfil` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
