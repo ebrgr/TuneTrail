@@ -82,6 +82,13 @@ html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
 .media-task-dialog .listen-timezone-help { grid-area:help; color:var(--color-fg-secondary); }
 .media-task-dialog .listen-offset { grid-area:offset; color:var(--color-fg-secondary); }
 .media-task-dialog .listen-offset label { margin-top:8px; color:var(--color-fg); }
+/* Artwork upload (ISSUE-140): one column; file hint hugs its field, URL field matches it, button last. */
+.media-task-dialog .artwork-upload { flex-direction:column; flex-wrap:nowrap; align-items:stretch; gap:0; }
+.media-task-dialog .artwork-upload label { flex:none; gap:8px; }
+.media-task-dialog .artwork-upload :is(input[type=file],input[type=url]) { min-height:56px; }
+.media-task-dialog .artwork-upload small { margin:6px 0 0; color:var(--color-fg-secondary); }
+.media-task-dialog .artwork-upload small + label { margin-top:20px; }
+.media-task-dialog .artwork-upload button { align-self:flex-start; margin-top:20px; }
 @media(min-width:640px) {
   .media-task-dialog[data-task="edit"] .manage-section > form { max-width:60%; }
 }
