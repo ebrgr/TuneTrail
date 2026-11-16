@@ -1,11 +1,11 @@
 ---
 id: ISSUE-143
 title: 143 — Excluir item só do perfil, com confirmação irreversível
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T22:44:00Z'
-updated_date: '2026-11-16T00:44:00Z'
+updated_date: '2026-11-16T00:55:00Z'
 labels:
   - admin
   - catalogo
@@ -29,7 +29,7 @@ Pedido do usuário em 15/11/2026, ao revisar a ISSUE-140. Hoje Excluir no diálo
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Excluir abre uma janela pequena com o nome do item e o aviso de que não existe desfazer
+- [x] #1 Excluir abre uma janela pequena com o nome do item e o aviso de que não existe desfazer
 - [x] #2 Confirmar apaga para o perfil todos os itens com o nome, em faixa, álbum e artista, e não altera nenhum outro perfil
 - [x] #3 Clicar em confirmar funciona e leva ao destino definido; falhas mostram erro claro, sem apagar parcialmente
 - [x] #4 Testes com dois perfis, nomes iguais e IDs forjados passam pelo roteador principal
@@ -91,6 +91,15 @@ created: 2026-11-16T00:44:00Z
 ---
 
 Verificação: make check verde (12/12 E2E); exclusão só de escutas do perfil em uma transação, contagem/revalidação, catálogo e outros perfis preservados; testes de segurança e rollback pelo roteador principal; Chrome real com foco/Esc, rede, sessão expirada no banco, resposta perdida sem retry e navegação; 12 capturas Yuu/Pearl desktop/celular. Critérios 2–6 verificados, #1 aguarda aceite visual; revisão do diff pelo coordenador conforme decisão do usuário.
+
+---
+
+author: claude
+created: 2026-11-16T00:55:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 16/11/2026.
 
 ---
 <!-- COMMENTS:END -->
