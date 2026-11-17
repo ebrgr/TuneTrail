@@ -43,7 +43,14 @@ func TestListenDialog141(t *testing.T) {
 	require.Equal(t, 404, taskRequest139(a, "GET", page, a.cookie, nil, nil).Code)
 	require.Equal(t, 200, taskRequest139(a, "GET", strings.ReplaceAll(page, "second", "empty"), a.cookie, nil, nil).Code)
 	for _, route := range []string{"track/12", "album/11", "artist/10"} {
-		require.Equal(t, 404, taskRequest139(a, "GET", "/second/"+route, a.cookie, nil, nil).Code)
+		// ISSUE-150: a plain administrator GET (reload) shows the empty state like the dialog refresh.
+		reload := taskRequest139(a, "GET", "/second/"+route, a.cookie, nil, nil)
+		require.Equal(t, 200, reload.Code, reload.Body.String())
+		require.Contains(t, reload.Body.String(), `data-listen-count="0"`)
+		require.Contains(t, reload.Body.String(), "Nothing to show on this page.")
+		require.Equal(t, 404, taskRequest139(a, "GET", "/second/"+route, "", nil, nil).Code)
+		// A missing entity stays 404 even for the administrator.
+		require.Equal(t, 404, taskRequest139(a, "GET", "/second/"+strings.Split(route, "/")[0]+"/999999", a.cookie, nil, nil).Code)
 		snapshot := taskRequest139(a, "GET", "/second/"+route, a.cookie, nil, map[string]string{"X-TuneTrail-History-Refresh": "1"})
 		require.Equal(t, 200, snapshot.Code, snapshot.Body.String())
 		require.Contains(t, snapshot.Body.String(), `data-listen-count="0"`)

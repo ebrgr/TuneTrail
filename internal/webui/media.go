@@ -19,7 +19,7 @@ import (
 
 func isMediaKind(kind string) bool { return kind == "artist" || kind == "album" || kind == "track" }
 
-// serveMedia retains the public route while an authenticated history refresh may render its empty state.
+// serveMedia retains the public route while an authenticated administrator may render its empty state.
 func (h *Pages) serveMedia(w http.ResponseWriter, r *http.Request, p LivePage, parts []string) {
 	if len(parts) != 3 {
 		h.fail(w, p, 404)
@@ -41,7 +41,8 @@ func (h *Pages) serveMedia(w http.ResponseWriter, r *http.Request, p LivePage, p
 	loc := webquery.Timezone(r)
 	p.Options.Timeframe = db.Timeframe{Period: db.PeriodAllTime, Timezone: loc}
 	p.Timezone, p.Period, p.Section = loc.String(), "all_time", "media"
-	p.AllowEmptyMedia = p.Admin && r.Header.Get("X-TuneTrail-History-Refresh") == "1"
+	// ISSUE-150: an administrator sees the empty state on any GET (also after reload); visitors keep the 404.
+	p.AllowEmptyMedia = p.Admin
 	if err := h.loadMedia(r.Context(), &p, parts[1], int32(id)); err != nil {
 		status := 500
 		if errors.Is(err, db.ErrNotFound) {

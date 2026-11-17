@@ -406,7 +406,9 @@ func TestManagementUnplayedSurvivor139(t *testing.T) {
 				require.Equal(t, want, out.Header().Get("Location"))
 				require.Equal(t, 200, taskRequest139(a, "GET", want, a.cookie, nil, nil).Code)
 				if slug == "default" {
-					require.Equal(t, 404, taskRequest139(a, "GET", "/default/"+kind+"/"+to, a.cookie, nil, nil).Code)
+					// ISSUE-150: the unplayed survivor shows its empty state to the administrator only.
+					require.Equal(t, 200, taskRequest139(a, "GET", "/default/"+kind+"/"+to, a.cookie, nil, nil).Code)
+					require.Equal(t, 404, taskRequest139(a, "GET", "/default/"+kind+"/"+to, "", nil, nil).Code)
 				}
 			})
 		}
