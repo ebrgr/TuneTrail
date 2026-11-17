@@ -42,3 +42,19 @@ func backupBeforeProfiles(ctx context.Context, conn *sql.DB, databasePath string
 	}
 	return filename, nil
 }
+
+// backupBeforeUpgrade retains the existing v2 naming and snapshots v3 with WAL.
+func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string, version int) (string, error) {
+	if version < 3 {
+		return backupBeforeProfiles(ctx, conn, databasePath)
+	}
+	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+".pre-ingest-*.bak")
+	if err != nil {
+		return "", err
+	}
+	if _, err := conn.ExecContext(ctx, `VACUUM INTO ?`, filename); err != nil {
+		os.Remove(filename)
+		return "", fmt.Errorf("pre-ingest snapshot: %w", err)
+	}
+	return filename, nil
+}

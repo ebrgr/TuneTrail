@@ -128,7 +128,7 @@ func requireRecovered(t *testing.T, dir string, before map[string]tableDigest, l
 	require.NoError(t, checkDatabase(db))
 	version, err := schemaVersion(db)
 	require.NoError(t, err)
-	require.Equal(t, 3, version)
+	require.Equal(t, 4, version)
 	for table, want := range before {
 		got := digestTable(t, db, table, want.columns)
 		require.Equal(t, want.rows, got.rows, "rows of %s", table)
@@ -266,7 +266,7 @@ func TestBootstrapInPlaceV2RecoversAtEveryPhase(t *testing.T) {
 			defer db.Close()
 			version, err := schemaVersion(db)
 			require.NoError(t, err)
-			require.Equal(t, 3, version)
+			require.Equal(t, 4, version)
 			for table, want := range before {
 				got := digestTable(t, db, table, want.columns)
 				require.Equal(t, want.hash, got.hash, "legacy columns of %s", table)
@@ -293,7 +293,7 @@ func TestBootstrapRejectsUnknownSchemaVersions(t *testing.T) {
 		dir, _ := legacyFixture(t)
 		db, err := sql.Open("sqlite", filepath.Join(dir, "koito.db"))
 		require.NoError(t, err)
-		_, err = db.Exec(`INSERT INTO goose_db_version(version_id,is_applied) VALUES(4,1)`)
+		_, err = db.Exec(`INSERT INTO goose_db_version(version_id,is_applied) VALUES(5,1)`)
 		require.NoError(t, err)
 		require.NoError(t, db.Close())
 		legacy, err := legacyDigestOf(dir)

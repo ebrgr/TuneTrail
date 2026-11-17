@@ -121,7 +121,7 @@ func schemaVersion(db *sql.DB) (int, error) {
 	if err := db.QueryRow(`SELECT COALESCE(MAX(version_id),0) FROM goose_db_version WHERE is_applied=1`).Scan(&version); err != nil {
 		return 0, fmt.Errorf("invalid migration history: %w", err)
 	}
-	if version < 1 || version > 3 {
+	if version < 1 || version > 4 {
 		return 0, fmt.Errorf("unsupported schema version %d", version)
 	}
 	return version, nil
@@ -147,7 +147,7 @@ func checkIntegrity(db *sql.DB) error {
 	return nil
 }
 
-// checkDatabase refuses corruption, broken references and incompatible v3 layouts.
+// checkDatabase refuses corruption, broken references and incomplete supported layouts.
 func checkDatabase(db *sql.DB) error {
 	if err := checkIntegrity(db); err != nil {
 		return err
@@ -156,8 +156,8 @@ func checkDatabase(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if version != 3 {
-		return fmt.Errorf("schema version %d is not consolidated v3", version)
+	if version != 3 && version != 4 {
+		return fmt.Errorf("schema version %d is not consolidated v3/v4", version)
 	}
 	for _, q := range []string{`SELECT id,slug,display_name,avatar_image_id,avatar_icon,created_at FROM listening_profiles LIMIT 0`, `SELECT user_id,profile_id FROM legacy_user_profiles LIMIT 0`, `SELECT profile_id FROM listens LIMIT 0`, `SELECT profile_id FROM api_keys LIMIT 0`, `SELECT profile_id,url,token FROM profile_relays LIMIT 0`, `SELECT id,profile_id FROM legacy_relay_binding LIMIT 0`} {
 		rows, err := db.Query(q)
@@ -173,7 +173,7 @@ func checkDatabase(db *sql.DB) error {
 			return fmt.Errorf("incompatible v3 schema: required trigger %s missing", name)
 		}
 	}
-	return nil
+	return validateSchemaLayout(db, version)
 }
 
 // bootstrap serializes selection and publishes only fully prepared databases.
@@ -254,13 +254,19 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 				return "", errors.New("legacy database changed after migration; stop and reconcile both databases")
 			}
 		}
-		if version < 3 {
-			backup, err := backupBeforeProfiles(context.Background(), db, target)
+		// Validate the source before backup or migration can hide an incomplete v3.
+		if version >= 3 {
+			if err := checkDatabase(db); err != nil {
+				return "", err
+			}
+		}
+		if version < 4 {
+			backup, err := backupBeforeUpgrade(context.Background(), db, target, version)
 			if err != nil {
 				return "", err
 			}
 			if backup == "" {
-				return "", errors.New("existing v2 database did not produce a backup")
+				return "", errors.New("existing database did not produce a backup")
 			}
 			// Validate and synchronize the backup before mutating the existing database.
 			saved, err := openExisting(backup)

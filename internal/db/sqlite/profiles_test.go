@@ -360,6 +360,7 @@ func TestProfileExportPaginationDoesNotSkipSameTimestamp(t *testing.T) {
 	require.True(t, time.Unix(1700001000, 0).Equal(result.Listens[1000].ListenedAt))
 }
 
+// TestConsolidatedProfileMigrationRollsBackLateFailure preserves v2 on failure and retries through the latest schema.
 func TestConsolidatedProfileMigrationRollsBackLateFailure(t *testing.T) {
 	s, p, _ := migrationDB(t, 2)
 	ctx := context.Background()
@@ -383,7 +384,7 @@ func TestConsolidatedProfileMigrationRollsBackLateFailure(t *testing.T) {
 	require.NoError(t, err)
 	version, err = p.GetDBVersion(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, 3, version)
+	require.EqualValues(t, 4, version)
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://relay.test", "relay-token"))
 	url, token, err := s.GetProfileRelay(ctx, 1)
 	require.NoError(t, err)

@@ -100,7 +100,7 @@ def main():
                 if conn.execute('PRAGMA integrity_check').fetchall() != [('ok',)] or conn.execute('PRAGMA foreign_key_check').fetchall():
                     raise AssertionError('database integrity')
                 version = conn.execute('SELECT max(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0]
-                if version != 3:
+                if version != 4:
                     raise AssertionError(f'unexpected schema {version}')
         docker('start', container)
         for _ in range(30):
@@ -114,7 +114,7 @@ def main():
         if not any(p['slug'] == 'persistence-marker' and p['id'] == marker_id for p in json.loads(body)):
             raise AssertionError('fictional marker did not survive restart')
         docker('stop', '--time', '20', container)
-        report.update(sigterm_exit=code, sqlite='v3 integrity ok', persistent_restart='ok')
+        report.update(sigterm_exit=code, sqlite='v4 integrity ok', persistent_restart='ok')
         print(json.dumps(report, ensure_ascii=False, sort_keys=True))
     finally:
         if created_container:
