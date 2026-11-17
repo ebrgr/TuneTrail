@@ -62,15 +62,7 @@
             {{icon "Palette"}}<span>{{tr "ui.appearance_language" "Theme and language"}}</span>
           </button>
           {{template "partial/admin-actions" .}}
-          {{if .PeriodLinks}}
-            {{/* ISSUE-071: icon rails retain a native period selector inside More. */}}
-            <details class="nav-periods-menu">
-              <summary class="nav-button" aria-label="{{tr "ui.time_period" "Time period"}}">{{tr "ui.time_period" "Time period"}}</summary>
-              {{range .PeriodLinks}}
-                <a class="nav-button" href="{{.URL}}" {{if .Selected}}aria-current="true"{{end}}>{{tr .Label .Fallback}}</a>
-              {{end}}
-            </details>
-          {{end}}
+          {{/* ISSUE-156: the time period selector is no longer repeated in More; every page keeps its own. */}}
         </div>
       </details>
     </div>

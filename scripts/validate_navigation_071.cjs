@@ -75,12 +75,8 @@ const server=http.createServer((req,res)=>{
     assert.ok(moreNode,'native summary has an accessible expansion state');
     assert.equal(moreNode.properties.find(p=>p.name==='expanded').value.value,true);
     await cdp.detach();
-    if(width>=640&&(width<1024||navLabels==='icons')&&await bar.locator('.nav-periods-menu').count()){
-     const periods=bar.locator('.nav-periods-menu');
-     await periods.locator('summary').focus();await page.keyboard.press('Enter');
-     assert.equal(await periods.locator('a').first().isVisible(),true,'icon rail retains a native period selector');
-     await page.keyboard.press('Enter');await palette.focus();
-    }
+    assert.equal(await bar.locator('.nav-periods-menu').count(),0,'More no longer repeats the period selector (ISSUE-156)');
+    await palette.focus();
     await page.keyboard.press('Enter');
     assert.equal(await page.locator('#theme-panel').evaluate(e=>e.matches(':popover-open')),true);
     await page.keyboard.press('Escape');

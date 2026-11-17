@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-17T13:00:00Z'
+updated_date: '2026-11-17T14:26:00Z'
 labels:
   - ui
   - admin
@@ -61,6 +61,15 @@ created: 2026-11-17T13:00:00Z
 ---
 
 Verificação: make check e make ui.check verdes; 270 vistas validate_navigation_071 com visitante/admin/prévia, com/sem JS, Yuu/Pearl, 320–1920px e paisagem; papéis, seleção, erro pré-auth, foco/teclado, AX, alvos 44px, rolagem, margens 58/224 e footer verificados. Referência regenerada e seis capturas em backlog/evidencias/issue-156/. ACs 1, 2 e 4 marcados. AC3 aguarda leitura manual com leitor de tela; AC5 aguarda aceite visual do usuário. Revisão própria APROVADO; sem push, merge, publish ou Done.
+
+---
+
+author: claude
+created: 2026-11-17T14:26:00Z
+
+---
+
+Ajuste pedido pelo usuário (2026-11-17): removido o item 'Time period' do menu (+) (details .nav-periods-menu, regras de CSS e asserts), por ser redundante com o seletor de cada página; o grupo .nav-periods da lateral com rótulos permanece. Referência e as 6 capturas do menu regeneradas (as capturas desta rodada vêm de um servidor estático da referência, por isso capas aparecem como imagem quebrada; só o menu importa). 270 vistas de navegação e make check verdes.
 
 ---
 <!-- COMMENTS:END -->

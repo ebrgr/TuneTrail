@@ -49,7 +49,7 @@ func TestNavigationLabelsBelongToThemePanel(t *testing.T) {
 		t.Fatal(err)
 	}
 	body := pageRequest(h, "/alpha").Body.String()
-	for _, want := range []string{`data-nav-labels-choice`, `name="nav-labels" value="labels"`, `name="nav-labels" value="icons" checked`, `class="nav-periods-menu"`} {
+	for _, want := range []string{`data-nav-labels-choice`, `name="nav-labels" value="labels"`, `name="nav-labels" value="icons" checked`} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("missing %s", want)
 		}
