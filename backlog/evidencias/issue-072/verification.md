@@ -1,19 +1,14 @@
-# ISSUE-072 — verificação
+# ISSUE-072 — verificação final dos ajustes
 
-- Implementação: quatro KPIs do período selecionado (minutos, reproduções, artistas e maior sequência de dias civis), comparação no servidor com intervalo anterior adjacente de igual duração em segundos. Os limites são congelados no fuso solicitado e normalizados para segundos. Todo o tempo não compara; ambos vazios mostram 0%; base anterior zero com atividade mostra “Nova atividade”.
-- “Tocando agora” aparece uma vez no topo via listening.ReadNowPlaying, sem contagem fictícia de reproduções.
-- Preservadas as decisões da ISSUE-154: heatmap fluido de até 35rem com 36/26 semanas, sem rolagem; grade com texto de largura integral, palavras inteiras e itens de pelo menos 22rem antes de criar outra coluna; últimas reproduções em toda a grade; navegação existente.
-- Seletor sticky confirmado no navegador: após rolar 600px, topo em 8px e position sticky.
-- make check: passou; inclui vet, testes Go, UI e 12/12 jornadas e2e.
-- make ui.check: passou, incluindo comparação com reference/ desta tarefa; Makefile repontado.
-- Testes SQLite cobrem cinco períodos, vazios atual/anterior, divisão por zero, variação positiva/negativa, limites adjacentes, isolamento de perfis e DST America/New_York. Teste HTML cobre posição e isolamento de tocando agora. Testes de tradução ajustados para o novo resumo de período.
-- browser-matrix.json: 105 casos, três perfis × cinco períodos × sete larguras (320, 390, 640, 768, 1024, 1440, 1920), sem overflow horizontal nem erros de conteúdo; tema Yuu.
-- Capturas Home/demo-cheio/Yuu: before-390.png, before-768.png, before-1440.png e after-390.png, after-768.png, after-1440.png. Altura de viewport 1000px, escala 1.
-- Banco original preservado; utilizado somente clone temporário. Servidor encerrado ao concluir.
-- Grafo atualizado por AST da worktree; dependências de loadHome/readHomeKPIs/homeValues verificadas.
-
-## Limitação e pergunta para aceite
-
-Em 320px as células visíveis têm aproximadamente 6,6px: permitem reconhecer densidade, mas a identificação de dias individuais é limitada (especialmente na faixa de 3–7px). O detalhamento textual “Valores de atividade” já existe. AC2 permanece pendente de avaliação de legibilidade; AC4 permanece desmarcado.
-
-1. A leitura do heatmap atual é suficiente ou deseja planejar uma visão compacta opcional de 13 semanas, com células maiores e mantendo a visão atual disponível, sem rolagem? Essa alternativa não foi implementada.
+- Quatro KPIs continuam por período; variações exatas ou arredondadas para zero não geram texto. Base anterior zero com atividade continua “Nova atividade”; todo o tempo não compara.
+- Restaurados os seis valores históricos por listening.ReadStats(all_time): faixas, álbuns, dias ativos, média diária, faixas/artista e álbuns/artista. Rótulos en/pt-BR existentes reutilizados, com data-listen-count histórico e mensagem de erro própria. Falhas dos KPIs e dos totais usam estados independentes.
+- Decisão mais recente do usuário: em >=64rem totais à esquerda, heatmap à direita. Em telas menores, mantido heatmap seguido dos totais. A quantidade de colunas dos totais depende da largura do próprio bloco.
+- Heatmap preserva máximo 35rem, células fluidas e 36/26 semanas sem rolagem. Usuário aprovou o tamanho; AC2 verificado em 320px.
+- Células usam data-tip com a mesma data/quantidade traduzida, aparência de tooltip.css, acima da célula, sombra, alinhamento para dentro nas extremidades e sem title nativo. CSS puro, sem JavaScript adicional. Grid segue aria-hidden; tabindex=-1 permite foco programático sem criar centenas de paradas de Tab em conteúdo oculto; dados acessíveis permanecem na tabela “Valores de atividade”.
+- browser-adjustments.json: larguras 320/390/768/1440, sem overflow horizontal; todos os tooltips medidos ficam dentro do cartão. Hover confirmado nas semanas inicial, central e final, opacity=1. Células em 320px: ~6,6px; em 1440px: ~11,1px. Foco programático confirmado no DOM; a webview de automação em segundo plano reporta document.hasFocus=false, portanto a aparência de :focus foi conferida na regra CSS, sem afirmar observação de foco nativo nessa webview.
+- Testes SQLite/HTML incluem cinco períodos, limites, isolamento, DST, base vazia, variação zero, totais históricos independentes do período selecionado, ausência de title, preservação da tabela e tocando agora.
+- make check: verde, incluindo 12/12 jornadas e2e.
+- make ui.check: verde; referência regenerada em reference/, Makefile já aponta para ela.
+- Capturas finais Home/demo-cheio/Yuu: depois2-390.png, depois2-768.png e depois2-1440.png. Viewport 1000px de altura, escala 1.
+- Banco original preservado; utilizado novo clone temporário. Servidor encerrado ao concluir.
+- Grafo da worktree atualizado por AST. AC4 permanece pendente de aceite visual.

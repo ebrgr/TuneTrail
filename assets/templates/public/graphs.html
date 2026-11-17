@@ -9,8 +9,9 @@
       <div class="activity-cells">
         {{range .Cells}}
           <span
-            class="activity-slot {{if lt .Week 10}}old-week{{end}}"
-            title="{{date .Date}} · {{quantity "quantity.plays" .Count}}"
+            class="activity-slot {{if lt .Week 10}}old-week{{end}} {{if lt .Week 16}}tip-start{{else if gt .Week 26}}tip-end{{end}}"
+            tabindex="-1"
+            data-tip="{{date .Date}} · {{quantity "quantity.plays" .Count}}"
           >
             {{if not .Future}}
               <span class="activity-cell {{if .Count}}filled{{end}}" {{if .Count}}style="opacity:{{.Opacity}}"{{end}}></span>

@@ -24,7 +24,10 @@ func (h *Pages) loadHome(ctx context.Context, p *LivePage) {
 	now := h.options.Now().In(loc)
 	from, to := db.TimeframeToTimeRangeAt(db.Timeframe{Period: db.Period(p.Period), Timezone: loc}, now)
 	p.Options.Timeframe = db.Timeframe{From: from.Truncate(time.Second), To: to.Truncate(time.Second), Timezone: loc, Resolved: true}
-	p.KPIs, p.Stats.ListenCount, err = readHomeKPIs(ctx, h.store, p.Options.Timeframe)
+	p.KPIs, _, err = readHomeKPIs(ctx, h.store, p.Options.Timeframe)
+	fail("kpis", err)
+	// Historical totals retain the original statistics semantics independently of KPIs.
+	p.Stats, err = listening.ReadStats(ctx, h.store, all)
 	fail("stats", err)
 	p.Activity, err = readActivity(ctx, h.store, db.ListenActivityOpts{Timezone: loc}, p.WeekStart, 100, h.options.Now())
 	fail("activity", err)

@@ -1,8 +1,8 @@
 APROVADO
 
-[OK] internal/webui/home_kpis.go:44 — intervalos adjacentes sem sobreposição, base zero explícita e ausência de comparação histórica; testes SQLite verdes.
-[OK] internal/db/sqlite/listen_activity.go:286 — consulta de sequência limitada ao intervalo e ao perfil; caminhos legados preservados.
-[OK] assets/templates/public/live.html:139 — resumo traduzido, tocando agora no topo e grade existente preservada.
-[OK] assets/css/ui/pages/home.css:160 — tokens e largura fluida; matriz de navegador sem overflow, seletor sticky verificado.
-[OK] Makefile:159 — referência da ISSUE-072 comparada por ui.check; make check e ui.check verdes.
-[RISCO] assets/css/ui/components/activity.css:35 — células de aproximadamente 6,6px em 320px servem para densidade; leitura individual depende de aceite. Sem mudança no heatmap e sem rolagem; AC2/AC4 pendentes.
+[OK] internal/webui/home.go — totais históricos independentes do período dos KPIs, com estados de erro separados.
+[OK] internal/webui/home_kpis.go — variação zero ausente; “Nova atividade” e percentuais não nulos preservados.
+[OK] assets/css/ui/pages/home.css — totais à esquerda e atividade à direita em >=64rem; empilhamento e colunas por container abaixo disso.
+[OK] assets/templates/public/graphs.html — data-tip traduzido, sem title nativo; tabela acessível preservada.
+[OK] assets/css/ui/components/activity.css — hover visível e tooltips dentro do cartão em 320/390/768/1440px; regra de foco presente, sem JavaScript.
+[OK] Makefile — referência final da ISSUE-072 validada por ui.check; make check e ui.check verdes.

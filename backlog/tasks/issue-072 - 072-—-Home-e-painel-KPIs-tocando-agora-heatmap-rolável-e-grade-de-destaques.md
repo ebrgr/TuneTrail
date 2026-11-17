@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-17T18:22:00Z'
+updated_date: '2026-11-17T19:39:00Z'
 labels:
   - ui
 milestone: m-10
@@ -15,6 +15,7 @@ references:
   - backlog/evidencias/issue-072/verification.md
   - backlog/evidencias/issue-072/review.md
   - backlog/evidencias/issue-072/browser-matrix.json
+  - backlog/evidencias/issue-072/browser-adjustments.json
 priority: medium
 type: feature
 ordinal: 72000
@@ -36,7 +37,7 @@ Passos:
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 KPIs com variação calculada no servidor e testada
-- [ ] #2 Heatmap legível em 320px sem esconder semanas
+- [x] #2 Heatmap legível em 320px sem esconder semanas
 - [x] #3 Grade de destaques adaptável sem largura fixa
 - [ ] #4 Capturas e aceite visual
 <!-- AC:END -->
@@ -77,6 +78,24 @@ created: 2026-11-17T18:22:00Z
 ---
 
 Verificação: make check e make ui.check verdes; 12/12 jornadas e2e; 105 combinações de perfis/períodos/larguras entre 320 e 1920px sem rolagem horizontal. Seis capturas Yuu antes/depois e referência em backlog/evidencias/issue-072/. AC1 e AC3 verificados; AC2 pendente pela leitura individual das células de ~6,6px em 320px, AC4 reservado ao aceite visual. Pergunta: manter essa leitura ou planejar visão compacta opcional de 13 semanas, sem rolagem? Conflitos com doc-010/passos antigos resolvidos conforme decisões da ISSUE-154. Servidor de teste encerrado; banco original preservado.
+
+---
+
+author: codex
+created: 2026-11-17T19:39:00Z
+
+---
+
+Decisão do usuário aplicada: restaurar seis totais sempre históricos; a ordem final em telas largas é TOTAIS À ESQUERDA e HEATMAP À DIREITA (substitui a primeira instrução deste ajuste). Em telas menores mantém heatmap seguido dos totais. Tamanho do heatmap aprovado pelo usuário; AC2 marcado após nova verificação em 320px sem rolagem. Tooltips data-tip em CSS puro, sem title nativo, alinhados para dentro; tabela acessível mantida. Variações zero ocultas; rótulos en/pt-BR existentes reutilizados. AC4 permanece desmarcado.
+
+---
+
+author: codex
+created: 2026-11-17T19:39:00Z
+
+---
+
+Verificação: ajustes implementados e revisados diretamente por codex, sem delegação. make check e make ui.check verdes, 12/12 jornadas e2e; referência regenerada em backlog/evidencias/issue-072/reference. Capturas finais depois2-390.png, depois2-768.png e depois2-1440.png em backlog/evidencias/issue-072/. Browser confirmou ausência de rolagem e tooltips dentro do cartão em 320/390/768/1440px; totais à esquerda no desktop. AC1/AC2/AC3 verificados; AC4 reservado ao aceite visual. Banco original preservado e servidor encerrado.
 
 ---
 <!-- COMMENTS:END -->

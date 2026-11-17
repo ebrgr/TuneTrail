@@ -1,0 +1,150 @@
+[
+  {
+    "width": 320,
+    "scroll": 320,
+    "card": {
+      "left": 16,
+      "right": 304
+    },
+    "tipMin": 21.29755,
+    "tipMax": 291.57820000000004,
+    "cell": 6.609375,
+    "totalsLeft": false,
+    "stacked": true,
+    "nativeTitles": false,
+    "hover": [
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 320
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 320
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 320
+      }
+    ],
+    "focus": {
+      "focused": true,
+      "documentHasFocus": false,
+      "focusSelector": false,
+      "opacity": "0"
+    }
+  },
+  {
+    "width": 390,
+    "scroll": 390,
+    "card": {
+      "left": 16,
+      "right": 374
+    },
+    "tipMin": 41.02367499999997,
+    "tipMax": 352.8984375,
+    "cell": 9.3046875,
+    "totalsLeft": false,
+    "stacked": true,
+    "nativeTitles": false,
+    "hover": [
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 390
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 390
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 390
+      }
+    ],
+    "focus": {
+      "focused": true,
+      "documentHasFocus": false,
+      "focusSelector": false,
+      "opacity": "0"
+    }
+  },
+  {
+    "width": 768,
+    "scroll": 768,
+    "card": {
+      "left": 133,
+      "right": 693
+    },
+    "tipMin": 191.50718750000001,
+    "tipMax": 661.4453125,
+    "cell": 11.109375,
+    "totalsLeft": false,
+    "stacked": true,
+    "nativeTitles": false,
+    "hover": [
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 768
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 768
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 768
+      }
+    ],
+    "focus": {
+      "focused": true,
+      "documentHasFocus": false,
+      "focusSelector": false,
+      "opacity": "0"
+    }
+  },
+  {
+    "width": 1440,
+    "scroll": 1440,
+    "card": {
+      "left": 840,
+      "right": 1400
+    },
+    "tipMin": 898.5071874999999,
+    "tipMax": 1368.4453125,
+    "cell": 11.109375,
+    "totalsLeft": true,
+    "stacked": false,
+    "nativeTitles": false,
+    "hover": [
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 1440
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 1440
+      },
+      {
+        "hover": true,
+        "opacity": "1",
+        "scroll": 1440
+      }
+    ],
+    "focus": {
+      "focused": true,
+      "documentHasFocus": false,
+      "focusSelector": false,
+      "opacity": "0"
+    }
+  }
+]

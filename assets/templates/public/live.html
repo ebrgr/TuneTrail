@@ -154,8 +154,8 @@
         </section>
       {{end}}
       {{template "partial/periods" .}}
-      <section class="home-kpis" aria-label="{{tr "home.summary" "Period summary"}}" data-listen-count="{{.Stats.ListenCount}}">
-        {{if index .Errors "stats"}}
+      <section class="home-kpis" aria-label="{{tr "home.summary" "Period summary"}}">
+        {{if index .Errors "kpis"}}
           <p class="error">{{tr "ui.statistics_unavailable_please_retry" "Statistics unavailable. Please retry."}}</p>
         {{else}}
           {{range .KPIs}}
@@ -175,6 +175,21 @@
             <p class="error">{{tr "ui.activity_unavailable_please_retry" "Activity unavailable. Please retry."}}</p>
           {{else}}
             {{template "partial/activity-grid" .Activity}}
+          {{end}}
+        </section>
+        <section class="stats home-totals">
+          <h3 class="section-title">{{tr "ui.all_time_stats" "All time stats"}}</h3>
+          {{if index .Errors "stats"}}
+            <p class="error">{{tr "ui.statistics_unavailable_please_retry" "Statistics unavailable. Please retry."}}</p>
+          {{else}}
+            <div class="card home-totals-values" data-listen-count="{{.Stats.ListenCount}}">
+              <div><b>{{number .Stats.TrackCount}}</b> {{unit "unit.tracks" .Stats.TrackCount}}</div>
+              <div><b>{{number .Stats.AlbumCount}}</b> {{unit "unit.albums" .Stats.AlbumCount}}</div>
+              <div><b>{{number .Stats.DaysActive}}</b> {{unit "unit.days" .Stats.DaysActive}}</div>
+              <div><b>{{decimal .Stats.AvgDailyPlays}}</b> {{tr "ui.avg_daily_plays" "Avg. Daily Plays"}}</div>
+              <div><b>{{decimal .Stats.TracksPerArtist}}</b> {{tr "ui.avg_tracks_artist" "Avg. Tracks / Artist"}}</div>
+              <div><b>{{decimal .Stats.AlbumsPerArtist}}</b> {{tr "ui.avg_albums_artist" "Avg. Albums / Artist"}}</div>
+            </div>
           {{end}}
         </section>
       </div>

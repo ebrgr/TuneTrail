@@ -175,7 +175,18 @@
 .home-playing>div { min-width:0; }
 .home-playing .media { margin-top:var(--space-3); }
 .home .period-selector { position:sticky; top:var(--space-2); z-index:10; background:var(--color-bg-secondary); }
-.overview { display:flex; align-items:center; }
+.overview { display:flex; flex-direction:column; align-items:center; container:overview / inline-size; }
+.home-totals { width:100%; min-width:0; container:totals / inline-size; }
+.home-totals-values { display:grid; gap:var(--space-3); padding:var(--space-4); }
+@container totals (min-width:30rem) {
+  .home-totals-values { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(min-width:64rem) {
+  .overview { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,35rem); align-items:start; justify-content:center; }
+  /* Keep the DOM reading order on small screens; place totals first only in the wide grid. */
+  .overview>.home-totals { grid-column:1; grid-row:1; }
+  .overview>.activity { grid-column:2; grid-row:1; }
+}
 /* Preserve whole words and the full text column established in ISSUE-154. */
 .home .hero-caption h5,.home .media-title,.home .media-artist,.home .media-meta { overflow-wrap:normal; word-break:normal; }
 

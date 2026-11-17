@@ -64,10 +64,12 @@ func readHomeKPIs(ctx context.Context, s listening.StatsStore, tf db.Timeframe) 
 		if compare {
 			if previous[i] == 0 && current[i] > 0 {
 				k.New = true
-			} else if previous[i] == 0 {
-				k.Change = "0%"
-			} else {
+			} else if previous[i] != 0 && current[i] != previous[i] {
 				k.Change = fmt.Sprintf("%+.0f%%", 100*(float64(current[i])-float64(previous[i]))/float64(previous[i]))
+				// Suppress changes that round to zero at the displayed precision.
+				if k.Change == "+0%" || k.Change == "-0%" {
+					k.Change = ""
+				}
 			}
 		}
 		result[i] = k

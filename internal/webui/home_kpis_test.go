@@ -40,7 +40,7 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 				t.Fatalf("empty: %v %d", err, count)
 			}
 			for _, k := range got {
-				if k.New || (period != db.PeriodAllTime && k.Change != "0%") {
+				if k.New || k.Change != "" {
 					t.Fatalf("empty: %+v", k)
 				}
 			}
@@ -84,6 +84,11 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 			if err != nil || count != 2 || got[1].Change != "+100%" {
 				t.Fatalf("adjacent bounds: %+v %d %v", got, count, err)
 			}
+			save(1, from.Add(-2*time.Second))
+			equal, _, err := readHomeKPIs(ctx, s, tf)
+			if err != nil || equal[1].Change != "" {
+				t.Fatalf("unchanged KPI: %+v %v", equal, err)
+			}
 			// A midnight transition counts consecutive local dates, rather than elapsed 24-hour days.
 			if period == db.PeriodDay && got[3].Value != 2 {
 				t.Fatalf("DST streak: %+v", got)
@@ -108,5 +113,28 @@ func TestHomeNowPlayingAppearsBeforePeriodSummary(t *testing.T) {
 	}
 	if strings.Contains(pageRequest(h, "/empty").Body.String(), `class="card home-playing"`) {
 		t.Fatal("playing leaked to empty profile")
+	}
+}
+
+func TestHomeHistoricalTotalsAndActivityTooltips(t *testing.T) {
+	// Historical totals remain independent of the selected KPI period; the hidden graph keeps its table.
+	s := pageStore(t)
+	if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)}); err != nil {
+		t.Fatal(err)
+	}
+	h, err := NewHandler(s, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := pageRequest(h, "/alpha?period=day").Body.String()
+	if !strings.Contains(body, `data-listen-count="4"`) || !strings.Contains(body, `class="stats home-totals"`) {
+		t.Fatal("historical totals lost")
+	}
+	if !strings.Contains(body, `data-tip="`) || !strings.Contains(body, `class="activity-calendar" aria-hidden="true"`) || !strings.Contains(body, "Activity values") {
+		t.Fatal("tooltip/table contract lost")
+	}
+	start, end := strings.Index(body, `class="activity-cells"`), strings.Index(body, `class="activity-footer"`)
+	if start < 0 || end < start || strings.Contains(body[start:end], `title="`) {
+		t.Fatal("native activity tooltip remains")
 	}
 }

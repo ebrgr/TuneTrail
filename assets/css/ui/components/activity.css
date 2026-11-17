@@ -115,4 +115,24 @@
   .old-week { display: block; }
   .legend i { width: 9px; height: 9px; }
 }
+/* Keep cell tooltips above the card, with edge weeks anchored inward without JavaScript. */
+.activity-slot { position:relative; }
+.activity-cells .activity-slot[data-tip]::after {
+  transition:none;
+  box-sizing:border-box;
+  bottom:calc(100% + var(--space-2));
+  left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+  width:max-content;
+  max-width:min(12rem,calc(100cqw - 2rem));
+  white-space:normal;
+  font-size:.75rem;
+  box-shadow:var(--shadow-card);
+}
+.activity-cells .activity-slot.tip-start[data-tip]::after { left:0; transform:none; }
+.activity-cells .activity-slot.tip-end[data-tip]::after { left:auto; right:0; transform:none; }
+.activity-slot[data-tip]:is(:hover,:focus)::after { opacity:1; }
+.activity-slot:is(:hover,:focus) { z-index:21; }
+
 }
