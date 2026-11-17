@@ -97,3 +97,77 @@ func TestPublicCatalogFallbackAndEscaping(t *testing.T) {
 		t.Fatal("catalog fallback or HTML escaping failed")
 	}
 }
+
+func TestHomeKPIComparisonTranslations(t *testing.T) {
+	// Visible comparison text is localized once, beside its value, without signed percentages.
+	s := pageStore(t)
+	if err := s.Exec("DELETE FROM listens"); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 6, 15, 12, 0, 0, 0, time.UTC)
+	save := func(at time.Time) {
+		t.Helper()
+		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: at}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	catalog, err := i18n.Load("../../langs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err := NewHandler(s, Options{Languages: catalog, Now: func() time.Time { return now }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	get := func(path, lang string) string {
+		t.Helper()
+		r := httptest.NewRequest("GET", path, nil)
+		r.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: lang})
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != 200 {
+			t.Fatal(w.Code)
+		}
+		body := w.Body.String()
+		start := strings.Index(body, `class="home-kpis"`)
+		end := strings.Index(body, `class="overview"`)
+		if start < 0 || end < start {
+			t.Fatal("missing KPI region")
+		}
+		return body[start:end]
+	}
+	for _, tc := range []struct{ lang, same string }{
+		{"en", "Same"},
+		{"pt-BR", "Igual"},
+	} {
+		if !strings.Contains(get("/empty?period=day", tc.lang), tc.same) {
+			t.Fatal("zero translation", tc.lang)
+		}
+	}
+	save(now.Add(-time.Hour))
+	for _, tc := range []struct{ lang, new string }{{"en", "New"}, {"pt-BR", "Novo"}} {
+		if !strings.Contains(get("/alpha?period=day", tc.lang), tc.new) {
+			t.Fatal("new translation", tc.lang)
+		}
+	}
+	save(now.Add(-2 * time.Hour))
+	save(now.Add(-25 * time.Hour))
+	for _, tc := range []struct{ lang, more string }{{"en", "100% More"}, {"pt-BR", "100% Mais"}} {
+		body := get("/alpha?period=day", tc.lang)
+		if !strings.Contains(body, tc.more) || strings.Contains(body, "+100") || strings.Contains(body, "vs.") {
+			t.Fatal("more translation", tc.lang, body)
+		}
+	}
+	save(now.Add(-26 * time.Hour))
+	save(now.Add(-27 * time.Hour))
+	save(now.Add(-28 * time.Hour))
+	for _, tc := range []struct{ lang, less string }{{"en", "50% Less"}, {"pt-BR", "50% Menos"}} {
+		if !strings.Contains(get("/alpha?period=day", tc.lang), tc.less) {
+			t.Fatal("less translation", tc.lang)
+		}
+		all := get("/alpha?period=all_time", tc.lang)
+		if strings.Count(all, "<span>") != 4 {
+			t.Fatal("all-time comparison remains")
+		}
+	}
+}

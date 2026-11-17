@@ -589,6 +589,8 @@
   "home.kpi.plays": "Reproduções",
   "home.kpi.artists": "Artistas",
   "home.kpi.streak": "Maior sequência (dias)",
-  "home.new_activity": "Nova atividade (antes zero)",
-  "home.vs_previous": "vs. período anterior"
+  "home.new_activity": "Novo",
+  "home.change.more": "{{.N}}% Mais",
+  "home.change.same": "Igual",
+  "home.change.less": "{{.N}}% Menos"
 }

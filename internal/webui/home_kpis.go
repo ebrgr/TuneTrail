@@ -3,6 +3,7 @@ package webui
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
@@ -13,8 +14,9 @@ type HomeKPI struct {
 	Key   string
 	Value int64
 	// Change is absent for all-time; New avoids dividing by an empty baseline.
-	Change string
-	New    bool
+	Change    string
+	Direction string
+	New       bool
 }
 
 func homeValues(ctx context.Context, s listening.StatsStore, tf db.Timeframe) ([4]int64, error) {
@@ -62,13 +64,19 @@ func readHomeKPIs(ctx context.Context, s listening.StatsStore, tf db.Timeframe) 
 	for i, key := range []string{"minutes", "plays", "artists", "streak"} {
 		k := HomeKPI{Key: key, Value: current[i]}
 		if compare {
+			// Keep display words localized and the percentage unsigned; zero has its own label.
+			k.Direction = "same"
 			if previous[i] == 0 && current[i] > 0 {
 				k.New = true
-			} else if previous[i] != 0 && current[i] != previous[i] {
-				k.Change = fmt.Sprintf("%+.0f%%", 100*(float64(current[i])-float64(previous[i]))/float64(previous[i]))
-				// Suppress changes that round to zero at the displayed precision.
-				if k.Change == "+0%" || k.Change == "-0%" {
-					k.Change = ""
+				k.Direction = ""
+			} else if previous[i] != 0 {
+				delta := 100 * (float64(current[i]) - float64(previous[i])) / float64(previous[i])
+				if math.Round(math.Abs(delta)) != 0 {
+					k.Change = fmt.Sprintf("%.0f", math.Abs(delta))
+					k.Direction = "more"
+					if delta < 0 {
+						k.Direction = "less"
+					}
 				}
 			}
 		}

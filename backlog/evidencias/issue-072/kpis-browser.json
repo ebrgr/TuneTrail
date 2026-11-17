@@ -1,0 +1,104 @@
+[
+  {
+    "width": 1440,
+    "scroll": 1440,
+    "theme": "yuu",
+    "cards": [
+      {
+        "text": "Minutos\n356\n70% Mais",
+        "font": "40px",
+        "weight": "700",
+        "comparisonFont": "14px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      },
+      {
+        "text": "Reproduções\n77\n54% Mais",
+        "font": "40px",
+        "weight": "700",
+        "comparisonFont": "14px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      },
+      {
+        "text": "Artistas\n38\n58% Mais",
+        "font": "40px",
+        "weight": "700",
+        "comparisonFont": "14px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      },
+      {
+        "text": "Maior sequência (dias)\n3\nIgual",
+        "font": "40px",
+        "weight": "700",
+        "comparisonFont": "14px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "scroll": 390,
+    "theme": "yuu",
+    "cards": [
+      {
+        "text": "Minutos\n356\n70% Mais",
+        "font": "29.75px",
+        "weight": "700",
+        "comparisonFont": "12.175px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      },
+      {
+        "text": "Reproduções\n77\n54% Mais",
+        "font": "29.75px",
+        "weight": "700",
+        "comparisonFont": "12.175px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      },
+      {
+        "text": "Artistas\n38\n58% Mais",
+        "font": "29.75px",
+        "weight": "700",
+        "comparisonFont": "12.175px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      },
+      {
+        "text": "Maior sequência (dias)\n3\nIgual",
+        "font": "29.75px",
+        "weight": "700",
+        "comparisonFont": "12.175px",
+        "comparisonWeight": "400",
+        "align": "baseline",
+        "gap": "12px",
+        "sameLine": true,
+        "overflow": false
+      }
+    ]
+  }
+]

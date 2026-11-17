@@ -40,7 +40,7 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 				t.Fatalf("empty: %v %d", err, count)
 			}
 			for _, k := range got {
-				if k.New || k.Change != "" {
+				if k.New || k.Change != "" || (period != db.PeriodAllTime && k.Direction != "same") {
 					t.Fatalf("empty: %+v", k)
 				}
 			}
@@ -51,7 +51,7 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 					t.Fatal(err)
 				}
 				for _, k := range priorOnly {
-					if k.Change != "-100%" {
+					if k.Change != "100" || k.Direction != "less" {
 						t.Fatalf("empty current: %+v", k)
 					}
 				}
@@ -67,7 +67,7 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 			}
 			if period == db.PeriodAllTime {
 				for _, k := range got {
-					if k.Change != "" || k.New {
+					if k.Change != "" || k.New || k.Direction != "" {
 						t.Fatalf("all time compares: %+v", k)
 					}
 				}
@@ -81,12 +81,12 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 			save(1, from.Add(-time.Second))
 			save(1, from)
 			got, count, err = readHomeKPIs(ctx, s, tf)
-			if err != nil || count != 2 || got[1].Change != "+100%" {
+			if err != nil || count != 2 || got[1].Change != "100" || got[1].Direction != "more" {
 				t.Fatalf("adjacent bounds: %+v %d %v", got, count, err)
 			}
 			save(1, from.Add(-2*time.Second))
 			equal, _, err := readHomeKPIs(ctx, s, tf)
-			if err != nil || equal[1].Change != "" {
+			if err != nil || equal[1].Change != "" || equal[1].Direction != "same" {
 				t.Fatalf("unchanged KPI: %+v %v", equal, err)
 			}
 			// A midnight transition counts consecutive local dates, rather than elapsed 24-hour days.

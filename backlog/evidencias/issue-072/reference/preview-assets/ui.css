@@ -1645,8 +1645,26 @@ h2.search-section-title,
   width:100%;
 }
 .home-kpi { display:flex; flex-direction:column; gap:var(--space-2); padding:var(--space-4); min-width:0; }
-.home-kpi strong { font-size:var(--step-3); font-family:'League Spartan',sans-serif; }
-.home-kpi small { color:var(--color-fg-secondary); }
+/* Keep the comparison compact beside the value, wrapping only when the row is full. */
+.home-kpi-value {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  column-gap:var(--space-3);
+  font-size:var(--step-3);
+  font-family:'League Spartan',sans-serif;
+  font-weight:700;
+  min-width:0;
+}
+.home-kpi-value>strong { font:inherit; max-width:100%; overflow-wrap:anywhere; }
+.home-kpi-value>span {
+  font-family:'Jost',sans-serif;
+  font-size:var(--step--1);
+  font-weight:400;
+  color:var(--color-fg-secondary);
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
 .home-playing { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4); width:100%; }
 .home-playing>div { min-width:0; }
 .home-playing .media { margin-top:var(--space-3); }

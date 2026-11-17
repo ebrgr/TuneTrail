@@ -1,6 +1,6 @@
 # ISSUE-072 — verificação final dos ajustes
 
-- Quatro KPIs continuam por período; variações exatas ou arredondadas para zero não geram texto. Base anterior zero com atividade continua “Nova atividade”; todo o tempo não compara.
+- Quatro KPIs continuam por período. Conforme a decisão mais recente, a variação usa texto pequeno ao lado do número, alinhado pela base, com espaço de 12px e quebra quando necessário: “N% Mais”, “N% Menos”, “Igual” ou “Novo”. Sem sinais e sem “vs. período anterior”. Todo o tempo não compara. Variação que arredonda para zero mostra “Igual”. “Novo” para base anterior zero aguarda confirmação do rótulo pelo usuário.
 - Restaurados os seis valores históricos por listening.ReadStats(all_time): faixas, álbuns, dias ativos, média diária, faixas/artista e álbuns/artista. Rótulos en/pt-BR existentes reutilizados, com data-listen-count histórico e mensagem de erro própria. Falhas dos KPIs e dos totais usam estados independentes.
 - Decisão mais recente do usuário: em >=64rem totais à esquerda, heatmap à direita. Em telas menores, mantido heatmap seguido dos totais. A quantidade de colunas dos totais depende da largura do próprio bloco.
 - Heatmap preserva máximo 35rem, células fluidas e 36/26 semanas sem rolagem. Usuário aprovou o tamanho; AC2 verificado em 320px.
@@ -12,3 +12,11 @@
 - Capturas finais Home/demo-cheio/Yuu: depois2-390.png, depois2-768.png e depois2-1440.png. Viewport 1000px de altura, escala 1.
 - Banco original preservado; utilizado novo clone temporário. Servidor encerrado ao concluir.
 - Grafo da worktree atualizado por AST. AC4 permanece pendente de aceite visual.
+
+## Último ajuste dos KPIs
+
+- Textos en: “N% More”, “N% Less”, “Same”, “New”; pt-BR: “N% Mais”, “N% Menos”, “Igual”, “Novo”. Texto visível acompanha o valor, sem aria-label duplicado.
+- kpis-browser.json confirma fonte pequena, peso 400, alinhamento baseline, espaço 12px, mesma linha e ausência de overflow nos quatro cards em 390/1440px. Tema Yuu, perfil demo-cheio, nova cópia do banco descartável.
+- Screenshots novos dispensados pela última instrução do usuário; nenhuma imagem nova incluída neste ajuste.
+- Testes de home_kpis e i18n atualizados para aumentos, quedas, igualdade, base zero e ausência de comparação em all_time. make check e make ui.check verdes; 12/12 jornadas e2e.
+- Referência regenerada, grafo atualizado, servidor temporário da porta 18772 encerrado; serviços existentes em 4110/4111 preservados.

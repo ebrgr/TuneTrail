@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- A Home mostra KPIs do período com comparação, tocando agora no topo e seletor de período fixo, com totais históricos ao lado do heatmap fluido, tooltips nas células e variações zero ocultas (ISSUE-072).
+- A Home mostra KPIs do período com comparação, tocando agora no topo e seletor de período fixo, com totais históricos ao lado do heatmap fluido, tooltips nas células e variações ao lado dos números (“Mais”, “Menos” ou “Igual”) (ISSUE-072).
 
 ## [0.32] - 2026-11-17
 

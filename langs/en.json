@@ -589,6 +589,8 @@
   "home.kpi.plays": "Plays",
   "home.kpi.artists": "Artists",
   "home.kpi.streak": "Longest streak (days)",
-  "home.new_activity": "New activity (previously zero)",
-  "home.vs_previous": "vs. previous period"
+  "home.new_activity": "New",
+  "home.change.more": "{{.N}}% More",
+  "home.change.same": "Same",
+  "home.change.less": "{{.N}}% Less"
 }
