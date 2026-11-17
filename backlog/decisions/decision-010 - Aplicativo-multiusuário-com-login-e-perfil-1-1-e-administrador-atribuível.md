@@ -2,7 +2,7 @@
 id: decision-010
 title: Aplicativo multiusuário com login e perfil 1:1 e administrador atribuível
 date: '2026-11-17T17:17:00Z'
-status: proposed
+status: accepted
 ---
 ## Context
 

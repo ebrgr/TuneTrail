@@ -167,7 +167,7 @@ Esta entrega documental não executa nem comprova estes testes:
 
 ## 9. Única pergunta pendente
 
-**1. Manter como está ou remover o limitador compartilhado de login já existente (10/min quando habilitado, engine/routes.go)? Recomendo manter como está**, para preservar o comportamento atual, sem criar limites por usuário, bloqueios ou análise de origem/IP. A escolha não foi tomada nesta especificação.
+**Decisão do usuário (2026-11-17): MANTER COMO ESTÁ, sem complicar as senhas; nenhum limite novo.** Pergunta original: manter como está ou remover o limitador compartilhado de login já existente (10/min quando habilitado, engine/routes.go)? Recomendo manter como está**, para preservar o comportamento atual, sem criar limites por usuário, bloqueios ou análise de origem/IP. A escolha não foi tomada nesta especificação.
 
 “Como está” inclui exatamente o comportamento de agrupamento/configuração do middleware atual; não o reimplementar como bucket por usuário ou IP. Se a intenção de não considerar origem/IP também exigir eliminar qualquer comportamento de agrupamento já fornecido por esse middleware, a opção coerente é removê-lo, não substituí-lo por outro. A recomendação de preservá-lo não autoriza acrescentar lógica de origem.
 
