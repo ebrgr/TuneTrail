@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-17T20:47:00Z'
+updated_date: '2026-11-17T20:48:00Z'
 labels:
   - ui
 milestone: m-10
@@ -115,6 +115,15 @@ created: 2026-11-17T20:47:00Z
 ---
 
 Aceite do usuário (2026-11-17) após ver a Home em instância local com dados reais (cópia) e em banco descartável, com os ajustes pedidos: totais históricos à esquerda e heatmap à direita, tooltip próprio nas células, KPIs com comparação pequena ao lado do número (N% Mais, N% Menos, Igual), sem rótulo Novo, e duas linhas de dois cards até 64rem. Heatmap em 320px sem rolagem, com células fluidas aprovadas pelo usuário. Publicação com push autorizada pelo usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-17T20:48:00Z
+
+---
+
+Publicação: versão 0.33 (tag `v0.33`), branch `feat/issue-072-home-e-painel-kpis-tocando` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
