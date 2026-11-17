@@ -163,8 +163,7 @@
               <span>{{tr (printf "home.kpi.%s" .Key) .Key}}</span>
               <div class="home-kpi-value">
                 <strong>{{number .Value}}</strong>
-                {{if .New}}<span>{{tr "home.new_activity" "New"}}</span>
-                {{else if eq .Direction "same"}}<span>{{tr "home.change.same" "Same"}}</span>
+                {{if eq .Direction "same"}}<span>{{tr "home.change.same" "Same"}}</span>
                 {{else if eq .Direction "more"}}<span>{{tr1 "home.change.more" "{{.N}}% More" "N" .Change}}</span>
                 {{else if eq .Direction "less"}}<span>{{tr1 "home.change.less" "{{.N}}% Less" "N" .Change}}</span>{{end}}
               </div>

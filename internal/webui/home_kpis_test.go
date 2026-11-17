@@ -40,7 +40,7 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 				t.Fatalf("empty: %v %d", err, count)
 			}
 			for _, k := range got {
-				if k.New || k.Change != "" || (period != db.PeriodAllTime && k.Direction != "same") {
+				if k.Change != "" || (period != db.PeriodAllTime && k.Direction != "same") {
 					t.Fatalf("empty: %+v", k)
 				}
 			}
@@ -67,15 +67,15 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 			}
 			if period == db.PeriodAllTime {
 				for _, k := range got {
-					if k.Change != "" || k.New || k.Direction != "" {
+					if k.Change != "" || k.Direction != "" {
 						t.Fatalf("all time compares: %+v", k)
 					}
 				}
 				return
 			}
 			for _, k := range got {
-				if !k.New {
-					t.Fatalf("zero baseline: %+v", k)
+				if k.Change != "" || k.Direction != "" {
+					t.Fatalf("zero baseline shows no label: %+v", k)
 				}
 			}
 			save(1, from.Add(-time.Second))

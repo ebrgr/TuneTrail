@@ -13,10 +13,9 @@ import (
 type HomeKPI struct {
 	Key   string
 	Value int64
-	// Change is absent for all-time; New avoids dividing by an empty baseline.
+	// Change and Direction are empty for all-time and when the previous period is empty.
 	Change    string
 	Direction string
-	New       bool
 }
 
 func homeValues(ctx context.Context, s listening.StatsStore, tf db.Timeframe) ([4]int64, error) {
@@ -67,7 +66,7 @@ func readHomeKPIs(ctx context.Context, s listening.StatsStore, tf db.Timeframe) 
 			// Keep display words localized and the percentage unsigned; zero has its own label.
 			k.Direction = "same"
 			if previous[i] == 0 && current[i] > 0 {
-				k.New = true
+				// ISSUE-072: no label when the baseline is empty (a percentage cannot be computed).
 				k.Direction = ""
 			} else if previous[i] != 0 {
 				delta := 100 * (float64(current[i]) - float64(previous[i])) / float64(previous[i])
