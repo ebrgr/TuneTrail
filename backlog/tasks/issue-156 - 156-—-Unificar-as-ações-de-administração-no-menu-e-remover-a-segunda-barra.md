@@ -1,11 +1,11 @@
 ---
 id: ISSUE-156
 title: 156 — Unificar as ações de administração no menu (+) e remover a segunda barra
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-17T14:26:00Z'
+updated_date: '2026-11-17T15:21:00Z'
 labels:
   - ui
   - admin
@@ -31,7 +31,7 @@ Origem: parecer do Advisor na ISSUE-155 (plano ai-memory 01a1e987-1d45-7cc1-ac8a
 - [x] #2 O menu (+) mostra grupos Escuta, Aparência, Administração e Sobre conforme o papel (visitante, admin, prévia), com nomes completos em todas as larguras
 - [ ] #3 Funciona sem JavaScript (abrir o menu e seguir Entrar, Conta, Perfis e Servidor) e com foco, teclado e leitor de tela verificados
 - [x] #4 Garantias do admin_sidebar_123_test migradas para o novo grupo; validate_navigation_071 e make check verdes
-- [ ] #5 Capturas em celular, médio e desktop e aceite visual do usuário
+- [x] #5 Capturas em celular, médio e desktop e aceite visual do usuário
 <!-- AC:END -->
 
 ## Comments
@@ -70,6 +70,15 @@ created: 2026-11-17T14:26:00Z
 ---
 
 Ajuste pedido pelo usuário (2026-11-17): removido o item 'Time period' do menu (+) (details .nav-periods-menu, regras de CSS e asserts), por ser redundante com o seletor de cada página; o grupo .nav-periods da lateral com rótulos permanece. Referência e as 6 capturas do menu regeneradas (as capturas desta rodada vêm de um servidor estático da referência, por isso capas aparecem como imagem quebrada; só o menu importa). 270 vistas de navegação e make check verdes.
+
+---
+
+author: ebrgr
+created: 2026-11-17T15:21:00Z
+
+---
+
+Aceite do usuário (2026-11-17) após ver o menu (+) em instância local com dados reais (cópia) e em banco descartável, já sem o item Time period. AC3: teclado, foco, links sem JS e árvore de acessibilidade verificados; a leitura manual com VoiceOver continua pendente e não foi marcada. Destrava as ISSUE-157 e 153. Publicação local; push depende de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
