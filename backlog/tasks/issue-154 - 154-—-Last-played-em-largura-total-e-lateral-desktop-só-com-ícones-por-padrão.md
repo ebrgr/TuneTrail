@@ -111,4 +111,13 @@ created: 2026-11-17T12:18:00Z
 Aceite do usuário (2026-11-17) após conferir Home, lateral só de ícones, menu (+), gráfico de atividade, cards, ícone de chave e retrospectiva em instância local com os dados reais (cópia) e em banco descartável. Pendências registradas fora desta issue: ISSUE-153 (persistência das opções de tema no conf.toml) e ISSUE-155 (reestudo da segunda barra). Publicação local; push depende de autorização à parte.
 
 ---
+
+author: ebrgr
+created: 2026-11-17T12:18:00Z
+
+---
+
+Publicação: versão 0.30 (tag `v0.30`), branch `fix/issue-154-last-played-em-largura-total` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->
