@@ -583,5 +583,12 @@
   "media.dialog.reload_history": "Recarregar histórico",
   "ui.listening": "Escuta",
   "ui.appearance": "Aparência",
-  "ui.preview_admin_unavailable": "Prévia: administração indisponível"
+  "ui.preview_admin_unavailable": "Prévia: administração indisponível",
+  "home.summary": "Resumo do período",
+  "home.kpi.minutes": "Minutos",
+  "home.kpi.plays": "Reproduções",
+  "home.kpi.artists": "Artistas",
+  "home.kpi.streak": "Maior sequência (dias)",
+  "home.new_activity": "Nova atividade (antes zero)",
+  "home.vs_previous": "vs. período anterior"
 }

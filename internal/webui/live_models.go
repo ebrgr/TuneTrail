@@ -44,6 +44,7 @@ type LivePage struct {
 	Title, Section, Error, DateRange, Timezone string
 	Status                                     int
 	Stats                                      listening.Stats
+	KPIs                                       []HomeKPI
 	Cards                                      []Card
 	Items                                      []Item
 	Listens                                    []ListenView

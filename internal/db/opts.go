@@ -146,14 +146,16 @@ type GetItemsOpts struct {
 }
 
 type ListenActivityOpts struct {
-	Step     StepInterval
-	Range    int
-	Month    int
-	Year     int
-	Timezone *time.Location
-	AlbumID  int32
-	ArtistID int32
-	TrackID  int32
+	// Timeframe optionally bounds streaks to the selected dashboard interval.
+	Timeframe *Timeframe
+	Step      StepInterval
+	Range     int
+	Month     int
+	Year      int
+	Timezone  *time.Location
+	AlbumID   int32
+	ArtistID  int32
+	TrackID   int32
 	// Now freezes the clock shared by activity queries and presentation when set.
 	Now time.Time
 }

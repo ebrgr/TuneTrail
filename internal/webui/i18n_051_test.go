@@ -69,7 +69,8 @@ func TestPublicCatalogFallbackAndEscaping(t *testing.T) {
 			t.Fatal(err)
 		}
 		if name == "pt-BR.json" {
-			delete(m, "ui.all_time_stats")
+			// Exercise the selected-period summary fallback introduced in ISSUE-072.
+			delete(m, "home.summary")
 			m["ui.search"] = `Busca"><script>alert(1)</script>`
 		}
 		raw, err = json.Marshal(m)
@@ -92,7 +93,7 @@ func TestPublicCatalogFallbackAndEscaping(t *testing.T) {
 	r.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: "pt-BR"})
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
-	if w.Code != 200 || !strings.Contains(w.Body.String(), "All time stats") || strings.Contains(w.Body.String(), "<script>alert(1)</script>") || !strings.Contains(w.Body.String(), "&lt;script&gt;") {
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "Period summary") || strings.Contains(w.Body.String(), "<script>alert(1)</script>") || !strings.Contains(w.Body.String(), "&lt;script&gt;") {
 		t.Fatal("catalog fallback or HTML escaping failed")
 	}
 }

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- A Home mostra KPIs do período com comparação, tocando agora no topo e seletor de período fixo, preservando o heatmap fluido e a grade de destaques (ISSUE-072).
+
 ## [0.32] - 2026-11-17
 
 - O administrador vê a página vazia de faixa, álbum ou artista sem escutas também ao recarregar, em vez de um erro 404; visitantes continuam recebendo 404 (ISSUE-150).

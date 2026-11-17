@@ -283,6 +283,12 @@ func (s *Sqlite) getLongestListenStreakAt(ctx context.Context, opts db.ListenAct
 	var err error
 
 	switch {
+	case opts.Timeframe != nil:
+		// Dashboard streaks use exactly the same inclusive seconds as its counts.
+		from, to := db.TimeframeToTimeRange(*opts.Timeframe)
+		rows, err = s.queryContext(ctx, `SELECT listened_at AS hour_bucket FROM listens
+   WHERE listened_at >= ? AND listened_at <= ? GROUP BY hour_bucket ORDER BY hour_bucket DESC`,
+			from.Unix(), to.Unix())
 	case opts.ArtistID > 0:
 		rows, err = s.queryContext(ctx, `
 			SELECT l.listened_at AS hour_bucket

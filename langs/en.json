@@ -583,5 +583,12 @@
   "media.dialog.reload_history": "Reload history",
   "ui.listening": "Listening",
   "ui.appearance": "Appearance",
-  "ui.preview_admin_unavailable": "Preview: administration unavailable"
+  "ui.preview_admin_unavailable": "Preview: administration unavailable",
+  "home.summary": "Period summary",
+  "home.kpi.minutes": "Minutes",
+  "home.kpi.plays": "Plays",
+  "home.kpi.artists": "Artists",
+  "home.kpi.streak": "Longest streak (days)",
+  "home.new_activity": "New activity (previously zero)",
+  "home.vs_previous": "vs. previous period"
 }

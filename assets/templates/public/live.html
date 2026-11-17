@@ -139,60 +139,36 @@
 {{define "page/home"}}
   <main class="home">
     <div class="home-inner">
-      <div class="overview">
-        <section class="stats">
-          <h3 class="section-title">{{tr "ui.all_time_stats" "All time stats"}}</h3>
-          {{if index .Errors "stats"}}
-            <p class="error">{{tr "ui.statistics_unavailable_please_retry" "Statistics unavailable. Please retry."}}</p>
-          {{else}}
-            <div class="stats-columns" data-listen-count="{{.Stats.ListenCount}}">
-              <div>
-                <div>
-                  <b>{{number .Stats.MinutesListened}}</b>
-                  {{unit "unit.minutes" .Stats.MinutesListened}}
-                </div>
-                <div>
-                  <b>{{number .Stats.ListenCount}}</b>
-                  {{unit "unit.plays" .Stats.ListenCount}}
-                </div>
-                <div>
-                  <b>{{number .Stats.TrackCount}}</b>
-                  {{unit "unit.tracks" .Stats.TrackCount}}
-                </div>
-                <div>
-                  <b>{{number .Stats.AlbumCount}}</b>
-                  {{unit "unit.albums" .Stats.AlbumCount}}
-                </div>
-                <div>
-                  <b>{{number .Stats.ArtistCount}}</b>
-                  {{unit "unit.artists" .Stats.ArtistCount}}
-                </div>
-              </div>
-              <div>
-                <div>
-                  <b>{{number .Stats.DaysActive}}</b>
-                  {{unit "unit.days" .Stats.DaysActive}}
-                </div>
-                <div>
-                  <b>{{number .Stats.LongestStreak}}</b>
-                  {{tr "ui.longest_streak" "Longest Streak"}}
-                </div>
-                <div>
-                  <b>{{decimal .Stats.AvgDailyPlays}}</b>
-                  {{tr "ui.avg_daily_plays" "Avg. Daily Plays"}}
-                </div>
-                <div>
-                  <b>{{decimal .Stats.TracksPerArtist}}</b>
-                  {{tr "ui.avg_tracks_artist" "Avg. Tracks / Artist"}}
-                </div>
-                <div>
-                  <b>{{decimal .Stats.AlbumsPerArtist}}</b>
-                  {{tr "ui.avg_albums_artist" "Avg. Albums / Artist"}}
-                </div>
+      {{if .Playing}}
+        <section class="card home-playing" aria-label="{{tr "ui.now_playing" "Now Playing"}}">
+          <span class="now-dot"></span>
+          <div><h3>{{tr "ui.now_playing" "Now Playing"}}</h3>
+            <div class="media small">
+              <img src="{{.Playing.Image.Small}}" width="56" height="56" alt="" data-cover>
+              <div class="media-text">
+                <a class="media-title" href="{{.Playing.URL}}">{{.Playing.Title}}</a>
+                {{template "partial/artists" .Playing}}
               </div>
             </div>
-          {{end}}
+          </div>
         </section>
+      {{end}}
+      {{template "partial/periods" .}}
+      <section class="home-kpis" aria-label="{{tr "home.summary" "Period summary"}}" data-listen-count="{{.Stats.ListenCount}}">
+        {{if index .Errors "stats"}}
+          <p class="error">{{tr "ui.statistics_unavailable_please_retry" "Statistics unavailable. Please retry."}}</p>
+        {{else}}
+          {{range .KPIs}}
+            <div class="card home-kpi">
+              <span>{{tr (printf "home.kpi.%s" .Key) .Key}}</span>
+              <strong>{{number .Value}}</strong>
+              {{if .New}}<small>{{tr "home.new_activity" "New activity (previously zero)"}}</small>
+              {{else if .Change}}<small>{{.Change}} {{tr "home.vs_previous" "vs. previous period"}}</small>{{end}}
+            </div>
+          {{end}}
+        {{end}}
+      </section>
+      <div class="overview">
         <section class="activity">
           <h3 class="section-title offset">{{tr "ui.activity" "Activity"}}</h3>
           {{if index .Errors "activity"}}
@@ -202,7 +178,6 @@
           {{end}}
         </section>
       </div>
-      {{template "partial/periods" .}}
       <div class="home-blocks">
         {{range .Cards}}
           {{if ne .Kind "tracks"}}
@@ -338,10 +313,10 @@
 
 {{define "partial/listens"}}
   {{$page:=.}}
-  {{if or .Listens .Playing}}
+  {{if or .Listens (and .Playing (ne .Section "home"))}}
     <table class="listens">
       <tbody>
-        {{if .Playing}}
+        {{if and .Playing (ne .Section "home")}}
           <tr>
             <td><img src="{{.Playing.Image.Small}}" width="32" height="32" alt="" data-cover></td>
             <td>{{template "partial/artists" .Playing}} — <a href="{{.Playing.URL}}">{{.Playing.Title}}</a></td>

@@ -5,6 +5,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"log"
+	"time"
 )
 
 func (h *Pages) loadHome(ctx context.Context, p *LivePage) {
@@ -19,7 +20,11 @@ func (h *Pages) loadHome(ctx context.Context, p *LivePage) {
 	loc := p.Options.Timeframe.Timezone
 	all := db.Timeframe{Period: db.PeriodAllTime, Timezone: loc}
 	var err error
-	p.Stats, err = listening.ReadStats(ctx, h.store, all)
+	// Freeze the selected interval once for counts, streaks and rankings.
+	now := h.options.Now().In(loc)
+	from, to := db.TimeframeToTimeRangeAt(db.Timeframe{Period: db.Period(p.Period), Timezone: loc}, now)
+	p.Options.Timeframe = db.Timeframe{From: from.Truncate(time.Second), To: to.Truncate(time.Second), Timezone: loc, Resolved: true}
+	p.KPIs, p.Stats.ListenCount, err = readHomeKPIs(ctx, h.store, p.Options.Timeframe)
 	fail("stats", err)
 	p.Activity, err = readActivity(ctx, h.store, db.ListenActivityOpts{Timezone: loc}, p.WeekStart, 100, h.options.Now())
 	fail("activity", err)

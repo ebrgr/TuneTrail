@@ -161,4 +161,22 @@
 /* Constrain this region without requiring a fixed layout width. */
   .home-inner { max-width:90rem; }
 }
+/* ISSUE-072: the summary follows the selected period; cards keep readable columns. */
+.home-kpis {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));
+  gap:var(--space-4);
+  width:100%;
+}
+.home-kpi { display:flex; flex-direction:column; gap:var(--space-2); padding:var(--space-4); min-width:0; }
+.home-kpi strong { font-size:var(--step-3); font-family:'League Spartan',sans-serif; }
+.home-kpi small { color:var(--color-fg-secondary); }
+.home-playing { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-4); width:100%; }
+.home-playing>div { min-width:0; }
+.home-playing .media { margin-top:var(--space-3); }
+.home .period-selector { position:sticky; top:var(--space-2); z-index:10; background:var(--color-bg-secondary); }
+.overview { display:flex; align-items:center; }
+/* Preserve whole words and the full text column established in ISSUE-154. */
+.home .hero-caption h5,.home .media-title,.home .media-artist,.home .media-meta { overflow-wrap:normal; word-break:normal; }
+
 }

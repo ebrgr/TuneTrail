@@ -14,6 +14,7 @@ import (
 
 // TestPublicTranslationsKeepMediaAndProtocolStable exercises nested templates in two languages.
 func TestPublicTranslationsKeepMediaAndProtocolStable(t *testing.T) {
+	// Home now labels its selected-period summary rather than historical statistics.
 	a := newProfileTestApp(t)
 	for _, q := range []string{
 		`INSERT INTO artists(id) VALUES (40)`,
@@ -36,7 +37,7 @@ func TestPublicTranslationsKeepMediaAndProtocolStable(t *testing.T) {
 		return w
 	}
 	for _, tc := range []struct{ path, pt string }{
-		{"/default", "Estatísticas de todo o período"},
+		{"/default", "Resumo do período"},
 		{"/default/chart/top/tracks?period=all_time", "Faixas mais ouvidas"},
 		{"/default/listens?period=all_time", "Últimas reproduções"},
 		{"/default/search?q=Shared", "Buscar"},
@@ -72,9 +73,9 @@ func TestPublicTranslationsKeepMediaAndProtocolStable(t *testing.T) {
 		wg.Add(1)
 		go func(n int) {
 			defer wg.Done()
-			language, want := "en", "All time stats"
+			language, want := "en", "Period summary"
 			if n%2 == 0 {
-				language, want = "pt-BR", "Estatísticas de todo o período"
+				language, want = "pt-BR", "Resumo do período"
 			}
 			page := get("/default", language)
 			if !strings.Contains(page.Body.String(), want) {
