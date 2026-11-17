@@ -1,11 +1,11 @@
 ---
 id: ISSUE-154
 title: 154 — Last played em largura total e lateral desktop só com ícones por padrão
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T19:25:00Z'
-updated_date: '2026-11-17T11:53:00Z'
+updated_date: '2026-11-17T12:18:00Z'
 labels:
   - ui
 milestone: m-10
@@ -25,7 +25,7 @@ Correções de layout pedidas pelo usuário após as ISSUE-069 e 071. (1) A seç
 - [x] #1 Last played ocupa toda a largura do conteúdo na Home em 1024, 1440 e 1920px, sem rolagem horizontal
 - [x] #2 Acima de 64rem a lateral é só de ícones por padrão, com tooltip no rótulo
 - [x] #3 A opção do painel de tema ativa os rótulos e volta ao padrão
-- [ ] #4 Testes, ui.check e capturas do usuário (Home e lateral) conferidos
+- [x] #4 Testes, ui.check e capturas do usuário (Home e lateral) conferidos
 <!-- AC:END -->
 
 ## Comments
@@ -100,6 +100,15 @@ created: 2026-11-17T11:53:00Z
 ---
 
 Ajuste pedido pelo usuário (2026-11-17): na coluna esquerda da retrospectiva, o título 'Anos' agora é centralizado e o checkbox com o texto usa inline-flex centralizado com espaçamento. Medido: as caixas já tinham o mesmo centro (col, grade, formulário), o desalinhamento percebido vinha do título à esquerda e do rótulo quase da largura da coluna. make check verde.
+
+---
+
+author: ebrgr
+created: 2026-11-17T12:18:00Z
+
+---
+
+Aceite do usuário (2026-11-17) após conferir Home, lateral só de ícones, menu (+), gráfico de atividade, cards, ícone de chave e retrospectiva em instância local com os dados reais (cópia) e em banco descartável. Pendências registradas fora desta issue: ISSUE-153 (persistência das opções de tema no conf.toml) e ISSUE-155 (reestudo da segunda barra). Publicação local; push depende de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
