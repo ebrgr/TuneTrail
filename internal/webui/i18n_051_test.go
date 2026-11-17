@@ -145,9 +145,13 @@ func TestHomeKPIComparisonTranslations(t *testing.T) {
 		}
 	}
 	save(now.Add(-time.Hour))
-	for _, tc := range []struct{ lang, new string }{{"en", "New"}, {"pt-BR", "Novo"}} {
-		if !strings.Contains(get("/alpha?period=day", tc.lang), tc.new) {
-			t.Fatal("new translation", tc.lang)
+	// ISSUE-072: an empty previous period shows no comparison label at all.
+	for _, lang := range []string{"en", "pt-BR"} {
+		body := get("/alpha?period=day", lang)
+		for _, word := range []string{"New", "Novo", "Same", "Igual", "% More", "% Mais", "% Less", "% Menos"} {
+			if strings.Contains(body, word) {
+				t.Fatal("empty baseline must show no label", lang, word)
+			}
 		}
 	}
 	save(now.Add(-2 * time.Hour))

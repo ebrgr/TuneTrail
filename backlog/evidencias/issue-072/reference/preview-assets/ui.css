@@ -1638,15 +1638,16 @@ h2.search-section-title,
   .home-inner { max-width:90rem; }
 }
 /* ISSUE-072: the summary follows the selected period; cards keep readable columns. */
-/* Mobile first: with the bottom bar (below 40rem) the four cards form two rows of two. */
+/* Mobile first: below 64rem the four cards form two rows of two (including with the bottom bar). */
 .home-kpis {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:var(--space-4);
   width:100%;
 }
-@media(min-width:40rem) {
-  .home-kpis { grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr)); }
+/* Four in a row only when there is room; never three plus one. */
+@media(min-width:64rem) {
+  .home-kpis { grid-template-columns:repeat(4,minmax(0,1fr)); }
 }
 .home-kpi { display:flex; flex-direction:column; gap:var(--space-2); padding:var(--space-4); min-width:0; }
 /* Keep the comparison compact beside the value, wrapping only when the row is full. */
