@@ -87,3 +87,9 @@ Aprovada em princípio pelo usuário (ISSUE-165): trocar a ausência de limite p
 
 ## 8. Relação com outras issues
 ISSUE-117 (estudo de imagens: backfill, nova busca, itens sem imagem), ISSUE-153 e 127 (configuração), ISSUE-112 (logs e administração), ISSUE-102 (contêiner e volumes), ISSUE-103 (backup).
+
+## 9. Decisões do usuário (2026-11-17)
+1. **Teto padrão, configurável pelo administrador root** (valor padrão sugerido: 1024 MiB; a configuração é feita por quem tem o papel de admin).
+2. **"Mais antigo" = por último acesso**, gravado pelo aplicativo.
+3. **Aceita a orientação do estudo:** apagar primeiro os derivados e depois os originais remotos mais antigos, com nova baixa sob demanda; nunca avatares, uploads nem imagens com publicação em andamento.
+4. **Configuração no `conf.toml`** (sem variável de ambiente nova), reaproveitando o mecanismo da ISSUE-153.

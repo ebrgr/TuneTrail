@@ -1,16 +1,17 @@
 ---
 id: ISSUE-165
 title: 165 — Limitar o cache de imagens pelo tamanho total e apagar as mais antigas
-status: Aberta
+status: Planejada
 assignee: []
 created_date: '2026-11-17T17:34:00Z'
-updated_date: '2026-11-17T17:35:00Z'
+updated_date: '2026-11-17T17:51:00Z'
 labels:
   - imagens
   - operacao
   - config
 milestone: m-10
-dependencies: []
+dependencies:
+  - ISSUE-153
 documentation:
   - doc-042
 type: feature
@@ -25,12 +26,13 @@ Origem: pedido do usuário em 2026-11-17; estudo em doc-042. Hoje o cache de ima
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Decisões do usuário sobre as 4 perguntas do doc-042 §7 registradas e parecer do Advisor
-- [ ] #2 Teto de tamanho total configurável (0 = sem limite) e piso mínimo; ao passar do teto, apaga derivados e depois originais remotos mais antigos até a marca d'água
-- [ ] #3 Avatares, uploads e imagens com reserva de publicação nunca são apagados (testes)
-- [ ] #4 Original remoto apagado é baixado de novo sob demanda sem laço de remoção, e a imagem servida na requisição nunca é removida
-- [ ] #5 Coleta concorrente com gravação e com a coleta de órfãs coberta por teste; uso do cache e remoções registrados em log
-- [ ] #6 Opção morta KOITO_ENABLE_FULL_IMAGE_CACHE removida ou documentada como obsoleta; docs e CHANGELOG atualizados
+- [ ] #1 Decisões do usuário registradas (doc-042 §9) e parecer do Advisor sobre a limpeza concorrente
+- [ ] #2 Teto de tamanho total no conf.toml, com valor padrão (1024 MiB sugerido), alterável apenas pelo administrador root; 0 = sem limite; piso mínimo
+- [ ] #3 Ao passar do teto, apaga os derivados e depois os originais remotos mais antigos por último acesso, até a marca d'água (90%)
+- [ ] #4 Avatares, uploads e imagens com reserva de publicação nunca são apagados (testes)
+- [ ] #5 Original remoto apagado é baixado de novo sob demanda sem laço de remoção, e a imagem servida na requisição nunca é removida
+- [ ] #6 Coleta concorrente com gravação e com a coleta de órfãs coberta por teste; uso do cache e remoções registrados em log
+- [ ] #7 Opção morta KOITO_ENABLE_FULL_IMAGE_CACHE removida ou documentada como obsoleta; docs e CHANGELOG atualizados
 <!-- AC:END -->
 
 ## Comments
@@ -42,6 +44,15 @@ created: 2026-11-17T17:35:00Z
 ---
 
 Estudo feito (doc-042): não existe limite de tamanho total hoje; a proposta aguarda as 4 decisões do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-17T17:51:00Z
+
+---
+
+Decisões do usuário (2026-11-17), registradas no doc-042 §9: 1) teto padrão, configurável pelo administrador root; 2) mais antigo por último acesso; 3) aceita a orientação do estudo (derivados primeiro, depois originais remotos com nova baixa sob demanda; nunca avatares e uploads); 4) configuração no conf.toml, reaproveitando o mecanismo da ISSUE-153 (por isso passa a depender dela). Status: Planejada.
 
 ---
 <!-- COMMENTS:END -->
