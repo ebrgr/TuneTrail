@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-17T15:21:00Z'
+updated_date: '2026-11-17T15:22:00Z'
 labels:
   - ui
   - admin
@@ -79,6 +79,15 @@ created: 2026-11-17T15:21:00Z
 ---
 
 Aceite do usuário (2026-11-17) após ver o menu (+) em instância local com dados reais (cópia) e em banco descartável, já sem o item Time period. AC3: teclado, foco, links sem JS e árvore de acessibilidade verificados; a leitura manual com VoiceOver continua pendente e não foi marcada. Destrava as ISSUE-157 e 153. Publicação local; push depende de autorização à parte.
+
+---
+
+author: ebrgr
+created: 2026-11-17T15:22:00Z
+
+---
+
+Publicação: versão 0.31 (tag `v0.31`), branch `feat/issue-156-unificar-as-acoes-de-administracao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

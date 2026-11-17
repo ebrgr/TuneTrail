@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.31] - 2026-11-17
+
 - As ações de administração agora ficam agrupadas no menu (+), sem segunda barra lateral, sem opção empurrar/sobrepor e sem repetir o seletor de período (ISSUE-156).
 
 ## [0.30] - 2026-11-17
