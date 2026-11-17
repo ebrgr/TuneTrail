@@ -1,11 +1,11 @@
 ---
 id: ISSUE-150
 title: 150 — Administrador vê a página vazia de faixa, álbum ou artista sem escutas
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T14:57:00Z'
-updated_date: '2026-11-17T12:59:00Z'
+updated_date: '2026-11-17T15:23:00Z'
 labels:
   - ui
   - admin
@@ -46,6 +46,15 @@ created: 2026-11-17T12:59:00Z
 ---
 
 Verificação: AllowEmptyMedia passou a valer para qualquer GET do administrador (antes exigia o cabeçalho X-TuneTrail-History-Refresh). Testes: engine/adminui_listen_141_test (recarga 200 com estado vazio, visitante 404, entidade inexistente 404 para o admin) e adminui_tasks_139_test (sobrevivente sem escutas: admin 200, visitante 404). make check verde (12/12 e2e). O cabeçalho no media-dialog.js ficou inofensivo e redundante; remoção opcional.
+
+---
+
+author: ebrgr
+created: 2026-11-17T15:23:00Z
+
+---
+
+Aceite do usuário (2026-11-17). Administrador vê o estado vazio de faixa, álbum e artista sem escutas também ao recarregar; visitante e entidade inexistente seguem com 404. Publicação local; push depende de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
