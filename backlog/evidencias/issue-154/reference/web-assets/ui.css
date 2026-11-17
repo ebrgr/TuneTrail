@@ -711,6 +711,8 @@ footer a:hover { text-decoration: underline; }
   gap: var(--space-3)
 }
 .media-text {
+  /* ISSUE-154: the text column takes all the room left beside the cover. */
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -802,7 +804,9 @@ footer a:hover { text-decoration: underline; }
   padding-right: 12px
 }
 .plays {
-  width: 75px;
+  /* ISSUE-154: keep "N plays" on one line; the column grows instead of wrapping the text. */
+  min-width: 75px;
+  white-space: nowrap;
   flex-shrink: 0;
   text-align: right;
   color: var(--color-fg-secondary)
@@ -1615,7 +1619,8 @@ h2.search-section-title,
 @container card (min-width:24rem) {
 
 /* Let columns adapt to the available reading space. */
-  .feature-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  /* ISSUE-154: a second column only appears when each item keeps room for its text (22rem). */
+  .feature-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); }
 
 /* Apply shared spacing and surface tokens at this size. */
   .feature-list>.media { padding:var(--space-3); }

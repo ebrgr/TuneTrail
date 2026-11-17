@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T19:25:00Z'
-updated_date: '2026-11-16T20:23:00Z'
+updated_date: '2026-11-17T11:08:00Z'
 labels:
   - ui
 milestone: m-10
@@ -64,6 +64,15 @@ created: 2026-11-16T20:23:00Z
 ---
 
 Ajuste pedido pelo usuário (2026-11-16): o gráfico de atividade passa a ter largura máxima de 35rem (igual ao gráfico de interesse ao longo do tempo) e as células escalam com o cartão (36 semanas, 26 em cartões estreitos), sem barras de rolagem nem semanas cortadas. Verificado na página /evertonberger/track/37 e na Home em 320 a 1920px: sem rolagem interna nem da página. make check verde.
+
+---
+
+author: claude
+created: 2026-11-17T11:08:00Z
+
+---
+
+Ajuste pedido pelo usuário (2026-11-17): nomes e textos dos cards de destaque truncavam porque a lista virava duas colunas de cerca de 200px com capa de 90px (texto de 77px em 1440px). Agora a segunda coluna só aparece com 22rem por item, o texto ocupa a largura restante ao lado da capa e '(N) reproduções' não quebra de linha. Verificado na Home com dados reais em 320 a 1920px: sem palavras partidas nem rolagem. make check verde.
 
 ---
 <!-- COMMENTS:END -->

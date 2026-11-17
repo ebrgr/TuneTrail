@@ -137,7 +137,8 @@
 @container card (min-width:24rem) {
 
 /* Let columns adapt to the available reading space. */
-  .feature-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  /* ISSUE-154: a second column only appears when each item keeps room for its text (22rem). */
+  .feature-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); }
 
 /* Apply shared spacing and surface tokens at this size. */
   .feature-list>.media { padding:var(--space-3); }

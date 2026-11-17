@@ -17,6 +17,8 @@
   gap: var(--space-3)
 }
 .media-text {
+  /* ISSUE-154: the text column takes all the room left beside the cover. */
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -108,7 +110,9 @@
   padding-right: 12px
 }
 .plays {
-  width: 75px;
+  /* ISSUE-154: keep "N plays" on one line; the column grows instead of wrapping the text. */
+  min-width: 75px;
+  white-space: nowrap;
   flex-shrink: 0;
   text-align: right;
   color: var(--color-fg-secondary)
