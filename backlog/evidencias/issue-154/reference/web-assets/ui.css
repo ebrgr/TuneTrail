@@ -1949,7 +1949,7 @@ h2.search-section-title,
 .rewind-choice[href]:hover { background:var(--color-bg-secondary); }
 
 /* Apply shared spacing and surface tokens at this size. */
-.rewind-time-form { display:flex; flex-wrap:wrap; align-items:center; gap: var(--space-3); margin-top:20px; }
+.rewind-time-form { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap: var(--space-3); margin-top:20px; }
 
 /* Constrain this region without requiring a fixed layout width. */
 .rewind-content { flex:1; min-width:0; max-width: min(100%,48.75rem); }

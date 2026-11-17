@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T19:25:00Z'
-updated_date: '2026-11-17T11:35:00Z'
+updated_date: '2026-11-17T11:41:00Z'
 labels:
   - ui
 milestone: m-10
@@ -82,6 +82,15 @@ created: 2026-11-17T11:35:00Z
 ---
 
 Ajuste pedido pelo usuário (2026-11-17): o ícone de entrar (LogIn) lembrava sair; trocado pelo ícone de chave (KeyRound, Lucide, ISC), escolhido pelo usuário entre cinco opções. LogIn.svg removido (sem outros usos) e manifest atualizado. Reestudo da segunda barra aberto na ISSUE-155. make check verde.
+
+---
+
+author: claude
+created: 2026-11-17T11:41:00Z
+
+---
+
+Ajuste pedido pelo usuário (2026-11-17): a opção 'Mostrar tempo de reprodução?' da retrospectiva fica centralizada na coluna (.rewind-time-form com justify-content:center). Também criado um banco descartável com dados de exemplo (3 perfis, 24 mil escutas entre 2022 e 2026, meses vazios e títulos longos) fora do repositório, e varrida a responsividade de 23 páginas em 6 larguras (320 a 1920px): sem rolagem da página nem barras internas. make check verde.
 
 ---
 <!-- COMMENTS:END -->
