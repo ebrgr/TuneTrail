@@ -2,7 +2,7 @@
 id: decision-009
 title: Contrato de ingestão e retenção de recebimentos
 date: '2026-11-17T15:28:00Z'
-status: proposed
+status: accepted
 ---
 ## Context
 

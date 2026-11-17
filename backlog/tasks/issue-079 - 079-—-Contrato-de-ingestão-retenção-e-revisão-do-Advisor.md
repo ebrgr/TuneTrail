@@ -1,11 +1,11 @@
 ---
 id: ISSUE-079
 title: 079 — Contrato de ingestão, retenção e revisão do Advisor
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-17T15:34:00Z'
+updated_date: '2026-11-17T16:17:00Z'
 labels:
   - ingestao
   - banco
@@ -89,6 +89,15 @@ created: 2026-11-17T15:34:00Z
 ---
 
 Verificação: doc-040 formaliza envelope, idempotência, deduplicação explicável, retenção, diagnóstico, exclusão sem tombstones e reimportação como evento novo; decision-009 criada como proposed. Decisões do usuário preservadas, ACs 1–4 verificados e memória atualizada (page_id 01a1ea23-de47-7420-9ec6-cb147990ae84). Rebase na main concluído; revisão documental direta/deslop e git diff --check sem achados; make check passou, incluindo 12/12 jornadas E2E. Evidência: backlog/evidencias/issue-079/verificacao-contrato.md. Não houve código nem edição das 080/133/134; testes do novo contrato e migrações reais estão especificados, não executados nesta spike. Edições recomendadas: ISSUE-080 — v4 apenas infraestrutura, separar núcleo/detalhes, conflitos/revisão/outbox e índices, sem 055/tombstones; coordenar vínculo com evento estável da 133. ISSUE-133 — preservar IDs/URLs e eventos 1:1, introduzir event_id e ponte de compatibilidade antes de ativar escritores novos, exclusão por evento sem bloqueio futuro. ISSUE-134 — envelope comum em todas as fontes, Pending/revisão/retomada e testes de idempotência viva e reimportação após exclusão, inclusive lotes/arquivos parcialmente excluídos. Aguarda aceite do usuário para a formalização; decision-009 permanece proposed. Sem Done, push, merge ou publish.
+
+---
+
+author: ebrgr
+created: 2026-11-17T16:17:00Z
+
+---
+
+Aceite do usuário (2026-11-17): contrato formal (doc-040) e decision-009 aceitos. Aplicadas as edições recomendadas nas ISSUE-080, 133 e 134. Merge local; push depende de autorização à parte.
 
 ---
 <!-- COMMENTS:END -->
