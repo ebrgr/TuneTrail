@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-17T15:28:00Z'
+updated_date: '2026-11-17T15:32:00Z'
 labels:
   - ingestao
   - banco
@@ -16,8 +16,12 @@ references:
   - >-
     backlog/decisions/decision-008 -
     Identidade-musical-separada-em-gravação-ocorrência-e-evento.md
+  - >-
+    backlog/decisions/decision-009 -
+    Contrato-de-ingestão-e-retenção-de-recebimentos.md
 documentation:
   - doc-039
+  - doc-040
 priority: high
 type: spike
 ordinal: 79000
@@ -33,10 +37,10 @@ Definir: envelope de evento, decisões de deduplicação (Igual | Diferente | Re
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Contrato do envelope e da deduplicação documentado em backlog/docs/design
-- [ ] #2 Decisão do usuário sobre retenção e payload registrada
-- [ ] #3 Parecer do Advisor registrado na tarefa
-- [ ] #4 Plano da migração v4 coordenado com a ISSUE-055
+- [x] #1 Contrato do envelope e da deduplicação documentado em backlog/docs/design
+- [x] #2 Decisão do usuário sobre retenção e payload registrada
+- [x] #3 Parecer do Advisor registrado na tarefa
+- [x] #4 Plano da migração v4 coordenado com a ISSUE-055
 <!-- AC:END -->
 
 ## Comments
