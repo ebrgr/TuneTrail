@@ -1,11 +1,11 @@
 ---
 id: ISSUE-072
 title: '072 — Home e painel: KPIs, tocando agora, heatmap rolável e grade de destaques'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-17T20:35:00Z'
+updated_date: '2026-11-17T20:47:00Z'
 labels:
   - ui
 milestone: m-10
@@ -40,7 +40,7 @@ Passos:
 - [x] #1 KPIs com variação calculada no servidor e testada
 - [x] #2 Heatmap legível em 320px sem esconder semanas
 - [x] #3 Grade de destaques adaptável sem largura fixa
-- [ ] #4 Capturas e aceite visual
+- [x] #4 Capturas e aceite visual
 <!-- AC:END -->
 
 ## Comments
@@ -106,6 +106,15 @@ created: 2026-11-17T20:35:00Z
 ---
 
 Verificação: decisão mais recente aplicada — variação em texto PEQUENO ao lado do número, alinhada pela base, com espaço de 12px e quebra apenas quando necessário. Textos en/pt-BR: N% More/Mais, N% Less/Menos, Same/Igual e New/Novo; sem sinais e sem vs. período anterior. Zero agora mostra Igual, substituindo a regra anterior de ocultar; Tudo não compara. Novo mantido quando a base anterior é zero e há atividade atual, aguardando confirmação do rótulo. make check e make ui.check verdes, 12/12 jornadas e2e; referência regenerada e grafo atualizado. Em 390/1440px, os quatro cards mantêm comparação na mesma linha e não transbordam. Novas capturas dispensadas conforme última instrução do usuário. AC4 permanece desmarcado. Servidor temporário encerrado e banco original preservado.
+
+---
+
+author: ebrgr
+created: 2026-11-17T20:47:00Z
+
+---
+
+Aceite do usuário (2026-11-17) após ver a Home em instância local com dados reais (cópia) e em banco descartável, com os ajustes pedidos: totais históricos à esquerda e heatmap à direita, tooltip próprio nas células, KPIs com comparação pequena ao lado do número (N% Mais, N% Menos, Igual), sem rótulo Novo, e duas linhas de dois cards até 64rem. Heatmap em 320px sem rolagem, com células fluidas aprovadas pelo usuário. Publicação com push autorizada pelo usuário.
 
 ---
 <!-- COMMENTS:END -->
