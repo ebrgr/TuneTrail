@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T19:25:00Z'
-updated_date: '2026-11-17T11:41:00Z'
+updated_date: '2026-11-17T11:53:00Z'
 labels:
   - ui
 milestone: m-10
@@ -91,6 +91,15 @@ created: 2026-11-17T11:41:00Z
 ---
 
 Ajuste pedido pelo usuário (2026-11-17): a opção 'Mostrar tempo de reprodução?' da retrospectiva fica centralizada na coluna (.rewind-time-form com justify-content:center). Também criado um banco descartável com dados de exemplo (3 perfis, 24 mil escutas entre 2022 e 2026, meses vazios e títulos longos) fora do repositório, e varrida a responsividade de 23 páginas em 6 larguras (320 a 1920px): sem rolagem da página nem barras internas. make check verde.
+
+---
+
+author: claude
+created: 2026-11-17T11:53:00Z
+
+---
+
+Ajuste pedido pelo usuário (2026-11-17): na coluna esquerda da retrospectiva, o título 'Anos' agora é centralizado e o checkbox com o texto usa inline-flex centralizado com espaçamento. Medido: as caixas já tinham o mesmo centro (col, grade, formulário), o desalinhamento percebido vinha do título à esquerda e do rótulo quase da largura da coluna. make check verde.
 
 ---
 <!-- COMMENTS:END -->

@@ -7,7 +7,7 @@
 
 /* Constrain this region without requiring a fixed layout width. */
 .rewind-controls { width: min(100%,15.625rem); max-width:100%; }
-.rewind-controls h2 { font-size:20px; margin:20px 0 12px; }
+.rewind-controls h2 { font-size:20px; margin:20px 0 12px; text-align:center; }
 .rewind-year-nav { display:grid; grid-template-columns:44px 1fr 44px; align-items:center; text-align:center; margin:0 0 16px; }
 /* Match Koito typography without changing the existing 20px year size. */
 .rewind-year-nav h2 { margin:0; font-family:Jost,Inter,ui-sans-serif,system-ui,sans-serif; font-weight:500; }
@@ -31,6 +31,8 @@
 .rewind-choice[href]:hover { background:var(--color-bg-secondary); }
 
 /* Apply shared spacing and surface tokens at this size. */
+.rewind-time-form label { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); text-align:center; }
+/* ISSUE-154: the whole controls column (heading, choices and checkbox) shares one center line. */
 .rewind-time-form { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap: var(--space-3); margin-top:20px; }
 
 /* Constrain this region without requiring a fixed layout width. */
