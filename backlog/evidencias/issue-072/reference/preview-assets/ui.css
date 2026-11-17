@@ -1659,7 +1659,8 @@ h2.search-section-title,
 .home-kpi-value>strong { font:inherit; max-width:100%; overflow-wrap:anywhere; }
 .home-kpi-value>span {
   font-family:'Jost',sans-serif;
-  font-size:var(--step--1);
+  /* The comparison uses the same font size as the value, as requested by the user. */
+  font-size:inherit;
   font-weight:400;
   color:var(--color-fg-secondary);
   max-width:100%;
