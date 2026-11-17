@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.32] - 2026-11-17
+
 - O administrador vê a página vazia de faixa, álbum ou artista sem escutas também ao recarregar, em vez de um erro 404; visitantes continuam recebendo 404 (ISSUE-150).
 
 ## [0.31] - 2026-11-17

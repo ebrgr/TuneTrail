@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-16T14:57:00Z'
-updated_date: '2026-11-17T15:23:00Z'
+updated_date: '2026-11-17T15:24:00Z'
 labels:
   - ui
   - admin
@@ -55,6 +55,15 @@ created: 2026-11-17T15:23:00Z
 ---
 
 Aceite do usuário (2026-11-17). Administrador vê o estado vazio de faixa, álbum e artista sem escutas também ao recarregar; visitante e entidade inexistente seguem com 404. Publicação local; push depende de autorização à parte.
+
+---
+
+author: ebrgr
+created: 2026-11-17T15:24:00Z
+
+---
+
+Publicação: versão 0.32 (tag `v0.32`), branch `fix/issue-150-administrador-ve-a-pagina-vazia` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
