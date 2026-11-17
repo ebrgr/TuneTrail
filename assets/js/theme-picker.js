@@ -32,22 +32,6 @@
       say(text.i18nCustomApplied);
     } catch (error) { say(error instanceof SyntaxError ? text.i18nInvalidJson : error.message); }
   });
-  // "\" opens the panel from anywhere except form fields and open dialogs. Without an
-  // invoker button the browser leaves focus behind, so move it into the panel and return
-  // it on close (the button path is handled natively by popovertarget).
-  // Push or overlay for the second sidebar (ISSUE-123), remembered on this browser only.
-  const layoutChoice = panel.querySelector('[data-nav-layout-choice]');
-  if (layoutChoice) {
-    const current = document.documentElement.dataset.navLayout === 'overlay' ? 'overlay' : 'push';
-    const selected = layoutChoice.querySelector(`input[value="${current}"]`);
-    if (selected) selected.checked = true;
-    layoutChoice.addEventListener('change', event => {
-      const value = event.target.value === 'overlay' ? 'overlay' : 'push';
-      if (value === 'overlay') document.documentElement.dataset.navLayout = 'overlay';
-      else delete document.documentElement.dataset.navLayout;
-      try { localStorage.setItem('nav-layout', value); } catch {}
-    });
-  }
   // ISSUE-154: icons-only is the default; labels are opt-in on this document (persistence: ISSUE-153).
   const labelsChoice = panel.querySelector('[data-nav-labels-choice]');
   if (labelsChoice) {
@@ -59,19 +43,15 @@
       else delete document.documentElement.dataset.navLabels;
     });
   }
-  let opener = null;
+  // "\" opens the panel from anywhere except form fields and open dialogs. Without an
+  // invoker button the browser leaves focus behind, so move it into the panel and return
+  // it on close through ui.js, alongside native popovertarget invokers.
   document.addEventListener('keydown', event => {
     if (event.key !== '\\' || event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target.closest('input,textarea,select,[contenteditable=true]') || document.querySelector('dialog[open]')) return;
     if (!panel.showPopover || panel.matches(':popover-open')) return;
     event.preventDefault();
-    opener = document.activeElement;
     panel.showPopover();
     (panel.querySelector('[data-theme-choice][aria-pressed=true]') || panel.querySelector('.close-dialog')).focus();
-  });
-  panel.addEventListener('toggle', event => {
-    if (event.newState !== 'closed' || !opener) return;
-    if (opener.isConnected) opener.focus();
-    opener = null;
   });
 })();

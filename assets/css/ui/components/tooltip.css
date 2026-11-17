@@ -21,7 +21,7 @@ html[data-media-tooltips] .media-actions [data-tip]:focus-visible::after { opaci
 
 /* ISSUE-154: visible desktop labels (opt-in) replace duplicate hover tooltips. */
 @media(min-width:64rem) {
- html[data-nav-labels="labels"] body .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after { content:none; }
+ html[data-nav-labels="labels"] body .sidebar .nav-button[data-tip]::after { content:none; }
 }
 
 }

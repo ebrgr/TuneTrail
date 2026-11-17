@@ -59,3 +59,10 @@ test('incomplete and injected palettes cannot set arbitrary CSS', () => {
   assert.equal(current.root.dataset.theme,'yuu');
   assert.equal(current.vars.size,0);
 });
+
+// ISSUE-156: retired layout preferences remain untouched and cannot affect rendering.
+test('legacy nav-layout is inert without deleting browser storage', () => {
+ const current = startup({'nav-layout':'overlay'});
+ assert.equal(current.root.dataset.navLayout,undefined);
+ assert.equal(current.values.get('nav-layout'),'overlay');
+});

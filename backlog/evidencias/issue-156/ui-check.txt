@@ -1,0 +1,46 @@
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.406s
+{
+  "files": 169,
+  "differences": [],
+  "exit_code": 0
+}
+python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.004s
+
+OK
+CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+CGO_ENABLED=0 go test -count=1 ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.801s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	0.423s
+ok  	github.com/ebrgr/TuneTrail/internal/listening	0.131s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	0.540s
+node --check assets/js/theme.js
+node --check assets/js/ui.js
+node --check assets/js/theme-picker.js
+node --check assets/js/search.js
+node --check assets/js/media-dialog.js
+node --check assets/js/enhance.js
+node --check assets/js/live.js
+node --check assets/js/admin.js
+node --test internal/webui/theme.test.mjs
+✔ unavailable storage and invalid saved JSON leave a usable default (2.228459ms)
+✔ custom colors survive startup and reset clears inline overrides (0.493542ms)
+✔ incomplete and injected palettes cannot set arbitrary CSS (0.285458ms)
+✔ legacy nav-layout is inert without deleting browser storage (0.258375ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 35.697875
+python3 -m unittest scripts/test_check_web_style.py
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.019s
+
+OK
+python3 scripts/check_web_style.py

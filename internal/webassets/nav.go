@@ -18,10 +18,8 @@ type Nav struct {
 	PeriodLinks      []NavPeriod
 	Kind             string // live, preview or admin: selects dialogs or links for the same controls
 	Profile          *NavProfile
-	// Second sidebar (ISSUE-123): administration links for a valid session, open on
-	// administration pages, with the current item and the version shown in About.
+	// ISSUE-156: More contains role-aware administration links and the current page.
 	Admin   bool
-	Open    bool
 	Current string // account, profiles or settings
 	Version string
 }

@@ -524,10 +524,9 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 	return os.Open(u.Path)
 }
 
-// adminNav adapts the administration's profile to the shared sidebar (ISSUE-122). Administration
-// pages open the second sidebar (ISSUE-123); signedIn is false only on the login page.
+// adminNav supplies profile, role and selected action to the shared More menu (ISSUE-156).
 func adminNav(p *models.ListeningProfile, signedIn bool, current string) webassets.Nav {
-	nav := webassets.Nav{Kind: "admin", Admin: signedIn, Open: true, Current: current, Version: version.Current}
+	nav := webassets.Nav{Kind: "admin", Admin: signedIn, Current: current, Version: version.Current}
 	if p != nil {
 		nav.Profile = &webassets.NavProfile{ID: int64(p.ID), Name: p.DisplayName, Slug: p.Slug}
 		if p.AvatarImageID != nil {
@@ -542,7 +541,7 @@ func adminNav(p *models.ListeningProfile, signedIn bool, current string) webasse
 	return nav
 }
 
-// navSection marks the second sidebar item for the administration home: the account
+// navSection marks the administration action for the home page: the account
 // section or, for every other section, the profiles item (ISSUE-123).
 func navSection(section string) string {
 	if section == "account" {

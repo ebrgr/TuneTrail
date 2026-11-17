@@ -1,0 +1,570 @@
+
+  <!doctype html>
+  <html lang="en" data-theme="yuu">
+    <head>
+      
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+      <title>Administration — TuneTrail</title>
+      <link rel="icon" type="image/png" href="/web-assets/public/favicon-96x96.png?v=335a635bf556278f18614175f0090e71487e5ff3ef26be1d68c57e0e30449285">
+      
+      <link rel="stylesheet" href="/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4">
+      <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
+      <link rel="stylesheet" href="/web-assets/ui.css?v=4c3447ee31fef68df18aff6f54d3be67791571f30b910e4afeb7370ab256f5d9">
+      <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
+      <link rel="stylesheet" href="/web-assets/admin.css?v=caf90673dc107ae07d110c4e8858638ad941491a34c5faad406fc796c80dabc7">
+      <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
+      <script defer src="/web-assets/enhance.js?v=9c2de13e09eca06a2886463bdb012dcba5d419ab1cedf0b740cbcffa2b2d6bdc"></script>
+      
+      <script defer src="/web-assets/ui.js?v=ea8325bf79b4abd89126396760b6fa381531ad2c1a4d7e8284514ebdaa5b65a1"></script>
+
+    </head>
+    <body
+      data-admin-ui="go"
+      data-i18n-copy="Copy"
+      data-i18n-copied="Copied"
+      data-i18n-copy-manual="Select and copy manually"
+    >
+      <a class="skip-link" href="#admin-main">Skip to content</a>
+      
+      
+  <nav class="sidebar" aria-label="Main navigation">
+    <div class="nav-profile">
+      <a class="nav-button" href="/"
+        aria-label="Choose listening profile"
+        data-tip="Choose listening profile"
+        >
+        
+  <span class="avatar" aria-hidden="true">FA</span>
+
+        <span class="nav-label">Choose a profile</span>
+      </a>
+    </div>
+    <div class="nav-destinations">
+      <a class="nav-button" href="/alpha"
+        aria-label="Home" data-tip="Home">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+<span class="nav-label">Home</span>
+      </a>
+      
+        <a class="nav-button" href="/alpha/chart/top/artists"
+          aria-label="Rankings" data-tip="Rankings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music2 lucide-music-2" aria-hidden="true"><circle cx="8" cy="18" r="4"></circle><path d="M12 18V2l7 4"></path></svg>
+<span class="nav-label">Rankings</span>
+        </a>
+        
+        <a class="nav-button" href="/alpha/rewind"
+          aria-label="Rewind" data-tip="Rewind">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+<span class="nav-label">Rewind</span>
+        </a>
+        
+          <a class="nav-button" href="/alpha/search"
+            aria-label="Search" data-dialog="search-dialog" data-tip="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+<span class="nav-label">Search</span>
+          </a>
+        
+      
+      <details class="nav-more">
+        <summary class="nav-button" aria-label="More" data-tip="More">
+          <svg aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M5 12h14" />
+  <path d="M12 5v14" />
+</svg>
+<span class="nav-label">More</span>
+        </summary>
+        <div class="nav-options">
+          <h2 class="nav-group-title">Listening</h2>
+          
+          <a class="nav-button" href="/" aria-label="Choose listening profile"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-round" aria-hidden="true"><path d="M18 21a8 8 0 0 0-16 0"></path><circle cx="10" cy="8" r="5"></circle><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"></path></svg>
+<span>Choose listening profile</span>
+          </a>
+          <h2 class="nav-group-title">Appearance</h2>
+          <button class="nav-button" type="button" popovertarget="theme-panel"
+            aria-label="Theme and language">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette" aria-hidden="true"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"></path><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
+<span>Theme and language</span>
+          </button>
+          
+    <section class="nav-admin-actions" aria-labelledby="nav-admin-title">
+      <h2 class="nav-group-title" id="nav-admin-title">Administration</h2>
+      
+        <a
+          class="nav-button"
+          href="/admin?section=account&profile=1"
+          
+          aria-label="Account"
+        ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole" aria-hidden="true"><circle cx="12" cy="16" r="1"></circle><rect x="3" y="10" width="18" height="12" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg>
+<span class="nav-action-label">Account</span></a>
+        <a
+          class="nav-button"
+          href="/admin?section=profiles&profile=1"
+          aria-current="page"
+          aria-label="Manage profiles"
+        ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-cog" aria-hidden="true"><path d="m14.305 19.53.923-.382"></path><path d="m15.228 16.852-.923-.383"></path><path d="m16.852 15.228-.383-.923"></path><path d="m16.852 20.772-.383.924"></path><path d="m19.148 15.228.383-.923"></path><path d="m19.53 21.696-.382-.924"></path><path d="M2 21a8 8 0 0 1 10.434-7.62"></path><path d="m20.772 16.852.924-.383"></path><path d="m20.772 19.148.924.383"></path><circle cx="10" cy="8" r="5"></circle><circle cx="18" cy="18" r="3"></circle></svg>
+<span class="nav-action-label">Manage profiles</span></a>
+        <a
+          class="nav-button"
+          href="/admin/settings?profile=1"
+          
+          aria-label="Server configuration"
+        ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-server" aria-hidden="true"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>
+<span class="nav-action-label">Server configuration</span></a>
+      
+    </section>
+    <h2 class="nav-group-title">About TuneTrail</h2>
+      <a
+        class="nav-button"
+        href="https://github.com/ebrgr/TuneTrail"
+        target="_blank"
+        rel="noopener"
+        aria-label="About TuneTrail 0.10 (opens in a new tab)"
+      ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+<span>About TuneTrail 0.10 ↗</span></a>
+
+          
+            
+            <details class="nav-periods-menu">
+              <summary class="nav-button" aria-label="Time period">Time period</summary>
+              
+                <a class="nav-button" href="/alpha?period=day" >day</a>
+              
+                <a class="nav-button" href="/alpha?period=week" >week</a>
+              
+                <a class="nav-button" href="/alpha?period=month" >month</a>
+              
+                <a class="nav-button" href="/alpha?period=year" >year</a>
+              
+                <a class="nav-button" href="/alpha?period=all_time" >All</a>
+              
+            </details>
+          
+        </div>
+      </details>
+    </div>
+    
+      <div class="nav-periods" role="group" aria-label="Time period">
+        
+          <a href="/alpha?period=day" >day</a>
+        
+          <a href="/alpha?period=week" >week</a>
+        
+          <a href="/alpha?period=month" >month</a>
+        
+          <a href="/alpha?period=year" >year</a>
+        
+          <a href="/alpha?period=all_time" >All</a>
+        
+      </div>
+    
+  </nav>
+
+      
+  <div
+    id="theme-panel"
+    class="theme-panel"
+    popover
+    role="dialog"
+    aria-labelledby="theme-panel-title"
+    data-theme-panel
+    data-themes-url="/web-assets/themes.json?v=3aa3232dd7ad85c16c02f68bf82a634767e88eeb2729bc670f47c752d4435aa5"
+    data-i18n-load-error="Unable to load theme examples. Built-in themes still work."
+    data-i18n-applied="Theme applied on this browser."
+    data-i18n-reset="Default theme restored."
+    data-i18n-custom-applied="Custom theme applied on this browser."
+    data-i18n-invalid-json="Invalid JSON. No appearance changes were made."
+    data-i18n-invalid-palette="Use exactly the 14 expected hexadecimal color properties."
+  >
+    <button
+      class="close-dialog"
+      type="button"
+      popovertarget="theme-panel"
+      popovertargetaction="hide"
+      aria-label="Close dialog"
+    >×</button>
+    <h2 id="theme-panel-title">Theme</h2>
+    <noscript><p class="noscript">Changing the theme requires JavaScript.</p></noscript>
+    
+    <section class="panel-section" aria-labelledby="theme-colors-title">
+      <div class="theme-heading">
+        <h3 id="theme-colors-title">Colors</h3>
+        <button class="reset-theme" type="button" data-theme-reset>Reset</button>
+      </div>
+      <div class="theme-grid">
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="yuu"
+            style="background:#191310;color:#f5ece3;border-color:#231b18"
+          >
+            <span>yuu</span>
+            <span class="swatches">
+              <i style="background:#231b18"></i>
+              <i style="background:#cfc3b7"></i>
+              <i style="background:#e5846a"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="varia"
+            style="background:#19191d;color:#edeef2;border-color:#1D1D24"
+          >
+            <span>varia</span>
+            <span class="swatches">
+              <i style="background:#1D1D24"></i>
+              <i style="background:#a8a8b4"></i>
+              <i style="background:#D073F5"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="midnight"
+            style="background:#080B10;color:#dbdfe7;border-color:#0A121C"
+          >
+            <span>midnight</span>
+            <span class="swatches">
+              <i style="background:#0A121C"></i>
+              <i style="background:#9ea3a8"></i>
+              <i style="background:#1a97eb"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="catppuccin"
+            style="background:#181825;color:#cdd6f4;border-color:#1e1e2e"
+          >
+            <span>catppuccin</span>
+            <span class="swatches">
+              <i style="background:#1e1e2e"></i>
+              <i style="background:#a6adc8"></i>
+              <i style="background:#cba6f7"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="autumn"
+            style="background:#2c1912;color:#fef9f3;border-color:#361E12"
+          >
+            <span>autumn</span>
+            <span class="swatches">
+              <i style="background:#361E12"></i>
+              <i style="background:#dbc6b0"></i>
+              <i style="background:#f0850a"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="black"
+            style="background:#000000;color:#dddddd;border-color:#0A0A0A"
+          >
+            <span>black</span>
+            <span class="swatches">
+              <i style="background:#0A0A0A"></i>
+              <i style="background:#aaaaaa"></i>
+              <i style="background:#08c08c"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="wine"
+            style="background:#1e121a;color:#f8d8ab;border-color:#271620"
+          >
+            <span>wine</span>
+            <span class="swatches">
+              <i style="background:#271620"></i>
+              <i style="background:#c1a378"></i>
+              <i style="background:#df7d6c"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="pearl"
+            style="background:#FAFAFA;color:#0E121C;border-color:#F5F5F5"
+          >
+            <span>pearl</span>
+            <span class="swatches">
+              <i style="background:#F5F5F5"></i>
+              <i style="background:#3D4759"></i>
+              <i style="background:#4D9FEB"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="rosebud"
+            style="background:#220c16;color:#f2c8d2;border-color:#321020"
+          >
+            <span>rosebud</span>
+            <span class="swatches">
+              <i style="background:#321020"></i>
+              <i style="background:#c28490"></i>
+              <i style="background:#de5e9e"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="urim"
+            style="background:#0e1510;color:#dce8c0;border-color:#131C13"
+          >
+            <span>urim</span>
+            <span class="swatches">
+              <i style="background:#131C13"></i>
+              <i style="background:#a0b87a"></i>
+              <i style="background:#e8d000"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="match"
+            style="background:#071014;color:#ebeaeb;border-color:#0A181E"
+          >
+            <span>match</span>
+            <span class="swatches">
+              <i style="background:#0A181E"></i>
+              <i style="background:#BDBDBD"></i>
+              <i style="background:#fda827"></i>
+            </span>
+          </button>
+        
+          <button
+            class="theme-option"
+            type="button"
+            data-theme-choice="lemon"
+            style="background:#1a171a;color:#e6e2dc;border-color:#201c20"
+          >
+            <span>lemon</span>
+            <span class="swatches">
+              <i style="background:#201c20"></i>
+              <i style="background:#b2aca1"></i>
+              <i style="background:#f5c737"></i>
+            </span>
+          </button>
+        
+      </div>
+      <details class="custom-theme-details">
+        <summary>Use Custom Theme</summary>
+        <form class="custom-theme" data-custom-theme-form>
+          <label class="sr-only" for="custom-theme-input">Custom theme JSON (14 hexadecimal colors)</label>
+          <textarea id="custom-theme-input" name="custom-theme" spellcheck="false"></textarea>
+          <button class="large-button" type="submit">Submit</button>
+        </form>
+      </details>
+      <p class="theme-status" role="status" aria-live="polite" data-theme-status></p>
+    </section>
+    
+    <fieldset class="panel-section nav-labels" data-nav-labels-choice>
+      <legend>Navigation labels</legend>
+      <label><input type="radio" name="nav-labels" value="labels"> With labels</label>
+      <label><input type="radio" name="nav-labels" value="icons" checked> Icons only</label>
+    </fieldset>
+    
+  </div>
+
+      
+  
+    <header class="profile-header">
+      
+        <a
+          class="admin-avatar-link"
+          href="/admin?profile=1"
+          title="Administrator signed in"
+        >
+          
+  <span class="avatar" aria-hidden="true">FA</span>
+
+          <span class="admin-badge"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+</span>
+          <span class="sr-only">Administrator signed in</span>
+        </a>
+      
+      <div class="profile-identity">
+        <strong>Fictional Alpha</strong>
+        <span>Listening profile · /alpha</span>
+      </div>
+    </header>
+  
+
+      <div class="admin-shell">
+        <main id="admin-main" class="admin-main">
+          <h1>Administration</h1>
+          
+            <p><a href="/admin/settings">Server configuration</a></p>
+          
+          
+          
+          
+            <form method="post" action="/admin/logout">
+              <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+              
+                <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+              
+              <button>Sign out</button>
+            </form>
+            
+              <section>
+                <h2>Profiles</h2>
+                <ul>
+                  
+                    <li>
+                      <a href="/admin?profile=2">Beta</a>
+                    </li>
+                  
+                    <li>
+                      <a href="/admin?profile=3">Empty</a>
+                    </li>
+                  
+                    <li>
+                      <a href="/admin?profile=1">Fictional Alpha</a>
+                    </li>
+                  
+                    <li>
+                      <a href="/admin?profile=4">reference-admin</a>
+                    </li>
+                  
+                </ul>
+                <details>
+                  <summary>Create profile</summary>
+                  <form method="post" action="/admin/profile/create" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    
+                      <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    
+                    <label>Name <input name="display_name" required></label>
+                    <label>Slug <input name="slug" required></label>
+                    <label>Icon <input name="icon"></label>
+                    <label>Photo <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+                    <small>JPEG, PNG or static WebP.</small>
+                    <button>Create profile</button>
+                  </form>
+                </details>
+              </section>
+              
+                <nav
+                  class="admin-sections"
+                  aria-label="Profile administration"
+                >
+                  <a href="#details">Profile</a>
+                  <a href="#keys">Keys</a>
+                  <a href="#import">Import / export</a>
+                  <a href="#relay">Relay</a>
+                </nav>
+                <section id="details">
+                  <h2>Fictional Alpha</h2>
+                  <form method="post" action="/admin/profile/1/save">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <label>Name <input name="display_name" value="Fictional Alpha" required></label>
+                    <label>Slug <input name="slug" value="alpha" required></label>
+                    <button>Save profile</button>
+                  </form>
+                  <h3>Avatar</h3>
+                  <form method="post" action="/admin/profile/1/avatar" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <label>Icon <input name="icon" value=""></label>
+                    <label>Photo <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+                    <small>JPEG, PNG or static WebP.</small>
+                    <button>Save avatar</button>
+                  </form>
+                  <form method="post" action="/admin/profile/1/avatar-clear">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <button>Use initials</button>
+                  </form>
+                  <p><a href="/admin/profile/1/delete-review">Review profile deletion</a></p>
+                  <h3 id="keys">API keys</h3>
+                  
+                    <p>No API keys.</p>
+                  
+                  <form method="post" action="/admin/profile/1/keys/create">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <label>Label <input name="label" required></label>
+                    <button>Create key</button>
+                  </form>
+                  <h3 id="import">Import and export</h3>
+                  <p>Destination: Fictional Alpha (alpha, ID 1). Import is synchronous; if interrupted, some listens may already be saved.</p>
+                  <form method="post" action="/admin/profile/1/import" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <input type="hidden" name="profile_name" value="Fictional Alpha">
+                    <label>Format <select name="format">
+                      <option value="tunetrail">TuneTrail</option>
+                      <option value="koito">Koito</option>
+                      <option value="spotify">Spotify</option>
+                      <option value="maloja">Maloja</option>
+                      <option value="lastfm">Last.fm</option>
+                      <option value="listenbrainz">ListenBrainz</option>
+                    </select></label>
+                    <label>File <input type="file" name="file" required></label>
+                    <label><input type="checkbox" name="confirm" value="1" required> Confirm this destination</label>
+                    <button>Import</button>
+                  </form>
+                  <p><a href="/admin/profile/1/export">Download this profile&#39;s history</a></p>
+                  <h3 id="relay">ListenBrainz relay</h3>
+                  <p>Enter both the server URL and token. Use Remove relay to disable it.</p>
+                  <form method="post">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <label>Server URL <input name="url" value="" required></label>
+                    <label>Token <input type="text" name="token" value="" autocomplete="off" required></label>
+                    <button formaction="/admin/profile/1/relay/save">Save relay</button>
+                    <button formaction="/admin/profile/1/relay/test">Test without saving</button>
+                  </form>
+                  <form method="post" action="/admin/profile/1/relay/remove">
+                    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                    <input type="hidden" name="profile_slug" value="alpha">
+                    <button>Remove relay</button>
+                  </form>
+                </section>
+              
+            
+          
+        </main>
+        <footer class="admin-footer">
+          TuneTrail ·
+          <a href="/">Listening profiles</a>
+        </footer>
+      </div>
+    </body>
+  </html>

@@ -8,7 +8,7 @@ import (
 
 // TestAdminNavAdaptsProfile checks the administration's adapter to the shared sidebar.
 func TestAdminNavAdaptsProfile(t *testing.T) {
-	if nav := adminNav(nil, false, ""); nav.Kind != "admin" || nav.Profile != nil || nav.Admin || !nav.Open {
+	if nav := adminNav(nil, false, ""); nav.Kind != "admin" || nav.Profile != nil || nav.Admin {
 		t.Fatalf("no profile: %+v", nav)
 	}
 	image, icon := "abc", "radio"

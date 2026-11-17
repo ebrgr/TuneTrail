@@ -50,27 +50,18 @@
           {{icon "Plus"}}<span class="nav-label">{{tr "ui.more" "More"}}</span>
         </summary>
         <div class="nav-options">
+          <h2 class="nav-group-title">{{tr "ui.listening" "Listening"}}</h2>
           {{/* Keep profile switching reachable on mobile, including administrator sessions. */}}
           <a class="nav-button" href="/" aria-label="{{tr "ui.choose_listening_profile" "Choose listening profile"}}"
             {{if ne .Kind "admin"}}data-dialog="profiles-dialog"{{end}}>
             {{icon "UsersRound"}}<span>{{tr "ui.choose_listening_profile" "Choose listening profile"}}</span>
           </a>
+          <h2 class="nav-group-title">{{tr "ui.appearance" "Appearance"}}</h2>
           <button class="nav-button" type="button" popovertarget="theme-panel"
             aria-label="{{tr "ui.appearance_language" "Theme and language"}}">
             {{icon "Palette"}}<span>{{tr "ui.appearance_language" "Theme and language"}}</span>
           </button>
-          {{if eq .Kind "preview"}}
-            <button class="nav-button" type="button" data-nav-toggle aria-controls="nav-admin" aria-expanded="false"
-              aria-label="{{tr "ui.administration" "Administration"}}">
-              {{icon "Settings2"}}<span>{{tr "ui.administration" "Administration"}}</span>
-            </button>
-            <noscript><p>{{tr "ui.preview_no_admin" "This preview has no administration."}}</p></noscript>
-          {{else}}
-            <a class="nav-button" href="/admin{{with .Profile}}?profile={{.ID}}{{end}}" data-nav-toggle aria-controls="nav-admin"
-              aria-label="{{tr "ui.administration" "Administration"}}">
-              {{icon "Settings2"}}<span>{{tr "ui.administration" "Administration"}}</span>
-            </a>
-          {{end}}
+          {{template "partial/admin-actions" .}}
           {{if .PeriodLinks}}
             {{/* ISSUE-071: icon rails retain a native period selector inside More. */}}
             <details class="nav-periods-menu">
@@ -91,7 +82,6 @@
       </div>
     {{end}}
   </nav>
-  {{template "partial/admin-sidebar" .}}
 {{end}}
 
 {{/* Profile header shared by public pages and administration (ISSUE-109, ISSUE-123).
@@ -124,66 +114,48 @@
   {{end}}
 {{end}}
 
-{{/* Second sidebar (ISSUE-123): beside the first on wide screens, below it on narrow ones. */}}
-{{define "partial/admin-sidebar"}}
-  <nav
-    id="nav-admin"
-    class="sidebar sidebar-secondary"
-    aria-label="{{tr "ui.administration" "Administration"}}"
-    {{if not .Open}}hidden{{end}}
-  >
-    <div class="nav-group">
+{{/* ISSUE-156: ordinary links inside More preserve role and current-page semantics without scripts. */}}
+{{define "partial/admin-actions"}}
+    <section class="nav-admin-actions" aria-labelledby="nav-admin-title">
+      <h2 class="nav-group-title" id="nav-admin-title">{{tr "ui.administration" "Administration"}}</h2>
       {{if eq .Kind "preview"}}
-        <button
-          class="nav-button nav-disabled"
-          type="button"
-          aria-disabled="true"
-          aria-label="{{tr "ui.preview_no_admin" "This preview has no administration."}}"
-          data-tip="{{tr "ui.preview_no_admin" "This preview has no administration."}}"
-        >{{icon "KeyRound"}}<span class="nav-label">{{tr "ui.sign_in" "Sign in"}}</span></button>
+        <p class="nav-preview-notice">{{tr "ui.preview_admin_unavailable" "Preview: administration unavailable"}}</p>
       {{else if .Admin}}
         <a
           class="nav-button"
           href="/admin?section=account{{with .Profile}}&profile={{.ID}}{{end}}"
           {{if eq .Current "account"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.account" "Account"}}"
-          data-tip="{{tr "ui.account" "Account"}}"
-        >{{icon "LockKeyhole"}}<span class="nav-label">{{tr "ui.account" "Account"}}</span></a>
+        >{{icon "LockKeyhole"}}<span class="nav-action-label">{{tr "ui.account" "Account"}}</span></a>
         <a
           class="nav-button"
           href="/admin?section=profiles{{with .Profile}}&profile={{.ID}}{{end}}"
           {{if eq .Current "profiles"}}aria-current="page"{{end}}
-          aria-label="{{tr "ui.manage_profiles" "Profiles"}}"
-          data-tip="{{tr "ui.manage_profiles" "Profiles"}}"
-        >{{icon "UserRoundCog"}}<span class="nav-label">{{tr "ui.manage_profiles" "Profiles"}}</span></a>
+          aria-label="{{tr "ui.manage_profiles" "Manage profiles"}}"
+        >{{icon "UserRoundCog"}}<span class="nav-action-label">{{tr "ui.manage_profiles" "Manage profiles"}}</span></a>
         <a
           class="nav-button"
           href="/admin/settings{{with .Profile}}?profile={{.ID}}{{end}}"
           {{if eq .Current "settings"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.server_configuration" "Server configuration"}}"
-          data-tip="{{tr "ui.server_configuration" "Server configuration"}}"
-        >{{icon "Server"}}<span class="nav-label">{{tr "ui.server_configuration" "Server configuration"}}</span></a>
+        >{{icon "Server"}}<span class="nav-action-label">{{tr "ui.server_configuration" "Server configuration"}}</span></a>
       {{else}}
         <a
           class="nav-button"
           href="/admin"
-          {{if .Open}}aria-current="page"{{end}}
+          {{if eq .Kind "admin"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.sign_in" "Sign in"}}"
-          data-tip="{{tr "ui.sign_in" "Sign in"}}"
-        >{{icon "KeyRound"}}<span class="nav-label">{{tr "ui.sign_in" "Sign in"}}</span></a>
+        >{{icon "KeyRound"}}<span class="nav-action-label">{{tr "ui.sign_in" "Sign in"}}</span></a>
       {{end}}
-    </div>
-    <div class="nav-group">
+    </section>
+    <h2 class="nav-group-title">{{tr "ui.about" "About"}} TuneTrail</h2>
       <a
         class="nav-button"
         href="https://github.com/ebrgr/TuneTrail"
         target="_blank"
         rel="noopener"
         aria-label="{{tr "ui.about" "About"}} TuneTrail {{.Version}} ({{tr "ui.opens_new_tab" "opens in a new tab"}})"
-        data-tip="TuneTrail {{.Version}} ↗"
-      >{{icon "Info"}}<span class="nav-label">{{tr "ui.about" "About"}}</span></a>
-    </div>
-  </nav>
+      >{{icon "Info"}}<span>{{tr "ui.about" "About"}} TuneTrail {{.Version}} ↗</span></a>
 {{end}}
 
 {{/* Theme and language only, without tabs (ISSUE-110). Called with the page locale, which may be nil. */}}
@@ -212,7 +184,7 @@
     >×</button>
     <h2 id="theme-panel-title">{{tr "ui.theme" "Theme"}}</h2>
     <noscript><p class="noscript">{{tr "ui.theme_requires_javascript" "Changing the theme requires JavaScript."}}</p></noscript>
-    {{/* ISSUE-123: colors, sidebar layout and language in separate bordered sections. */}}
+    {{/* ISSUE-123: colors, navigation labels and language in separate bordered sections. */}}
     <section class="panel-section" aria-labelledby="theme-colors-title">
       <div class="theme-heading">
         <h3 id="theme-colors-title">{{tr "ui.colors" "Colors"}}</h3>
@@ -246,16 +218,11 @@
       </details>
       <p class="theme-status" role="status" aria-live="polite" data-theme-status></p>
     </section>
-    {{/* ISSUE-154: icons-only is the default; desktop labels share the theme panel with nav-layout; persistence awaits the server contract. */}}
-    <fieldset class="panel-section nav-layout" data-nav-labels-choice>
+    {{/* ISSUE-154: icons-only is the default; desktop labels share the theme panel; persistence awaits the server contract. */}}
+    <fieldset class="panel-section nav-labels" data-nav-labels-choice>
       <legend>{{tr "ui.navigation_labels" "Navigation labels"}}</legend>
       <label><input type="radio" name="nav-labels" value="labels"> {{tr "ui.with_labels" "With labels"}}</label>
       <label><input type="radio" name="nav-labels" value="icons" checked> {{tr "ui.icons_only" "Icons only"}}</label>
-    </fieldset>
-    <fieldset class="panel-section nav-layout" data-nav-layout-choice>
-      <legend>{{tr "ui.sidebar_layout" "Administration sidebar"}}</legend>
-      <label><input type="radio" name="nav-layout" value="push" checked> {{tr "ui.sidebar_push" "Push the content aside"}}</label>
-      <label><input type="radio" name="nav-layout" value="overlay"> {{tr "ui.sidebar_overlay" "Open over the content"}}</label>
     </fieldset>
     {{if .}}
       <section class="panel-section">

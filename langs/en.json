@@ -153,7 +153,7 @@
   "ui.theme": "Theme",
   "ui.theme_requires_javascript": "Changing the theme requires JavaScript.",
   "ui.account": "Account",
-  "ui.manage_profiles": "Profiles",
+  "ui.manage_profiles": "Manage profiles",
   "ui.server_configuration": "Server configuration",
   "ui.sign_in": "Sign in",
   "ui.about": "About",
@@ -580,5 +580,8 @@
   "admin.listen.client": "Client",
   "admin.listen.unknown_client": "Not recorded",
   "admin.listen.delete_context": "Delete only this listen from {{.Profile}}.",
-  "media.dialog.reload_history": "Reload history"
+  "media.dialog.reload_history": "Reload history",
+  "ui.listening": "Listening",
+  "ui.appearance": "Appearance",
+  "ui.preview_admin_unavailable": "Preview: administration unavailable"
 }

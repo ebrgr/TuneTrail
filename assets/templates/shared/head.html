@@ -10,14 +10,13 @@
       <script src="{{asset "theme.js"}}"></script>
       <link rel="stylesheet" href="{{asset "ui.css"}}">
       <script defer src="{{asset "theme-picker.js"}}"></script>
-      <script defer src="{{asset "nav.js"}}"></script>
       {{- if eq .Kind "admin"}}
       <link rel="stylesheet" href="{{asset "admin.css"}}">
       <script defer src="{{asset "admin.js"}}"></script>
       <script defer src="{{asset "enhance.js"}}"></script>
-      {{- else}}
-      <script defer src="{{asset "ui.js"}}"></script>
       {{- end}}
+      {{/* ISSUE-156: More and theme focus enhancements are shared with administration. */}}
+      <script defer src="{{asset "ui.js"}}"></script>
       {{- if eq .Kind "live"}}
       <script defer src="{{asset "live.js"}}"></script>
       <script defer src="{{asset "search.js"}}"></script>

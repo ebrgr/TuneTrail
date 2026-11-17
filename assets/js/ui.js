@@ -1,4 +1,6 @@
 (() => {
+  // Administration owns its form and image enhancements; More remains shared below.
+  if (document.body.hasAttribute('data-admin-ui')) return;
   // Dialogs and image fallbacks; theme changes live in theme-picker.js (ISSUE-110).
   let opener;
   const text = document.body.dataset;
@@ -83,6 +85,46 @@ document.querySelectorAll('.nav-more').forEach(more => {
 // ISSUE-154: clicking or tapping outside the More menu closes it, without moving focus.
 document.addEventListener('pointerdown', event => {
   document.querySelectorAll('.nav-more[open]').forEach(more => {
-    if (!more.contains(event.target)) more.open = false;
+    if (!more.contains(event.target)) {
+      more.open = false;
+      // Let the click focus its destination before rescuing focus from hidden actions.
+      requestAnimationFrame(() => {
+        if (!more.open && more.contains(document.activeElement)) more.querySelector('summary').focus();
+      });
+    }
   });
 });
+
+// ISSUE-156: return from the theme to a visible invoker, even after outside dismissal closed More.
+(() => {
+  const panel = document.getElementById('theme-panel');
+  if (!panel) return;
+  let opener;
+  let outsideTarget;
+  panel.addEventListener('beforetoggle', event => {
+    if (event.newState === 'open') {
+      opener = document.activeElement;
+      outsideTarget = null;
+    }
+  });
+  document.addEventListener('pointerdown', event => {
+    if (panel.matches(':popover-open') && !panel.contains(event.target)) outsideTarget = event.target;
+  });
+  panel.addEventListener('toggle', event => {
+    if (event.newState !== 'closed' || !opener?.isConnected) return;
+    // Queued toggle events must not steal focus after the user has already moved on.
+    const active = document.activeElement;
+    if (active !== opener && active !== document.body && !panel.contains(active) && active.checkVisibility()) {
+      opener = null;
+      return;
+    }
+    // Preserve focus on an outside destination the user deliberately clicked.
+    const clicked = outsideTarget?.closest('a,button,input,select,textarea,summary,[tabindex]');
+    if (clicked?.checkVisibility()) { opener = null; return; }
+    const more = opener.closest('.nav-more');
+    if (more) more.open = true;
+    if (opener !== document.body && opener.checkVisibility()) opener.focus();
+    else document.querySelector('.nav-more>summary')?.focus();
+    opener = null;
+  });
+})();

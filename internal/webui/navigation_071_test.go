@@ -58,3 +58,25 @@ func TestNavigationLabelsBelongToThemePanel(t *testing.T) {
 		t.Fatal("unexpected sidebar checkbox or non-default server labels")
 	}
 }
+
+// TestMoreGroupsReplaceSecondSidebar checks the visitor baseline without JavaScript.
+func TestMoreGroupsReplaceSecondSidebar(t *testing.T) {
+	h, err := NewHandler(pageStore(t), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := pageRequest(h, "/alpha").Body.String()
+	start := strings.Index(body, `<div class="nav-options">`)
+	end := strings.Index(body[start:], `</details>`)
+	menu := body[start : start+end]
+	for _, want := range []string{`Listening</h2>`, `Appearance</h2>`, `Administration</h2>`, `About TuneTrail</h2>`, `href="/admin"`} {
+		if !strings.Contains(menu, want) {
+			t.Fatalf("More missing %s", want)
+		}
+	}
+	for _, obsolete := range []string{`id="nav-admin"`, `sidebar-secondary`, `data-nav-toggle`, `name="nav-layout"`} {
+		if strings.Contains(body, obsolete) {
+			t.Fatalf("obsolete navigation: %s", obsolete)
+		}
+	}
+}

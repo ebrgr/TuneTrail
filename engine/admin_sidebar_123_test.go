@@ -11,49 +11,52 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// secondBar returns the rendered second sidebar (ISSUE-123).
-func secondBar(t *testing.T, body string) string {
+// adminActions returns the role-aware group inside More (ISSUE-156, migrated from ISSUE-123).
+func adminActions(t *testing.T, body string) string {
 	t.Helper()
-	start := strings.Index(body, `id="nav-admin"`)
-	require.GreaterOrEqual(t, start, 0, "second sidebar missing")
-	return body[start : start+strings.Index(body[start:], "</nav>")]
+	start := strings.Index(body, `class="nav-admin-actions"`)
+	require.GreaterOrEqual(t, start, 0, "administration actions missing")
+	return body[start : start+strings.Index(body[start:], "</section>")]
 }
 
-// TestSecondSidebarItemsByRole checks which administration links each audience receives.
-func TestSecondSidebarItemsByRole(t *testing.T) {
+// TestAdminActionsItemsByRole checks which administration links each audience receives.
+func TestAdminActionsItemsByRole(t *testing.T) {
 	a := newProfileTestApp(t)
-	visitor := secondBar(t, a.request(http.MethodGet, "/default", "", "", false).Body.String())
-	require.Contains(t, visitor, "hidden\n")
+	body := a.request(http.MethodGet, "/default", "", "", false).Body.String()
+	visitor := adminActions(t, body)
+	require.Contains(t, body, `href="https://github.com/ebrgr/TuneTrail"`)
+	require.Contains(t, body, `rel="noopener"`)
 	require.Contains(t, visitor, `href="/admin"`)
 	require.NotContains(t, visitor, "/admin/settings")
 	require.NotContains(t, visitor, "section=account")
 
-	admin := secondBar(t, a.request(http.MethodGet, "/default", "", "", true).Body.String())
-	require.Contains(t, admin, "hidden\n", "public pages start with the second sidebar closed")
+	admin := adminActions(t, a.request(http.MethodGet, "/default", "", "", true).Body.String())
 	// Administration links keep the current profile so its header stays in view.
 	for _, link := range []string{`href="/admin?section=account&profile=1"`, `href="/admin?section=profiles&profile=1"`,
-		`href="/admin/settings?profile=1"`, `href="https://github.com/ebrgr/TuneTrail"`} {
+		`href="/admin/settings?profile=1"`} {
 		require.Contains(t, admin, link)
 	}
 }
 
-// TestSecondSidebarOpenInAdministration checks the open state and the current item.
-func TestSecondSidebarOpenInAdministration(t *testing.T) {
+// TestAdminActionsCurrentInAdministration checks selected links in the native disclosure.
+func TestAdminActionsCurrentInAdministration(t *testing.T) {
 	a := newProfileTestApp(t)
-	settings := secondBar(t, a.request(http.MethodGet, "/admin/settings", "", "", true).Body.String())
-	require.NotContains(t, settings, "hidden\n")
+	settings := adminActions(t, a.request(http.MethodGet, "/admin/settings", "", "", true).Body.String())
 	require.Regexp(t, `href="/admin/settings"\s+aria-current="page"`, settings)
 
-	account := secondBar(t, a.request(http.MethodGet, "/admin?section=account", "", "", true).Body.String())
+	account := adminActions(t, a.request(http.MethodGet, "/admin?section=account", "", "", true).Body.String())
 	require.Regexp(t, `href="/admin\?section=account"\s+aria-current="page"`, account)
 
-	login := secondBar(t, a.request(http.MethodGet, "/admin", "", "", false).Body.String())
+	profiles := adminActions(t, a.request(http.MethodGet, "/admin?section=profiles", "", "", true).Body.String())
+	require.Regexp(t, `href="/admin\?section=profiles"\s+aria-current="page"`, profiles)
+
+	login := adminActions(t, a.request(http.MethodGet, "/admin", "", "", false).Body.String())
 	require.NotContains(t, login, "/admin/settings", "the login page offers only Sign in and About")
 }
 
-// TestSecondSidebarPreAuthErrorShowsVisitorItems guards the role source: an error raised
+// TestAdminActionsPreAuthErrorShowsVisitorItems guards the role source: an error raised
 // before authentication (login rate limit) must not offer administrator links (ISSUE-123).
-func TestSecondSidebarPreAuthErrorShowsVisitorItems(t *testing.T) {
+func TestAdminActionsPreAuthErrorShowsVisitorItems(t *testing.T) {
 	a := newProfileTestApp(t)
 	h, err := adminui.New(a.store, adminui.Options{TempDir: t.TempDir()})
 	require.NoError(t, err)
@@ -65,7 +68,7 @@ func TestSecondSidebarPreAuthErrorShowsVisitorItems(t *testing.T) {
 		h.ServeHTTP(last, r)
 	}
 	require.Equal(t, http.StatusTooManyRequests, last.Code)
-	bar := secondBar(t, last.Body.String())
+	bar := adminActions(t, last.Body.String())
 	require.Contains(t, bar, `href="/admin"`)
 	require.NotContains(t, bar, "/admin/settings")
 	require.NotContains(t, bar, "section=profiles")

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- As ações de administração agora ficam agrupadas no menu (+), sem segunda barra lateral nem opção empurrar/sobrepor (ISSUE-156).
+
 ## [0.30] - 2026-11-17
 
 - A lista "Last played" da Home volta a ocupar toda a largura e a lateral do desktop passa a ser só de ícones por padrão, com a opção de rótulos no painel de tema; a Retrospectiva substitui o Histórico na barra e o menu (+) fecha ao clicar fora; o gráfico de atividade tem largura máxima igual à do gráfico de interesse e se ajusta à janela sem barras de rolagem; nomes e textos dos cards de destaque e das faixas mais ouvidas usam toda a largura da coluna, sem quebrar palavras; o botão de entrar na barra de administração usa o ícone de chave; a opção "Mostrar tempo de reprodução?" da retrospectiva fica centralizada na coluna (ISSUE-154).

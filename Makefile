@@ -82,7 +82,6 @@ ui.check:
 	node --check assets/js/theme.js
 	node --check assets/js/ui.js
 	node --check assets/js/theme-picker.js
-	node --check assets/js/nav.js
 	node --check assets/js/search.js
 	node --check assets/js/media-dialog.js
 	node --check assets/js/enhance.js
@@ -152,12 +151,12 @@ ui.reference.test:
 
 ui.check: ui.reference.test
 
-# Compare the current ISSUE-154 layout reference; visual acceptance remains a separate user decision.
+# Compare the current ISSUE-156 layout reference; visual acceptance remains a separate user decision.
 .PHONY: ui.reference.check
 ui.reference.check:
 	@task_reference_dir=$$(mktemp -d); trap 'rm -rf "$$task_reference_dir"' EXIT; \
 	TZ=UTC TUNETRAIL_UI_REFERENCE="$$task_reference_dir/candidate" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1 && \
-	python3 scripts/compare_ui_reference.py backlog/evidencias/issue-154/reference "$$task_reference_dir/candidate"
+	python3 scripts/compare_ui_reference.py backlog/evidencias/issue-156/reference "$$task_reference_dir/candidate"
 
 ui.check: ui.reference.check
 

@@ -75,22 +75,12 @@
   background: var(--color-bg);
   box-shadow: var(--shadow-overlay)
 }
-.nav-options .nav-button { justify-content: flex-start; gap: var(--space-3); }
-.sidebar-secondary[hidden] { display: none; }
-/* ISSUE-123: administration remains a separate landmark above the mobile dock. */
-.sidebar.sidebar-secondary {
-  z-index: 49;
-  bottom: var(--nav-bottom);
-  padding: var(--space-2);
-  border-bottom: 1px solid var(--color-border);
-  max-height: calc(100dvh - var(--nav-bottom));
-  overflow-y: auto
-}
-.sidebar-secondary .nav-group { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.sidebar-secondary .nav-label { display: none; }
-body:has(#nav-admin:not([hidden])) .app-shell { padding-bottom: calc(var(--nav-bottom) + 5rem); }
-html[data-nav-layout="overlay"]:not([data-nav-ready]) .sidebar-secondary { display: none; }
-.nav-disabled { opacity: .55; cursor: default; }
+/* ISSUE-156: action names stay visible and wrap inside the bounded More panel. */
+.nav-options .nav-button { justify-content: flex-start; gap: var(--space-3); flex-shrink: 0; width: 100%; text-align: left; }
+.nav-options .nav-button span { overflow-wrap: anywhere; }
+.nav-group-title { font-size: var(--step--1); color: var(--color-fg-tertiary); margin: var(--space-3) var(--space-1) var(--space-1); }
+.nav-admin-actions { display: flex; flex-direction: column; }
+.nav-preview-notice { padding: var(--space-2); }
 footer {
   margin: auto auto 0;
   padding: 80px var(--space-4) var(--space-7);
@@ -112,12 +102,12 @@ footer a:hover { text-decoration: underline; }
 }
 
 
-.nav-layout { display: flex; flex-direction: column; gap: var(--space-2); }
-.nav-layout legend { padding: 0 var(--space-1); color: var(--color-fg-secondary); }
+.nav-labels { display: flex; flex-direction: column; gap: var(--space-2); }
+.nav-labels legend { padding: 0 var(--space-1); color: var(--color-fg-secondary); }
 /* A compact identity stays in document flow above mobile content. */
 .profile-header { padding: var(--space-3) var(--space-4); }
 @media(min-width:40rem) {
-  .app-shell,body:has(#nav-admin:not([hidden])) .app-shell { flex-direction: row; padding-bottom: 0; }
+  .app-shell { flex-direction: row; padding-bottom: 0; }
   .app-content { margin-left: var(--nav-width); width: calc(100% - var(--nav-width)); }
   .sidebar {
     top: 0;
@@ -136,37 +126,23 @@ footer a:hover { text-decoration: underline; }
   .nav-destinations>.nav-button,.nav-more { flex: none; }
   .sidebar .nav-label { display: none; }
   .nav-profile .nav-button,.nav-destinations>.nav-button { width: 100%; }
-  .nav-options { bottom: auto; top: 0; left: calc(100% + var(--space-2)); right: auto; }
-  .nav-more { position: relative; }
-  .sidebar.sidebar-secondary {
-    left: var(--nav-width);
-    top: 0;
+  /* ISSUE-156: keep the entire panel reachable even on short landscape viewports. */
+  .nav-options {
+    position: fixed;
+    max-height: min(34rem,calc(100dvh - var(--space-4)));
     bottom: auto;
-    max-height: none;
-    z-index: 49;
-    padding: var(--space-4) 6px
+    top: clamp(var(--space-2),calc(100dvh - 36rem),20rem);
+    left: calc(var(--nav-width) + var(--space-2));
+    right: auto
   }
-  .sidebar-secondary .nav-group { flex-direction: column; flex-wrap: nowrap; }
-  .sidebar-secondary .nav-group:last-child { margin-top: auto; }
-  body:has(#nav-admin:not([hidden])) .app-content {
-    margin-left: calc(var(--nav-width) + var(--nav-rail-width));
-    width: calc(100% - var(--nav-width) - var(--nav-rail-width))
-  }
-  html[data-nav-layout="overlay"] body:has(#nav-admin:not([hidden])) .app-content {
-    margin-left: var(--nav-width);
-    width: calc(100% - var(--nav-width))
-  }
-  html[data-nav-layout="overlay"] .sidebar.sidebar-secondary { z-index: 60; box-shadow: var(--shadow-overlay); }
+  .nav-more { position: relative; }
   .nav-button[data-tip]::after { left: calc(100% + var(--space-4)); bottom: 0; }
-  body:has(#nav-admin:not([hidden])) .sidebar:not(.sidebar-secondary) .nav-button[data-tip]::after {
-    left: calc(100% + 6rem)
-  }
 }
 /* ISSUE-154: desktop is icons-only by default; data-nav-labels="labels" (theme panel) shows labels. */
 @media(min-width:64rem) {
   html[data-nav-labels="labels"] body { --nav-width: 14rem; }
-  html[data-nav-labels="labels"] .sidebar:not(.sidebar-secondary) { overflow-y: auto; }
-  html[data-nav-labels="labels"] .sidebar:not(.sidebar-secondary) .nav-label { display: inline; overflow-wrap: anywhere; }
+  html[data-nav-labels="labels"] .sidebar { overflow-y: auto; }
+  html[data-nav-labels="labels"] .sidebar .nav-label { display: inline; overflow-wrap: anywhere; }
   html[data-nav-labels="labels"] :is(.nav-destinations>.nav-button,.nav-more>summary,.nav-profile .nav-button) {
     flex-direction: row;
     justify-content: flex-start;
@@ -175,7 +151,7 @@ footer a:hover { text-decoration: underline; }
   html[data-nav-labels="labels"] .nav-options {
     position: static;
     width: 100%;
-    max-height: none;
+    max-height: calc(100dvh - var(--space-4));
     margin-top: var(--space-2);
     box-shadow: none
   }
@@ -184,6 +160,5 @@ footer a:hover { text-decoration: underline; }
   html[data-nav-labels="labels"] .nav-periods { display: flex; flex-direction: column; gap: var(--space-1); }
   .nav-periods a { min-height: 44px; display: flex; align-items: center; padding: var(--space-2); }
   .nav-periods a[aria-current] { color: var(--color-fg); background: var(--color-bg-tertiary); border-radius: var(--radius-sm); }
-  .sidebar.sidebar-secondary { width: var(--nav-rail-width); }
 }
 }

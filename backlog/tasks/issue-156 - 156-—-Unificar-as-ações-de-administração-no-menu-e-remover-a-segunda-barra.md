@@ -1,16 +1,20 @@
 ---
 id: ISSUE-156
 title: 156 — Unificar as ações de administração no menu (+) e remover a segunda barra
-status: Aberta
-assignee: []
+status: Aguardando aceite
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-17T12:46:00Z'
+updated_date: '2026-11-17T13:00:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-155
+references:
+  - backlog/evidencias/issue-156/verificacao.md
+  - backlog/evidencias/issue-156/review.md
 type: feature
 ordinal: 169000
 ---
@@ -23,9 +27,40 @@ Origem: parecer do Advisor na ISSUE-155 (plano ai-memory 01a1e987-1d45-7cc1-ac8a
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A segunda barra e a opção empurrar/sobrepor foram removidas; o conteúdo não é deslocado ao abrir a administração
-- [ ] #2 O menu (+) mostra grupos Escuta, Aparência, Administração e Sobre conforme o papel (visitante, admin, prévia), com nomes completos em todas as larguras
+- [x] #1 A segunda barra e a opção empurrar/sobrepor foram removidas; o conteúdo não é deslocado ao abrir a administração
+- [x] #2 O menu (+) mostra grupos Escuta, Aparência, Administração e Sobre conforme o papel (visitante, admin, prévia), com nomes completos em todas as larguras
 - [ ] #3 Funciona sem JavaScript (abrir o menu e seguir Entrar, Conta, Perfis e Servidor) e com foco, teclado e leitor de tela verificados
-- [ ] #4 Garantias do admin_sidebar_123_test migradas para o novo grupo; validate_navigation_071 e make check verdes
+- [x] #4 Garantias do admin_sidebar_123_test migradas para o novo grupo; validate_navigation_071 e make check verdes
 - [ ] #5 Capturas em celular, médio e desktop e aceite visual do usuário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-17T12:49:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-156` na branch `feat/issue-156-unificar-as-acoes-de-administracao` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-17T13:00:00Z
+
+---
+
+Revisão própria: APROVADO; diff auditado com os critérios reviewer/deslop, sem delegação. Evidência: backlog/evidencias/issue-156/review.md. AC3 permanece aberto por faltar leitura manual com leitor de tela; foco, teclado, sem JS e AX automatizado passaram. AC5 aguarda aceite visual.
+
+---
+
+author: codex
+created: 2026-11-17T13:00:00Z
+
+---
+
+Verificação: make check e make ui.check verdes; 270 vistas validate_navigation_071 com visitante/admin/prévia, com/sem JS, Yuu/Pearl, 320–1920px e paisagem; papéis, seleção, erro pré-auth, foco/teclado, AX, alvos 44px, rolagem, margens 58/224 e footer verificados. Referência regenerada e seis capturas em backlog/evidencias/issue-156/. ACs 1, 2 e 4 marcados. AC3 aguarda leitura manual com leitor de tela; AC5 aguarda aceite visual do usuário. Revisão própria APROVADO; sem push, merge, publish ou Done.
+
+---
+<!-- COMMENTS:END -->
