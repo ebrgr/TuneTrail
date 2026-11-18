@@ -231,7 +231,7 @@ func (h *Pages) adminSession(r *http.Request) bool {
 	if h.options.Sessions == nil {
 		return false
 	}
-	_, err := adminweb.SessionIdentity(r, h.options.Sessions)
+	_, err := adminweb.AdminIdentity(r, h.options.Sessions)
 	if err != nil && !errors.Is(err, admin.ErrUnauthorized) && !errors.Is(err, admin.ErrForbidden) {
 		log.Printf("admin session lookup failed: %v", err)
 	}

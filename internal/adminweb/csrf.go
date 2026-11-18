@@ -68,8 +68,8 @@ func (c *CSRF) valid(token, purpose, binding string) bool {
 
 // sessionBinding requires an already authenticated actor supplied by the adapter.
 func sessionBinding(identity admin.Identity) (string, error) {
-	if err := admin.Authorize(identity.User); err != nil {
-		return "", err
+	if identity.User == nil {
+		return "", admin.ErrUnauthorized
 	}
 	if identity.SessionID == uuid.Nil {
 		return "", admin.ErrUnauthorized

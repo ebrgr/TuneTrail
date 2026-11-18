@@ -136,3 +136,52 @@ func TestPasswordRevocationRollback(t *testing.T) {
 	_, err = admin.Login(ctx, s, "admin", password, false)
 	require.ErrorIs(t, err, admin.ErrUnauthorized)
 }
+
+// TestUserSessionsAndPasswordIsolation keeps authentication independent of admin authorization.
+func TestUserSessionsAndPasswordIsolation(t *testing.T) {
+	s, administrator := accountFixture(t)
+	ctx := context.Background()
+	user, err := s.SaveUser(ctx, db.SaveUserOpts{Username: "listener", Password: "original-password", Role: models.UserRoleUser})
+	require.NoError(t, err)
+	other, err := admin.Login(ctx, s, administrator.Username, "original-password", false)
+	require.NoError(t, err)
+	var sessions []*models.Session
+	for _, remember := range []bool{false, true} {
+		session, err := admin.Login(ctx, s, user.Username, "original-password", remember)
+		require.NoError(t, err)
+		identity, err := admin.Authenticate(ctx, s, session.ID)
+		require.NoError(t, err)
+		require.Equal(t, user.ID, identity.User.ID)
+		require.ErrorIs(t, admin.Authorize(identity.User), admin.ErrForbidden)
+		sessions = append(sessions, session)
+	}
+	// Password storage owns revocation; management authorization remains in ISSUE-160.
+	require.NoError(t, s.UpdateUser(ctx, db.UpdateUserOpts{ID: user.ID, Password: "replacement-password"}))
+	for _, session := range sessions {
+		_, err = admin.Authenticate(ctx, s, session.ID)
+		require.ErrorIs(t, err, admin.ErrUnauthorized)
+	}
+	_, err = admin.Authenticate(ctx, s, other.ID)
+	require.NoError(t, err)
+	store := pausedLogin{s, make(chan struct{}), make(chan struct{})}
+	result := make(chan error, 1)
+	go func() { _, err := admin.Login(ctx, store, user.Username, "replacement-password", false); result <- err }()
+	select {
+	case <-store.ready:
+	case <-time.After(3 * time.Second):
+		t.Fatal("login did not reach insert")
+	}
+	err = s.UpdateUser(ctx, db.UpdateUserOpts{ID: user.ID, Password: "latest-password"})
+	close(store.resume)
+	require.NoError(t, err)
+	require.ErrorIs(t, <-result, admin.ErrUnauthorized)
+	_, err = admin.Login(ctx, s, user.Username, "latest-password", false)
+	require.NoError(t, err)
+	// A role change affects authorization without invalidating authentication.
+	_, err = s.SaveUser(ctx, db.SaveUserOpts{Username: "second-admin", Password: "original-password", Role: models.UserRoleAdmin})
+	require.NoError(t, err)
+	require.NoError(t, s.Exec(`UPDATE users SET role='user' WHERE id=?`, administrator.ID))
+	identity, err := admin.Authenticate(ctx, s, other.ID)
+	require.NoError(t, err)
+	require.ErrorIs(t, admin.Authorize(identity.User), admin.ErrForbidden)
+}

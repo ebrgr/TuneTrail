@@ -21,7 +21,7 @@ type profileReviewView struct {
 
 // reviewProfile shows the exact profile and listen count without modifying data.
 func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
-	identity, err := adminweb.SessionIdentity(r, h.store)
+	identity, err := adminweb.AdminIdentity(r, h.store)
 	if err != nil {
 		h.fail(w, err)
 		return

@@ -12,7 +12,7 @@ func SecureRequest(r *http.Request) bool {
 	return r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 }
 
-// SessionCookie is the administrative session cookie. Renamed from koito_session
+// SessionCookie identifies the authenticated account independently of its role. Renamed from koito_session
 // in ISSUE-111 without a fallback (user decision): sessions from before the
 // upgrade are ignored, so administrators sign in again once.
 const SessionCookie = "tunetrail_session"
@@ -38,4 +38,16 @@ func SessionIdentity(r *http.Request, store admin.SessionReader) (admin.Identity
 		return admin.Identity{}, admin.ErrUnauthorized
 	}
 	return admin.Authenticate(r.Context(), store, id)
+}
+
+// AdminIdentity preserves administrative authorization for adapters that require it.
+func AdminIdentity(r *http.Request, store admin.SessionReader) (admin.Identity, error) {
+	identity, err := SessionIdentity(r, store)
+	if err != nil {
+		return admin.Identity{}, err
+	}
+	if err := admin.Authorize(identity.User); err != nil {
+		return admin.Identity{}, err
+	}
+	return identity, nil
 }

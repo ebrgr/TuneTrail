@@ -215,7 +215,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/admin/settings" && r.Method == "GET" {
 		// Resolve an administrative session before reading any configuration.
-		identity, err := adminweb.SessionIdentity(r, h.store)
+		identity, err := adminweb.AdminIdentity(r, h.store)
 		if errors.Is(err, admin.ErrUnauthorized) && r.Header.Get("Authorization") == "" {
 			h.loginPage(w, r, "")
 			return
@@ -228,7 +228,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/admin" && (r.Method == "GET" || r.Method == "HEAD") {
-		identity, err := adminweb.SessionIdentity(r, h.store)
+		identity, err := adminweb.AdminIdentity(r, h.store)
 		if errors.Is(err, admin.ErrUnauthorized) {
 			h.loginPage(w, r, "")
 			return
@@ -245,7 +245,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/admin/profile/") && strings.HasSuffix(r.URL.Path, "/export") {
-		identity, err := adminweb.SessionIdentity(r, h.store)
+		identity, err := adminweb.AdminIdentity(r, h.store)
 		if err != nil {
 			h.fail(w, err)
 			return
@@ -280,7 +280,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
-	identity, err := adminweb.SessionIdentity(r, h.store)
+	identity, err := adminweb.AdminIdentity(r, h.store)
 	if err != nil {
 		h.fail(w, err)
 		return

@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var ErrUnauthorized = errors.New("administrator session required")
+var ErrUnauthorized = errors.New("authenticated session required")
 var ErrForbidden = errors.New("administrator required")
 var ErrUnprocessable = errors.New("check form fields")
 
@@ -46,7 +46,7 @@ func Authorize(user *models.User) error {
 	return nil
 }
 
-// Authenticate reads a fixed-expiry session without extending its lifetime.
+// Authenticate resolves an active actor independently of role, without extending session lifetime.
 func Authenticate(ctx context.Context, store SessionReader, id uuid.UUID) (Identity, error) {
 	if id == uuid.Nil {
 		return Identity{}, ErrUnauthorized
@@ -55,8 +55,8 @@ func Authenticate(ctx context.Context, store SessionReader, id uuid.UUID) (Ident
 	if err != nil {
 		return Identity{}, fmt.Errorf("authenticate: %w", err)
 	}
-	if err := Authorize(user); err != nil {
-		return Identity{}, err
+	if user == nil || user.Status != "active" {
+		return Identity{}, ErrUnauthorized
 	}
 	return Identity{User: user, SessionID: id}, nil
 }
@@ -70,7 +70,7 @@ func Login(ctx context.Context, store LoginStore, username, password string, rem
 	if err != nil {
 		return nil, fmt.Errorf("login: %w", err)
 	}
-	if user == nil || user.Role != models.UserRoleAdmin || user.Status != "active" {
+	if user == nil || user.Status != "active" {
 		return nil, ErrUnauthorized
 	}
 	if bcrypt.CompareHashAndPassword(user.Password, []byte(password)) != nil {

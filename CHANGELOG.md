@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Contas de usuários comuns passam a autenticar com sessões individuais, mantendo a administração restrita a administradores (ISSUE-159).
+
 ## [0.36] - 2026-11-18
 
 - Perfis passam a ter contas individuais; a exclusão do perfil do último administrador é impedida (ISSUE-158).

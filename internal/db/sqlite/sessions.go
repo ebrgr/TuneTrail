@@ -66,12 +66,12 @@ func (s *Sqlite) GetUserBySession(ctx context.Context, sessionId uuid.UUID) (*mo
 	return &u, nil
 }
 
-// SaveAuthenticatedSession rejects pending accounts and stale password authentication.
+// SaveAuthenticatedSession binds either role to the active hash, rejecting stale password authentication.
 func (s *Sqlite) SaveAuthenticatedSession(ctx context.Context, userID int32, passwordHash []byte, expiresAt time.Time, persistent bool) (*models.Session, error) {
 	id := uuid.New()
 	now := time.Now().Unix()
 	result, err := s.db.ExecContext(ctx, `INSERT INTO sessions(id,user_id,created_at,expires_at,persistent)
- SELECT ?,id,?,?,? FROM users WHERE id=? AND password=? AND role='admin' AND status='active'`, id.String(), now, expiresAt.Unix(), persistent, userID, passwordHash)
+ SELECT ?,id,?,?,? FROM users WHERE id=? AND password=? AND status='active'`, id.String(), now, expiresAt.Unix(), persistent, userID, passwordHash)
 	if err != nil {
 		return nil, fmt.Errorf("SaveAuthenticatedSession: %w", err)
 	}

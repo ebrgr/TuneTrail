@@ -22,7 +22,7 @@ import (
 
 // testIdentity represents the actor an HTTP adapter resolved immediately before parsing.
 func testIdentity() admin.Identity {
-	return admin.Identity{User: &models.User{ID: 1, Role: models.UserRoleAdmin}, SessionID: uuid.New()}
+	return admin.Identity{User: &models.User{ID: 1, Role: models.UserRoleUser}, SessionID: uuid.New()}
 }
 
 // encodedForm sends body fields only; no credential can be supplied through the query.

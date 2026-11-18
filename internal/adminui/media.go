@@ -116,7 +116,7 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		h.fail(w, err)
 		return
 	}
-	identity, err := adminweb.SessionIdentity(r, h.store)
+	identity, err := adminweb.AdminIdentity(r, h.store)
 	if errors.Is(err, admin.ErrUnauthorized) && r.Method == "GET" {
 		next := adminweb.SafeReturn(r.URL.RequestURI())
 		if next == "" && len(parts) == 5 && parts[4] == "review" {

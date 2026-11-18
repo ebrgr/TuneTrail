@@ -1,10 +1,11 @@
 ---
 id: ISSUE-159
 title: 159 — Autenticação e sessões para todos os usuários
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-17T17:33:00Z'
+updated_date: '2026-11-18T21:30:00Z'
 labels:
   - admin
   - api
@@ -13,6 +14,7 @@ dependencies:
   - ISSUE-158
 references:
   - backlog/decisions/decision-010
+  - backlog/evidencias/issue-159/VERIFICACAO.md
 documentation:
   - doc-041
 priority: high
@@ -28,7 +30,29 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Login user e admin com bcrypt e validação atuais; sessão por usuário, isolada
-- [ ] #2 CSRF e tickets adaptados ao usuário comum; troca de senha revoga sessões; corrida com senha antiga coberta
-- [ ] #3 Nenhum limite novo por usuário ou origem; limitador compartilhado existente intacto (teste)
+- [x] #1 Login user e admin com bcrypt e validação atuais; sessão por usuário, isolada
+- [x] #2 CSRF e tickets adaptados ao usuário comum; troca de senha revoga sessões; corrida com senha antiga coberta
+- [x] #3 Nenhum limite novo por usuário ou origem; limitador compartilhado existente intacto (teste)
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-18T21:25:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-159` na branch `feat/issue-159-autenticacao-e-sessoes-para-todos` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-18T21:30:00Z
+
+---
+
+Verificação Codex: autenticação active para user/admin separada de autorização; AdminIdentity preserva todas as fronteiras HTML administrativas. CSRF comum e tickets isolados; revogação por conta e corrida com senha antiga testadas; limitador compartilhado original intacto e testado. make check passou (13/13 e2e e referência visual); go test -race passou em admin, adminweb, adminui, sqlite, webui e engine. Evidência: backlog/evidencias/issue-159/VERIFICACAO.md. ACs 1–3 comprovados; gestão própria e telas permanecem nas 160–163. Mantida Em andamento para revisão do responsável pelo despacho; sem push/merge/publish/Done.
+
+---
+<!-- COMMENTS:END -->

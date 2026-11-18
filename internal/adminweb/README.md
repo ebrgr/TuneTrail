@@ -5,7 +5,10 @@ routes, render pages, or enable new writes by itself. Existing JSON APIs retain
 their payloads and do not require the form tokens introduced here.
 
 An authenticated action must resolve `SessionIdentity` on every request, check the
-method and same-origin policy, and then call `CSRF.ParseSessionForm`. Login forms
+method and same-origin policy, and then call `CSRF.ParseSessionForm`. Sessions and
+form tokens authenticate either account role; administrative adapters must use
+`AdminIdentity` to check the current role before reading data or issuing tickets.
+Tickets prevent replay and never grant permission. Login forms
 use `LoginToken` and `ParseLoginForm` with the signed preauthentication cookie.
 Keep the existing login rate limit when introducing the HTML endpoint. Wrap all
 administrative responses, including rejected requests, with `NoStore`.
