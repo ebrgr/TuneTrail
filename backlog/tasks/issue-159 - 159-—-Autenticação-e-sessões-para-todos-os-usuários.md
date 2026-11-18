@@ -102,4 +102,13 @@ created: 2026-11-18T21:59:00Z
 Aceite explícito do usuário em 2026-11-18. Pareceres: Reviewer 1ª passagem (APROVADO COM RESSALVAS, corrigidos em c29ea83) e 2ª passagem só de segurança (APROVADO COM RESSALVAS, cota de tickets por sessão corrigida em 0597c1a e revisada por leitura do diff). Pontos para 163 e 157 registrados nessas tarefas.
 
 ---
+
+author: ebrgr
+created: 2026-11-18T21:59:00Z
+
+---
+
+Publicação: versão 0.37 (tag `v0.37`), branch `feat/issue-159-autenticacao-e-sessoes-para-todos` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->

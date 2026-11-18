@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.37] - 2026-11-18
+
 - Contas de usuários comuns passam a autenticar com sessões individuais, mantendo a administração restrita a administradores e permitindo sair pela página de acesso negado (ISSUE-159).
 
 ## [0.36] - 2026-11-18
