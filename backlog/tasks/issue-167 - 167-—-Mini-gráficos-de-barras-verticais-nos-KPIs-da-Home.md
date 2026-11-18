@@ -22,8 +22,12 @@ Origem: conversa com o usuário em 2026-11-18, após a ISSUE-072. Os KPIs da Hom
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Card Maior sequência com barra segmentada proporcional (dias da maior sequência sobre os dias do período, ex.: 3 de 7), em SVG, sem JavaScript, válida em dia, semana, mês, ano e tudo; exige que GetLongestListenStreak passe a devolver também o início e o fim da sequência se a faixa de dias for adotada
-- [ ] #2 A comparação dos KPIs mostra o ícone de chama junto de 'N% Mais' e um ícone de gelo junto de 'N% Menos' (ícone escolhido pelo usuário entre as opções); 'Igual' e a ausência de comparação sem ícone; ícones decorativos (aria-hidden) com o texto acessível; catálogo local de ícones e manifest atualizados
+- [ ] #1 Reproduções e Minutos mostram barras verticais por balde do período (dia, semana, mês, ano e tudo), geradas no servidor em SVG, sem JavaScript
+- [ ] #2 Cada barra tem o tooltip próprio com o valor; os valores ficam acessíveis fora do SVG; períodos vazios e perfis sem escutas tratados
+- [ ] #3 Consulta agrupada testada (as contagens por balde batem com os KPIs, fuso e horário de verão) e medida em histórico grande (24 mil escutas ou mais)
+- [ ] #4 Card Maior sequência com barra segmentada proporcional (dias da maior sequência sobre os dias do período, ex.: 3 de 7), em SVG, sem JavaScript, válida em dia, semana, mês, ano e tudo; se a faixa de dias for adotada, GetLongestListenStreak passa a devolver também o início e o fim da sequência
+- [ ] #5 A comparação dos KPIs mostra o ícone de chama junto de 'N% Mais' e um ícone de gelo junto de 'N% Menos' (ícone escolhido pelo usuário entre as opções); 'Igual' e a ausência de comparação sem ícone; ícones decorativos (aria-hidden) com o texto acessível; catálogo local de ícones e manifest atualizados
+- [ ] #6 Layout responsivo em 320 a 1920px sem rolagem; capturas e aceite visual do usuário
 <!-- AC:END -->
 
 ## Comments
