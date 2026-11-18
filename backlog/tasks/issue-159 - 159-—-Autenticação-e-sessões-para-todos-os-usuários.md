@@ -1,11 +1,11 @@
 ---
 id: ISSUE-159
 title: 159 — Autenticação e sessões para todos os usuários
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-18T21:58:00Z'
+updated_date: '2026-11-18T21:59:00Z'
 labels:
   - admin
   - api
@@ -91,6 +91,15 @@ created: 2026-11-18T21:58:00Z
 ---
 
 Corrigida diretamente, sem re-delegação, a ressalva da 2ª passagem: newSubmission limita a 32 tickets por sessão e substitui apenas o mais antigo da própria sessão, sob o mutex existente; teto global 4096, TTL 30 min, vínculo à sessão e uso único preservados. Sem alterar login, CSRF, consumo ou logout aprovado. Testes: 500 emissões/GETs de uma sessão comum preservam formulário admin anterior e logout comum; descarte próprio, terceiros, expiração, replay e teto global comprovados. make check passou (13/13 e2e e referência visual); go test -race passou em adminui e engine. VERIFICACAO.md atualizada; parecer/comentário da 2ª passagem preservados e incluídos no commit. ACs mantidos, Em andamento; sem push/merge/publish/Done.
+
+---
+
+author: claude
+created: 2026-11-18T21:59:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-18. Pareceres: Reviewer 1ª passagem (APROVADO COM RESSALVAS, corrigidos em c29ea83) e 2ª passagem só de segurança (APROVADO COM RESSALVAS, cota de tickets por sessão corrigida em 0597c1a e revisada por leitura do diff). Pontos para 163 e 157 registrados nessas tarefas.
 
 ---
 <!-- COMMENTS:END -->
