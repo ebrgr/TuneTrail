@@ -276,3 +276,31 @@ func TestObservationRetention(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM ingest_observations`))
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM ingest_events`))
 }
+
+// TestBootstrapKoitoV2WithoutUpstreamIndexes converts a Koito v2 database created
+// before upstream PR #257 (no idx_artist_aliases_artist_id nor
+// idx_listens_track_id_listened_at) straight to v4 without losing listens.
+func TestBootstrapKoitoV2WithoutUpstreamIndexes(t *testing.T) {
+	dir, _ := legacyFixture(t)
+	legacy, err := sql.Open("sqlite", filepath.Join(dir, "koito.db"))
+	require.NoError(t, err)
+	_, err = legacy.Exec(`DROP INDEX idx_artist_aliases_artist_id; DROP INDEX idx_listens_track_id_listened_at`)
+	require.NoError(t, err)
+	require.NoError(t, legacy.Close())
+	path, err := bootstrap(dir, true)
+	require.NoError(t, err)
+	conn, err := openExisting(path)
+	require.NoError(t, err)
+	defer conn.Close()
+	version, err := schemaVersion(conn)
+	require.NoError(t, err)
+	require.Equal(t, 4, version)
+	for _, name := range []string{"idx_artist_aliases_artist_id", "idx_listens_track_id_listened_at"} {
+		var found string
+		require.NoError(t, conn.QueryRow(`SELECT name FROM sqlite_master WHERE type='index' AND name=?`, name).Scan(&found))
+	}
+	var listens int
+	require.NoError(t, conn.QueryRow(`SELECT COUNT(*) FROM listens`).Scan(&listens))
+	require.Equal(t, 200, listens)
+	require.NoError(t, checkDatabase(conn))
+}

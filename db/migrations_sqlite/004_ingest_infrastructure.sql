@@ -1,4 +1,9 @@
 -- +goose Up
+-- Koito SQLite databases created before upstream PR #257 (2026-04-30) reached v2
+-- without these indexes from 001. Recreate them so a Koito v2 database converts
+-- straight to v4 and passes the layout validation (ISSUE-080).
+CREATE INDEX IF NOT EXISTS idx_artist_aliases_artist_id ON artist_aliases(artist_id);
+CREATE INDEX IF NOT EXISTS idx_listens_track_id_listened_at ON listens(track_id, listened_at);
 -- Infrastructure only: identity writers remain disabled until ISSUE-133.
 CREATE TABLE integrations (
     id TEXT PRIMARY KEY NOT NULL CHECK(length(id)>0),

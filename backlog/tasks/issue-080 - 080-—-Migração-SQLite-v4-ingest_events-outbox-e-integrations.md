@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-17T18:30:00Z'
+updated_date: '2026-11-18T16:33:00Z'
 labels:
   - banco
   - ingestao
@@ -77,6 +77,15 @@ created: 2026-11-17T18:30:00Z
 ---
 
 Verificação: make check verde (Go vet/test, UI, 13/13 e2e incluindo migration, ingest-migration e relay/shutdown); go test -race ./internal/db/sqlite verde. Migrações de cópias v3 reais/legado e descartável preservaram 80, 79+1 e 24296+298 escutas, contagens por perfil e digests de todas as tabelas existentes. Backup WAL antes de migrar, restore isolado, rollback no meio, reinício, schema incompleto/versões desconhecidas e recusa da v4 pelo binário v3 comprovados. Revisão direta APROVADO em backlog/evidencias/issue-080/REVISAO.md; relatório agregado anexado. Sete ACs verificados. Infraestrutura inativa até a 133, sem substituir relay; sem 055/tombstones. Aguarda aceite do usuário; sem Done, push, merge ou publish.
+
+---
+
+author: claude
+created: 2026-11-18T16:33:00Z
+
+---
+
+Revisão do Claude (2026-11-18): o caminho Koito v2 → v4 foi testado com bancos v2 reais do Koito upstream. Defeito encontrado: bancos v2 criados antes do PR #257 do Koito (sem idx_artist_aliases_artist_id) faziam o TuneTrail v4 recusar iniciar. Corrigido na 004 (CREATE INDEX IF NOT EXISTS dos dois índices) com teste de regressão; make check 13/13 e -race verdes. Detalhes em backlog/evidencias/issue-080/REVISAO.md.
 
 ---
 <!-- COMMENTS:END -->
