@@ -1,0 +1,186 @@
+/* Media task controls own component styles, isolated by .media-task-dialog.
+   Public media page rules belong to the pages layer and never target these controls. */
+@layer components {
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-task-dialog {
+  --task-border:color-mix(in srgb,var(--color-fg) 60%,var(--color-bg));
+  max-width: min(100%,37.5rem); color-scheme:dark;
+}
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-task-dialog[data-task="delete"] { max-width: min(100%,28.75rem); }
+.media-task-dialog .profile-delete { overflow-wrap:anywhere; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .profile-delete h2 { margin-top: var(--space-3); color:var(--color-fg); }
+.media-task-dialog .profile-delete form { justify-content:flex-end; align-items:center; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .profile-delete [data-task-cancel] { padding: var(--space-3); min-height:44px; }
+
+/* Constrain this region without requiring a fixed layout width. */
+.media-task-dialog[data-task="edit"] { max-width: min(100%,62.5rem); }
+html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog #media-task-title { padding-right:36px; }
+.media-task-dialog [data-task-status]:empty { display:none; }
+.media-task-dialog [data-task-status] { margin:12px 0; }
+.media-task-dialog h2 { font-size:18px; margin:24px 0 12px; color:var(--color-fg-secondary); }
+.media-task-dialog #media-task-title { margin-top:0; font-size:24px; color:var(--color-fg); }
+.media-task-dialog p { margin:12px 0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog form { display:flex; flex-wrap:wrap; align-items:end; gap: var(--space-2); margin:12px 0; }
+.media-task-dialog label { display:flex; flex-direction:column; gap:6px; flex:1 1 11.25rem; min-width:0; }
+.media-task-dialog label:has(input[type=checkbox]) { flex-direction:row; flex-basis:100%; align-items:center; min-height:44px; }
+.media-task-dialog :is(input:not([type=checkbox]),select,textarea) {
+  width:100%; min-width:0; min-height:44px; padding:10px 12px;
+  border:1px solid var(--task-border); border-radius:6px;
+  background-color:var(--color-bg); color:var(--color-fg);
+}
+.media-task-dialog input::placeholder { color:var(--color-fg-secondary); opacity:1; }
+.media-task-dialog input[type=checkbox] { accent-color:var(--color-primary); width:18px; height:18px; }
+.media-task-dialog input::file-selector-button {
+  background:var(--color-bg-secondary); color:var(--color-fg);
+  border:1px solid var(--task-border); border-radius:6px; padding:6px 10px; margin-right:12px;
+}
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog button:not(.close-dialog) {
+  min-height:44px; padding:10px 16px; border:1px solid var(--task-border); border-radius:var(--radius-md);
+  background:var(--color-bg); color:var(--color-fg); white-space:normal;
+}
+.media-task-dialog button:not(.close-dialog):hover { background:var(--color-bg-tertiary); }
+.media-task-dialog button:disabled { opacity:.55; cursor:default; }
+.media-task-dialog :is(a,button,input,select,textarea,summary):focus-visible { outline:2px solid var(--color-fg); outline-offset:2px; }
+.media-task-dialog .close-dialog { min-width:44px; min-height:44px; }
+.media-task-dialog a { color:var(--color-fg); text-decoration:underline; text-underline-offset:3px; }
+.media-task-dialog ul { list-style:none; padding:0; }
+.media-task-dialog li { margin:8px 0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .manage-row { display:flex; flex-wrap:wrap; gap: var(--space-2); align-items:center; }
+.media-task-dialog li.manage-row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; }
+.media-task-dialog li.manage-row:has(>span:only-child) { grid-template-columns:1fr; }
+
+/* Let columns adapt to the available reading space. */
+.media-task-dialog .manage-artist-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap: var(--space-2); align-items:center; }
+.media-task-dialog .manage-artist-row:has(>form:only-child) { grid-template-columns:1fr; }
+.media-task-dialog .manage-artist-row .manage-row { display:grid; grid-template-columns:minmax(0,1fr) auto; }
+.media-task-dialog .manage-artist-row form { margin:4px 0; }
+.media-task-dialog button.manage-remove { padding:10px; min-width:44px; }
+.media-task-dialog .manage-remove svg { width:18px; height:18px; }
+.media-task-dialog[data-task="add-listen"] #listens h2 { display:none; }
+.media-task-dialog .manage-row form { margin:0; }
+.media-task-dialog .manage-row-name { flex:1 1 10rem; padding:10px 12px; border-radius:6px; background:var(--color-bg); overflow-wrap:anywhere; }
+.media-task-dialog .manage-metadata p { flex-basis:100%; order:3; }
+.media-task-dialog .manage-metadata label:has(select) { order:2; }
+.media-task-dialog .manage-section > h2 { text-transform:uppercase; font-weight:400; }
+.media-task-dialog[data-task="edit"] .manage-search-heading { display:none; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .manage-section + .manage-section { margin-top: var(--space-5); }
+.media-task-dialog :is(.section-error,.section-notice) {
+  padding:10px 12px; border:1px solid; border-radius:6px; background:var(--color-bg);
+}
+.media-task-dialog .section-error { color:color-mix(in srgb,var(--color-error) 45%,var(--color-fg)); }
+.media-task-dialog .section-notice { color:color-mix(in srgb,var(--color-success) 45%,var(--color-fg)); }
+.media-task-dialog .manage-search-results { margin:12px 0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .manage-search-results ul { background:var(--color-bg); border-radius:var(--radius-md); }
+.media-task-dialog .manage-search-results li { margin:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .manage-result { display:flex; gap: var(--space-3); padding: var(--space-3); text-decoration:none; align-items:center; min-height:75px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .manage-result:hover { background:var(--color-bg-tertiary); border-radius:var(--radius-md); }
+.media-task-dialog .manage-result span { min-width:0; flex:1; overflow-wrap:anywhere; }
+.media-task-dialog .manage-result span small { display:block; }
+.media-task-dialog .manage-result small { color:var(--color-fg-secondary); }
+.media-task-dialog .manage-result img { width:64px; height:64px; border-radius:6px; object-fit:cover; }
+.media-task-dialog .manage-advanced { margin:20px 0; }
+.media-task-dialog summary { min-height:44px; padding:8px 0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .manage-empty { padding: var(--space-3); color:var(--color-fg-secondary); }
+
+/* Let columns adapt to the available reading space. */
+.media-task-dialog .manage-add-listen {
+  display:grid; grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"datetime submit" "timezone ." "help help" "offset offset"; align-items:end;
+}
+.media-task-dialog .listen-datetime { grid-area:datetime; }
+.media-task-dialog .listen-submit { grid-area:submit; }
+.media-task-dialog .listen-timezone { grid-area:timezone; }
+.media-task-dialog .listen-timezone-help { grid-area:help; color:var(--color-fg-secondary); }
+.media-task-dialog .listen-offset { grid-area:offset; color:var(--color-fg-secondary); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .listen-offset label { margin-top: var(--space-2); color:var(--color-fg); }
+/* Artwork upload (ISSUE-140): one column; file hint hugs its field, URL field matches it, button last. */
+.media-task-dialog .artwork-upload { flex-direction:column; flex-wrap:nowrap; align-items:stretch; gap:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .artwork-upload label { flex:none; gap: var(--space-2); }
+.media-task-dialog .artwork-upload :is(input[type=file],input[type=url]) { min-height:56px; }
+.media-task-dialog .artwork-upload small { margin:6px 0 0; color:var(--color-fg-secondary); }
+.media-task-dialog .artwork-upload small + label { margin-top:20px; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .artwork-upload .artwork-actions { display:flex; flex-wrap:wrap; gap: var(--space-2); margin-top:20px; }
+.media-task-dialog .artwork-upload .artwork-actions :is(button,a) { margin-top:0; }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .artwork-upload .artwork-actions a {
+  display:inline-flex; align-items:center; min-height:44px; padding:10px 16px;
+  border:1px solid var(--task-border); border-radius:var(--radius-md); color:var(--color-fg); text-decoration:none;
+}
+.media-task-dialog .artwork-preview {
+  display:block; width:min(240px,100%); aspect-ratio:1; object-fit:cover; margin-top:20px;
+  border:1px solid var(--task-border); border-radius:6px;
+}
+@media(min-width:40rem) {
+  .media-task-dialog[data-task="edit"] .manage-section > form { max-width:60%; }
+}
+
+}
+/* The selected listen shares page content and theme tokens with all media tasks. */
+@layer components {
+.media-task-dialog #selected-listen > h2 { display:none; }
+
+/* Let columns adapt to the available reading space. */
+.media-task-dialog .listen-details { display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px 20px; margin:20px 0; }
+.media-task-dialog .listen-details dt { color:var(--color-fg-secondary); }
+
+/* Apply shared spacing and surface tokens at this size. */
+.media-task-dialog .listen-details dd { margin:0; overflow-wrap:anywhere; }
+
+
+/* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
+
+/* Let columns adapt to the available reading space. */
+ .media-task-dialog .manage-add-listen { grid-template-columns:minmax(0,1fr); }
+
+/* Let columns adapt to the available reading space. */
+.media-task-dialog .manage-add-listen { grid-template-areas:"datetime" "submit" "timezone" "help" "offset"; }
+.media-task-dialog .manage-result { flex-wrap:wrap; }
+
+/* Let columns adapt to the available reading space. */
+.media-task-dialog .listen-details { grid-template-columns:minmax(0,1fr); gap:var(--space-2); }
+@media(min-width:40rem) {
+
+/* Let columns adapt to the available reading space. */
+  .media-task-dialog .manage-add-listen { grid-template-columns:minmax(0,1fr) auto; }
+
+/* Let columns adapt to the available reading space. */
+  .media-task-dialog .manage-add-listen { grid-template-areas:"datetime submit" "timezone ." "help help" "offset offset"; }
+
+/* Let columns adapt to the available reading space. */
+  .media-task-dialog .listen-details { grid-template-columns:auto minmax(0,1fr); gap:var(--space-3) var(--space-5); }
+}
+
+}

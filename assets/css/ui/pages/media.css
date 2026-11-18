@@ -113,4 +113,27 @@
   .media-heading:has(.media-actions) { padding-top:3.5rem; }
 }
 
+/* The server bounds accent luminance for white text; black only increases contrast. */
+.media-heading {
+  padding:var(--space-5); border-radius:var(--border-radius);
+  background:linear-gradient(145deg,transparent,#0009),var(--media-accent,#253044);
+}
+/* Keep the existing management bar on its original theme surface. */
+.media-heading:has(.media-actions) {
+  padding-top:3.5rem;
+  background:linear-gradient(var(--color-bg) 0 44px,transparent 44px),
+    linear-gradient(145deg,transparent,#0009),var(--media-accent,#253044);
+}
+.media-heading:not(:has(.media-actions a)) { padding-top:var(--space-5); }
+.media-heading-text,.media-heading-text a,.media-heading-text .media-artist,.media-heading-text .media-overall-rank { color:#fff; }
+.media-heading-text a { text-decoration:underline; text-underline-offset:3px; }
+.media-heading-text a:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+.media-heading h1 { font-size:clamp(2rem,5vw,4.5rem); }
+/* Section links wrap at 320px and keep every destination visible without scripts. */
+.media-tabs { display:flex; flex-wrap:wrap; gap:var(--space-2); margin-top:var(--space-5); border-bottom:1px solid var(--color-border); }
+.media-tabs a { display:flex; align-items:center; min-height:44px; padding:var(--space-2) var(--space-3); }
+.media-tabs a:hover { text-decoration:underline; }
+.media-tabs a:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
+.media-detail [id] { scroll-margin-top:var(--space-5); }
+
 }

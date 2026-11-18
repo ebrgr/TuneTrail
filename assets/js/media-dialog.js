@@ -92,22 +92,25 @@
     if (pendingArtworkFile) applyArtworkFile(pendingArtworkFile);
     if (pendingArtworkError) status.textContent = pendingArtworkError;
   }
-  // Progressive controls use the same authenticated task URL as the no-script fallback.
+  // Enhance history inside its native disclosure, keeping the three-column mobile layout.
   function listenControls() {
     document.querySelectorAll('.listen-manage').forEach(link => {
       link.hidden = true;
       const row = link.closest('tr');
       if (row.querySelector('[data-listen-controls]')) return;
-      const cell = row.insertCell();
-      cell.dataset.listenControls = '';
+      const menu = link.closest('.listen-actions');
+      if (!menu) return;
+      const controls = document.createElement('span');
+      controls.dataset.listenControls = '';
       const action = document.createElement('a');
       action.href = link.href;
-      action.textContent = '×';
+      action.textContent = document.body.dataset.i18nDeleteLabel;
       action.className = 'delete-listen';
       action.dataset.mediaTask = '';
       action.dataset.listenTask = '';
       action.setAttribute('aria-label', document.body.dataset.i18nDeleteLabel);
-      cell.append(action);
+      controls.append(action);
+      menu.append(controls);
     });
   }
   listenControls();
@@ -170,7 +173,9 @@
     current.replaceWith(next.querySelector('main'));
     listenControls();
     const controls = [...document.querySelectorAll('[data-listen-task]')];
-    returnFocus = controls[Math.min(index, controls.length - 1)] || document.querySelector('main h1,main h3,main');
+    // The next row's action is inside a closed disclosure after replacement.
+    returnFocus = controls[Math.min(index, controls.length - 1)]?.closest('details')?.querySelector('summary') ||
+      document.querySelector('main h1,main h3,main');
     if (returnFocus && returnFocus.tabIndex < 0) returnFocus.tabIndex = -1;
     scrollTo(scroll);
   }

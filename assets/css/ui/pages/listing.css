@@ -58,6 +58,8 @@
 
 /* History actions remain accessible through normal navigation without JavaScript. */
 .listen-manage{display:block;font-size:11px;color:var(--color-fg-tertiary);margin-top:2px}
+/* Disclosure text uses the reading foreground, including keyboard focus in light themes. */
+.listen-actions a,.listen-actions a:hover,.listen-actions a:focus-visible { color:var(--color-fg); }
 
 /* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
 

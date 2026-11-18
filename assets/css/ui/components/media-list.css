@@ -163,6 +163,25 @@
   color: var(--color-fg-tertiary);
   padding-right: 8px
 }
+/* Compact history keeps the title and artist together; actions remain a native disclosure. */
+.listens { table-layout:fixed; }
+.listens td:first-child { width:40px; }
+/* Clamp very long names visually; the full title stays available on the link. */
+.listen-title { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; font-weight:600; overflow-wrap:anywhere; }
+.listen-description .media-artist { display:block; font-size:12px; }
+.listens td.listen-time { width:6.5rem; white-space:normal; font-size:12px; overflow-wrap:anywhere; }
+.listen-actions { position:relative; display:inline-block; vertical-align:middle; text-align:left; }
+.listen-actions summary { display:grid; place-items:center; min-width:44px; min-height:44px; cursor:pointer; list-style:none; }
+.listen-actions summary::-webkit-details-marker { display:none; }
+.listen-actions summary span { font-size:24px; line-height:1; }
+.listen-actions[open] { z-index:2; }
+.listen-actions a {
+  position:absolute; right:0; top:100%; z-index:3;
+  display:block; width:max-content; max-width:15rem; padding:12px;
+  background:var(--color-bg-secondary); color:var(--color-fg); border:1px solid var(--color-border);
+  border-radius:var(--border-radius); white-space:normal; box-shadow:0 4px 16px #0003; font-size:var(--step--1);
+}
+.listen-actions summary:focus-visible,.listen-actions a:focus-visible { outline:2px solid currentColor; outline-offset:2px; }
 .now-dot {
   display: inline-block;
   width: 6px;

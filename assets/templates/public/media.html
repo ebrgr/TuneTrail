@@ -3,6 +3,8 @@
     {{$media:=.Media}}
     <header
       class="media-heading"
+      id="overview"
+      style="--media-accent:{{$media.Accent}}"
       data-entity="{{$media.Kind}}"
       data-entity-id="{{$media.ID}}"
       data-listen-count="{{$media.Count}}"
@@ -42,9 +44,27 @@
         {{end}}
       </div>
     </header>
+    {{/* Plain links preserve navigation and visible sections without JavaScript. */}}
+    <nav class="media-tabs" aria-label="{{tr "media.sections" "Media sections"}}">
+      <a href="#overview">{{tr "media.overview" "Overview"}}</a>
+      {{if ne $media.Kind "track"}}
+        <a href="#tracks">{{tr "ui.tracks" "Tracks"}}</a>
+      {{else}}
+        <a href="{{$media.Album.URL}}#tracks">{{tr "ui.tracks" "Tracks"}}</a>
+      {{end}}
+      {{if eq $media.Kind "artist"}}
+        <a href="#albums">{{tr "ui.albums" "Albums"}}</a>
+      {{else if $media.Album}}
+        <a href="{{$media.Album.URL}}">{{tr "ui.albums" "Albums"}}</a>
+      {{else}}
+        <a href="#overview">{{tr "ui.albums" "Albums"}}</a>
+      {{end}}
+      <a href="#history">{{tr "ui.history" "History"}}</a>
+      <a href="#graphs">{{tr "media.graphs" "Graphs"}}</a>
+    </nav>
     <div class="media-reading-blocks">
       {{if ne $media.Kind "track"}}
-        <section class="media-top-tracks" aria-label="{{tr "ui.top_tracks" "Top tracks"}}">
+        <section id="tracks" class="media-top-tracks" aria-label="{{tr "ui.top_tracks" "Top tracks"}}">
           <h3 class="section-title"><a href="{{$media.TopTracks.URL}}">{{tr "ui.top_tracks_arrow" "Top tracks →"}}</a></h3>
           {{if $media.TopTracks.Error}}
             <p class="error">{{tr "ui.ranking_unavailable_please_retry" "Ranking unavailable. Please retry."}}</p>
@@ -53,7 +73,7 @@
           {{end}}
         </section>
       {{end}}
-      <section class="media-history" aria-label="{{tr "ui.last_played" "Last played"}}">
+      <section id="history" class="media-history" aria-label="{{tr "ui.last_played" "Last played"}}">
         <h3 class="section-title"><a href="{{$media.HistoryURL}}">{{tr "ui.last_played_arrow" "Last played →"}}</a></h3>
         {{if index .Errors "playing"}}
           <p class="error">{{tr "ui.now_playing_unavailable_please_retry" "Now playing unavailable. Please retry."}}</p>
@@ -71,7 +91,7 @@
         {{end}}
       </section>
     </div>
-    <div class="media-graphs">
+    <div id="graphs" class="media-graphs">
       <section class="media-interest" aria-label="{{tr "ui.interest_over_time" "Interest over time"}}">
         <h3 class="section-title">{{tr "ui.interest_over_time" "Interest over time"}}</h3>
         {{if index .Errors "interest"}}
@@ -91,7 +111,7 @@
     </div>
     {{if eq $media.Kind "artist"}}
       <section
-        class="media-albums"
+        id="albums" class="media-albums"
         aria-label="{{tr "ui.albums_featuring_this_artist" "Albums featuring this artist"}}"
       >
         <h3 class="section-title">{{tr1 "media.albums_featuring" "Albums featuring {{.Artist}}" "Artist" $media.Title}}</h3>

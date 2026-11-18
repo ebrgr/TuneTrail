@@ -42,10 +42,18 @@ var active = make(chan struct{}, 1)
 // Transform validates and encodes a square WebP using bounded shared processing.
 // Size zero selects source quality and the shortest side capped at 1200 pixels.
 func Transform(ctx context.Context, input io.Reader, size int) ([]byte, error) {
+	// Keep existing callers on the same transform and color calculation path.
+	encoded, _, err := TransformWithColor(ctx, input, size)
+	return encoded, err
+}
+
+// TransformWithColor computes the average of the oriented, cropped artwork while encoding.
+func TransformWithColor(ctx context.Context, input io.Reader, size int) ([]byte, string, error) {
 	if size < 0 || size > SourceMaxSide {
-		return nil, ErrSize
+		return nil, "", ErrSize
 	}
 	var encoded []byte
+	var average string
 	err := WithDecoded(ctx, input, func(img image.Image) error {
 		bounds := img.Bounds()
 		target, quality := size, 85
@@ -61,6 +69,7 @@ func Transform(ctx context.Context, input io.Reader, size int) ([]byte, error) {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
+		average = AverageColor(result)
 		var err error
 		encoded, err = webp.EncodeBytes(result, &webp.Options{Quality: quality, Effort: -1})
 		if err != nil {
@@ -69,9 +78,9 @@ func Transform(ctx context.Context, input io.Reader, size int) ([]byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return encoded, nil
+	return encoded, average, nil
 }
 
 // WithDecoded validates and orients a bounded image before invoking use while

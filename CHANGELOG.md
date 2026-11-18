@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Histórico compacto no celular, ações por reticências e páginas de mídia com degradê da capa e navegação por seções (ISSUE-073).
+
 ## [0.34] - 2026-11-18
 
 - No user-visible changes (ISSUE-080).

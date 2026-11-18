@@ -1,4 +1,7 @@
 {
+  "media.sections": "Media sections",
+  "media.overview": "Overview",
+  "media.graphs": "Graphs",
   "ui.with_labels": "With labels",
   "ui.icons_only": "Icons only",
 

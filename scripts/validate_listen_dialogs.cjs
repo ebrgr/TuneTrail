@@ -21,11 +21,17 @@ const checks = [];
     page.on('pageerror', error=>errors.push(error.message));
     const go = async route => {
       await page.goto(origin+'/alpha'+route);
-      await page.locator('[data-listen-task]').first().waitFor();
+      await page.locator('[data-listen-task]').first().waitFor({state:'attached'});
     };
     const idle = () => page.waitForFunction(()=>!document.querySelector('#media-task-dialog').hasAttribute('aria-busy'));
-    const open = async () => {
+    // Native history disclosures open from the keyboard before a dialog action is selected.
+    const choose = async () => {
+      const menu = page.locator('.listen-actions').first();
+      if (!await menu.evaluate(menu=>menu.open)) await menu.locator('summary').press('Enter');
       await page.locator('[data-listen-task]').first().click();
+    };
+    const open = async () => {
+      await choose();
       await page.locator('#selected-listen').waitFor();
       await idle();
     };
@@ -34,7 +40,7 @@ const checks = [];
       await page.waitForFunction(()=>!document.querySelector('#media-task-dialog').open);
     };
     // Every history surface uses the same page fragment, keyboard contract and no-script fallback.
-    for (const [size,viewport] of Object.entries({desktop:{width:1440,height:1000},mobile:{width:390,height:844}})) {
+    for (const [size,viewport] of Object.entries({desktop:{width:1440,height:1000},mobile:{width:320,height:800}})) {
       await page.setViewportSize(viewport);
       for (const theme of ['yuu','pearl']) {
         await page.addInitScript(theme=>localStorage.setItem('theme',theme),theme);
@@ -69,7 +75,7 @@ const checks = [];
     await page.setViewportSize({width:1440,height:1000});
     await go('/listens?period=all_time');
     await page.route('**/manage/track/*/listen?**',route=>route.abort());
-    await page.locator('[data-listen-task]').first().click();
+    await choose();
     await page.locator('[data-task-page]').waitFor();
     await page.screenshot({animations:'disabled',path:path.join(out,'erro-rede.png')});
     await close();
@@ -78,7 +84,7 @@ const checks = [];
     let release;
     const delayed = new Promise(resolve=>{release=resolve;});
     await page.route('**/manage/track/*/listen?**',async route=>{const response=await route.fetch();await delayed;try { await route.fulfill({response}); } catch { /* Closing aborts the route in Chrome. */ }});
-    await page.locator('[data-listen-task]').first().click();
+    await choose();
     await page.locator('#media-task-dialog[open]').waitFor();
     await close();
     release();
@@ -116,7 +122,7 @@ const checks = [];
     assert.equal(await page.locator('tr[data-unix]').count(),before-1);
     assert.equal(await page.locator(`tr[data-unix="${selected}"]`).count(),0);
     assert.equal(await page.evaluate(()=>window.__listenDocument),doc);
-    assert.equal(await page.evaluate(()=>document.activeElement.hasAttribute('data-listen-task')),true);
+    assert.equal(await page.evaluate(()=>document.activeElement.matches('.listen-actions summary')),true);
     const beta=await (await context.request.get(origin+'/apis/web/v1/profiles/beta/stats?period=all_time')).json();
     assert.equal(beta.listen_count,beforeBeta.listen_count);
     checks.push('No confirmation returns 400; reopening rotates authorization; confirmed POST removes one row without reload and leaves beta intact');
@@ -140,6 +146,7 @@ const checks = [];
     const plain=await noJS.newPage();
     await plain.goto(origin+'/alpha/track/1');
     assert.equal(await plain.locator('[data-listen-task]').count(),0);
+    await plain.locator('.listen-actions summary').first().press('Enter');
     await plain.locator('.listen-manage').first().click();
     assert(new URL(plain.url()).pathname.endsWith('/listen'));
     assert((await plain.locator('input[name=return_to]').last().inputValue()).startsWith('/alpha/track/1'));
@@ -152,7 +159,7 @@ const checks = [];
     await go('/listens?period=all_time');
     if (!database || !path.resolve(database).startsWith('/tmp/tunetrail-141-')) throw Error('An explicit disposable fixture database is required');
     execFileSync('python3',['-c',"import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute('UPDATE sessions SET expires_at=1'); c.commit()",database]);
-    await page.locator('[data-listen-task]').first().click();
+    await choose();
     await page.locator('[data-task-page]').waitFor();
     assert.equal(await page.locator('#media-task-dialog input[name=submission_token]').count(),0);
     await page.screenshot({animations:'disabled',path:path.join(out,'sessao-expirada.png')});

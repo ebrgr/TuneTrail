@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/imagecache"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"github.com/ebrgr/TuneTrail/internal/models"
@@ -115,6 +116,8 @@ func (h *Pages) loadMedia(ctx context.Context, p *LivePage, kind string, id int3
 		m.Item, m.Type, m.TimeListened, first, mbid = trackItem(slug, t, t.AllTimeRank), "Track", t.TimeListened, t.FirstListen, t.MbzID
 		m.Album = &Link{a.Title, mediaURL(slug, "album", a.ID)}
 	}
+	// Read the server-computed cover color without sending image analysis to the browser.
+	m.Accent = imagecache.HeaderAccent(ctx, m.Image.Large)
 	m.MinutesListened = m.TimeListened / 60
 	if first > 0 {
 		date := time.Unix(first, 0).In(p.Options.Timeframe.Timezone)

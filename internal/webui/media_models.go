@@ -6,6 +6,7 @@ import "time"
 type MediaPage struct {
 	Item
 	Kind, Type, MusicBrainzURL    string
+	Accent                        string
 	TimeListened, MinutesListened int64
 	FirstListen                   *time.Time
 	Album                         *Link

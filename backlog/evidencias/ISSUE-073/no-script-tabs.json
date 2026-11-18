@@ -1,0 +1,37 @@
+[
+  {
+    "hash": "#overview",
+    "script": "undefined",
+    "scroll": 320,
+    "top": 24,
+    "width": 320
+  },
+  {
+    "hash": "#tracks",
+    "script": "undefined",
+    "scroll": 320,
+    "top": 24.1953125,
+    "width": 320
+  },
+  {
+    "hash": "#albums",
+    "script": "undefined",
+    "scroll": 320,
+    "top": 374.9609375,
+    "width": 320
+  },
+  {
+    "hash": "#history",
+    "script": "undefined",
+    "scroll": 320,
+    "top": 24.1953125,
+    "width": 320
+  },
+  {
+    "hash": "#graphs",
+    "script": "undefined",
+    "scroll": 320,
+    "top": 24.1953125,
+    "width": 320
+  }
+]

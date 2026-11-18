@@ -1,0 +1,54 @@
+{
+  "fixtureOnly": true,
+  "engine": "Orca embedded browser",
+  "checks": [
+    {
+      "background": "rgb(35, 27, 24)",
+      "cells": 3,
+      "color": "rgb(245, 236, 227)",
+      "focusContrast": 14.491288050648167,
+      "focused": "delete-listen",
+      "outline": "rgb(245, 236, 227)",
+      "relative": "2 minutos atr\u00e1s",
+      "script": "object",
+      "scroll": 320,
+      "textContrast": 14.491288050648167,
+      "width": 320,
+      "theme": "yuu"
+    },
+    {
+      "background": "rgb(245, 245, 245)",
+      "cells": 3,
+      "color": "rgb(14, 18, 28)",
+      "focusContrast": 17.16810003205976,
+      "focused": "delete-listen",
+      "outline": "rgb(14, 18, 28)",
+      "relative": "2 minutos atr\u00e1s",
+      "script": "object",
+      "scroll": 320,
+      "textContrast": 17.16810003205976,
+      "width": 320,
+      "theme": "pearl"
+    },
+    {
+      "background": "rgb(35, 27, 24)",
+      "cells": 3,
+      "color": "rgb(245, 236, 227)",
+      "focusContrast": 14.491288050648167,
+      "focused": "listen-manage",
+      "outline": "rgb(245, 236, 227)",
+      "relative": "2 minutes ago",
+      "script": "undefined",
+      "scroll": 320,
+      "textContrast": 14.491288050648167,
+      "width": 320
+    }
+  ],
+  "confirmedDeletion": {
+    "rowsBefore": 7,
+    "rowsAfter": 6,
+    "dialogClosed": true,
+    "nextSummaryFocused": true,
+    "scrollWidth": 320
+  }
+}

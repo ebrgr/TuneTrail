@@ -337,21 +337,34 @@
         {{if and .Playing (ne .Section "home")}}
           <tr>
             <td><img src="{{.Playing.Image.Small}}" width="32" height="32" alt="" data-cover></td>
-            <td>{{template "partial/artists" .Playing}} — <a href="{{.Playing.URL}}">{{.Playing.Title}}</a></td>
+            <td class="listen-description">
+              <a class="listen-title" title="{{.Playing.Title}}" href="{{.Playing.URL}}">{{.Playing.Title}}</a>
+              {{template "partial/artists" .Playing}}
+            </td>
             <td class="listen-time"><span class="now-dot"></span>{{tr "ui.now_playing" "Now Playing"}}</td>
           </tr>
         {{end}}
         {{range .Listens}}
           <tr data-track-id="{{.Item.ID}}" data-unix="{{.Unix}}">
             <td><a href="{{.Item.URL}}"><img src="{{.Item.Image.Small}}" width="32" height="32" alt="{{.Item.Title}}" data-cover></a></td>
-            <td>{{template "partial/artists" .Item}} — <a href="{{.Item.URL}}">{{.Item.Title}}</a></td>
+            <td class="listen-description">
+              <a class="listen-title" title="{{.Item.Title}}" href="{{.Item.URL}}">{{.Item.Title}}</a>
+              {{template "partial/artists" .Item}}
+            </td>
             <td class="listen-time">
-              <time datetime="{{.Time.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .Time}}">{{.Relative}}</time>{{if $page.Admin}}<a
-              class="listen-manage"
-              href="{{printf "/%s/manage/track/%d/listen?listen_at=%d&tz=%s&history_return=%s"
-                $page.Profile.Slug .Item.ID .Unix (urlquery $page.Timezone) (urlquery $page.CurrentURL)}}"
-              aria-label="{{tr "ui.manage_this_listening_record" "Manage this listening record"}}"
-            >{{tr "ui.manage" "Manage"}}</a>{{end}}</td>
+              <time datetime="{{.Time.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .Time}}">{{.Relative}}</time>
+              {{if $page.Admin}}
+                <details class="listen-actions">
+                  <summary aria-label="{{tr "ui.manage_this_listening_record" "Manage this listening record"}}"><span aria-hidden="true">⋯</span></summary>
+                  <a
+                    class="listen-manage"
+                    href="{{printf "/%s/manage/track/%d/listen?listen_at=%d&tz=%s&history_return=%s"
+                      $page.Profile.Slug .Item.ID .Unix (urlquery $page.Timezone) (urlquery $page.CurrentURL)}}"
+                    aria-label="{{tr "ui.manage_this_listening_record" "Manage this listening record"}}"
+                  >{{tr "ui.manage_this_listening_record" "Manage this listening record"}}</a>
+                </details>
+              {{end}}
+            </td>
           </tr>
         {{end}}
       </tbody>

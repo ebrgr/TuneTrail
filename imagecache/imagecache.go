@@ -208,7 +208,7 @@ func compressAndSaveImageContext(ctx context.Context, imgid uuid.UUID, size Imag
 	if size == ImageSizeSource {
 		px = 0
 	}
-	encoded, err := imagepipeline.Transform(ctx, input, px)
+	encoded, average, err := imagepipeline.TransformWithColor(ctx, input, px)
 	if err != nil {
 		return fmt.Errorf("compress image: %w", err)
 	}
@@ -217,6 +217,12 @@ func compressAndSaveImageContext(ctx context.Context, imgid uuid.UUID, size Imag
 	}
 	if err := saveImageContext(ctx, imgid, size, bytes.NewReader(encoded)); err != nil {
 		return fmt.Errorf("save image: %w", err)
+	}
+	// Source color belongs to the same immutable image ID as its derivatives.
+	if size == ImageSizeSource {
+		if err := saveColor(ctx, imgid, average); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -1,10 +1,11 @@
 ---
 id: ISSUE-073
 title: 073 — Listas, histórico e páginas de mídia compactas, com menu de ações
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-14T01:06:00Z'
+updated_date: '2026-11-18T18:32:00Z'
 labels:
   - ui
 milestone: m-10
@@ -12,6 +13,7 @@ dependencies:
   - ISSUE-071
 references:
   - backlog/evidencias/ui-responsiva/comparacao-koito-react.md
+  - backlog/evidencias/ISSUE-073/verificacao.md
 priority: medium
 type: feature
 ordinal: 73000
@@ -46,6 +48,24 @@ created: 2026-11-14T01:06:00Z
 ---
 
 Comparação com o Koito (/track/23): o cabeçalho de mídia deve seguir o original — capa grande (equivalente a 385px no desktop), tipo, título grande com a posição no ranking (#N), contagens e 'ouvindo desde', e fundo em degradê da cor média da capa (calculada no servidor, já prevista no passo 3). A barra de ícones de gestão e a divisão da página de gestão ficam na ISSUE-108.
+
+---
+
+author: ebrgr
+created: 2026-11-18T18:17:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-073` na branch `feat/issue-073-listas-historico-e-paginas-de` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-18T18:32:00Z
+
+---
+
+Verificação do executor: histórico compacto a 320px; reticências nativas com/sem scripts e confirmação existente dentro do menu; cabeçalhos com cor média persistida no processamento WebP, contraste mínimo 7:1 e cinco links de seção sem JS. make check aprovado, incluindo 13/13 jornadas E2E. Orca: 320px sem overflow, Enter/Tab/Escape e foco após exclusão; temas Yuu/Pearl; cinco âncoras com scripts bloqueados por CSP. Testes de RGB/alpha, cache legado/fallback, contraste em 4.096 cores e destinos/escopo/escaping do histórico. Evidências e limitações em backlog/evidencias/ISSUE-073/verificacao.md. Referência determinística atualizada sem substituir a histórica da ISSUE-072. Barra e páginas de gestão preservadas. Mantido Em andamento, aguardando Reviewer do agente responsável e posterior aceite visual; sem push/merge/publish/Done.
 
 ---
 <!-- COMMENTS:END -->
