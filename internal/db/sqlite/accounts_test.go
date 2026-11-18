@@ -337,3 +337,120 @@ func TestAccountsIncompleteLayout(t *testing.T) {
 		})
 	}
 }
+
+// TestAccountProfileSlugCollisions preserves existing profiles and rolls back exhausted allocations.
+func TestAccountProfileSlugCollisions(t *testing.T) {
+	for _, exhausted := range []bool{false, true} {
+		t.Run(fmt.Sprint(exhausted), func(t *testing.T) {
+			s, err := NewInMemory()
+			require.NoError(t, err)
+			defer s.db.Close()
+			ctx := context.Background()
+			// Leave account ID 10 available while occupying the slugs it would normally receive.
+			execSQL(t, s, `INSERT INTO users(id,username,password) VALUES(1,'owner',X'01'); INSERT INTO listening_profiles(user_id,slug,display_name,created_at) VALUES(1,'user-10','Owner',0)`)
+			if exhausted {
+				for n := 2; n <= 9; n++ {
+					execSQL(t, s, `INSERT INTO users(id,username,password) VALUES(?,?,X'01')`, n, fmt.Sprintf("owner-%d", n))
+					execSQL(t, s, `INSERT INTO listening_profiles(user_id,slug,display_name,created_at) VALUES(?,?,?,0)`, n, fmt.Sprintf("user-10-%d", n), fmt.Sprintf("Owner %d", n))
+				}
+			} else {
+				execSQL(t, s, `INSERT INTO users(id,username,password) VALUES(9,'other-owner',X'01'); INSERT INTO listening_profiles(user_id,slug,display_name,created_at) VALUES(9,'other-owner','Other',0)`)
+			}
+			user, err := s.SaveUser(ctx, db.SaveUserOpts{Username: "new-account", Password: "changeme"})
+			if exhausted {
+				require.ErrorIs(t, err, db.ErrConflict)
+				require.Nil(t, user)
+				require.Equal(t, 9, scalar(t, s, `SELECT COUNT(*) FROM users`))
+			} else {
+				require.NoError(t, err)
+				require.EqualValues(t, 10, user.ID)
+				p, err := s.GetListeningProfile(ctx, "user-10-2")
+				require.NoError(t, err)
+				require.Equal(t, "new-account", p.DisplayName)
+			}
+			require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listening_profiles WHERE slug='user-10' AND display_name='Owner'`))
+			require.NoError(t, checkDatabase(s.db))
+		})
+	}
+}
+
+// TestMigrationProfileSlugCollisions upgrades through even a fully occupied short suffix range.
+func TestMigrationProfileSlugCollisions(t *testing.T) {
+	for _, occupied := range []int{1, 9} {
+		t.Run(fmt.Sprint(occupied), func(t *testing.T) {
+			s, p, _ := migrationDB(t, 4)
+			execSQL(t, s, `INSERT INTO users(id,username,role,password) VALUES(1,'admin','admin',X'01'); DELETE FROM listening_profiles`)
+			for n := 1; n <= occupied; n++ {
+				slug := "user-1"
+				if n > 1 {
+					slug = fmt.Sprintf("user-1-%d", n)
+				}
+				execSQL(t, s, `INSERT INTO listening_profiles(slug,display_name,created_at) VALUES(?,?,0)`, slug, slug)
+			}
+			before := queryDigest(t, s.db, `SELECT id,slug,display_name,created_at FROM listening_profiles ORDER BY id`)
+			_, err := p.Up(context.Background())
+			require.NoError(t, err)
+			require.NoError(t, checkDatabase(s.db))
+			var slug string
+			require.NoError(t, s.db.QueryRow(`SELECT slug FROM listening_profiles WHERE user_id=1`).Scan(&slug))
+			require.Equal(t, fmt.Sprintf("user-1-%d", occupied+1), slug)
+			require.Equal(t, before, queryDigest(t, s.db, `SELECT id,slug,display_name,created_at FROM listening_profiles WHERE user_id<>1 ORDER BY id`))
+		})
+	}
+}
+
+// TestPendingUsernameBoundaries covers maximum slugs, hyphens, lowercasing and suffix truncation.
+func TestPendingUsernameBoundaries(t *testing.T) {
+	for _, slug := range []string{strings.Repeat("a", 64), strings.Repeat("a", 31) + "-" + strings.Repeat("b", 32), "a-" + strings.Repeat("b", 62)} {
+		t.Run(slug, func(t *testing.T) {
+			s, err := NewInMemory()
+			require.NoError(t, err)
+			defer s.db.Close()
+			ctx := context.Background()
+			for _, current := range []string{slug, slug[:63] + "c"} {
+				p, err := s.CreateListeningProfile(ctx, current, current, "", current)
+				require.NoError(t, err)
+				var login string
+				require.NoError(t, s.db.QueryRow(`SELECT u.username FROM users u JOIN listening_profiles p ON p.user_id=u.id WHERE p.id=?`, p.ID).Scan(&login))
+				require.NoError(t, validateUsername(login))
+				require.LessOrEqual(t, len(login), 32)
+				require.Equal(t, strings.ToLower(login), login)
+				if current != slug {
+					require.Equal(t, strings.ToLower(slug[:30])+"-2", login)
+				}
+			}
+		})
+	}
+	s, err := NewInMemory()
+	require.NoError(t, err)
+	defer s.db.Close()
+	tx, err := s.db.BeginTx(context.Background(), nil)
+	require.NoError(t, err)
+	defer tx.Rollback()
+	_, err = insertPendingAccount(context.Background(), tx, "INVALID/LOGIN")
+	require.ErrorIs(t, err, db.ErrInvalidInput)
+}
+
+// TestMigratedPendingUsernameBoundaries verifies every generated login with the runtime validator.
+func TestMigratedPendingUsernameBoundaries(t *testing.T) {
+	s, p, _ := migrationDB(t, 4)
+	for _, slug := range []string{strings.Repeat("a", 64), strings.Repeat("a", 63) + "b", strings.Repeat("b", 31) + "-" + strings.Repeat("c", 32)} {
+		execSQL(t, s, `INSERT INTO listening_profiles(slug,display_name,created_at) VALUES(?,?,0)`, slug, slug)
+	}
+	_, err := p.Up(context.Background())
+	require.NoError(t, err)
+	require.NoError(t, checkDatabase(s.db))
+	rows, err := s.db.Query(`SELECT username FROM users WHERE status='pending'`)
+	require.NoError(t, err)
+	defer rows.Close()
+	count := 0
+	for rows.Next() {
+		var login string
+		require.NoError(t, rows.Scan(&login))
+		require.NoError(t, validateUsername(login))
+		require.Equal(t, strings.ToLower(login), login)
+		count++
+	}
+	require.NoError(t, rows.Err())
+	require.Equal(t, 3, count)
+}

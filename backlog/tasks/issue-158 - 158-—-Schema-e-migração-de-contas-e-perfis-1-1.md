@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-18T19:15:00Z'
+updated_date: '2026-11-18T21:20:00Z'
 labels:
   - banco
   - admin
@@ -17,6 +17,7 @@ references:
   - backlog/evidencias/issue-158/PRE-IMPLEMENTACAO.md
   - backlog/evidencias/issue-158/VERIFICACAO.md
   - backlog/evidencias/issue-158/migracoes-agregadas.json
+  - backlog/evidencias/issue-158/PARECER-REVIEWER.md
 documentation:
   - doc-041
 priority: high
@@ -93,6 +94,24 @@ created: 2026-11-18T19:15:00Z
 ---
 
 Verificação: implementada v5 aditiva conforme parecer/aceite; AC1 registra equivalência funcional NOT NULL UNIQUE com índice e triggers sem reconstruir pais. make check passou (Go, UI/referência e 13/13 e2e); go test -race ./internal/db/sqlite passou; teste extra de layout incompleto passou. Cópias reais v3: P1 80→80 e P1/P2 79/1→79/1; cópia privada com 004 publicada: v4→v5, 80→80. IDs, hashes, sessões, chaves e relay preservados; origens físicas inalteradas; backup/restore, rollback real por colisão e reinício comprovados. Defaults originais admin/changeme mantidos por instrução do usuário; v2 vazia cria admin active com perfil/chave e v2 com contas não cria extra. Três ACs comprovados; relatório e JSON anexados. Mantido Em andamento para Reviewer; sem push/merge/publish/Done.
+
+---
+
+author: reviewer
+created: 2026-11-18T21:11:00Z
+
+---
+
+Parecer do Reviewer: APROVADO COM RESSALVAS. Nenhum BUG confirmado. RISCO 1: slug de fallback 'user-<id>' pode colidir com perfil existente (accounts.go:26 e 005:13), abortando SaveUser/migração. RISCO 2: login pendente derivado do slug sem validateUsername (accounts.go:36). Detalhes em backlog/evidencias/issue-158/PARECER-REVIEWER.md.
+
+---
+
+author: codex
+created: 2026-11-18T21:20:00Z
+
+---
+
+Correções dos dois riscos do Reviewer concluídas a pedido do usuário, sem re-delegação. SaveUser/Bootstrap usam slug livre com sufixos -2..-9 e ErrConflict tipado com rollback se esgotados. Na 005 ainda não publicada, N+1 candidatos garantem slug livre para N perfis existentes, inclusive faixa curta ocupada, sem bloquear o upgrade por esse motivo. Logins pendentes explicitam lowercase e truncamento reservando o sufixo; cada candidato passa por validateUsername, e o plano SQL valida a mesma projeção ASCII/32. Testes novos de colisão em SaveUser/migração, esgotamento, slugs de 64 caracteres e hífens passaram. make check passou (13/13 e2e e referência idêntica); go test -race ./internal/db/sqlite passou. Revalidação em cópias v4 (80) e v3 (79+1): dados, backup/restore e reinício preservados, origens inalteradas. Evidências atualizadas em VERIFICACAO.md e JSON; parecer original incluído. Defaults admin/changeme configuráveis, equivalência NOT NULL via triggers e tabelas pai preservados. Mantido Em andamento, sem push/merge/publish/Done.
 
 ---
 <!-- COMMENTS:END -->

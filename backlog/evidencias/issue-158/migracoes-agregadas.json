@@ -67,5 +67,76 @@
       }
     ],
     "result": "PASS"
+  },
+  "reviewer_fixes_revalidation": {
+    "real_copies": {
+      "copies": [
+        {
+          "account_states": {
+            "active": 1,
+            "pending": 1
+          },
+          "backup_restore": true,
+          "case": 1,
+          "counts_after": {
+            "1": 80
+          },
+          "counts_before": {
+            "1": 80
+          },
+          "preserved": true,
+          "restart": true,
+          "source_unchanged": true,
+          "source_version": 4,
+          "target_version": 5
+        },
+        {
+          "account_states": {
+            "active": 1,
+            "pending": 1
+          },
+          "backup_restore": true,
+          "case": 2,
+          "counts_after": {
+            "1": 79,
+            "2": 1
+          },
+          "counts_before": {
+            "1": 79,
+            "2": 1
+          },
+          "preserved": true,
+          "restart": true,
+          "source_unchanged": true,
+          "source_version": 3,
+          "target_version": 5
+        }
+      ],
+      "result": "PASS"
+    },
+    "v4_copy": {
+      "copies": [
+        {
+          "account_states": {
+            "active": 1,
+            "pending": 1
+          },
+          "backup_restore": true,
+          "case": 1,
+          "counts_after": {
+            "1": 80
+          },
+          "counts_before": {
+            "1": 80
+          },
+          "preserved": true,
+          "restart": true,
+          "source_unchanged": true,
+          "source_version": 4,
+          "target_version": 5
+        }
+      ],
+      "result": "PASS"
+    }
   }
 }

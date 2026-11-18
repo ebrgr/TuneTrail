@@ -22,26 +22,54 @@ func accountPassword(username, password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
 }
 
-// insertAccountProfile replaces the retired trigger inside the caller's transaction.
+// identifierCandidate keeps deterministic suffixes inside an ASCII identifier's size limit.
+func identifierCandidate(base string, maxLength, attempt int) string {
+	suffix := ""
+	if attempt > 1 {
+		suffix = fmt.Sprintf("-%d", attempt)
+	}
+	if len(base) > maxLength-len(suffix) {
+		base = base[:maxLength-len(suffix)]
+	}
+	return base + suffix
+}
+
+// insertAccountProfile replaces the retired trigger and avoids occupied public slugs.
 func insertAccountProfile(ctx context.Context, tx *sql.Tx, id int64, username string) error {
-	_, err := tx.ExecContext(ctx, `INSERT INTO listening_profiles(user_id,slug,display_name,created_at)
-    VALUES(?,CASE WHEN NOT EXISTS(SELECT 1 FROM listening_profiles) THEN 'default' ELSE 'user-' || ? END,?,unixepoch())`, id, id, username)
-	return err
+	var occupied bool
+	if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM listening_profiles)`).Scan(&occupied); err != nil {
+		return err
+	}
+	base := fmt.Sprintf("user-%d", id)
+	if !occupied {
+		base = "default"
+	}
+	for attempt := 1; attempt <= 9; attempt++ {
+		slug := identifierCandidate(base, 64, attempt)
+		result, err := tx.ExecContext(ctx, `INSERT INTO listening_profiles(user_id,slug,display_name,created_at)
+		SELECT ?,?,?,unixepoch() WHERE NOT EXISTS(SELECT 1 FROM listening_profiles WHERE slug=?)`, id, slug, username, slug)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n == 1 {
+			return nil
+		}
+	}
+	return db.ErrConflict
 }
 
 // insertPendingAccount allocates a bounded, deterministic login without sharing passwords.
 func insertPendingAccount(ctx context.Context, tx *sql.Tx, slug string) (int64, error) {
-	base := slug
-	if len(base) > 32 {
-		base = base[:32]
-	}
+	// Slugs are lowercase ASCII; validate the bounded candidate with the login validator too.
+	base := strings.ToLower(slug)
 	for n := 1; n <= 9; n++ {
-		username := base
-		if n > 1 {
-			if len(username) > 30 {
-				username = username[:30]
-			}
-			username = fmt.Sprintf("%s-%d", username, n)
+		username := identifierCandidate(base, maxUsernameLength, n)
+		if err := validateUsername(username); err != nil {
+			return 0, fmt.Errorf("pending account username: %w: %v", db.ErrInvalidInput, err)
 		}
 		result, err := tx.ExecContext(ctx, `INSERT INTO users(username,role,password,status) SELECT ?,'user',X'','pending' WHERE NOT EXISTS(SELECT 1 FROM users WHERE username=?)`, username, username)
 		if err != nil {
