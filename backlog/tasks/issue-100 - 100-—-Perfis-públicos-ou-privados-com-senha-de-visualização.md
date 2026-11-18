@@ -3,11 +3,11 @@ id: ISSUE-100
 title: >-
   100 — Aplicativo multiusuário: contas com senha, administrador atribuível e
   visibilidade das escutas por perfil
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-17T17:23:00Z'
+updated_date: '2026-11-18T18:18:00Z'
 labels:
   - admin
   - ui
@@ -84,6 +84,15 @@ created: 2026-11-17T17:23:00Z
 ---
 
 Verificação: contrato formal doc-041 criado e decision-010 registrada como proposed; metadados, vínculos, decisões do usuário, matriz de permissões, migração 1:1 e critérios futuros revisados diretamente (evidência backlog/evidencias/issue-100/revisao-contrato.md). Plano ai-memory atualizado: 01a1ea88-202b-7aa1-ad3b-59be658fbb6b. Mantidos bcrypt/validação/sessões atuais, perfis novos e legados públicos, relay ativo mesmo com escutas protegidas e consequência externa aceita; sem novos limites/bloqueios por usuário ou IP. Proposta de implementação, sem criar issues: P1 Schema e migração 1:1 (feature; banco,admin); P2 Autenticação e sessões para todos (feature; admin,api); P3 Autorização própria e global (feature; admin,api); P4 Visibilidade, imagens e cache (feature; api,ui,imagens); P5 Gestão root e ativação/recuperação por token (feature; admin,banco,api); P6 Telas e navegação por permissão (enhancement; ui,admin,i18n, preferir reescopar 125-128/157); P7 Validação do corte e documentação (chore; validacao,docs,operacao). Ordem, ACs e dependências completos no doc-041 §10, coordenados com 080/133 e 074/153. Pergunta 1: manter como está ou remover o limitador compartilhado de login existente (10/min quando habilitado)? Recomendo manter como está, sem ampliar controles; não decidi pelo usuário. AC2 ainda cita limite e deverá ser alinhado à resposta. Nenhum AC marcado, código alterado ou teste de runtime executado; revisão documental e diff-check realizados. Aguardando aceite desta entrega documental e da decision-010; implementação continua pendente, sem Done, push, merge ou publicação.
+
+---
+
+author: claude
+created: 2026-11-18T18:18:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-18 (conversa com o Claude): ISSUE-100 marcada como Done.
 
 ---
 <!-- COMMENTS:END -->
