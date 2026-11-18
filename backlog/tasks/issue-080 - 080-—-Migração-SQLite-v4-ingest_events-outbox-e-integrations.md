@@ -1,11 +1,11 @@
 ---
 id: ISSUE-080
 title: '080 — Migração SQLite v4: ingest_events, outbox e integrations'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-18T16:33:00Z'
+updated_date: '2026-11-18T16:35:00Z'
 labels:
   - banco
   - ingestao
@@ -86,6 +86,15 @@ created: 2026-11-18T16:33:00Z
 ---
 
 Revisão do Claude (2026-11-18): o caminho Koito v2 → v4 foi testado com bancos v2 reais do Koito upstream. Defeito encontrado: bancos v2 criados antes do PR #257 do Koito (sem idx_artist_aliases_artist_id) faziam o TuneTrail v4 recusar iniciar. Corrigido na 004 (CREATE INDEX IF NOT EXISTS dos dois índices) com teste de regressão; make check 13/13 e -race verdes. Detalhes em backlog/evidencias/issue-080/REVISAO.md.
+
+---
+
+author: ebrgr
+created: 2026-11-18T16:35:00Z
+
+---
+
+Aceite do usuário (2026-11-18) após a revisão com o caminho Koito v2 → v4 testado com bancos reais do Koito upstream e a correção dos índices do PR #257. Publicação com push autorizada pelo usuário.
 
 ---
 <!-- COMMENTS:END -->
