@@ -352,6 +352,8 @@
   "admin.message.image_must_be_jpeg_png_or_static_webp": "image must be JPEG, PNG or static WebP",
   "admin.message.check_form_fields": "check form fields",
   "admin.message.invalid_request": "invalid request",
+  "admin.message.authenticated_session_required": "Authenticated session required",
+  "admin.message.account_cannot_access_administration": "This account cannot access administration. Sign out to use another account.",
   "admin.message.administrator_session_required": "administrator session required",
   "admin.message.request_forbidden": "request forbidden",
   "admin.message.item_not_found": "item not found",

@@ -27,7 +27,7 @@ func LoginHandler(store db.UserStore) http.HandlerFunc {
 		}
 		session, err := admin.Login(r.Context(), store, body.Username, body.Password, body.RememberMe)
 		if err != nil {
-			logger.FromContext(r.Context()).Err(err).Msg("Administrative login failed")
+			logger.FromContext(r.Context()).Err(err).Msg("Login failed")
 			message := adminweb.PublicError(err)
 			if adminweb.ErrorStatus(err) == 401 {
 				message = "invalid credentials"

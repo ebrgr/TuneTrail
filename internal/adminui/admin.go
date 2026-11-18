@@ -107,7 +107,7 @@ type view struct {
 	Profile                                         *models.ListeningProfile
 	Keys                                            []models.ApiKey
 	RelayURL, RelayToken, CSRF, Next, Notice, Error string
-	Login                                           bool
+	Login, LogoutOnly                               bool
 	Section                                         string
 	Submission                                      string
 }
@@ -228,13 +228,17 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/admin" && (r.Method == "GET" || r.Method == "HEAD") {
-		identity, err := adminweb.AdminIdentity(r, h.store)
+		identity, err := adminweb.SessionIdentity(r, h.store)
 		if errors.Is(err, admin.ErrUnauthorized) {
 			h.loginPage(w, r, "")
 			return
 		}
 		if err != nil {
 			h.fail(w, err)
+			return
+		}
+		if err := admin.Authorize(identity.User); err != nil {
+			h.logoutPage(w, r, identity)
 			return
 		}
 		h.page(w, r, identity)
@@ -280,12 +284,34 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
-	identity, err := adminweb.AdminIdentity(r, h.store)
+	// Logout needs an active session and its form tokens, independently of role.
+	var identity admin.Identity
+	var err error
+	if r.URL.Path == "/admin/logout" {
+		identity, err = adminweb.SessionIdentity(r, h.store)
+	} else {
+		identity, err = adminweb.AdminIdentity(r, h.store)
+	}
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
 	h.action(w, r, identity)
+}
+
+// logoutPage gives a non-admin actor a way to end the session without loading admin data.
+func (h *Handler) logoutPage(w http.ResponseWriter, r *http.Request, identity admin.Identity) {
+	token, err := h.csrf.SessionToken(identity)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	submission, err := h.newSubmission(identity.SessionID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	h.render(w, http.StatusForbidden, view{LogoutOnly: true, CSRF: token, Submission: submission, Error: "This account cannot access administration. Sign out to use another account."})
 }
 
 // render buffers the complete template so errors do not leak secrets or partial HTML.

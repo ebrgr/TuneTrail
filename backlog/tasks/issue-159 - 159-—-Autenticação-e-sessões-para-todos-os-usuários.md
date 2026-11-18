@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-18T21:30:00Z'
+updated_date: '2026-11-18T21:47:00Z'
 labels:
   - admin
   - api
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/decisions/decision-010
   - backlog/evidencias/issue-159/VERIFICACAO.md
+  - backlog/evidencias/issue-159/PARECER-REVIEWER.md
 documentation:
   - doc-041
 priority: high
@@ -53,6 +54,24 @@ created: 2026-11-18T21:30:00Z
 ---
 
 Verificação Codex: autenticação active para user/admin separada de autorização; AdminIdentity preserva todas as fronteiras HTML administrativas. CSRF comum e tickets isolados; revogação por conta e corrida com senha antiga testadas; limitador compartilhado original intacto e testado. make check passou (13/13 e2e e referência visual); go test -race passou em admin, adminweb, adminui, sqlite, webui e engine. Evidência: backlog/evidencias/issue-159/VERIFICACAO.md. ACs 1–3 comprovados; gestão própria e telas permanecem nas 160–163. Mantida Em andamento para revisão do responsável pelo despacho; sem push/merge/publish/Done.
+
+---
+
+author: reviewer
+created: 2026-11-18T21:36:00Z
+
+---
+
+Parecer Reviewer: APROVADO COM RESSALVAS. Sem escalonamento: todas as rotas JSON/HTML administrativas exigem role admin (RequireAdmin/AdminIdentity), pending recusado em todos os caminhos, CSRF/tickets ligados à sessão, corrida login×troca de senha coberta, limitador global intacto; go test -race (admin, adminweb, adminui, sqlite, webui, engine) passou. Ressalvas: (1) login HTML de user leva a /admin 403 sem logout HTML e bloqueia o formulário de login de admin no mesmo navegador até expirar — corrigir ou registrar como gate da 163/157; (2) oráculo de tempo no Login (sem bcrypt para inexistente/pending) agora cobre todas as contas — sugerido hash fictício; (3) lacunas de teste: /{slug}/manage, webui.adminSession e /admin/logout com sessão user; (4) mensagens/log 'Administrative'. Advisor recomendado (autenticação).
+
+---
+
+author: codex
+created: 2026-11-18T21:47:00Z
+
+---
+
+Correções solicitadas dos achados 1–3 do Reviewer executadas diretamente, sem re-delegação: /admin 403 de user agora oferece mensagem en/pt-BR e logout HTML com CSRF/ticket da própria sessão; apenas POST /admin/logout aceita SessionIdentity, demais rotas administrativas seguem restritas. Login executa bcrypt DefaultCost fictício para inexistente/pending (teste por função interna injetável, sem tempo); log e 401 genérico ajustados. Regressões adicionadas para GET/POST de mídia, adminSession, HTML público e login/logout user/admin. make check passou (13/13 e2e); go test -race passou nos seis pacotes alterados. Referências UI atualizadas somente em data-ui-generation, com demais bytes verificados idênticos. Evidência em VERIFICACAO.md; parecer/comentário original preservados e incluídos no commit. ACs mantidos; status Em andamento. Sem push/merge/publish/Done.
 
 ---
 <!-- COMMENTS:END -->

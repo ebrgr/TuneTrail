@@ -6,6 +6,7 @@ var adminMessages = map[string]string{
 	"image must be JPEG, PNG or static WebP":              "admin.message.image_must_be_jpeg_png_or_static_webp",
 	"check form fields":                                   "admin.message.check_form_fields",
 	"invalid request":                                     "admin.message.invalid_request",
+	"authenticated session required":                      "admin.message.authenticated_session_required",
 	"administrator session required":                      "admin.message.administrator_session_required",
 	"request forbidden":                                   "admin.message.request_forbidden",
 	"item not found":                                      "admin.message.item_not_found",
@@ -56,4 +57,6 @@ var adminMessages = map[string]string{
 	"too many requests": "admin.message.too_many_requests",
 
 	"Invalid time zone. Use an IANA name such as America/Sao_Paulo.": "admin.listen.invalid_timezone",
+
+	"This account cannot access administration. Sign out to use another account.": "admin.message.account_cannot_access_administration",
 }

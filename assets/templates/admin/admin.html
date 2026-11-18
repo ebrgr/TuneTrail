@@ -39,6 +39,12 @@
               <label><input type="checkbox" name="remember" value="1"> {{tr "admin.text.remember_me" "Remember me"}}</label>
               <button>{{tr "admin.text.sign_in" "Sign in"}}</button>
             </form>
+          {{else if .LogoutOnly}}
+            <form method="post" action="/admin/logout">
+              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+              <input type="hidden" name="submission_token" value="{{.Submission}}">
+              <button>{{tr "admin.text.sign_out" "Sign out"}}</button>
+            </form>
           {{else if .User}}
             <form method="post" action="/admin/logout">
               <input type="hidden" name="csrf_token" value="{{.CSRF}}">

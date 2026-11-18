@@ -53,7 +53,7 @@ func PublicError(err error) string {
 	case 400:
 		return "invalid request"
 	case 401:
-		return "administrator session required"
+		return "authenticated session required"
 	case 403:
 		return "request forbidden"
 	case 404:

@@ -61,8 +61,22 @@ func Authenticate(ctx context.Context, store SessionReader, id uuid.UUID) (Ident
 	return Identity{User: user, SessionID: id}, nil
 }
 
-// Login rejects pending accounts before bcrypt and binds sessions to the current active hash.
+// invalidLoginHash is generated once at the same cost used by stored credentials.
+var invalidLoginHash = func() []byte {
+	hash, err := bcrypt.GenerateFromPassword([]byte("tunetrail-invalid-login"), bcrypt.DefaultCost)
+	if err != nil {
+		panic(fmt.Errorf("initialize login hash: %w", err))
+	}
+	return hash
+}()
+
+// Login performs bcrypt even for missing or pending accounts and binds sessions to the active hash.
 func Login(ctx context.Context, store LoginStore, username, password string, remember bool) (*models.Session, error) {
+	return loginWithCompare(ctx, store, username, password, remember, bcrypt.CompareHashAndPassword)
+}
+
+// loginWithCompare keeps the bcrypt work observable in tests without mutable global hooks.
+func loginWithCompare(ctx context.Context, store LoginStore, username, password string, remember bool, compare func([]byte, []byte) error) (*models.Session, error) {
 	if username == "" || password == "" {
 		return nil, db.ErrInvalidInput
 	}
@@ -70,10 +84,13 @@ func Login(ctx context.Context, store LoginStore, username, password string, rem
 	if err != nil {
 		return nil, fmt.Errorf("login: %w", err)
 	}
-	if user == nil || user.Status != "active" {
-		return nil, ErrUnauthorized
+	active := user != nil && user.Status == "active"
+	hash := invalidLoginHash
+	if active {
+		hash = user.Password
 	}
-	if bcrypt.CompareHashAndPassword(user.Password, []byte(password)) != nil {
+	comparison := compare(hash, []byte(password))
+	if !active || comparison != nil {
 		return nil, ErrUnauthorized
 	}
 	lifetime := 24 * time.Hour
