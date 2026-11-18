@@ -4,7 +4,7 @@ title: 163 — Adequar telas multiusuário e navegação por permissão
 status: Aberta
 assignee: []
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-17T17:33:00Z'
+updated_date: '2026-11-18T21:42:00Z'
 labels:
   - ui
   - admin
@@ -34,3 +34,16 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 - [ ] #2 Funciona sem JavaScript; foco, teclado e leitor de tela verificados
 - [ ] #3 Capturas responsivas e aceite visual do usuário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-18T21:42:00Z
+
+---
+
+Verificar na 163 (origem: Reviewer da ISSUE-159, 2026-11-18): (1) o login HTML de usuário comum hoje leva a /admin, que responde 403; a 159 só garante um logout mínimo na página 403 para não haver beco sem saída. Aqui deve entrar o destino correto do usuário comum após o login (sem página administrativa), a navegação por permissão e a página 403 definitiva com logout. (2) Confirmar que nenhuma tela ou link mostra ações administrativas a quem não é admin e que os logs e mensagens 401/403 ('Administrative login failed', 'administrator session required') ficaram corretos para contas comuns. (3) Reconferir o oráculo de tempo do login após a correção da 159 (hash fixo nos ramos conta inexistente e pendente).
+
+---
+<!-- COMMENTS:END -->

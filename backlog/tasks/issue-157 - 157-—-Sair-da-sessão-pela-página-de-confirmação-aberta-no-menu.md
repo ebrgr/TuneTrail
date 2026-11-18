@@ -4,7 +4,7 @@ title: 157 — Sair da sessão pela página de confirmação aberta no menu (+)
 status: Aberta
 assignee: []
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-17T12:46:00Z'
+updated_date: '2026-11-18T21:42:00Z'
 labels:
   - admin
   - ui
@@ -28,3 +28,16 @@ Origem: parecer do Advisor na ISSUE-155; confirmação de saída aprovada pelo u
 - [ ] #3 Provas de CSRF, sessão expirada, ticket reutilizado e duas abas; funciona sem JavaScript; ícone LogOut adicionado ao catálogo local
 - [ ] #4 Aceite visual do usuário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-18T21:42:00Z
+
+---
+
+Verificar na 157 (origem: Reviewer da ISSUE-159, 2026-11-18): usuários comuns agora autenticam, mas /admin/logout era restrito a administrador (corrigido minimamente na 159 para aceitar qualquer sessão ativa com CSRF). Ao implementar o sair pela página de confirmação do menu (+), validar o fluxo com sessão de usuário comum e com cookie de usuário comum no mesmo navegador de um admin (o admin deve conseguir sair e ver o login), e que o CSRF do logout é o da própria sessão.
+
+---
+<!-- COMMENTS:END -->
