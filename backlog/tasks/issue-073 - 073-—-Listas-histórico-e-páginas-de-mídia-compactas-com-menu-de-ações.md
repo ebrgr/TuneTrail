@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-18T21:14:00Z'
+updated_date: '2026-11-18T21:16:00Z'
 labels:
   - ui
 milestone: m-10
@@ -75,6 +75,15 @@ created: 2026-11-18T21:14:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-18 após ver a interface rodando na fixture local (histórico compacto, menu de reticências, cabeçalho de mídia com degradê e abas sem JavaScript). ACs verificados pelas evidências em backlog/evidencias/ISSUE-073/verificacao.md; AC4 pelo aceite visual do usuário. Nota: o Reviewer formal não foi executado antes do aceite, por decisão do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-18T21:16:00Z
+
+---
+
+Publicação: versão 0.35 (tag `v0.35`), branch `feat/issue-073-listas-historico-e-paginas-de` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

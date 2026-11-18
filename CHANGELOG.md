@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.35] - 2026-11-18
+
 - Histórico compacto no celular, ações por reticências e páginas de mídia com degradê da capa e navegação por seções (ISSUE-073).
 
 ## [0.34] - 2026-11-18
