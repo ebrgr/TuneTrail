@@ -45,3 +45,24 @@ O primeiro make check desta correção passou os testes Go e parou no comparador
 - `CGO_ENABLED=1 TUNETRAIL_WEB_DIR="$PWD/assets" go test -race ./internal/admin ./internal/adminweb ./internal/adminui ./internal/webui ./engine/handlers ./engine`: passou nos seis pacotes tocados nesta correção. SQLite não foi alterado nesta rodada; sua corrida e a corrida de senha permanecem cobertas pela validação original e pelo Reviewer.
 - Graphify AST atualizado e consultado para loginWithCompare, logoutPage, dispatch e adminSession. Revisão própria do diff incremental conforme Go/deslop: a única exceção de papel é logout, com sessão ativa, SameOrigin e tokens existentes; sem novas rotas de gestão, limites ou alteração de defaults.
 - `git diff --check` limpo. ACs 1–3 continuam comprovados. Status Em andamento; sem push, merge, publish ou Done.
+
+
+## Correção da ressalva da 2ª passagem do Reviewer — 18/11/2026
+
+Parecer e comentário originais preservados em `PARECER-REVIEWER-2.md` e na tarefa, incluídos no commit desta correção. Execução direta pelo Codex, sem re-delegação.
+
+- `newSubmission` mantém no máximo 32 tickets por sessão. A contagem e a seleção do ticket mais antigo são feitas na mesma passagem que remove expirados, sob o mutex existente. Todos os tickets têm o mesmo TTL; o menor Expires identifica a emissão mais antiga. Ao atingir a cota, só esse ticket da própria sessão é descartado antes de inserir o novo. Nenhum ticket válido de outra sessão é desalojado.
+- O teto global continua 4096. Uma sessão com 32 tickets pode substituir seu próprio mais antigo mesmo quando o pool está cheio; uma sessão nova não desaloja outras para ganhar espaço. A cota é por sessão, não por conta ou endereço, e não altera login, política de senhas ou número de sessões permitidas.
+- Mantidos UUID aleatório, vínculo à sessão autenticada, TTL de 30 minutos e consumo único; `consumeSubmission`, CSRF, autenticação e o fluxo de logout aprovado não mudaram. Considerado reuso na página 403 e mantida a emissão independente para preservar abas/formulários independentes: a cota já limita o consumo de uma sessão.
+- `TestSubmissionQuotaEvictsOnlyOwnOldest159`: o ticket mais antigo global pertence a outra sessão e permanece válido; ao ultrapassar 32, descarta o mais antigo da própria sessão. Mais 500 emissões conservam a cota; sessão diferente não consome o ticket, consumo correto funciona uma vez e replay falha.
+- `TestSubmissionExpiryAndGlobalCeiling159`: TTL emitido de 30 minutos, consumo de expirado recusado, expirados removidos na próxima emissão, teto global de 4096 preservado e substituição da própria cota permitida com pool cheio.
+- `TestUserTicketFloodKeepsAdminFormUsable159`: pelo roteador real, um usuário comum faz 500 GETs de `/admin` e o administrador ainda submete com sucesso um formulário emitido antes da sequência. Em seguida, o usuário comum também consegue sair com CSRF/ticket pelo fluxo HTML aprovado.
+- Testes focados passaram. Revisão própria incremental: a busca do mais antigo filtra por sessão, a substituição é atômica sob o mutex e o teto global não expulsa terceiros. A varredura continua limitada a 4096 entradas.
+- Sem nova entrada no CHANGELOG: correção de comportamento ainda não publicado da própria ISSUE-159, cujo efeito de login/logout já consta em Unreleased. Nenhuma alteração de template ou referência visual nesta rodada.
+
+
+### Revalidação da cota por sessão
+
+- `make check`: passou (vet/test de todos os pacotes, UI/JavaScript/estilo, referência visual e 13/13 jornadas e2e).
+- `CGO_ENABLED=1 TUNETRAIL_WEB_DIR="$PWD/assets" go test -race ./internal/adminui ./engine`: passou nos dois pacotes tocados.
+- Graphify atualizado via AST nesta worktree e consultado para newSubmission/consumeSubmission. `git diff --check` limpo. ACs permanecem comprovados, status Em andamento; sem push, merge, publish ou Done.

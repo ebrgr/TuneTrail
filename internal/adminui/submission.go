@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
+const maxSessionSubmissions = 32
+
 type submissionTicket struct {
 	Session uuid.UUID
 	Expires time.Time
 }
 
-// newSubmission binds a one-use form ticket to a session, preserving independent tabs.
+// newSubmission bounds each session and replaces only its oldest ticket, preserving other sessions.
 func (h *Handler) newSubmission(session uuid.UUID) (string, error) {
 	token, err := uuid.NewRandom()
 	if err != nil {
@@ -20,10 +22,24 @@ func (h *Handler) newSubmission(session uuid.UUID) (string, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	now := time.Now()
+	count := 0
+	var oldest uuid.UUID
+	var oldestExpiry time.Time
 	for k, v := range h.submissions {
 		if now.After(v.Expires) {
 			delete(h.submissions, k)
+			continue
 		}
+		if v.Session == session {
+			if count == 0 || v.Expires.Before(oldestExpiry) {
+				oldest, oldestExpiry = k, v.Expires
+			}
+			count++
+		}
+	}
+	// All tickets have the same TTL, so the earliest expiry identifies the oldest issue.
+	if count >= maxSessionSubmissions {
+		delete(h.submissions, oldest)
 	}
 	if len(h.submissions) >= 4096 {
 		return "", db.ErrConflict

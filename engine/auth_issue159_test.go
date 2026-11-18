@@ -145,3 +145,26 @@ func TestUserManagementRoutesStayForbidden159(t *testing.T) {
 		require.Equal(t, 403, taskRequest139(a, "POST", path, session.ID.String(), url.Values{}, nil).Code, path)
 	}
 }
+
+// TestUserTicketFloodKeepsAdminFormUsable159 exercises quota isolation through the production router.
+func TestUserTicketFloodKeepsAdminFormUsable159(t *testing.T) {
+	a := newProfileTestApp(t)
+	_, err := a.store.SaveUser(context.Background(), db.SaveUserOpts{Username: "listener", Password: "test-password", Role: models.UserRoleUser})
+	require.NoError(t, err)
+	session, err := admin.Login(context.Background(), a.store, "listener", "test-password", false)
+	require.NoError(t, err)
+	page := taskRequest139(a, "GET", "/admin?section=account", a.cookie, nil, nil)
+	require.Equal(t, 200, page.Code)
+	form := url.Values{"csrf_token": {taskField139(t, page, "csrf_token")}, "submission_token": {taskField139(t, page, "submission_token")}, "username": {"administrator"}}
+	for i := 0; i < 500; i++ {
+		forbidden := taskRequest139(a, "GET", "/admin", session.ID.String(), nil, nil)
+		require.Equal(t, 403, forbidden.Code)
+		require.Contains(t, forbidden.Body.String(), `action="/admin/logout"`)
+	}
+	// The administrator can still submit the form issued before the repeated user requests.
+	require.Equal(t, 303, taskRequest139(a, "POST", "/admin/account/username", a.cookie, form, nil).Code)
+	// Quota rotation does not change the ordinary account's approved logout flow.
+	forbidden := taskRequest139(a, "GET", "/admin", session.ID.String(), nil, nil)
+	logout := url.Values{"csrf_token": {taskField139(t, forbidden, "csrf_token")}, "submission_token": {taskField139(t, forbidden, "submission_token")}}
+	require.Equal(t, 303, taskRequest139(a, "POST", "/admin/logout", session.ID.String(), logout, nil).Code)
+}

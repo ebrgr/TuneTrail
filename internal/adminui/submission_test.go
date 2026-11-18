@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 // TestOneUseSubmission protects duplicate actions while permitting separate tabs.
@@ -46,4 +47,66 @@ func TestUserSubmissionIsolation159(t *testing.T) {
 	require.ErrorIs(t, h.consumeSubmission(sessions[1], token), db.ErrConflict)
 	require.NoError(t, h.consumeSubmission(sessions[0], token))
 	require.ErrorIs(t, h.consumeSubmission(sessions[0], token), db.ErrConflict)
+}
+
+// TestSubmissionQuotaEvictsOnlyOwnOldest159 protects other sessions and preserves one-use semantics.
+func TestSubmissionQuotaEvictsOnlyOwnOldest159(t *testing.T) {
+	h := &Handler{requireSubmission: true, submissions: map[uuid.UUID]submissionTicket{}}
+	user, other := uuid.New(), uuid.New()
+	otherToken, err := h.newSubmission(other)
+	require.NoError(t, err)
+	otherID := uuid.MustParse(otherToken)
+	// The globally oldest ticket belongs to another session and must never be evicted.
+	h.submissions[otherID] = submissionTicket{other, time.Now().Add(time.Minute)}
+	oldest, err := h.newSubmission(user)
+	require.NoError(t, err)
+	oldestID := uuid.MustParse(oldest)
+	h.submissions[oldestID] = submissionTicket{user, time.Now().Add(2 * time.Minute)}
+	for i := 1; i < maxSessionSubmissions; i++ {
+		_, err = h.newSubmission(user)
+		require.NoError(t, err)
+	}
+	_, err = h.newSubmission(user)
+	require.NoError(t, err)
+	require.NotContains(t, h.submissions, oldestID)
+	require.ErrorIs(t, h.consumeSubmission(user, oldest), db.ErrConflict)
+	var latest string
+	for i := 0; i < 500; i++ {
+		latest, err = h.newSubmission(user)
+		require.NoError(t, err)
+	}
+	require.Len(t, h.submissions, maxSessionSubmissions+1)
+	require.ErrorIs(t, h.consumeSubmission(other, latest), db.ErrConflict)
+	require.NoError(t, h.consumeSubmission(user, latest))
+	require.ErrorIs(t, h.consumeSubmission(user, latest), db.ErrConflict)
+	require.NoError(t, h.consumeSubmission(other, otherToken))
+}
+
+// TestSubmissionExpiryAndGlobalCeiling159 preserves TTL pruning and the global safety ceiling.
+func TestSubmissionExpiryAndGlobalCeiling159(t *testing.T) {
+	h := &Handler{requireSubmission: true, submissions: map[uuid.UUID]submissionTicket{}}
+	session := uuid.New()
+	expired, err := h.newSubmission(session)
+	require.NoError(t, err)
+	expiredID := uuid.MustParse(expired)
+	require.WithinDuration(t, time.Now().Add(30*time.Minute), h.submissions[expiredID].Expires, time.Second)
+	h.submissions[expiredID] = submissionTicket{session, time.Now().Add(-time.Second)}
+	require.ErrorIs(t, h.consumeSubmission(session, expired), db.ErrConflict)
+	_, err = h.newSubmission(session)
+	require.NoError(t, err)
+	require.NotContains(t, h.submissions, expiredID)
+	for i := 1; i < maxSessionSubmissions; i++ {
+		_, err = h.newSubmission(session)
+		require.NoError(t, err)
+	}
+	// Fill the pool with independent sessions so a new session cannot displace any of them.
+	for len(h.submissions) < 4096 {
+		h.submissions[uuid.New()] = submissionTicket{uuid.New(), time.Now().Add(30 * time.Minute)}
+	}
+	_, err = h.newSubmission(session)
+	require.NoError(t, err)
+	require.Len(t, h.submissions, 4096)
+	_, err = h.newSubmission(uuid.New())
+	require.ErrorIs(t, err, db.ErrConflict)
+	require.Len(t, h.submissions, 4096)
 }

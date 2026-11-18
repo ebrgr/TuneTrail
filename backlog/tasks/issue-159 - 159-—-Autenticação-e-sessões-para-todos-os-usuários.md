@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-18T21:47:00Z'
+updated_date: '2026-11-18T21:58:00Z'
 labels:
   - admin
   - api
@@ -16,6 +16,7 @@ references:
   - backlog/decisions/decision-010
   - backlog/evidencias/issue-159/VERIFICACAO.md
   - backlog/evidencias/issue-159/PARECER-REVIEWER.md
+  - backlog/evidencias/issue-159/PARECER-REVIEWER-2.md
 documentation:
   - doc-041
 priority: high
@@ -72,6 +73,24 @@ created: 2026-11-18T21:47:00Z
 ---
 
 Correções solicitadas dos achados 1–3 do Reviewer executadas diretamente, sem re-delegação: /admin 403 de user agora oferece mensagem en/pt-BR e logout HTML com CSRF/ticket da própria sessão; apenas POST /admin/logout aceita SessionIdentity, demais rotas administrativas seguem restritas. Login executa bcrypt DefaultCost fictício para inexistente/pending (teste por função interna injetável, sem tempo); log e 401 genérico ajustados. Regressões adicionadas para GET/POST de mídia, adminSession, HTML público e login/logout user/admin. make check passou (13/13 e2e); go test -race passou nos seis pacotes alterados. Referências UI atualizadas somente em data-ui-generation, com demais bytes verificados idênticos. Evidência em VERIFICACAO.md; parecer/comentário original preservados e incluídos no commit. ACs mantidos; status Em andamento. Sem push/merge/publish/Done.
+
+---
+
+author: reviewer
+created: 2026-11-18T21:51:00Z
+
+---
+
+Reviewer 2ª passagem (segurança): APROVADO COM RESSALVAS. Logout com SessionIdentity restrito a /admin/logout, com CSRF e ticket presos à sessão, revogação no banco, cookie limpo com os mesmos atributos e redirect fixo [OK]. Nenhuma outra rota admin foi aberta [OK]. Página 403 sem dados admin e com escape html/template [OK]. Oráculo de tempo: hash fixo com DefaultCost comparado sempre, sem autenticar [OK]. Log e 401 genéricos [OK]. Risco novo, baixo: GET /admin de usuário comum cria tickets no pool global (4096, 30 min), o que permite DoS dos formulários admin; sugestão: cota por sessão em newSubmission. Ver PARECER-REVIEWER-2.md.
+
+---
+
+author: codex
+created: 2026-11-18T21:58:00Z
+
+---
+
+Corrigida diretamente, sem re-delegação, a ressalva da 2ª passagem: newSubmission limita a 32 tickets por sessão e substitui apenas o mais antigo da própria sessão, sob o mutex existente; teto global 4096, TTL 30 min, vínculo à sessão e uso único preservados. Sem alterar login, CSRF, consumo ou logout aprovado. Testes: 500 emissões/GETs de uma sessão comum preservam formulário admin anterior e logout comum; descarte próprio, terceiros, expiração, replay e teto global comprovados. make check passou (13/13 e2e e referência visual); go test -race passou em adminui e engine. VERIFICACAO.md atualizada; parecer/comentário da 2ª passagem preservados e incluídos no commit. ACs mantidos, Em andamento; sem push/merge/publish/Done.
 
 ---
 <!-- COMMENTS:END -->
