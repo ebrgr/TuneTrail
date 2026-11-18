@@ -89,8 +89,8 @@ func newTestDB() *sqlite.Sqlite {
 		panic(err)
 	}
 
-	// insert a user into the db with id 1 to use for tests
-	err = s.Exec(`INSERT INTO users (username, password) VALUES ('test', 0x123)`)
+	// Seed the explicit account/profile pair required by the current schema.
+	err = s.Exec(`INSERT INTO users(id,username,password) VALUES(1,'test',X'0123'); INSERT INTO listening_profiles(user_id,slug,display_name,created_at) VALUES(1,'default','test',0)`)
 	if err != nil {
 		panic(err)
 	}

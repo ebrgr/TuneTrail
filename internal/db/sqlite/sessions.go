@@ -47,15 +47,16 @@ func (s *Sqlite) DeleteSession(ctx context.Context, sessionId uuid.UUID) error {
 	return err
 }
 
+// GetUserBySession only resolves active accounts, including preserved legacy sessions.
 func (s *Sqlite) GetUserBySession(ctx context.Context, sessionId uuid.UUID) (*models.User, error) {
 	var u models.User
 	var role string
 	err := s.db.QueryRowContext(ctx, `
-		SELECT u.id, u.username, u.role, u.password
+		SELECT u.id, u.username, u.role, u.password, u.status
 		FROM users u JOIN sessions se ON u.id = se.user_id
-		WHERE se.id = ? AND se.expires_at > ?
+		WHERE se.id = ? AND se.expires_at > ? AND u.status='active'
 		LIMIT 1`,
-		sessionId.String(), time.Now().Unix()).Scan(&u.ID, &u.Username, &role, &u.Password)
+		sessionId.String(), time.Now().Unix()).Scan(&u.ID, &u.Username, &role, &u.Password, &u.Status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	} else if err != nil {
@@ -65,12 +66,12 @@ func (s *Sqlite) GetUserBySession(ctx context.Context, sessionId uuid.UUID) (*mo
 	return &u, nil
 }
 
-// SaveAuthenticatedSession cannot resurrect a login authenticated before a password change.
+// SaveAuthenticatedSession rejects pending accounts and stale password authentication.
 func (s *Sqlite) SaveAuthenticatedSession(ctx context.Context, userID int32, passwordHash []byte, expiresAt time.Time, persistent bool) (*models.Session, error) {
 	id := uuid.New()
 	now := time.Now().Unix()
 	result, err := s.db.ExecContext(ctx, `INSERT INTO sessions(id,user_id,created_at,expires_at,persistent)
- SELECT ?,id,?,?,? FROM users WHERE id=? AND password=? AND role='admin'`, id.String(), now, expiresAt.Unix(), persistent, userID, passwordHash)
+ SELECT ?,id,?,?,? FROM users WHERE id=? AND password=? AND role='admin' AND status='active'`, id.String(), now, expiresAt.Unix(), persistent, userID, passwordHash)
 	if err != nil {
 		return nil, fmt.Errorf("SaveAuthenticatedSession: %w", err)
 	}

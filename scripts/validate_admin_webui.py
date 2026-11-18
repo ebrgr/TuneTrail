@@ -169,18 +169,18 @@ def validate(server):
     _,merged=f.request('POST',manage+'/confirm',confirm,expected=303)
     assert merged['Location']==f'/mara/track/{dest}'
     f.request('POST',manage+'/confirm',confirm,expected=409)
-    # All profiles may be deleted while the administrator and its session survive.
+    # Only non-admin profiles are deleted; the last admin pair and session survive.
     for profile in server.request('GET',WEB+'/profiles'):
         count=server.request('GET',WEB+f'/profiles/{profile["slug"]}/stats')['listen_count']
         path=f'/admin/profile/{profile["id"]}/';pt=f.token(path+'delete-review')
-        f.request('POST',path+'delete',{'csrf_token':pt,'profile_slug':profile['slug'],'display_name':profile['display_name'],'listen_count':str(count),'confirm':'1'},expected=303)
-    assert not server.request('GET',WEB+'/profiles');body,_=f.request('GET','/admin');assert b'No profiles yet' in body
+        f.request('POST',path+'delete',{'csrf_token':pt,'profile_slug':profile['slug'],'display_name':profile['display_name'],'listen_count':str(count),'confirm':'1'},expected=409 if profile['id']==1 else 303)
+    assert len(server.request('GET',WEB+'/profiles'))==1;body,_=f.request('GET','/admin');assert b'No profiles yet' not in body
     token=csrf(body);f.request('POST','/admin/account/password',{'csrf_token':token,'password':'replacement-fictional-password','confirm_password':'replacement-fictional-password'},expected=303)
     f.request('POST','/admin/logout',{'csrf_token':token},expected=401)
     f.login(password='replacement-fictional-password')
     with sqlite3.connect(server.directory/'tunetrail.db') as conn:
         assert conn.execute('PRAGMA integrity_check').fetchone()[0]=='ok';assert not conn.execute('PRAGMA foreign_key_check').fetchall()
-    return {'schema':3,'formats':list(fixtures),'checks':['HTML login/return','HEAD','CSRF/origin','profiles','keys/revocation','local relay','five import formats','export/round-trip','metadata/form state','DST','personal deletion','stale merge/repetition','zero profiles','password revocation','SQLite integrity']}
+    return {'schema':3,'formats':list(fixtures),'checks':['HTML login/return','HEAD','CSRF/origin','profiles','keys/revocation','local relay','five import formats','export/round-trip','metadata/form state','DST','personal deletion','stale merge/repetition','last admin preserved','password revocation','SQLite integrity']}
 
 def rate_limit(binary,root,html_first):
     server=Server(binary,root,environment={'KOITO_WEB_UI':'go','TUNETRAIL_DISABLE_RATE_LIMIT':'false'})

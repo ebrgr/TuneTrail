@@ -61,7 +61,7 @@ func Authenticate(ctx context.Context, store SessionReader, id uuid.UUID) (Ident
 	return Identity{User: user, SessionID: id}, nil
 }
 
-// Login checks bcrypt outside SQLite locks, then atomically binds the new session to that hash.
+// Login rejects pending accounts before bcrypt and binds sessions to the current active hash.
 func Login(ctx context.Context, store LoginStore, username, password string, remember bool) (*models.Session, error) {
 	if username == "" || password == "" {
 		return nil, db.ErrInvalidInput
@@ -70,7 +70,7 @@ func Login(ctx context.Context, store LoginStore, username, password string, rem
 	if err != nil {
 		return nil, fmt.Errorf("login: %w", err)
 	}
-	if user == nil || user.Role != models.UserRoleAdmin {
+	if user == nil || user.Role != models.UserRoleAdmin || user.Status != "active" {
 		return nil, ErrUnauthorized
 	}
 	if bcrypt.CompareHashAndPassword(user.Password, []byte(password)) != nil {

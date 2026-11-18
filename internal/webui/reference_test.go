@@ -94,6 +94,10 @@ func TestUIReference(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Keep the accepted public reference slug stable after fixture accounts gain owners.
+	if err := s.Exec(`UPDATE listening_profiles SET slug='user-1' WHERE display_name='reference-admin'`); err != nil {
+		t.Fatal(err)
+	}
 	live, err := NewHandler(referenceStore{s}, Options{Now: func() time.Time { return now }})
 	if err != nil {
 		t.Fatal(err)

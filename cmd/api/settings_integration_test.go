@@ -136,7 +136,7 @@ disable_cover_art_archive=true
 		t.Fatal(err)
 	}
 	defer fixtureDB.Close()
-	if _, err = fixtureDB.Exec(`INSERT INTO listening_profiles(slug,display_name,created_at) VALUES ('fixture','Fixture',123)`); err != nil {
+	if _, err = fixtureDB.Exec(`INSERT INTO users(username,password,status) VALUES('fixture',X'','pending'); INSERT INTO listening_profiles(user_id,slug,display_name,created_at) SELECT id,'fixture','Fixture',123 FROM users WHERE username='fixture'`); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = fixtureDB.Exec(`INSERT INTO api_keys(key,profile_id,created_at,label) SELECT 'fixture-profile-key',id,123,'fixture' FROM listening_profiles WHERE slug='fixture'`); err != nil {

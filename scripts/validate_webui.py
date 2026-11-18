@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Go pages using a real API process and a disposable SQLite v4 database.
+"""Validate Go pages using a real API process and a disposable SQLite v5 database.
 
 --serve keeps the process for screenshots until Ctrl+C. Never loads the project's .env.
 """
@@ -109,7 +109,7 @@ def validate(server, key):
     with sqlite3.connect(server.directory / 'tunetrail.db') as conn:
         assert conn.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
         assert not conn.execute('PRAGMA foreign_key_check').fetchall()
-        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0] == 4
+        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0] == 5
     return {'profiles': 3, 'mara_listens': stats['listen_count'], 'history_page_2': 52, 'schema': 4, 'interest_totals': interest_totals, 'http_pages': pages, 'checks': ['scoping', 'API/HTML parity', 'invalid filters', 'interest intervals and bounds', 'Go management links and media', 'admin authentication', 'same-origin mutations', 'SQLite integrity']}
 
 

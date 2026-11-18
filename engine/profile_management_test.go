@@ -103,16 +103,22 @@ func TestProfileManagementLifecycle(t *testing.T) {
 	// Shared catalog survives profile deletion.
 	_, err = a.store.GetTrack(ctx, db.GetTrackOpts{ID: 1})
 	require.NoError(t, err)
-	// Deleting the last profile leaves the administrator and session available.
+	// Deleting other profiles preserves the last administrator and its session.
 	profiles, err = a.store.ListListeningProfiles(ctx)
 	require.NoError(t, err)
 	for _, p := range profiles {
 		count, err := a.store.ProfileListenCount(ctx, p.ID)
 		require.NoError(t, err)
-		require.Equal(t, 204, a.request("DELETE", "/apis/web/v1/profiles/"+p.Slug, fmt.Sprintf(`{"display_name":%q,"listen_count":%d}`, p.DisplayName, count), "", true).Code)
+		expected := 204
+		if p.ID == 1 {
+			expected = 409
+		}
+		require.Equal(t, expected, a.request("DELETE", "/apis/web/v1/profiles/"+p.Slug, fmt.Sprintf(`{"display_name":%q,"listen_count":%d}`, p.DisplayName, count), "", true).Code)
 	}
 	require.Equal(t, 200, a.request("GET", "/apis/web/v1/user", "", "", true).Code)
-	require.JSONEq(t, `[]`, a.request("GET", "/apis/web/v1/profiles", "", "", false).Body.String())
+	remaining, err := a.store.ListListeningProfiles(context.Background())
+	require.NoError(t, err)
+	require.Len(t, remaining, 1)
 	require.Equal(t, 201, a.request("POST", "/apis/web/v1/profiles", body, "", true).Code)
 }
 func TestProfileManagementAtomicInitialKey(t *testing.T) {

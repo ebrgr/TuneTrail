@@ -3,6 +3,7 @@ package catalog_test
 import (
 	"context"
 	"errors"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"testing"
 	"time"
 
@@ -27,7 +28,7 @@ func TestSubmitListenReportsAlbumAssociationFailure(t *testing.T) {
 	s, err := sqlite.NewInMemory()
 	require.NoError(t, err)
 	defer s.Close(context.Background())
-	require.NoError(t, s.Exec(`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1)`))
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 	err = catalog.SubmitListen(context.Background(), failedAlbumLink{s}, catalog.SubmitListenOpts{MbzCaller: &mbz.MbzErrorCaller{}, Artist: "Test artist", TrackTitle: "Test track", ReleaseTitle: "Test album", Time: time.Unix(1700000000, 0), ProfileID: 1, SkipCacheImage: true})
 	require.ErrorIs(t, err, errAssociation)
 	n, err := s.ProfileListenCount(context.Background(), 1)

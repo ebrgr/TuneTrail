@@ -2,6 +2,7 @@ package engine
 
 import (
 	"bytes"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"mime/multipart"
 	"net/http/httptest"
 	"os"
@@ -15,7 +16,7 @@ import (
 // TestUploadClassifiesArchiveFailure distinguishes bad input from an I/O failure after import.
 func TestUploadClassifiesArchiveFailure(t *testing.T) {
 	a := newProfileTestApp(t)
-	require.NoError(t, a.store.Exec(`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(99,'archive-fail','Archive failure',123)`))
+	testfixtures.Profile(t, a.store, 99, "archive-fail", "Archive failure", 123)
 	dir := filepath.Join(cfg.ConfigDir(), "import_complete")
 	require.NoError(t, os.MkdirAll(dir, 0700))
 	block := filepath.Join(dir, "99")

@@ -9,7 +9,7 @@ import (
 )
 
 // validateSchemaLayout checks columns, constraints, indexes and guards against
-// the embedded DDL, so a forged version alone can never enable an incomplete v4.
+// the embedded DDL, so a forged version alone can never enable an incomplete supported schema.
 func validateSchemaLayout(db *sql.DB, version int) error {
 	reference, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
@@ -17,7 +17,7 @@ func validateSchemaLayout(db *sql.DB, version int) error {
 	}
 	defer reference.Close()
 	reference.SetMaxOpenConns(1)
-	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql"}[:version] {
+	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql"}[:version] {
 		ddl, err := migrations.Files.ReadFile(name)
 		if err != nil {
 			return fmt.Errorf("read schema reference: %w", err)

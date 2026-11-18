@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,7 +19,8 @@ func ingestFixture(t *testing.T) *Sqlite {
 	s, err := NewInMemory()
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, s.db.Close()) })
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'one','One',0),(2,'two','Two',0)`)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	testfixtures.Profile(t, s, 2, "two", "Two", 0)
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('source',1,'test',0),('other',2,'test',0)`)
 	insertReceipt(t, s, "receipt")
 	return s
@@ -126,6 +128,9 @@ func TestV4MigrationRollback(t *testing.T) {
 	require.Equal(t, 3, scalar(t, s, `SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1`))
 	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM sqlite_master WHERE name IN ('integrations','ingest_events','ingest_event_details')`))
 	for name, want := range before {
+		if name == "legacy_user_profiles" {
+			continue
+		}
 		require.Equal(t, want, digestTable(t, s.db, name, want.columns))
 	}
 	execSQL(t, s, `DROP TABLE ingest_observations`)
@@ -164,6 +169,9 @@ func TestBootstrapV3WALRestore(t *testing.T) {
 	_, err = bootstrap(filepath.Dir(target), true)
 	require.NoError(t, err)
 	for name, want := range before {
+		if name == "legacy_user_profiles" {
+			continue
+		}
 		require.Equal(t, want, digestTable(t, conn, name, want.columns))
 	}
 	backups, err := filepath.Glob(target + ".pre-ingest-*.bak")
@@ -197,7 +205,7 @@ func TestBootstrapIncompleteV4(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, conn.Close())
 			_, err = bootstrap(dir, true)
-			require.ErrorContains(t, err, "incompatible v4 schema")
+			require.ErrorContains(t, err, "incompatible v5 schema")
 		})
 	}
 	// An incomplete current v3 must be rejected before any backup is created.
@@ -216,9 +224,9 @@ func TestBootstrapIncompleteV4(t *testing.T) {
 // TestIngestConcurrentTrustedReceipt relies on SQLite constraints across connections,
 // not a process-local mutex, to admit exactly one live trusted receipt key.
 func TestIngestConcurrentTrustedReceipt(t *testing.T) {
-	s, _, path := migrationDB(t, 4)
+	s, _, path := migrationDB(t, 5)
 	execSQL(t, s, `PRAGMA busy_timeout=5000`)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'one','One',0)`)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('source',1,'test',0)`)
 	other, err := openExisting(path)
 	require.NoError(t, err)
@@ -294,7 +302,7 @@ func TestBootstrapKoitoV2WithoutUpstreamIndexes(t *testing.T) {
 	defer conn.Close()
 	version, err := schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, 4, version)
+	require.Equal(t, 5, version)
 	for _, name := range []string{"idx_artist_aliases_artist_id", "idx_listens_track_id_listened_at"} {
 		var found string
 		require.NoError(t, conn.QueryRow(`SELECT name FROM sqlite_master WHERE type='index' AND name=?`, name).Scan(&found))

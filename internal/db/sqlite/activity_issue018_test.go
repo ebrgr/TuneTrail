@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -10,9 +11,10 @@ import (
 
 // TestActivityFractionalOffsetAndFinalSecond checks actual civil dates and inclusive month end.
 func TestActivityFractionalOffsetAndFinalSecond(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	seedMediaRead(t, s)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1),(2,'beta','Beta',1)`)
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
+	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
 	loc, err := time.LoadLocation("Asia/Kathmandu")
 	require.NoError(t, err)
 	for _, d := range []time.Time{time.Date(2024, 5, 1, 0, 5, 0, 0, loc), time.Date(2024, 5, 31, 23, 59, 59, 0, loc)} {
@@ -35,9 +37,9 @@ func TestActivityFractionalOffsetAndFinalSecond(t *testing.T) {
 
 // TestActiveDaysUsesCivilDatesNotUTCDays checks dates straddling local midnight.
 func TestActiveDaysUsesCivilDatesNotUTCDays(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	seedMediaRead(t, s)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1)`)
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 	loc, err := time.LoadLocation("Asia/Kathmandu")
 	require.NoError(t, err)
 	for _, d := range []time.Time{time.Date(2024, 4, 30, 23, 55, 0, 0, loc), time.Date(2024, 5, 1, 0, 5, 0, 0, loc)} {
@@ -50,9 +52,10 @@ func TestActiveDaysUsesCivilDatesNotUTCDays(t *testing.T) {
 
 // TestCivilStreakAndBoundsPreserveDatesThroughMidnightDST checks fixed clocks and profile scope.
 func TestCivilStreakAndBoundsPreserveDatesThroughMidnightDST(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	seedMediaRead(t, s)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1),(2,'beta','Beta',1)`)
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
+	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
 	loc, err := time.LoadLocation("America/Sao_Paulo")
 	require.NoError(t, err)
 	for _, d := range []time.Time{time.Date(2018, 11, 3, 23, 59, 59, 0, loc), time.Date(2018, 11, 4, 1, 0, 0, 0, loc), time.Date(2018, 11, 5, 0, 0, 0, 0, loc)} {
@@ -84,9 +87,9 @@ func TestCivilStreakAndBoundsPreserveDatesThroughMidnightDST(t *testing.T) {
 func TestActivityIncludesOnlyCalendarBoundaries(t *testing.T) {
 	for _, zone := range []string{"UTC", "America/New_York", "Asia/Kathmandu", "Australia/Lord_Howe"} {
 		t.Run(zone, func(t *testing.T) {
-			s, _, _ := migrationDB(t, 3)
+			s, _, _ := migrationDB(t, 5)
 			seedMediaRead(t, s)
-			execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1)`)
+			testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 			loc, err := time.LoadLocation(zone)
 			require.NoError(t, err)
 			start := time.Date(2024, 3, 1, 0, 0, 0, 0, loc)
@@ -107,9 +110,9 @@ func TestActivityIncludesOnlyCalendarBoundaries(t *testing.T) {
 
 // TestStreakIncludesRepeatedLastHour checks the second occurrence before local midnight.
 func TestStreakIncludesRepeatedLastHour(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	seedMediaRead(t, s)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1)`)
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 	loc, err := time.LoadLocation("America/Sao_Paulo")
 	require.NoError(t, err)
 	listen := time.Date(2019, 2, 17, 2, 30, 0, 0, time.UTC)
@@ -133,9 +136,9 @@ func TestFractionalOffsetsAndNegativeUnixTimestamps(t *testing.T) {
 		year, month int
 	}{{"Australia/Lord_Howe", 2024, 10}, {"Asia/Kathmandu", 2024, 5}, {"UTC", 1969, 12}} {
 		t.Run(tc.zone, func(t *testing.T) {
-			s, _, _ := migrationDB(t, 3)
+			s, _, _ := migrationDB(t, 5)
 			seedMediaRead(t, s)
-			execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1)`)
+			testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 			loc, err := time.LoadLocation(tc.zone)
 			require.NoError(t, err)
 			for _, d := range []time.Time{time.Date(tc.year, time.Month(tc.month), 1, 23, 55, 0, 0, loc), time.Date(tc.year, time.Month(tc.month), 2, 0, 5, 0, 0, loc)} {

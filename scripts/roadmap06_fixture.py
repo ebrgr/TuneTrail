@@ -64,9 +64,10 @@ def create(output):
     with closing(sqlite3.connect(canonical)) as conn:
         build_fixture(conn)
         # The legacy trigger creates a profile for a new user; remove only that
-        # synthetic profile so server startup cannot add a fourth profile.
+        # synthetic profile and bind the account to Alpha before migration.
         conn.execute("INSERT INTO users(id,username,role,password) VALUES(1,'validation-admin','admin',?)", (FIXTURE_PASSWORD_HASH.encode("ascii"),))
         conn.execute("DELETE FROM listening_profiles WHERE id=(SELECT profile_id FROM legacy_user_profiles WHERE user_id=1)")
+        conn.execute("INSERT INTO legacy_user_profiles(user_id,profile_id) VALUES(1,1)")
         conn.execute("UPDATE track_aliases SET alias=? WHERE track_id=4 AND is_primary=1", (LONG_NAME,))
         conn.execute("UPDATE releases SET image='22222222-2222-4222-8222-222222222222' WHERE id=2")
         conn.executemany("INSERT INTO listens(profile_id,track_id,listened_at,client) VALUES(1,1,?,'fixture-dst')", [(timestamp(value),) for value, _ in TRANSITIONS])

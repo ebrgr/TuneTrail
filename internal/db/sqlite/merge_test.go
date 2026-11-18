@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -14,8 +15,9 @@ func mergeFixture(t *testing.T) *Sqlite {
 	s, err := NewInMemory()
 	require.NoError(t, err)
 	t.Cleanup(func() { s.Close(context.Background()) })
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
+	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
 	for _, q := range []string{
-		`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1),(2,'beta','Beta',1)`,
 		`INSERT INTO artists(id) VALUES(1),(2)`,
 		`INSERT INTO artist_aliases VALUES(1,'One','User',1),(2,'Two','User',1)`,
 		`INSERT INTO releases(id,various_artists) VALUES(1,0),(2,0)`,

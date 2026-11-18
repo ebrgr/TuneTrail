@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise normal v3-to-v4 startup, backup and restore on disposable copies.
+"""Exercise normal v3-to-v5 startup, backup and restore on disposable copies.
 
 Optional --source files are copied with all SQLite sidecars before SQLite opens
 anything. Only temporary copies are used; stdout contains aggregate counts only.
@@ -26,9 +26,11 @@ def digests(path):
     """Compare every existing table/column in memory without exposing its rows."""
     with connect(path) as conn:
         result = {}
-        tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name!='goose_db_version'").fetchall()
+        tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('goose_db_version','legacy_user_profiles')").fetchall()
         for (table,) in tables:
-            rows = sorted(repr(row) for row in conn.execute(f'SELECT * FROM "{table}"'))
+            columns = {'users':'id,username,role,password','listening_profiles':'id,slug,display_name,avatar_image_id,avatar_icon,created_at'}.get(table,'*')
+            clause = " WHERE status='active'" if table=='users' and 'status' in [r[1] for r in conn.execute('PRAGMA table_info(users)')] else ''
+            rows = sorted(repr(row) for row in conn.execute(f'SELECT {columns} FROM "{table}"{clause}'))
             result[table] = hashlib.sha256('\n'.join(rows).encode()).hexdigest()
         return result
 
@@ -77,7 +79,7 @@ def validate(binary, source, root, name):
         try:
             server.start()
             target = work / 'tunetrail.db'
-            check(target, 4)
+            check(target, 5)
             after = digests(target)
             assert all(after[table] == digest for table, digest in before.items()), 'existing rows changed'
             assert profile_counts(target) == counts
@@ -94,7 +96,7 @@ def validate(binary, source, root, name):
             server.stop()
             stable = digests(target)
             server.start()
-            check(target, 4)
+            check(target, 5)
             server.stop()
             assert digests(target) == stable, 'restart changed rows'
             # Restore to an empty isolated directory, then migrate the restored v3 again.
@@ -107,11 +109,11 @@ def validate(binary, source, root, name):
             restored_server = Server(binary, restored)
             try:
                 restored_server.start()
-                check(restored / 'tunetrail.db', 4)
+                check(restored / 'tunetrail.db', 5)
                 assert profile_counts(restored / 'tunetrail.db') == counts
             finally:
                 restored_server.stop()
-            reports.append({'case': name, 'entry': filename, 'from': 3, 'to': 4,
+            reports.append({'case': name, 'entry': filename, 'from': 3, 'to': 5,
                             'counts_before': counts, 'counts_after': profile_counts(target),
                             'all_existing_table_digests_equal': True, 'backup_restore': 'ok',
                             'integrity': 'ok', 'restart': 'ok', 'public_stats': 'ok'})

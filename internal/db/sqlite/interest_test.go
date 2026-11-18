@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"errors"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"math"
 	"testing"
 	"time"
@@ -81,9 +82,12 @@ func TestInterestRejectsInvalidCountsBeforeDatabaseAccess(t *testing.T) {
 }
 
 func TestInterestSQLiteScopesEntitiesAndExcludesFuture(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	seedMediaRead(t, s)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1),(2,'beta','Beta',1),(3,'empty','Empty',1),(4,'future','Future',1)`)
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
+	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
+	testfixtures.Profile(t, s, 3, "empty", "Empty", 1)
+	testfixtures.Profile(t, s, 4, "future", "Future", 1)
 	base := time.Now().Add(-time.Hour).Truncate(time.Second)
 	for _, v := range []struct {
 		profile int32

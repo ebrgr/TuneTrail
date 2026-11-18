@@ -78,6 +78,7 @@ def run_mode(binary, root, mode):
         assert 'Secure' not in headers['Set-Cookie']
         with sqlite3.connect(server.directory/'tunetrail.db') as db:
             db.execute("INSERT INTO users(username,role,password) VALUES('fictional-user','user',x'00')")
+            db.execute("INSERT INTO listening_profiles(user_id,slug,display_name,created_at) SELECT id,'fictional-user','Fictional user',0 FROM users WHERE username='fictional-user'")
             nonadmin = db.execute("SELECT id FROM users WHERE username='fictional-user'").fetchone()[0]
             now = int(time.time())
             nonadmin_session = str(uuid.uuid4())

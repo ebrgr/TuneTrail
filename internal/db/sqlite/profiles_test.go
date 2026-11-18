@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"os"
 	"path/filepath"
 	"testing"
@@ -119,11 +120,13 @@ func TestProfileMigrationMultipleUsers(t *testing.T) {
 
 func TestProfilesFreshDatabaseAndWriteCompatibility(t *testing.T) {
 	ctx := context.Background()
-	s, _, filename := migrationDB(t, 3)
+	s, _, filename := migrationDB(t, 5)
 	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM listening_profiles`))
-	execSQL(t, s, `INSERT INTO users (username,password) VALUES ('admin',X'1234')`)
+	_, err := s.SaveUser(ctx, db.SaveUserOpts{Username: "admin", Password: "testpassword"})
+	require.NoError(t, err)
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listening_profiles WHERE slug='default'`))
-	execSQL(t, s, `INSERT INTO users (username,password) VALUES ('second',X'1234')`)
+	_, err = s.SaveUser(ctx, db.SaveUserOpts{Username: "second", Password: "testpassword"})
+	require.NoError(t, err)
 	seedMusic(t, s)
 	ts := time.Unix(1700000000, 0)
 	for _, userID := range []int32{1, 2} {
@@ -150,14 +153,15 @@ func TestProfilesFreshDatabaseAndWriteCompatibility(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM api_keys WHERE profile_id=1`))
 	require.Error(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, ProfileID: 999, Time: ts}))
 
-	// Public identities need no login account or password.
-	execSQL(t, s, `INSERT INTO listening_profiles (id,slug,display_name,created_at) VALUES (10,'independent','Independent',123)`)
+	// Public identities have pending accounts without a usable password.
+	testfixtures.Profile(t, s, 10, "independent", "Independent", 123)
 	require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, ProfileID: 10, Time: ts}))
 	_, err = s.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: "independent", ProfileID: 10})
 	require.NoError(t, err)
 	execSQL(t, s, `DELETE FROM api_keys WHERE key='independent'`)
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=10`))
-	execSQL(t, s, `DELETE FROM users WHERE id=1`)
+	_, err = s.db.Exec(`DELETE FROM users WHERE id=1`)
+	require.Error(t, err)
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=1`))
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM api_keys WHERE profile_id=1`))
 	execSQL(t, s, `DELETE FROM listening_profiles WHERE id=2`)
@@ -297,9 +301,10 @@ func queryDigest(t *testing.T, conn *sql.DB, query string) [32]byte {
 }
 
 func TestProfileKeysCannotMoveAndRelayDoesNotReassign(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	ctx := context.Background()
-	execSQL(t, s, `INSERT INTO users(username,password,role) VALUES ('admin',X'1234','admin')`)
+	_, err := s.SaveUser(ctx, db.SaveUserOpts{Username: "admin", Password: "testpassword", Role: "admin"})
+	require.NoError(t, err)
 	require.NoError(t, s.InitializeLegacyRelay(ctx, "https://relay.test", "legacy-token"))
 	url, token, err := s.GetProfileRelay(ctx, 1)
 	require.NoError(t, err)
@@ -311,12 +316,13 @@ func TestProfileKeysCannotMoveAndRelayDoesNotReassign(t *testing.T) {
 	url, _, err = s.GetProfileRelay(ctx, 1)
 	require.NoError(t, err)
 	require.Empty(t, url)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES (2,'other','Other',123)`)
+	testfixtures.Profile(t, s, 2, "other", "Other", 123)
 	_, err = s.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: "fixed-profile", ProfileID: 1})
 	require.NoError(t, err)
 	_, err = s.db.Exec(`UPDATE api_keys SET profile_id=2 WHERE key='fixed-profile'`)
 	require.Error(t, err)
-	execSQL(t, s, `DELETE FROM listening_profiles WHERE id=1`)
+	execSQL(t, s, `UPDATE users SET role='admin',status='active',password=X'00' WHERE id=2`)
+	require.NoError(t, s.DeleteListeningProfile(ctx, 1, "Renamed", 0))
 	require.NoError(t, s.InitializeLegacyRelay(ctx, "https://relay.test", "legacy-token"))
 	url, _, err = s.GetProfileRelay(ctx, 2)
 	require.NoError(t, err)
@@ -384,7 +390,7 @@ func TestConsolidatedProfileMigrationRollsBackLateFailure(t *testing.T) {
 	require.NoError(t, err)
 	version, err = p.GetDBVersion(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, 4, version)
+	require.EqualValues(t, 5, version)
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://relay.test", "relay-token"))
 	url, token, err := s.GetProfileRelay(ctx, 1)
 	require.NoError(t, err)

@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from roadmap05_fixture import BASE, disposable_fixture
+from roadmap06_fixture import FIXTURE_PASSWORD_HASH
 from validate_multiuser import LBZ, WEB, Server
 from validate_admin_webui import Forms
 
@@ -41,6 +42,13 @@ def seed_server(binary,root,mode,large=False):
     directory.mkdir()
     with disposable_fixture(large) as source:
         shutil.copyfile(source,directory/'koito.db')
+    # Legacy fixtures need a proven administrator mapping; migration never promotes profiles.
+    with sqlite3.connect(directory/'koito.db') as conn:
+        conn.execute('PRAGMA foreign_keys=ON')
+        conn.execute("INSERT INTO users(id,username,role,password) VALUES(1,'validation-admin','admin',?)", (FIXTURE_PASSWORD_HASH.encode('ascii'),))
+        conn.execute('DELETE FROM listening_profiles WHERE id=(SELECT profile_id FROM legacy_user_profiles WHERE user_id=1)')
+        conn.execute('INSERT INTO legacy_user_profiles(user_id,profile_id) VALUES(1,1)')
+        conn.commit()
     return Server(binary,directory,environment={'KOITO_WEB_UI':mode,'TUNETRAIL_FORCE_TZ':'UTC'})
 
 
@@ -248,9 +256,9 @@ def run_legacy_and_merge(binary,root):
         assert checked_json(server,'alpha','/now-playing')['currently_playing']
         assert server.request('GET',WEB+'/stats')['listen_count']==3
         server.request('POST',WEB+'/profiles',{'display_name':'Reserved','slug':'admin'},admin=True,expected=400)
-        server.request('DELETE',WEB+'/profiles/alpha',{'display_name':'Alpha','listen_count':3},admin=True,expected=204)
-        server.request('GET',WEB+'/stats',expected=409)
-        assert server.request('GET',WEB+'/profiles')==[]
+        server.request('DELETE',WEB+'/profiles/alpha',{'display_name':'Alpha','listen_count':3},admin=True,expected=409)
+        assert server.request('GET',WEB+'/stats')['listen_count']==3
+        assert len(server.request('GET',WEB+'/profiles'))==1
         with sqlite3.connect(server.directory/'tunetrail.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
             assert db.execute('PRAGMA foreign_key_check').fetchall()==[]

@@ -129,7 +129,7 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 	}
 	var profileID sql.NullInt64
 	if err := tx.QueryRowContext(ctx, `SELECT CASE WHEN (SELECT COUNT(*) FROM listening_profiles)=1 THEN
-   (SELECT m.profile_id FROM legacy_user_profiles m JOIN users u ON u.id=m.user_id WHERE u.role='admin' LIMIT 1) END`).Scan(&profileID); err != nil {
+   (SELECT m.id FROM listening_profiles m JOIN users u ON u.id=m.user_id WHERE u.role='admin' LIMIT 1) END`).Scan(&profileID); err != nil {
 		return err
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO legacy_relay_binding(id,profile_id) VALUES (1,?)`, profileID); err != nil {
@@ -161,7 +161,7 @@ func validProfileIdentity(name, slug string) bool {
 	return strings.TrimSpace(name) != "" && len(name) <= 200 && slug != "assets" && len(slug) <= 64 && profileSlugPattern.MatchString(slug)
 }
 
-// CreateListeningProfile inserts the initial key atomically and reports duplicate slugs.
+// CreateListeningProfile writes a pending account, its public profile and initial key atomically.
 func (s *Sqlite) CreateListeningProfile(ctx context.Context, name, slug, icon, token string) (*models.ListeningProfile, error) {
 	if !validProfileIdentity(name, slug) {
 		return nil, db.ErrInvalidInput
@@ -171,7 +171,11 @@ func (s *Sqlite) CreateListeningProfile(ctx context.Context, name, slug, icon, t
 		return nil, err
 	}
 	defer tx.Rollback()
-	result, err := tx.ExecContext(ctx, `INSERT INTO listening_profiles(slug,display_name,avatar_icon,created_at) VALUES (?,?,NULLIF(?,''),unixepoch())`, slug, strings.TrimSpace(name), icon)
+	userID, err := insertPendingAccount(ctx, tx, slug)
+	if err != nil {
+		return nil, err
+	}
+	result, err := tx.ExecContext(ctx, `INSERT INTO listening_profiles(user_id,slug,display_name,avatar_icon,created_at) VALUES (?,?,?,NULLIF(?,''),unixepoch())`, userID, slug, strings.TrimSpace(name), icon)
 	if err != nil {
 		return nil, profileConstraint(err)
 	}
@@ -201,10 +205,35 @@ func (s *Sqlite) ProfileListenCount(ctx context.Context, id int32) (int64, error
 	err := s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM listens WHERE profile_id=?`, id).Scan(&count)
 	return count, err
 }
+
+// DeleteListeningProfile removes the confirmed pair and sessions, preserving the last admin.
 func (s *Sqlite) DeleteListeningProfile(ctx context.Context, id int32, name string, count int64) error {
-	// Confirm both fields in the DELETE itself: a new scrobble or rename requires reconfirmation.
-	result, err := s.db.ExecContext(ctx, `DELETE FROM listening_profiles WHERE id=? AND display_name=? AND (SELECT COUNT(*) FROM listens WHERE profile_id=?)=?`, id, name, id, count)
-	return affectedProfileRow(result, err)
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	// The first statement acquires the write lock before observing administrator counts.
+	var userID int64
+	err = tx.QueryRowContext(ctx, `DELETE FROM listening_profiles WHERE id=? AND display_name=? AND (SELECT COUNT(*) FROM listens WHERE profile_id=?)=? RETURNING user_id`, id, name, id, count).Scan(&userID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return db.ErrNotFound
+	}
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `DELETE FROM users WHERE id=? AND (role<>'admin' OR (SELECT COUNT(*) FROM users WHERE role='admin')>1)`, userID)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return db.ErrLastAdmin
+	}
+	return tx.Commit()
 }
 
 // profileConstraint maps SQLite uniqueness failures without hiding operational errors.

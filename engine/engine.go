@@ -21,7 +21,6 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/images"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	mbz "github.com/ebrgr/TuneTrail/internal/mbz"
-	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/go-chi/chi/v5"
@@ -146,32 +145,30 @@ func Run(
 	defer store.Close(ctx)
 
 	l.Debug().Msg("Engine: Checking for default user")
-	userCount, _ := store.CountUsers(ctx)
+	// Preserve configured defaults, but never elevate an existing account automatically.
+	userCount, err := store.CountUsers(ctx)
+	if err != nil {
+		return fmt.Errorf("count startup accounts: %w", err)
+	}
 	if userCount < 1 {
-		l.Info().Msg("Engine: Creating default user")
-		user, err := store.SaveUser(ctx, db.SaveUserOpts{
-			Username: cfg.DefaultUsername(),
-			Password: cfg.DefaultPassword(),
-			Role:     models.UserRoleAdmin,
-		})
-		if err != nil {
-			l.Fatal().Err(err).Msg("Engine: Failed to save default user in database")
-		}
 		apikey, err := utils.GenerateRandomString(48)
 		if err != nil {
-			l.Fatal().Err(err).Msg("Engine: Failed to generate default API key")
+			return err
 		}
-		label := "Default"
-		_, err = store.SaveApiKey(ctx, db.SaveApiKeyOpts{
-			Key:    apikey,
-			UserID: user.ID,
-			Label:  label,
-		})
+		created, err := store.BootstrapAdministrator(ctx, db.BootstrapAdminOpts{Username: cfg.DefaultUsername(), Password: cfg.DefaultPassword(), APIKey: apikey})
 		if err != nil {
-			l.Fatal().Err(err).Msg("Engine: Failed to save default API key in database")
+			return fmt.Errorf("bootstrap administrator: %w", err)
 		}
-		// The configured password must not be disclosed in startup logs.
-		l.Info().Msg("Engine: Default administrator created")
+		if created {
+			l.Info().Msg("Engine: Default administrator created")
+		}
+	}
+	administrator, err := store.GetAdminUser(ctx)
+	if err != nil {
+		return err
+	}
+	if administrator == nil {
+		l.Error().Msg("Engine: Accounts exist without an administrator; operator must recover access locally")
 	}
 
 	if cfg.LbzRelayEnabled() && cfg.LbzRelayUrl() != "" && cfg.LbzRelayToken() != "" {

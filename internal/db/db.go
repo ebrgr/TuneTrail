@@ -84,6 +84,7 @@ type ListenStore interface {
 }
 
 type UserStore interface {
+	BootstrapAdministrator(ctx context.Context, opts BootstrapAdminOpts) (bool, error)
 	SaveAuthenticatedSession(ctx context.Context, userID int32, passwordHash []byte, expiresAt time.Time, persistent bool) (*models.Session, error)
 	GetUserBySession(ctx context.Context, sessionId uuid.UUID) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)

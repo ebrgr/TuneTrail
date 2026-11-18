@@ -121,7 +121,7 @@ func schemaVersion(db *sql.DB) (int, error) {
 	if err := db.QueryRow(`SELECT COALESCE(MAX(version_id),0) FROM goose_db_version WHERE is_applied=1`).Scan(&version); err != nil {
 		return 0, fmt.Errorf("invalid migration history: %w", err)
 	}
-	if version < 1 || version > 4 {
+	if version < 1 || version > 5 {
 		return 0, fmt.Errorf("unsupported schema version %d", version)
 	}
 	return version, nil
@@ -156,21 +156,39 @@ func checkDatabase(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if version != 3 && version != 4 {
-		return fmt.Errorf("schema version %d is not consolidated v3/v4", version)
+	if version < 3 || version > 5 {
+		return fmt.Errorf("schema version %d is not consolidated v3/v4/v5", version)
 	}
-	for _, q := range []string{`SELECT id,slug,display_name,avatar_image_id,avatar_icon,created_at FROM listening_profiles LIMIT 0`, `SELECT user_id,profile_id FROM legacy_user_profiles LIMIT 0`, `SELECT profile_id FROM listens LIMIT 0`, `SELECT profile_id FROM api_keys LIMIT 0`, `SELECT profile_id,url,token FROM profile_relays LIMIT 0`, `SELECT id,profile_id FROM legacy_relay_binding LIMIT 0`} {
+	for _, q := range []string{`SELECT id,slug,display_name,avatar_image_id,avatar_icon,created_at FROM listening_profiles LIMIT 0`, `SELECT profile_id FROM listens LIMIT 0`, `SELECT profile_id FROM api_keys LIMIT 0`, `SELECT profile_id,url,token FROM profile_relays LIMIT 0`, `SELECT id,profile_id FROM legacy_relay_binding LIMIT 0`} {
 		rows, err := db.Query(q)
 		if err != nil {
-			return fmt.Errorf("incompatible v3 schema: %w", err)
+			return fmt.Errorf("incompatible v%d schema: %w", version, err)
 		}
 		rows.Close()
 	}
+	// Validate ownership and retire the legacy bridge only in the account schema.
+	if version < 5 {
+		if _, err := db.Exec(`SELECT user_id,profile_id FROM legacy_user_profiles LIMIT 0`); err != nil {
+			return err
+		}
+	} else {
+		var invalid int
+		if err := db.QueryRow(`SELECT (SELECT COUNT(*) FROM listening_profiles WHERE user_id IS NULL)+(SELECT COUNT(*) FROM users u WHERE NOT EXISTS(SELECT 1 FROM listening_profiles p WHERE p.user_id=u.id))+(SELECT COUNT(*) FROM sqlite_master WHERE name IN ('trg_legacy_user_profile','legacy_user_profiles'))`).Scan(&invalid); err != nil {
+			return err
+		}
+		if invalid != 0 {
+			return errors.New("incompatible v5 account/profile cardinality or legacy bridge")
+		}
+	}
 	// The consolidated profile schema depends on these safety triggers.
-	for _, name := range []string{"trg_api_key_profile_immutable", "trg_legacy_user_profile"} {
+	triggers := []string{"trg_api_key_profile_immutable"}
+	if version < 5 {
+		triggers = append(triggers, "trg_legacy_user_profile")
+	}
+	for _, name := range triggers {
 		var count int
 		if err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type='trigger' AND name=?`, name).Scan(&count); err != nil || count != 1 {
-			return fmt.Errorf("incompatible v3 schema: required trigger %s missing", name)
+			return fmt.Errorf("incompatible v%d schema: required trigger %s missing", version, name)
 		}
 	}
 	return validateSchemaLayout(db, version)
@@ -260,7 +278,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 				return "", err
 			}
 		}
-		if version < 4 {
+		if version < 5 {
 			backup, err := backupBeforeUpgrade(context.Background(), db, target, version)
 			if err != nil {
 				return "", err

@@ -12,6 +12,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"github.com/ebrgr/TuneTrail/internal/memkv"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -31,8 +32,10 @@ func pageStore(t *testing.T) *sqlite.Sqlite {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { s.Close(context.Background()) })
+	testfixtures.Profile(t, s, 1, "alpha", "A <script>alert(1)</script>", 1)
+	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
+	testfixtures.Profile(t, s, 3, "empty", "Empty", 1)
 	for _, q := range []string{
-		`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','A <script>alert(1)</script>',1),(2,'beta','Beta',1),(3,'empty','Empty',1)`,
 		`INSERT INTO artists(id) VALUES(1),(2)`,
 		`INSERT INTO artist_aliases VALUES(1,'Shared Artist','User',1),(2,'Second Artist','User',1)`,
 		`INSERT INTO releases(id,various_artists) VALUES(1,1),(2,0)`,

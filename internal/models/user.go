@@ -17,6 +17,7 @@ type User struct {
 	ID       int32    `json:"id"`
 	Username string   `json:"username"`
 	Role     UserRole `json:"role"` // 'admin' | 'user'
+	Status   string   `json:"-"`    // active or pending; never a public directory credential
 	Password []byte   `json:"-"`
 }
 

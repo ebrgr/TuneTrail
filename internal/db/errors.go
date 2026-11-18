@@ -16,3 +16,6 @@ var ErrAmbiguousTrack = errors.New("ambiguous track identity")
 
 // ErrTrackIdentityConflict marks incompatible recording IDs for a matched track.
 var ErrTrackIdentityConflict = errors.New("conflicting track identity")
+
+// ErrLastAdmin prevents removal of the last administrator and its profile.
+var ErrLastAdmin = errors.New("last administrator is required")

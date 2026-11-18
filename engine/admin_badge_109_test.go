@@ -67,7 +67,7 @@ func TestAdminBadgeHeadAndAmbiguousCookie(t *testing.T) {
 // TestAdminBadgeRequiresAdministratorRole rejects a valid session of a non-admin user.
 func TestAdminBadgeRequiresAdministratorRole(t *testing.T) {
 	a := newProfileTestApp(t)
-	require.NoError(t, a.store.Exec(`UPDATE users SET role='user'`))
+	require.NoError(t, a.store.Exec(`UPDATE users SET role='admin',status='active',password=X'01' WHERE id=2; UPDATE users SET role='user' WHERE id=1`))
 	w := a.request(http.MethodGet, "/default", "", "", true)
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "false", w.Header().Get("X-TuneTrail-Admin"))

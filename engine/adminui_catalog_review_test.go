@@ -139,7 +139,7 @@ func TestDeleteLastProfileKeepsAdministrator(t *testing.T) {
 	for _, p := range []struct {
 		id         int
 		slug, name string
-	}{{1, "default", "administrator"}, {2, "second", "Second"}, {3, "empty", "Empty"}} {
+	}{{2, "second", "Second"}, {3, "empty", "Empty"}, {1, "default", "administrator"}} {
 		r := httptest.NewRequest("GET", fmt.Sprintf("/admin/profile/%d/delete-review", p.id), nil)
 		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		w := httptest.NewRecorder()
@@ -153,15 +153,19 @@ func TestDeleteLastProfileKeepsAdministrator(t *testing.T) {
 		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 		w = httptest.NewRecorder()
 		h.ServeHTTP(w, r)
-		require.Equal(t, 303, w.Code, w.Body.String())
+		if p.id == 1 {
+			require.Equal(t, 409, w.Code, w.Body.String())
+		} else {
+			require.Equal(t, 303, w.Code, w.Body.String())
+		}
 	}
 	profiles, err := a.store.ListListeningProfiles(context.Background())
 	require.NoError(t, err)
-	require.Empty(t, profiles)
+	require.Len(t, profiles, 1)
 	r := httptest.NewRequest("GET", "/admin", nil)
 	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, 200, w.Code)
-	require.Contains(t, w.Body.String(), "No profiles yet")
+	require.Contains(t, w.Body.String(), "administrator")
 }

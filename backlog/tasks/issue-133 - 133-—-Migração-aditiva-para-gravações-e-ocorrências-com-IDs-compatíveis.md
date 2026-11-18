@@ -4,7 +4,7 @@ title: 133 — Migração aditiva para gravações e ocorrências com IDs compat
 status: Aberta
 assignee: []
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-17T16:18:00Z'
+updated_date: '2026-11-18T18:37:00Z'
 labels:
   - banco
 milestone: m-11
@@ -47,6 +47,15 @@ created: 2026-11-16T17:06:00Z
 ---
 
 Contrato da ISSUE-132 aceito (decision-008). Planejar ocorrências sem lançamento, múltiplas ocorrências por gravação/lançamento, eventos com identidade própria e migração 1:1 preservando IDs/URLs. Coordenar ledger com ISSUE-080. Exigir ponte de compatibilidade ou corte coordenado entre leitores/escritores antes de habilitar o novo modelo.
+
+---
+
+author: codex
+created: 2026-11-18T18:37:00Z
+
+---
+
+Coordenação de schema aprovada pelo usuário/Advisor em 18/11/2026: a ISSUE-158 usa 005_accounts_profiles.sql (v5), após a v4 publicada pela 080. Esta issue deve usar a próxima versão disponível, v6 ou posterior, sem editar migrações já aplicadas; pipeline e identidade musical não fazem parte da 158.
 
 ---
 <!-- COMMENTS:END -->

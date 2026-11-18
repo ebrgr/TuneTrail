@@ -2,6 +2,7 @@
   "media.sections": "Seções da mídia",
   "media.overview": "Visão geral",
   "media.graphs": "Gráficos",
+  "admin.message.last_administrator_required": "o último administrador não pode ser removido ou rebaixado",
   "ui.with_labels": "Com rótulos",
   "ui.icons_only": "Só ícones",
 

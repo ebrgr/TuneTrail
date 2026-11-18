@@ -42,6 +42,7 @@ def snapshot(database):
         for table in tables:
             # These tables gain fields during migration; hash the legacy columns.
             columns = {"listens": "track_id,listened_at,user_id,client",
+                       "users": "id,username,role,password",
                        "api_keys": "id,key,user_id,created_at,label"}.get(table, "*")
             values = sorted(repr(row) for row in conn.execute(f'SELECT {columns} FROM "{table}"'))
             preserved[table] = hashlib.sha256("\n".join(values).encode()).hexdigest()

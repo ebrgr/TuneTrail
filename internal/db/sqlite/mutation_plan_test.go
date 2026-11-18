@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -63,9 +64,10 @@ func TestPlanRollbackAndIntegrity(t *testing.T) {
 }
 
 func TestWALSnapshotRaceMapsToConflict(t *testing.T) {
-	s, _, filename := migrationDB(t, 3)
+	s, _, filename := migrationDB(t, 5)
 	ctx := context.Background()
-	for _, q := range []string{`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'wal-test','WAL',1)`, `INSERT INTO artists(id) VALUES(1)`, `INSERT INTO artist_aliases VALUES(1,'Artist','User',1)`, `INSERT INTO releases(id,various_artists) VALUES(1,0)`, `INSERT INTO release_aliases VALUES(1,'Album','User',1)`, `INSERT INTO artist_releases VALUES(1,1,1)`, `INSERT INTO tracks(id,release_id,duration) VALUES(1,1,1),(2,1,1)`, `INSERT INTO track_aliases VALUES(1,'Source','User',1),(2,'Target','User',1)`, `INSERT INTO artist_tracks VALUES(1,1,1),(1,2,1)`, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,100)`} {
+	testfixtures.Profile(t, s, 1, "wal-test", "WAL", 1)
+	for _, q := range []string{`INSERT INTO artists(id) VALUES(1)`, `INSERT INTO artist_aliases VALUES(1,'Artist','User',1)`, `INSERT INTO releases(id,various_artists) VALUES(1,0)`, `INSERT INTO release_aliases VALUES(1,'Album','User',1)`, `INSERT INTO artist_releases VALUES(1,1,1)`, `INSERT INTO tracks(id,release_id,duration) VALUES(1,1,1),(2,1,1)`, `INSERT INTO track_aliases VALUES(1,'Source','User',1),(2,'Target','User',1)`, `INSERT INTO artist_tracks VALUES(1,1,1),(1,2,1)`, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,100)`} {
 		require.NoError(t, s.Exec(q))
 	}
 	tx, err := s.db.BeginTx(ctx, nil)

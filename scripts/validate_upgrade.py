@@ -68,7 +68,7 @@ def validate(binary, source, work):
             assert migrated.execute("SELECT COUNT(*) FROM listens l LEFT JOIN listening_profiles p ON p.id=l.profile_id WHERE p.id IS NULL").fetchone()[0] == 0
             assert migrated.execute("SELECT COUNT(*) FROM api_keys k LEFT JOIN listening_profiles p ON p.id=k.profile_id WHERE p.id IS NULL").fetchone()[0] == 0
             for profile in public_profiles:
-                mapped = migrated.execute("SELECT user_id FROM legacy_user_profiles WHERE profile_id=?", (profile["id"],)).fetchone()
+                mapped = migrated.execute("SELECT user_id FROM listening_profiles WHERE id=?", (profile["id"],)).fetchone()
                 assert mapped is not None, "Legacy user-to-profile association missing"
                 with closing(connect_ro(source)) as original:
                     expected = original.execute("SELECT COUNT(*) FROM listens WHERE user_id=?", mapped).fetchone()[0]

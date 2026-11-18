@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/memkv"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -45,7 +46,8 @@ func newProfileTestApp(t *testing.T) *profileTestApp {
 	t.Cleanup(func() { s.Close(context.Background()) })
 	admin, err := s.SaveUser(context.Background(), db.SaveUserOpts{Username: "administrator", Password: "test-password", Role: models.UserRoleAdmin})
 	require.NoError(t, err)
-	require.NoError(t, s.Exec(`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES (2,'second','Second',123),(3,'empty','Empty',123)`))
+	testfixtures.Profile(t, s, 2, "second", "Second", 123)
+	testfixtures.Profile(t, s, 3, "empty", "Empty", 123)
 	for _, k := range []struct {
 		key string
 		id  int32

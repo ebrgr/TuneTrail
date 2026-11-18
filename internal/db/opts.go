@@ -182,3 +182,6 @@ type GetInterestOpts struct {
 	ArtistID int32
 	TrackID  int32
 }
+
+// BootstrapAdminOpts supplies the configured first account and its initial machine key.
+type BootstrapAdminOpts struct{ Username, Password, APIKey string }

@@ -90,6 +90,8 @@ func TestDeletedProfileRejectsPreviouslyAuthorizedListen(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("request did not reach barrier")
 	}
+	// Keep a second administrator while exercising deletion of this authorized profile.
+	require.NoError(t, a.store.Exec(`UPDATE users SET role='admin',status='active',password=X'01' WHERE id=2`))
 	err = a.store.DeleteListeningProfile(ctx, p.ID, p.DisplayName, 0)
 	close(release)
 	require.NoError(t, err)

@@ -2,6 +2,7 @@ package summary_test
 
 import (
 	"context"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"testing"
 	"time"
 
@@ -20,9 +21,7 @@ func TestGenerateSummaryEmptySQLite(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer store.Close(context.Background())
-	if err := store.Exec(`INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'empty','Empty',1)`); err != nil {
-		t.Fatal(err)
-	}
+	testfixtures.Profile(t, store, 1, "empty", "Empty", 1)
 	result, err := summary.GenerateSummary(context.Background(), store, 1, db.Timeframe{Year: 2024, Month: 2, Timezone: time.UTC}, "February")
 	if err != nil {
 		t.Fatal(err)

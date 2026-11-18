@@ -47,12 +47,13 @@ func validateAndNormalizePassword(password string) (string, error) {
 	return password, nil
 }
 
+// GetUserByUsername includes activation state for password authentication.
 func (s *Sqlite) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	var u models.User
 	var role string
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, username, role, password FROM users WHERE username = ?`,
-		strings.ToLower(username)).Scan(&u.ID, &u.Username, &role, &u.Password)
+		`SELECT id, username, role, password, status FROM users WHERE username = ?`,
+		strings.ToLower(username)).Scan(&u.ID, &u.Username, &role, &u.Password, &u.Status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	} else if err != nil {
@@ -62,12 +63,13 @@ func (s *Sqlite) GetUserByUsername(ctx context.Context, username string) (*model
 	return &u, nil
 }
 
+// GetAdminUser retains administrative identity and its activation state.
 func (s *Sqlite) GetAdminUser(ctx context.Context) (*models.User, error) {
 	var u models.User
 	var role string
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, username, role, password FROM users WHERE role = 'admin' LIMIT 1`,
-	).Scan(&u.ID, &u.Username, &role, &u.Password)
+		`SELECT id, username, role, password, status FROM users WHERE role = 'admin' LIMIT 1`,
+	).Scan(&u.ID, &u.Username, &role, &u.Password, &u.Status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	} else if err != nil {
@@ -77,13 +79,14 @@ func (s *Sqlite) GetAdminUser(ctx context.Context) (*models.User, error) {
 	return &u, nil
 }
 
+// GetUserByApiKey preserves legacy attribution without granting account authentication.
 func (s *Sqlite) GetUserByApiKey(ctx context.Context, key string) (*models.User, error) {
 	var u models.User
 	var role string
 	err := s.db.QueryRowContext(ctx, `
-		SELECT u.id, u.username, u.role, u.password
+		SELECT u.id, u.username, u.role, u.password, u.status
 		FROM users u JOIN api_keys ak ON u.id = ak.user_id
-		WHERE ak.key = ? LIMIT 1`, key).Scan(&u.ID, &u.Username, &role, &u.Password)
+		WHERE ak.key = ? LIMIT 1`, key).Scan(&u.ID, &u.Username, &role, &u.Password, &u.Status)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	} else if err != nil {
@@ -93,37 +96,43 @@ func (s *Sqlite) GetUserByApiKey(ctx context.Context, key string) (*models.User,
 	return &u, nil
 }
 
+// SaveUser writes an active account and its unique profile atomically.
 func (s *Sqlite) SaveUser(ctx context.Context, opts db.SaveUserOpts) (*models.User, error) {
-	if err := validateUsername(opts.Username); err != nil {
-		return nil, fmt.Errorf("SaveUser: %w", err)
-	}
-	pw, err := validateAndNormalizePassword(opts.Password)
+	hash, err := accountPassword(opts.Username, opts.Password)
 	if err != nil {
 		return nil, fmt.Errorf("SaveUser: %w", err)
 	}
 	if opts.Role == "" {
 		opts.Role = models.UserRoleUser
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("SaveUser: bcrypt: %w", err)
+		return nil, err
 	}
-	res, err := s.db.ExecContext(ctx,
-		`INSERT INTO users (username, role, password) VALUES (?,?,?)`,
-		strings.ToLower(opts.Username), string(opts.Role), hash,
-	)
+	defer tx.Rollback()
+	res, err := tx.ExecContext(ctx, `INSERT INTO users(username,role,password,status) VALUES(?,?,?,'active')`, strings.ToLower(opts.Username), string(opts.Role), hash)
 	if err != nil {
 		return nil, fmt.Errorf("SaveUser: insert: %w", err)
 	}
-	id64, _ := res.LastInsertId()
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+	if err = insertAccountProfile(ctx, tx, id64, strings.ToLower(opts.Username)); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
 	return &models.User{
 		ID:       int32(id64),
 		Username: strings.ToLower(opts.Username),
+		Status:   "active",
 		Role:     opts.Role,
 	}, nil
 }
 
-// UpdateUser revokes sessions atomically with a successful password change.
+// UpdateUser activates the account and revokes sessions atomically with a password change.
 func (s *Sqlite) UpdateUser(ctx context.Context, opts db.UpdateUserOpts) error {
 	if opts.ID == 0 {
 		return errors.New("UpdateUser: user id is required")
@@ -154,7 +163,7 @@ func (s *Sqlite) UpdateUser(ctx context.Context, opts db.UpdateUserOpts) error {
 			return fmt.Errorf("UpdateUser: bcrypt: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx,
-			`UPDATE users SET password = ? WHERE id = ?`, hash, opts.ID); err != nil {
+			`UPDATE users SET password = ?, status='active' WHERE id = ?`, hash, opts.ID); err != nil {
 			return fmt.Errorf("UpdateUser: password: %w", err)
 		}
 		if _, err := tx.ExecContext(ctx, `DELETE FROM sessions WHERE user_id = ?`, opts.ID); err != nil {

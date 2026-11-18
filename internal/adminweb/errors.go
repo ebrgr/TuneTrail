@@ -28,7 +28,7 @@ func ErrorStatus(err error) int {
 		return 404
 	case errors.Is(err, ErrMethod):
 		return 405
-	case errors.Is(err, db.ErrConflict):
+	case errors.Is(err, db.ErrConflict), errors.Is(err, db.ErrLastAdmin):
 		return 409
 	case errors.Is(err, ErrTooLarge), errors.Is(err, imagepipeline.ErrTooLarge):
 		return 413
@@ -41,6 +41,9 @@ func ErrorStatus(err error) int {
 
 // PublicError is shared by JSON errors and future HTML status pages.
 func PublicError(err error) string {
+	if errors.Is(err, db.ErrLastAdmin) {
+		return "the last administrator cannot be removed or demoted"
+	}
 	if errors.Is(err, imagepipeline.ErrFormat) || errors.Is(err, imagepipeline.ErrAnimation) {
 		return "image must be JPEG, PNG or static WebP"
 	}

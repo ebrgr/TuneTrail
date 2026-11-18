@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"testing"
 	"time"
 
@@ -11,9 +12,11 @@ import (
 
 // TestProfileScopeAndCatalogEscape documents scoped reads and the intentional internal global context.
 func TestProfileScopeAndCatalogEscape(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 5)
 	seedMediaRead(t, s)
-	execSQL(t, s, `INSERT INTO listening_profiles(id,slug,display_name,created_at) VALUES(1,'alpha','Alpha',1),(2,'beta','Beta',1),(3,'empty','Empty',1)`)
+	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
+	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
+	testfixtures.Profile(t, s, 3, "empty", "Empty", 1)
 	for _, profile := range []int32{1, 1, 2} {
 		stamp := int64(1700000000) + int64(profile)
 		if profile == 1 && scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=1`) > 0 {
