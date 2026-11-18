@@ -1,11 +1,11 @@
 ---
 id: ISSUE-158
 title: 158 — Schema e migração de contas e perfis 1:1
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-18T21:20:00Z'
+updated_date: '2026-11-18T21:23:00Z'
 labels:
   - banco
   - admin
@@ -112,6 +112,24 @@ created: 2026-11-18T21:20:00Z
 ---
 
 Correções dos dois riscos do Reviewer concluídas a pedido do usuário, sem re-delegação. SaveUser/Bootstrap usam slug livre com sufixos -2..-9 e ErrConflict tipado com rollback se esgotados. Na 005 ainda não publicada, N+1 candidatos garantem slug livre para N perfis existentes, inclusive faixa curta ocupada, sem bloquear o upgrade por esse motivo. Logins pendentes explicitam lowercase e truncamento reservando o sufixo; cada candidato passa por validateUsername, e o plano SQL valida a mesma projeção ASCII/32. Testes novos de colisão em SaveUser/migração, esgotamento, slugs de 64 caracteres e hífens passaram. make check passou (13/13 e2e e referência idêntica); go test -race ./internal/db/sqlite passou. Revalidação em cópias v4 (80) e v3 (79+1): dados, backup/restore e reinício preservados, origens inalteradas. Evidências atualizadas em VERIFICACAO.md e JSON; parecer original incluído. Defaults admin/changeme configuráveis, equivalência NOT NULL via triggers e tabelas pai preservados. Mantido Em andamento, sem push/merge/publish/Done.
+
+---
+
+author: advisor
+created: 2026-11-18T21:22:00Z
+
+---
+
+Parecer do Advisor (2a passagem, d414e9f): APROVADO. Riscos do Reviewer resolvidos: (a) slug de fallback livre em SaveUser/BootstrapAdministrator (accounts.go insertAccountProfile, -2..-9, ErrConflict sem conta orfa) e na 005 (N+1 candidatos; bases user-<id> nao se sobrepoem, logo a 005 nao aborta por slug; 005 ausente de qualquer tag publicada, v0.35 incluida, e da main); (b) login pendente limitado a 32, minusculo e validado por validateUsername no Go e por CHECK equivalente em account_plan no SQL. Ponto critico do 1o parecer intacto: sem DROP/RENAME de users/listening_profiles, transacao unica, base vazia ok, rollback em v4. ErrConflict->409 e ErrInvalidInput->400 via profile_store.go:171 e adminweb/errors.go. Testes novos passam (rodados). Ressalvas nao bloqueantes: 005:33 o fallback 'profile-<id>' nao e checado contra usuarios existentes nem contra outro slug literal 'profile-<id>' -> aborta com rollback seguro (caso aceito no 1o parecer; esquema diverge do Go, que usa sufixos -2..-9, ambos validos); SaveUser nao tem chamador em runtime; CHANGELOG [Unreleased] vai conflitar com a v0.35 no rebase. Pode ir a aceite.
+
+---
+
+author: claude
+created: 2026-11-18T21:23:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-18, incluindo o desvio do AC1 (user_id sem NOT NULL literal, imposto por UNIQUE INDEX, triggers e checkDatabase) e o admin padrão admin/changeme mantido. Pareceres: Advisor (plano e 2ª passagem APROVADO) e Reviewer (APROVADO COM RESSALVAS, riscos corrigidos em d414e9f).
 
 ---
 <!-- COMMENTS:END -->
