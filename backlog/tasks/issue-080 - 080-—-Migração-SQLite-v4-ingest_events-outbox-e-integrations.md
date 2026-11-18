@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-18T16:35:00Z'
+updated_date: '2026-11-18T16:36:00Z'
 labels:
   - banco
   - ingestao
@@ -95,6 +95,15 @@ created: 2026-11-18T16:35:00Z
 ---
 
 Aceite do usuário (2026-11-18) após a revisão com o caminho Koito v2 → v4 testado com bancos reais do Koito upstream e a correção dos índices do PR #257. Publicação com push autorizada pelo usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-18T16:36:00Z
+
+---
+
+Publicação: versão 0.34 (tag `v0.34`), branch `feat/issue-080-migracao-sqlite-v4-ingest-events` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.34] - 2026-11-18
+
+- No user-visible changes (ISSUE-080).
+
 ## [0.33] - 2026-11-17
 
 - A Home mostra KPIs do período com comparação, tocando agora no topo e seletor de período fixo, com totais históricos ao lado do heatmap fluido, tooltips nas células e variações ao lado dos números (“Mais”, “Menos” ou “Igual”) (ISSUE-072).
