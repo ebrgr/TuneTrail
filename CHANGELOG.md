@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.36] - 2026-11-18
+
 - Perfis passam a ter contas individuais; a exclusão do perfil do último administrador é impedida (ISSUE-158).
 
 ## [0.35] - 2026-11-18

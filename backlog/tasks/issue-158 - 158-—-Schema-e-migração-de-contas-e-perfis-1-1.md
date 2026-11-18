@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-18T21:23:00Z'
+updated_date: '2026-11-18T21:25:00Z'
 labels:
   - banco
   - admin
@@ -130,6 +130,15 @@ created: 2026-11-18T21:23:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-18, incluindo o desvio do AC1 (user_id sem NOT NULL literal, imposto por UNIQUE INDEX, triggers e checkDatabase) e o admin padrão admin/changeme mantido. Pareceres: Advisor (plano e 2ª passagem APROVADO) e Reviewer (APROVADO COM RESSALVAS, riscos corrigidos em d414e9f).
+
+---
+
+author: ebrgr
+created: 2026-11-18T21:25:00Z
+
+---
+
+Publicação: versão 0.36 (tag `v0.36`), branch `feat/issue-158-schema-e-migracao-de-contas` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
