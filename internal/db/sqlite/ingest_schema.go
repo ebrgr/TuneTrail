@@ -50,16 +50,13 @@ func validateSchemaLayout(db *sql.DB, version int) error {
 		return err
 	}
 	// Check the upgrade source too, before a rebuild can discard an unknown object.
-	if version >= 7 {
-		return validateIdentityObjects(db, expectedObjects)
-	}
-	return nil
+	return validateIdentityObjects(db, expectedObjects)
 }
 
 // validateIdentityObjects rejects obsolete or extra objects on tables touched by 008.
 func validateIdentityObjects(db *sql.DB, expected map[[2]string]struct{}) error {
 	rows, err := db.Query(`SELECT type,name FROM sqlite_master WHERE sql IS NOT NULL
-		AND tbl_name IN ('tracks','recordings','occurrences','listens','ingest_events',
+		AND tbl_name IN ('tracks','recordings','occurrences','event_origins','listens','ingest_events',
 		                 'ingest_event_details','ingest_observations','ingest_revisions','outbox','outbox_details')`)
 	if err != nil {
 		return fmt.Errorf("inspect identity schema: %w", err)

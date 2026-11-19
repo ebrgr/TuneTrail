@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Para migrar o banco da v7 à v8, pare o serviço em uma janela de manutenção e reserve pelo menos três vezes o tamanho do banco tanto no diretório do banco quanto no diretório temporário do SQLite (TMPDIR). O upgrade cria o backup automático `.pre-recording-identity-*.bak`. As versões 0.41 e 0.42 recusam o banco v8. Restaurar o backup perde as escritas feitas após o upgrade, e as entregas já feitas pelo relay permanecem no destino (ISSUE-133).
+
 ## [0.42] - 2026-11-19
 
 - Administradores podem gerenciar contas e perfis juntos, atribuir o papel de administrador e emitir tokens de ativação e recuperação de uso único (ISSUE-162).

@@ -140,6 +140,8 @@ func TestRecordingIdentityExactDeletion(t *testing.T) {
 	require.NoError(t, err)
 	execSQL(t, s, `DROP INDEX idx_listens_legacy_identity;
 		DROP TRIGGER trg_identity_legacy_occurrence;
+		DROP TRIGGER trg_ingest_event_inactive;
+		DROP TRIGGER trg_ingest_event_inactive_update;
 		DROP TRIGGER trg_ingest_revision_inactive;
 		DROP TRIGGER trg_outbox_inactive;
 		INSERT INTO occurrences(recording_id,release_id) SELECT recording_id,release_id FROM occurrences WHERE id=1;
@@ -249,4 +251,74 @@ func TestRecordingIdentityBackupRestore(t *testing.T) {
 	require.NoError(t, restored.Close())
 	_, err = bootstrap(restoredDir, false)
 	require.NoError(t, err)
+}
+
+// TestRecordingIdentityReferenceOrigins exercises the removable gate and permanent FK.
+func TestRecordingIdentityReferenceOrigins(t *testing.T) {
+	s, provider, _ := migrationDB(t, 7)
+	seedIdentityHistory(t, s)
+	_, err := provider.Up(context.Background())
+	require.NoError(t, err)
+	require.Equal(t, 1, scalar(t, s, `PRAGMA foreign_keys`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM event_origins WHERE origin='legacy'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM event_origins`))
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,99)`)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE listened_at=99 AND origin='legacy'`))
+	_, err = s.db.Exec(`DELETE FROM event_origins WHERE origin='legacy'`)
+	require.ErrorContains(t, err, "FOREIGN KEY")
+	execSQL(t, s, `DROP TRIGGER trg_identity_legacy_listen_insert`)
+	const insert = `INSERT INTO listens(profile_id,track_id,listened_at,origin) VALUES(1,1,100,'fixture')`
+	_, err = s.db.Exec(insert)
+	require.ErrorContains(t, err, "FOREIGN KEY")
+	execSQL(t, s, `INSERT INTO event_origins VALUES('fixture','Test-only origin')`)
+	execSQL(t, s, insert)
+	require.NoError(t, checkIntegrity(s.db))
+}
+
+// TestRecordingIdentityAllocator verifies that ordinary writes never reuse deleted occurrence IDs.
+func TestRecordingIdentityAllocator(t *testing.T) {
+	ctx := context.Background()
+	s, provider, _ := migrationDB(t, 7)
+	seedIdentityHistory(t, s)
+	_, err := provider.Up(ctx)
+	require.NoError(t, err)
+	execSQL(t, s, `DELETE FROM tracks WHERE id=70; DROP TRIGGER trg_identity_legacy_occurrence;
+		INSERT INTO occurrences(recording_id,release_id) SELECT recording_id,1 FROM occurrences WHERE id=1`)
+	independent := scalar(t, s, `SELECT id FROM occurrences WHERE legacy_track_id IS NULL`)
+	require.Greater(t, independent, 70)
+	_, err = s.db.Exec(`INSERT INTO tracks(id,release_id) VALUES(?,1)`, independent)
+	require.ErrorContains(t, err, "Occurrence ID already exists")
+	track, err := s.SaveTrack(ctx, db.SaveTrackOpts{AlbumID: 1, ArtistIDs: []int32{1}, Title: "New track"})
+	require.NoError(t, err)
+	require.Greater(t, int(track.ID), independent)
+	require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: track.ID, Time: time.Unix(90, 0)}))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens l JOIN occurrences o ON o.id=l.track_id
+		WHERE l.listened_at=90 AND o.legacy_track_id=?`, track.ID))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id IN (70,?)`, independent))
+}
+
+// TestRecordingIdentityReceiptGate keeps shadow decisions valid while rejecting resolution.
+func TestRecordingIdentityReceiptGate(t *testing.T) {
+	s, provider, _ := migrationDB(t, 7)
+	seedIdentityHistory(t, s)
+	_, err := provider.Up(context.Background())
+	require.NoError(t, err)
+	execSQL(t, s, `UPDATE ingest_events SET duplicate_decision='same',state='pending_duplicate'`)
+	for _, q := range []string{
+		`UPDATE ingest_events SET state='retryable'`,
+		`UPDATE ingest_events SET identity_status='resolved'`,
+		`UPDATE ingest_events SET occurrence_id=1`,
+		`UPDATE ingest_events SET recording_id=1`,
+		`UPDATE ingest_events SET resolution_version=1`,
+		`UPDATE ingest_events SET closed_at=1`,
+		`UPDATE ingest_events SET state='accepted',event_id=(SELECT event_id FROM listens WHERE rowid=10)`,
+		`INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,
+			batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,state)
+			SELECT 'blocked',profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,'retryable'
+			FROM ingest_events WHERE receipt_id='shadow'`,
+	} {
+		_, err := s.db.Exec(q)
+		require.ErrorContains(t, err, "Receipt resolution requires pipeline activation", q)
+	}
 }

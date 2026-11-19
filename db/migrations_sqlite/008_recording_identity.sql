@@ -20,7 +20,9 @@ INSERT INTO identity_assertion VALUES ('inactive queues',
 
 CREATE TABLE recordings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    musicbrainz_id TEXT UNIQUE
+    musicbrainz_id TEXT UNIQUE,
+    mbid_source TEXT NOT NULL DEFAULT 'legacy_declared'
+        CHECK(mbid_source IN ('legacy_declared','validated'))
 );
 CREATE TABLE occurrences (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,6 +56,12 @@ INSERT INTO identity_assertion VALUES ('track mapping',
     ));
 
 CREATE TEMP TABLE old_listens AS SELECT rowid AS legacy_rowid, * FROM listens;
+-- The activation migration can register origins without rebuilding listens.
+CREATE TABLE event_origins (
+    origin TEXT NOT NULL PRIMARY KEY CHECK(length(origin)>0),
+    description TEXT NOT NULL
+);
+INSERT INTO event_origins VALUES ('legacy','Legacy listen or backfilled history');
 CREATE TABLE listens_new (
     profile_id INTEGER NOT NULL REFERENCES listening_profiles(id) ON DELETE CASCADE,
     track_id INTEGER NOT NULL REFERENCES occurrences(id) ON DELETE CASCADE,
@@ -61,11 +69,11 @@ CREATE TABLE listens_new (
     user_id INTEGER,
     client TEXT NOT NULL DEFAULT '',
     event_id TEXT NOT NULL PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))) CHECK(length(event_id)>0),
-    origin TEXT NOT NULL DEFAULT 'legacy' CHECK(length(origin)>0),
+    origin TEXT NOT NULL DEFAULT 'legacy' REFERENCES event_origins(origin) ON DELETE RESTRICT,
     UNIQUE(profile_id,event_id)
 );
-INSERT INTO listens_new (rowid,profile_id,track_id,listened_at,user_id,client)
-SELECT legacy_rowid,profile_id,track_id,listened_at,user_id,client FROM old_listens;
+INSERT INTO listens_new (rowid,profile_id,track_id,listened_at,user_id,client,origin)
+SELECT legacy_rowid,profile_id,track_id,listened_at,user_id,client,'legacy' FROM old_listens;
 DROP TABLE listens;
 ALTER TABLE listens_new RENAME TO listens;
 CREATE UNIQUE INDEX idx_listens_legacy_identity ON listens(profile_id,track_id,listened_at);
@@ -144,6 +152,8 @@ CREATE UNIQUE INDEX idx_ingest_client_key ON ingest_events(profile_id,source_ins
 CREATE UNIQUE INDEX idx_ingest_file_key ON ingest_events(profile_id,source_instance_id,file_format,format_version,file_digest,item_ordinal) WHERE file_digest IS NOT NULL;
 CREATE INDEX idx_ingest_queue ON ingest_events(state,next_attempt_at,received_at) WHERE closed_at IS NULL;
 CREATE INDEX idx_ingest_event ON ingest_events(profile_id,event_id);
+CREATE INDEX idx_ingest_occurrence ON ingest_events(occurrence_id) WHERE occurrence_id IS NOT NULL;
+CREATE INDEX idx_ingest_recording ON ingest_events(recording_id) WHERE recording_id IS NOT NULL;
 CREATE INDEX idx_ingest_profile_time ON ingest_events(profile_id,listened_at);
 
 CREATE TABLE ingest_event_details (
@@ -265,6 +275,28 @@ INSERT INTO ingest_revisions SELECT * FROM old_ingest_revisions;
 INSERT INTO outbox SELECT * FROM old_outbox;
 INSERT INTO outbox_details SELECT * FROM old_outbox_details;
 
+-- +goose StatementBegin
+CREATE TRIGGER trg_ingest_event_inactive BEFORE INSERT ON ingest_events
+WHEN NEW.state NOT IN ('received','pending_identity','pending_duplicate','invalid')
+  OR NEW.identity_status NOT IN ('unresolved','pending','invalid')
+  OR NEW.event_id IS NOT NULL OR NEW.occurrence_id IS NOT NULL OR NEW.recording_id IS NOT NULL
+  OR NEW.resolution_version<>0 OR (NEW.closed_at IS NOT NULL AND NEW.state<>'invalid')
+BEGIN
+    SELECT RAISE(ABORT,'Receipt resolution requires pipeline activation');
+END;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TRIGGER trg_ingest_event_inactive_update BEFORE UPDATE ON ingest_events
+WHEN NEW.state NOT IN ('received','pending_identity','pending_duplicate','invalid')
+  OR NEW.identity_status NOT IN ('unresolved','pending','invalid')
+  OR NEW.event_id IS NOT NULL OR NEW.occurrence_id IS NOT NULL OR NEW.recording_id IS NOT NULL
+  OR NEW.resolution_version<>0 OR (NEW.closed_at IS NOT NULL AND NEW.state<>'invalid')
+BEGIN
+    SELECT RAISE(ABORT,'Receipt resolution requires pipeline activation');
+END;
+-- +goose StatementEnd
+
 -- The legacy writers still operate on tracks and use the full listen conflict index.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_track_insert AFTER INSERT ON tracks
@@ -280,8 +312,9 @@ END;
 CREATE TRIGGER trg_identity_track_update AFTER UPDATE OF release_id,musicbrainz_id ON tracks
 BEGIN
     UPDATE occurrences SET release_id=NEW.release_id WHERE legacy_track_id=NEW.id;
-    UPDATE recordings SET musicbrainz_id=NEW.musicbrainz_id
-      WHERE id=(SELECT recording_id FROM occurrences WHERE legacy_track_id=NEW.id);
+    UPDATE recordings SET musicbrainz_id=NEW.musicbrainz_id, mbid_source='legacy_declared'
+      WHERE id=(SELECT recording_id FROM occurrences WHERE legacy_track_id=NEW.id)
+        AND NEW.musicbrainz_id IS NOT OLD.musicbrainz_id;
 END;
 -- +goose StatementEnd
 -- +goose StatementBegin

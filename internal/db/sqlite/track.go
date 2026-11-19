@@ -174,8 +174,11 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 	}
 	defer tx.Rollback()
 
+	// Allocate past the occurrence high-water mark even after deleting the highest track.
 	res, err := tx.ExecContext(ctx,
-		`INSERT INTO tracks (musicbrainz_id, release_id, duration) VALUES (?,?,?)`,
+		`INSERT INTO tracks (id, musicbrainz_id, release_id, duration)
+		 VALUES (max(coalesce((SELECT seq FROM sqlite_sequence WHERE name='occurrences'),0),
+		             coalesce((SELECT max(id) FROM tracks),0))+1,?,?,?)`,
 		nullableUUID(&opts.RecordingMbzID), opts.AlbumID, opts.Duration,
 	)
 	if err != nil {
