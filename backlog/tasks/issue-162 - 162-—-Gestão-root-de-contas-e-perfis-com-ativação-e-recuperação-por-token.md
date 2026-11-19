@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T17:32:00Z'
+updated_date: '2026-11-19T17:44:00Z'
 labels:
   - admin
   - banco
@@ -18,6 +18,7 @@ dependencies:
 references:
   - backlog/decisions/decision-010
   - backlog/evidencias/issue-162/VERIFICACAO.md
+  - backlog/evidencias/issue-162/PARECER-REVIEWER.md
 documentation:
   - doc-041
 priority: high
@@ -92,6 +93,24 @@ created: 2026-11-19T17:32:00Z
 ---
 
 Verificação: make check passou com 13/13 jornadas E2E e go test -race passou nos seis pacotes verificados, inclusive disputa em WAL. Os três critérios foram comprovados. Inventário de rotas, ciclo do token e evidências em backlog/evidencias/issue-162/VERIFICACAO.md. Tarefa segue Em andamento.
+
+---
+
+author: reviewer
+created: 2026-11-19T17:36:00Z
+
+---
+
+Parecer do Reviewer: APROVADO COM RESSALVAS, sem bug bloqueante. Riscos: (1) o POST /admin/redeem é público, faz bcrypt antes de comparar o digest e fica fora do limitador de login; sugestão: bcrypt só após o acerto, com consumo atômico, e/ou reaproveitar o limitador existente (decisão do usuário); (2) mudar o papel não invalida o token pendente; (3) no rebase, scripts/validate_ingest_shadow.py ainda faz check(database, 6); (4) CreateListeningProfile/DeleteListeningProfile sem sessão continuam na interface; (5) lacunas de teste: finalidade divergente, GET/HEAD/query no resgate, papel com token vivo. Tokens (256 bits, SHA-256, tempo constante, uso único atômico, TTL 24h/30min), vedação de emissão para si no serviço, migração 007 e AC3 conferidos. Advisor recomendado (tokens/autenticação).
+
+---
+
+author: codex
+created: 2026-11-19T17:44:00Z
+
+---
+
+Verificação pós-Reviewer: bcrypt somente após consumo transacional, rollback em falha, revogação do token em mudança de papel ou status e cobertura das lacunas do risco 5. make check (13/13 E2E) e go test -race em adminui e SQLite passaram, incluindo consumo concorrente em WAL. ACs #1–#3 permanecem comprovados. Risco 4 é pendência conhecida e não implementada por decisão do usuário. Risco 3 fica para o rebase. Tarefa segue Em andamento.
 
 ---
 <!-- COMMENTS:END -->

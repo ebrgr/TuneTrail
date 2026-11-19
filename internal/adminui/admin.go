@@ -210,7 +210,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
-	// Redemption uses preauthentication CSRF and does not create a session.
+	// Redemption uses preauthentication CSRF and only hashes a password after claiming a valid token.
 	if r.URL.Path == "/admin/redeem" {
 		h.redeemAccount(w, r)
 		return

@@ -73,11 +73,6 @@ func (s *Sqlite) RedeemAccountToken(ctx context.Context, username string, digest
 	if err != nil {
 		return db.ErrInvalidInput
 	}
-	// Use the same bcrypt work for absent accounts and all invalid tokens, outside the write lock.
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
-	if err != nil {
-		return db.ErrInvalidInput
-	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -86,6 +81,7 @@ func (s *Sqlite) RedeemAccountToken(ctx context.Context, username string, digest
 	var id int32
 	var stored [32]byte
 	var saved []byte
+	// Acquire the write lock before checking the token, so a concurrent redemption cannot hash it twice.
 	err = tx.QueryRowContext(ctx, `UPDATE account_tokens SET expires_at=expires_at
 		WHERE user_id=(SELECT id FROM users WHERE username=? AND status=CASE account_tokens.purpose
 			WHEN 'activation' THEN 'pending' ELSE 'active' END)
@@ -97,8 +93,23 @@ func (s *Sqlite) RedeemAccountToken(ctx context.Context, username string, digest
 	if match := subtle.ConstantTimeCompare(stored[:], digest[:]); match != 1 || id == 0 {
 		return db.ErrAccountToken
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM account_tokens WHERE user_id=?`, id); err != nil {
+	consumed, err := tx.ExecContext(ctx, `DELETE FROM account_tokens
+		WHERE user_id=? AND token_hash=? AND expires_at>unixepoch()`, id, digest[:])
+	if err != nil {
 		return err
+	}
+	n, err := consumed.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return db.ErrAccountToken
+	}
+	// Only the transaction that claimed a valid token can pay the bcrypt cost.
+	// Any error below rolls back consumption along with the password and session changes.
+	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	if err != nil {
+		return db.ErrInvalidInput
 	}
 	if err := setAccountPassword(ctx, tx, id, hash); err != nil {
 		return err

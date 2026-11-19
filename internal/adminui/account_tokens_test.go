@@ -109,7 +109,18 @@ func TestAccountTokenWeb162(t *testing.T) {
 	redeemPage := request("GET", "/admin/redeem", nil, nil)
 	require.Equal(t, "no-referrer", redeemPage.Header().Get("Referrer-Policy"))
 	preauth := redeemPage.Result().Cookies()[0]
+	query := "/admin/redeem?" + url.Values{"account_token": {activation}}.Encode()
 	csrf := field(redeemPage, "csrf_token")
+	form := url.Values{"username": {"pending"}, "password": {newPassword}, "csrf_token": {csrf}}
+	for _, method := range []string{"GET", "HEAD", "POST"} {
+		rejected := request(method, query, form, preauth)
+		require.Equal(t, 400, rejected.Code)
+		require.NotContains(t, rejected.Body.String(), activation)
+	}
+	head := request("HEAD", "/admin/redeem", nil, preauth)
+	require.Equal(t, 200, head.Code)
+	require.Empty(t, head.Body.String())
+	require.Equal(t, "no-referrer", head.Header().Get("Referrer-Policy"))
 	redeem := func(username, token, formCSRF string) *httptest.ResponseRecorder {
 		t.Helper()
 		rec := request("POST", "/admin/redeem", url.Values{"username": {username}, "account_token": {token}, "password": {newPassword}, "csrf_token": {formCSRF}}, preauth)
@@ -135,11 +146,13 @@ func TestAccountTokenWeb162(t *testing.T) {
 	require.NoError(t, err)
 	two, err := admin.Login(ctx, s, "pending", newPassword, true)
 	require.NoError(t, err)
+	beforePromotion := issue()
 	rec = post(route+"account-role", profilePage, url.Values{"profile_slug": {"pending"}, "role": {"admin"}}, rootCookie)
 	require.Equal(t, 303, rec.Code, rec.Body.String())
 	account, err := s.ProfileAccount(ctx, pending.ID)
 	require.NoError(t, err)
 	require.Equal(t, models.UserRoleAdmin, account.Role)
+	require.Equal(t, wrong.Body.String(), redeem("pending", beforePromotion, csrf).Body.String())
 	reset := issue()
 	require.Equal(t, 303, redeem("pending", reset, csrf).Code)
 	for _, session := range []*models.Session{one, two} {
@@ -165,7 +178,7 @@ func TestAccountTokenWeb162(t *testing.T) {
 	last := post(route+"account-role", profilePage, url.Values{"profile_slug": {"pending"}, "role": {"user"}}, lastCookie)
 	require.Equal(t, 409, last.Code)
 	listing := request("GET", profilePage, nil, lastCookie)
-	for _, token := range []string{first, activation, reset} {
+	for _, token := range []string{first, activation, beforePromotion, reset} {
 		raw, err := base64.RawURLEncoding.DecodeString(token)
 		require.NoError(t, err)
 		digest := sha256.Sum256(raw)

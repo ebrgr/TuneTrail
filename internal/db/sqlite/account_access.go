@@ -70,6 +70,12 @@ func (s *Sqlite) updateAccountAccess(ctx context.Context, session uuid.UUID, tar
 	if _, err = tx.ExecContext(ctx, `UPDATE users SET role=?,status=?,password=CASE WHEN ?='pending' THEN X'' ELSE password END WHERE id=?`, string(role), status, status, target); err != nil {
 		return err
 	}
+	// A change in privileges or account state invalidates credentials issued before it.
+	if oldRole != string(role) || oldStatus != status {
+		if _, err = tx.ExecContext(ctx, `DELETE FROM account_tokens WHERE user_id=?`, target); err != nil {
+			return err
+		}
+	}
 	if status != "active" {
 		if _, err = tx.ExecContext(ctx, `DELETE FROM sessions WHERE user_id=?`, target); err != nil {
 			return err

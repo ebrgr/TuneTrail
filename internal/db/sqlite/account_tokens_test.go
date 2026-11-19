@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -43,6 +44,12 @@ func TestAccountTokenTransaction162(t *testing.T) {
 	require.Equal(t, digest[:], saved)
 	require.Equal(t, "activation", purpose)
 	require.InDelta(t, 86400, ttl, 3)
+	// An invalid credential must be rejected before bcrypt can reject the oversized password.
+	oversized := strings.Repeat("x", 73)
+	wrong := sha256.Sum256([]byte("different fictional token"))
+	require.ErrorIs(t, s.RedeemAccountToken(ctx, "pending", wrong, oversized), db.ErrAccountToken)
+	require.ErrorIs(t, s.RedeemAccountToken(ctx, "pending", digest, oversized), db.ErrInvalidInput)
+	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM account_tokens`))
 	require.NoError(t, s.Exec(`UPDATE account_tokens SET expires_at=unixepoch()`))
 	require.ErrorIs(t, s.RedeemAccountToken(ctx, "pending", digest, "new-password"), db.ErrAccountToken)
 	require.NoError(t, s.ReplaceAccountToken(ctx, session.ID, p.ID, digest))
@@ -87,6 +94,55 @@ func TestAccountTokenTransaction162(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=1`))
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens`))
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM tracks`))
+}
+
+// TestAccountTokenAccessChanges162 covers purpose binding and invalidation on access changes.
+func TestAccountTokenAccessChanges162(t *testing.T) {
+	ctx := context.Background()
+	s, err := NewInMemory()
+	require.NoError(t, err)
+	defer s.Close(ctx)
+	_, err = s.SaveUser(ctx, db.SaveUserOpts{Username: "root", Password: "root-password", Role: models.UserRoleAdmin})
+	require.NoError(t, err)
+	session, err := admin.Login(ctx, s, "root", "root-password", false)
+	require.NoError(t, err)
+	target, err := s.CreateListeningProfile(ctx, "Target", "target", "", "target-key")
+	require.NoError(t, err)
+	digest := sha256.Sum256([]byte("fictional token for changed privileges"))
+	issue := func() {
+		t.Helper()
+		require.NoError(t, s.ReplaceAccountToken(ctx, session.ID, target.ID, digest))
+	}
+	rejected := func() {
+		t.Helper()
+		require.ErrorIs(t, s.RedeemAccountToken(ctx, "target", digest, "different-password"), db.ErrAccountToken)
+	}
+	issue()
+	// A pending account cannot redeem a recovery token, even with a matching unexpired digest.
+	require.NoError(t, s.Exec(`UPDATE account_tokens SET purpose='reset' WHERE user_id=?`, target.UserID))
+	rejected()
+	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM account_tokens`))
+	issue()
+	// Match the existing local password change, which makes the pending activation stale.
+	require.NoError(t, s.UpdateUser(ctx, db.UpdateUserOpts{ID: target.UserID, Password: "local-password"}))
+	rejected()
+	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM account_tokens`))
+	for _, change := range []struct {
+		name   string
+		role   models.UserRole
+		status string
+	}{
+		{"promotion", models.UserRoleAdmin, "active"},
+		{"demotion", models.UserRoleUser, "active"},
+		{"deactivation", models.UserRoleUser, "pending"},
+	} {
+		t.Run(change.name, func(t *testing.T) {
+			issue()
+			require.NoError(t, s.UpdateAccountAccess(ctx, session.ID, target.UserID, change.role, change.status))
+			require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM account_tokens`))
+			rejected()
+		})
+	}
 }
 
 // TestAccountTokenUpgrade162 verifies backup/restart and refuses a claimed v7 without its table.
