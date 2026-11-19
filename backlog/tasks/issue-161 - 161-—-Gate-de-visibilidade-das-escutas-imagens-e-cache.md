@@ -1,10 +1,11 @@
 ---
 id: ISSUE-161
 title: 161 — Gate de visibilidade das escutas, imagens e cache
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-17T17:33:00Z'
+updated_date: '2026-11-19T15:14:00Z'
 labels:
   - api
   - ui
@@ -15,6 +16,7 @@ dependencies:
   - ISSUE-160
 references:
   - backlog/decisions/decision-010
+  - backlog/evidencias/issue-161/VERIFICACAO.md
 documentation:
   - doc-041
 priority: high
@@ -34,3 +36,25 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 - [ ] #2 Diretório mostra todos os perfis; perfil público continua legível sem login; gestão sempre exige login
 - [ ] #3 Ingestão e relay de entrada e saída funcionam com perfil protegido (testes)
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-19T15:12:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-161` na branch `feat/issue-161-gate-de-visibilidade-das-escutas` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-19T15:14:00Z
+
+---
+
+Verificação preliminar: cache legado de capas permite reutilização por até 30 dias sem consultar a origem. Inventário inicial e decisão sobre o corte registrados em VERIFICACAO.md. Implementação pausada para decisão do usuário.
+
+---
+<!-- COMMENTS:END -->
