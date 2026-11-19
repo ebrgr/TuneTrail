@@ -119,11 +119,11 @@ func (s *Sqlite) trackByTrackInfo(ctx context.Context, title string, releaseID i
 	query := fmt.Sprintf(`
 		SELECT t.id FROM tracks t
 		JOIN artist_tracks at2 ON at2.track_id = t.id
-		WHERE EXISTS (SELECT 1 FROM track_aliases ta WHERE ta.track_id=t.id AND ta.alias=?)
+		WHERE EXISTS (SELECT 1 FROM track_aliases ta WHERE ta.track_id=t.id AND ta.alias=? AND (ta.source NOT LIKE 'ProfileImport:%%' OR ta.source=?))
 		AND t.release_id = ? AND at2.artist_id IN (%s)
 		GROUP BY t.id
 		HAVING COUNT(DISTINCT at2.artist_id) = ? LIMIT 2`, placeholders)
-	args := []any{title, releaseID}
+	args := []any{title, db.CatalogAliasSource(ctx), releaseID}
 	for _, id := range artistIDs {
 		args = append(args, id)
 	}
@@ -153,7 +153,11 @@ func (s *Sqlite) trackByTrackInfo(ctx context.Context, title string, releaseID i
 	return id, nil
 }
 
+// SaveTrack keeps owner-import identities out of the global MBID namespace.
 func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.Track, error) {
+	if db.ImportedCatalogProfile(ctx) > 0 {
+		opts.RecordingMbzID = uuid.Nil
+	}
 	if len(opts.ArtistIDs) < 1 {
 		return nil, errors.New("SaveTrack: required parameter 'ArtistIDs' missing")
 	}
@@ -195,7 +199,7 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO track_aliases (track_id, alias, source, is_primary) VALUES (?,?,?,1)`,
-		id, opts.Title, "Canonical"); err != nil {
+		id, opts.Title, db.ImportedAliasSource(ctx, "Canonical")); err != nil {
 		return nil, fmt.Errorf("SaveTrack: canonical alias: %w", err)
 	}
 
@@ -216,7 +220,9 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 	return ret, nil
 }
 
+// SaveTrackAliases retains owner-import provenance for every alias.
 func (s *Sqlite) SaveTrackAliases(ctx context.Context, id int32, aliases []string, source string) error {
+	source = db.ImportedAliasSource(ctx, source)
 	if id == 0 {
 		return errors.New("SaveTrackAliases: track id not specified")
 	}
@@ -225,6 +231,17 @@ func (s *Sqlite) SaveTrackAliases(ctx context.Context, id int32, aliases []strin
 		return fmt.Errorf("SaveTrackAliases: BeginTx: %w", err)
 	}
 	defer tx.Rollback()
+	// Automatic enrichment must not turn an imported alias into a global resolver input.
+	if !db.CatalogEditorial(ctx) {
+		var provenance string
+		err := tx.QueryRowContext(ctx, `SELECT source FROM track_aliases WHERE track_id=? AND is_primary=1 AND source LIKE 'ProfileImport:%' LIMIT 1`, id).Scan(&provenance)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		if err == nil {
+			source = provenance
+		}
+	}
 
 	rows, err := tx.QueryContext(ctx, `SELECT alias FROM track_aliases WHERE track_id = ?`, id)
 	if err != nil {
@@ -268,7 +285,7 @@ func (s *Sqlite) AddArtistsToTrack(ctx context.Context, opts db.AddArtistsToTrac
 	return tx.Commit()
 }
 
-// UpdateTrack applies identity checks and metadata edits in one transaction.
+// UpdateTrack applies identity checks and reserves global MBID promotion for explicit root edits.
 func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error {
 	if opts.ID == 0 {
 		return errors.New("UpdateTrack: track id not specified")
@@ -285,6 +302,16 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 	}
 	if err != nil {
 		return err
+	}
+
+	if opts.MusicBrainzID != uuid.Nil {
+		allowed, err := importedMBIDAllowed(ctx, tx, "track_aliases", "track_id", opts.ID)
+		if err != nil {
+			return err
+		}
+		if !allowed {
+			opts.MusicBrainzID = uuid.Nil
+		}
 	}
 
 	if opts.MusicBrainzID != uuid.Nil {

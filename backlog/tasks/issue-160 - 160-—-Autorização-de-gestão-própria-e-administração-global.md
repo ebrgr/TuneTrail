@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T00:36:00Z'
+updated_date: '2026-11-19T15:01:00Z'
 labels:
   - admin
   - api
@@ -18,6 +18,8 @@ references:
   - backlog/evidencias/issue-160/AMBIGUIDADE-IMPORTACAO.md
   - backlog/evidencias/issue-160/VERIFICACAO.md
   - backlog/evidencias/issue-160/REVIEWER.md
+  - backlog/evidencias/issue-160/PARECER-REVIEWER.md
+  - backlog/evidencias/issue-160/REVISAO-CORRECOES.md
 documentation:
   - doc-041
 priority: high
@@ -74,6 +76,33 @@ created: 2026-11-19T00:36:00Z
 ---
 
 Verificação: política central de gestão aplicada em HTML, JSON e serviços; dono restrito ao próprio perfil, catálogo/servidor/contas exclusivos root; serviços reconsultam sessão e rejeitam API key/role obsoleto; mass assignment negado. Migração v6 protege último admin ativo e serviço de acesso revalida root dentro da transação, com concorrência em duas conexões para excluir/rebaixar/desativar. Opção 2 da importação testada. make check passou (13/13 E2E); race nos pacotes tocados passou com timeout 10m, e casos finais 160 repetidos com race. Graphify AST atualizado nesta worktree, diff/deslop e revisão local APROVADO. ACs comprovados no escopo de gestão da 160; gate de leitura require_login/imagens/cache (161), fluxos de token (162) e navegação/destino (163/157) permanecem fora do escopo. Evidências: VERIFICACAO.md e REVIEWER.md. Mantido Em andamento, sem push/merge/publish/Done.
+
+---
+
+author: reviewer
+created: 2026-11-19T10:30:00Z
+
+---
+
+Parecer Reviewer: APROVADO COM RESSALVAS, sem BUG de autorização. A política central nega por padrão em HTML, JSON e serviços, o IDOR e o mass assignment estão fechados e o último admin ativo é protegido com o lock de escrita na 1ª instrução (migração 006 nova, fora de tag). Ressalvas: (1) a opção 2 expõe SSRF cego via image_url importado por não-root e a pré-semeadura de MBID/aliases no catálogo compartilhado; a exceção não está no doc-041, só no comentário #3 do codex. (2) Após uma ação HTML pessoal, o redirect /admin?profile=N leva o dono ao 403. (3) O teste concorrente não usa WAL. Recomenda-se o Advisor para a opção 2 e a migração. Detalhes em PARECER-REVIEWER.md.
+
+---
+
+author: ebrgr
+created: 2026-11-19T10:47:00Z
+
+---
+
+Decisão do usuário (19/11/2026, reafirmada ao Claude e ao executor): a importação pelo usuário comum, opção 2 de AMBIGUIDADE-IMPORTACAO.md, DEVE ser mantida; limitar demais tiraria funcionalidade do não-root. Confirmo a exceção para importar entidades novas com imagens e aliases, mantendo alterações editoriais de entidades existentes exclusivas do root e aplicando as mitigações solicitadas para image_url e pré-semeadura. Esta confirmação não é aceite da implementação nem autorização de publicação.
+
+---
+
+author: codex
+created: 2026-11-19T15:01:00Z
+
+---
+
+Correções pós-Reviewer verificadas: confirmação da opção 2 registrada com autoria ebrgr e no doc-041 §2, com os riscos e mitigações. A: origem de imagem importada por não-root persistida; fetch público valida DNS, fixa IP e confere peer, sem proxy, revalida redirects e mantém limites de tempo/tamanho; fontes locais root preservadas. B: aliases usam proveniência por destino no campo source existente, MBIDs desconhecidos não são gravados e enriquecimento automático não promove a entidade; imagens/aliases/histórico e reimportação preservados, sem novo schema. C: redirect /admin?profile=N autorizado como profiles, com aviso de sucesso testado. D: concorrência do último admin em WAL, com asserção do modo. E: tolerância de campos extras mantida por compatibilidade; destino permanece do servidor. make check passou (13/13 E2E); race completo nos pacotes afetados e casos finais passaram. Graphify AST atualizado, diff/deslop e revisão diferencial pelo executor APROVADO, sem re-delegar. Parecer e comentário originais do Reviewer preservados e incluídos no commit. Migração 006 intacta, sem 007, sem mudanças na 159/limites de login; Em andamento, sem push/merge/publish/Done. Evidências detalhadas em VERIFICACAO.md.
 
 ---
 <!-- COMMENTS:END -->

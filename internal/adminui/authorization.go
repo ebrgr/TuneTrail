@@ -10,7 +10,11 @@ import (
 // authorizePage leaves the common user's landing destination to ISSUE-163 while
 // permitting explicit existing account and personal management documents.
 func (h *Handler) authorizePage(r *http.Request, id admin.Identity) error {
-	switch r.URL.Query().Get("section") {
+	section := r.URL.Query().Get("section")
+	if section == "" && r.URL.Query().Get("profile") != "" {
+		section = "profiles"
+	}
+	switch section {
 	case "account":
 		return admin.AuthorizeAction(id.User, admin.ManageAccount, nil)
 	case "profiles", "keys", "relay", "import", "export":

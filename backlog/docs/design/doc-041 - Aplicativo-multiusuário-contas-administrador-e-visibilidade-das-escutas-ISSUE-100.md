@@ -5,7 +5,7 @@ title: >-
   (ISSUE-100)
 type: specification
 created_date: '2026-11-17T17:17:00Z'
-updated_date: '2026-11-17T17:21:00Z'
+updated_date: '2026-11-19T10:52:00Z'
 tags:
   - design
 ---
@@ -60,6 +60,17 @@ O último administrador não pode ser excluído nem rebaixado. A consulta do nú
 Excluir conta/perfil é operação conjunta e confirmada: revogar sessões e tokens, excluir os dados pessoais vinculados, chaves, estado temporário e relay do perfil, preservando contas, escutas e catálogo de outros perfis. A exclusão da última conta é impedida pela regra do último admin. Edição/exclusão de escutas próprias não deve alterar ou apagar implicitamente entidades compartilhadas. Capas, aliases e merges globais continuam exclusivos do root; não criar sobreposição de catálogo por usuário nesta entrega.
 
 O administrador não pode consultar senha nem hash em páginas, API ou logs. Pode redefinir o acesso por token, sem recuperar a senha anterior.
+
+### Exceção de importação do dono — decisão do usuário em 19/11/2026
+
+O usuário reafirmou expressamente a **opção 2**: a importação pelo usuário comum deve ser mantida; limitar demais tiraria funcionalidade do não-root. O dono pode importar seu histórico e criar entidades musicais novas com nomes, aliases e imagens do arquivo. Isso é uma exceção documentada à linha de catálogo da matriz, não autorização para editar entidades existentes, merges ou operações editoriais compartilhadas. A confirmação está registrada na ISSUE-160 com autoria `ebrgr`; não equivale a aceite da implementação ou publicação.
+
+Há dois riscos conhecidos nessa exceção:
+
+1. **SSRF cego por image_url:** uma URL do arquivo poderia provocar GET do servidor à rede interna quando um visitante solicita a imagem. A mitigação preserva a imagem e marca a origem não-root no valor persistido de image_source, com o fragmento reservado `#tunetrail-public-only`, que também permanece no export/reimport e nunca é enviado ao servidor HTTP. A busca dessas fontes aceita somente HTTP(S), sem credenciais embutidas, resolve DNS, rejeita respostas privadas/locais, conecta ao IP literal validado e confere o endereço efetivamente conectado. Bloqueia loopback, endereços não especificados, link-local, RFC1918, ULA, metadata de nuvem e equivalentes IPv6/mapeamentos de transição. A restrição vale em cada redirect, sem proxy de ambiente, com até três redirects seguidos, deadline total de dez segundos e corpo de até 10 MiB. Fontes do root sem essa marca mantêm suporte a servidores legítimos em rede local. Não aplicar um bloqueio global às fontes do root por consequência desta exceção.
+2. **Pré-semeadura do catálogo por MBID/aliases:** metadados escolhidos no arquivo poderiam capturar a resolução futura de outros perfis. A mitigação usa o campo source já existente: todos os aliases de entidades criadas por import não-root recebem `ProfileImport:<profile_id>` e só participam da resolução automática de nomes daquele destino. Continuam disponíveis para exibir o histórico e exportá-lo; consultas por ID e a administração root continuam possíveis. MBIDs desconhecidos do arquivo não são atribuídos às entidades novas; MBIDs já existentes podem resolver uma entidade do catálogo sem editá-la. Enriquecimento automático posterior não promove MBIDs nem aliases dessas entidades ao namespace global; uma validação editorial explícita, autorizada ao root, pode fazê-lo. A resolução mantém a identidade do destino mesmo ao remover o escopo de leitura de escutas. Perfis usam IDs persistentes que não são reutilizados por cadastro normal. Não foi necessária nova migração além da 006.
+
+A consequência funcional é poder haver entidades com o mesmo nome em históricos de destinos distintos até reconciliação explícita pelo root. Não se exige remover imagens ou aliases do histórico do dono. Os metadados de arquivos continuam sem certificação semântica de autenticidade; as medidas acima limitam o efeito da importação sobre a rede e sobre a resolução de outros perfis. O contrato de ingestão ListenBrainz e seus clientes permanece como está.
 
 ## 3. Visibilidade
 

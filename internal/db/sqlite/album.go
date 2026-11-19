@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// GetAlbum resolves names only through trusted or destination-owned aliases.
 func (s *Sqlite) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Album, error) {
 	if opts.MusicBrainzID != uuid.Nil {
 		var id int32
@@ -32,8 +33,8 @@ func (s *Sqlite) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Al
 		err := s.queryRowContext(ctx, `
 			SELECT r.id FROM releases_with_title r
 			JOIN `+albumArtistRelations+` ar ON r.id = ar.release_id
-			WHERE r.title = ? AND ar.artist_id = ? LIMIT 1`,
-			opts.Title, opts.ArtistID).Scan(&id)
+			WHERE r.title = ? AND ar.artist_id = ? AND EXISTS (SELECT 1 FROM release_aliases ra WHERE ra.release_id=r.id AND ra.alias=r.title AND (ra.source NOT LIKE 'ProfileImport:%' OR ra.source=?)) LIMIT 1`,
+			opts.Title, opts.ArtistID, db.CatalogAliasSource(ctx)).Scan(&id)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("GetAlbum: by artist+title: %w", db.ErrNotFound)
 		}
@@ -124,6 +125,7 @@ func (s *Sqlite) getAlbumByID(ctx context.Context, id int32) (*models.Album, err
 	return &ret, nil
 }
 
+// releaseByArtistAndTitles ignores owner-import names from other destination profiles.
 func (s *Sqlite) releaseByArtistAndTitles(ctx context.Context, artistID int32, titles []string, requireNoMbzID bool) (int32, error) {
 	if len(titles) == 0 {
 		return 0, errors.New("releaseByArtistAndTitles: no titles provided")
@@ -138,13 +140,14 @@ func (s *Sqlite) releaseByArtistAndTitles(ctx context.Context, artistID int32, t
 	query := fmt.Sprintf(`
 		SELECT r.id FROM releases_with_title r
 		JOIN `+albumArtistRelations+` ar ON r.id = ar.release_id
-		WHERE r.title IN (%s) AND ar.artist_id = ?%s LIMIT 1`, placeholders, noMbz)
+		WHERE r.title IN (%s) AND ar.artist_id = ?%s AND EXISTS (SELECT 1 FROM release_aliases ra WHERE ra.release_id=r.id AND ra.alias=r.title AND (ra.source NOT LIKE 'ProfileImport:%%' OR ra.source=?)) LIMIT 1`, placeholders, noMbz)
 
-	args := make([]any, len(titles)+1)
+	args := make([]any, len(titles)+2)
 	for i, t := range titles {
 		args[i] = t
 	}
 	args[len(titles)] = artistID
+	args[len(titles)+1] = db.CatalogAliasSource(ctx)
 
 	var id int32
 	err := s.queryRowContext(ctx, query, args...).Scan(&id)
@@ -165,7 +168,11 @@ func (s *Sqlite) GetAlbumWithNoMbzIDByTitles(ctx context.Context, artistId int32
 	return s.getAlbumByID(ctx, id)
 }
 
+// SaveAlbum keeps owner-import identities out of the global MBID namespace.
 func (s *Sqlite) SaveAlbum(ctx context.Context, opts db.SaveAlbumOpts) (*models.Album, error) {
+	if db.ImportedCatalogProfile(ctx) > 0 {
+		opts.MusicBrainzID = uuid.Nil
+	}
 	if len(opts.ArtistIDs) < 1 {
 		return nil, errors.New("SaveAlbum: required parameter 'ArtistIDs' missing")
 	}
@@ -208,7 +215,7 @@ func (s *Sqlite) SaveAlbum(ctx context.Context, opts db.SaveAlbumOpts) (*models.
 
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO release_aliases (release_id, alias, source, is_primary) VALUES (?,?,?,1)`,
-		id, opts.Title, "Canonical"); err != nil {
+		id, opts.Title, db.ImportedAliasSource(ctx, "Canonical")); err != nil {
 		return nil, fmt.Errorf("SaveAlbum: canonical alias: %w", err)
 	}
 
@@ -236,7 +243,9 @@ func (s *Sqlite) SaveAlbum(ctx context.Context, opts db.SaveAlbumOpts) (*models.
 	return ret, nil
 }
 
+// SaveAlbumAliases retains owner-import provenance for every alias.
 func (s *Sqlite) SaveAlbumAliases(ctx context.Context, id int32, aliases []string, source string) error {
+	source = db.ImportedAliasSource(ctx, source)
 	if id == 0 {
 		return errors.New("SaveAlbumAliases: album id not specified")
 	}
@@ -245,6 +254,17 @@ func (s *Sqlite) SaveAlbumAliases(ctx context.Context, id int32, aliases []strin
 		return fmt.Errorf("SaveAlbumAliases: BeginTx: %w", err)
 	}
 	defer tx.Rollback()
+	// Automatic enrichment must not turn an imported alias into a global resolver input.
+	if !db.CatalogEditorial(ctx) {
+		var provenance string
+		err := tx.QueryRowContext(ctx, `SELECT source FROM release_aliases WHERE release_id=? AND is_primary=1 AND source LIKE 'ProfileImport:%' LIMIT 1`, id).Scan(&provenance)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		if err == nil {
+			source = provenance
+		}
+	}
 
 	rows, err := tx.QueryContext(ctx, `SELECT alias FROM release_aliases WHERE release_id = ?`, id)
 	if err != nil {
@@ -272,6 +292,7 @@ func (s *Sqlite) SaveAlbumAliases(ctx context.Context, id int32, aliases []strin
 	return tx.Commit()
 }
 
+// UpdateAlbum reserves promotion of an imported identity into global MBID resolution for root edits.
 func (s *Sqlite) UpdateAlbum(ctx context.Context, opts db.UpdateAlbumOpts) error {
 	if opts.ID == 0 {
 		return errors.New("UpdateAlbum: missing album id")
@@ -288,6 +309,16 @@ func (s *Sqlite) UpdateAlbum(ctx context.Context, opts db.UpdateAlbumOpts) error
 	}
 	if err != nil {
 		return err
+	}
+
+	if opts.MusicBrainzID != uuid.Nil {
+		allowed, err := importedMBIDAllowed(ctx, tx, "release_aliases", "release_id", opts.ID)
+		if err != nil {
+			return err
+		}
+		if !allowed {
+			opts.MusicBrainzID = uuid.Nil
+		}
 	}
 
 	if opts.MusicBrainzID != uuid.Nil {

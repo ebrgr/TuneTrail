@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// GetArtist excludes other profiles' imported aliases from implicit identity resolution.
 func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Artist, error) {
 	if opts.MusicBrainzID != uuid.Nil {
 		var id int32
@@ -29,7 +30,7 @@ func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.
 	} else if opts.Name != "" {
 		var id int32
 		err := s.queryRowContext(ctx,
-			`SELECT artist_id FROM artist_aliases WHERE alias = ? LIMIT 1`, opts.Name).Scan(&id)
+			`SELECT artist_id FROM artist_aliases WHERE alias = ? AND (source NOT LIKE 'ProfileImport:%' OR source=?) LIMIT 1`, opts.Name, db.CatalogAliasSource(ctx)).Scan(&id)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("GetArtist: by name: %w", db.ErrNotFound)
 		}
@@ -120,7 +121,11 @@ func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.
 	}, nil
 }
 
+// SaveArtist keeps owner-import identities out of the global MBID namespace.
 func (s *Sqlite) SaveArtist(ctx context.Context, opts db.SaveArtistOpts) (*models.Artist, error) {
+	if db.ImportedCatalogProfile(ctx) > 0 {
+		opts.MusicBrainzID = uuid.Nil
+	}
 	opts.Name = strings.TrimSpace(opts.Name)
 	if opts.Name == "" {
 		return nil, errors.New("SaveArtist: name must not be blank")
@@ -144,7 +149,7 @@ func (s *Sqlite) SaveArtist(ctx context.Context, opts db.SaveArtistOpts) (*model
 
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO artist_aliases (artist_id, alias, source, is_primary) VALUES (?,?,?,1)`,
-		id, opts.Name, "Canonical"); err != nil {
+		id, opts.Name, db.ImportedAliasSource(ctx, "Canonical")); err != nil {
 		return nil, fmt.Errorf("SaveArtist: canonical alias: %w", err)
 	}
 
@@ -171,7 +176,9 @@ func (s *Sqlite) SaveArtist(ctx context.Context, opts db.SaveArtistOpts) (*model
 	return artist, nil
 }
 
+// SaveArtistAliases retains owner-import provenance for every alias.
 func (s *Sqlite) SaveArtistAliases(ctx context.Context, id int32, aliases []string, source string) error {
+	source = db.ImportedAliasSource(ctx, source)
 	if id == 0 {
 		return errors.New("SaveArtistAliases: artist id not specified")
 	}
@@ -180,6 +187,17 @@ func (s *Sqlite) SaveArtistAliases(ctx context.Context, id int32, aliases []stri
 		return fmt.Errorf("SaveArtistAliases: BeginTx: %w", err)
 	}
 	defer tx.Rollback()
+	// Automatic enrichment must not turn an imported alias into a global resolver input.
+	if !db.CatalogEditorial(ctx) {
+		var provenance string
+		err := tx.QueryRowContext(ctx, `SELECT source FROM artist_aliases WHERE artist_id=? AND is_primary=1 AND source LIKE 'ProfileImport:%' LIMIT 1`, id).Scan(&provenance)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		if err == nil {
+			source = provenance
+		}
+	}
 
 	rows, err := tx.QueryContext(ctx, `SELECT alias FROM artist_aliases WHERE artist_id = ?`, id)
 	if err != nil {
@@ -207,6 +225,7 @@ func (s *Sqlite) SaveArtistAliases(ctx context.Context, id int32, aliases []stri
 	return tx.Commit()
 }
 
+// UpdateArtist reserves promotion of an imported identity into global MBID resolution for root edits.
 func (s *Sqlite) UpdateArtist(ctx context.Context, opts db.UpdateArtistOpts) error {
 	if opts.ID == 0 {
 		return errors.New("UpdateArtist: artist id not specified")
@@ -223,6 +242,16 @@ func (s *Sqlite) UpdateArtist(ctx context.Context, opts db.UpdateArtistOpts) err
 	}
 	if err != nil {
 		return err
+	}
+
+	if opts.MusicBrainzID != uuid.Nil {
+		allowed, err := importedMBIDAllowed(ctx, tx, "artist_aliases", "artist_id", opts.ID)
+		if err != nil {
+			return err
+		}
+		if !allowed {
+			opts.MusicBrainzID = uuid.Nil
+		}
 	}
 
 	if opts.MusicBrainzID != uuid.Nil {

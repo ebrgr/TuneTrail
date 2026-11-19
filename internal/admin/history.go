@@ -32,6 +32,18 @@ func ImportHistory(ctx context.Context, store interface {
 	if _, err := AuthorizeProfile(ctx, store, user, id); err != nil {
 		return importer.Result{}, err
 	}
+	// Re-read the actor rather than trusting the caller's cached role for import provenance.
+	reader, ok := store.(SessionReader)
+	if !ok {
+		return importer.Result{}, ErrForbidden
+	}
+	identity, err := Authenticate(ctx, reader, user.SessionID)
+	if err != nil {
+		return importer.Result{}, err
+	}
+	if identity.User.Role != models.UserRoleAdmin {
+		ctx = importer.WithUntrustedImport(ctx)
+	}
 	return importer.Upload(ctx, store, mb, id, format, filename)
 }
 

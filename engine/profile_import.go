@@ -19,6 +19,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/importer"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
 )
@@ -48,6 +49,10 @@ func profileImportHandler(store db.DB, mbzc mbz.MusicBrainzCaller) http.HandlerF
 		if err := admin.AuthorizeAction(middleware.GetUserFromContext(r.Context()), admin.ManageProfile, middleware.ProfileFromContext(r.Context())); err != nil {
 			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 			return
+		}
+		// Preserve authenticated origin through both manual-file and multipart import paths.
+		if middleware.GetUserFromContext(r.Context()).Role != models.UserRoleAdmin {
+			r = r.WithContext(importer.WithUntrustedImport(r.Context()))
 		}
 		contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 		if contentType == "multipart/form-data" {

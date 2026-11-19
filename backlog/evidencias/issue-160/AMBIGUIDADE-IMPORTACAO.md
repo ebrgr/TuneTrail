@@ -30,3 +30,7 @@ Não foi escolhida uma regra implicitamente. Os endpoints permanecem sob a exig�
 ## Decisão do usuário
 
 Opção 2 autorizada explicitamente: a importação do dono pode criar entidades novas com capas e aliases. Alterações editoriais de entidades existentes continuam exclusivas do root. Implementação retomada; o registro de interrupção acima descreve somente o momento anterior à decisão.
+
+## Reafirmação e mitigação — 19/11/2026
+
+O usuário reafirmou que a opção 2 deve ser mantida para preservar a funcionalidade do não-root. Confirmação com autoria ebrgr na tarefa e exceção normativa no doc-041 §2. A implementação preserva imagens e aliases, com origem pública restrita no fetch e proveniência de aliases por destino, sem MBIDs novos não validados pelo root. Riscos conhecidos, mitigação e resultados após o parecer estão em VERIFICACAO.md, seção de 19/11/2026.

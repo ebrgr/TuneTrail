@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Usuários passam a gerenciar seus próprios dados, chaves, importações, exportações e relay; catálogo e servidor permanecem exclusivos dos administradores, com proteção do último administrador ativo (ISSUE-160).
+- Usuários gerenciam seus próprios dados, chaves e relay, com importações que preservam o isolamento entre perfis e bloqueiam buscas de imagens na rede interna; administração global e último administrador ativo permanecem protegidos (ISSUE-160).
 
 ## [0.38] - 2026-11-19
 

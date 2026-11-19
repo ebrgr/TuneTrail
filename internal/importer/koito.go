@@ -10,6 +10,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/export"
+	"github.com/ebrgr/TuneTrail/internal/imagefetch"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
@@ -17,12 +18,16 @@ import (
 	"math"
 )
 
+// ImportKoitoFile preserves owner-import provenance through catalog writes and image downloads.
 func ImportKoitoFile(ctx context.Context, store importStore, filename string) error {
 	if db.ProfileID(ctx) <= 0 {
 		return fmt.Errorf("explicit import profile required")
 	}
 	profileID := db.ProfileID(ctx)
 	ctx = db.WithoutProfile(ctx)
+	if untrustedImport(ctx) {
+		ctx = db.WithImportedCatalog(ctx, profileID)
+	}
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning TuneTrail/Koito import on file: %s", filename) // same JSON schema (ISSUE-111)
 	data := new(export.KoitoExport)
@@ -84,6 +89,13 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			// use this for save/get mbid for all artist/album/track
 			var mbid uuid.UUID
 
+			// Imported image URLs retain their network restriction in the stored source.
+			if untrustedImport(ctx) {
+				data.Listens[i].Album.ImageUrl = imagefetch.PublicSource(data.Listens[i].Album.ImageUrl)
+				for j := range data.Listens[i].Artists {
+					data.Listens[i].Artists[j].ImageUrl = imagefetch.PublicSource(data.Listens[i].Artists[j].ImageUrl)
+				}
+			}
 			artistIds := make([]int32, 0)
 			for _, ia := range data.Listens[i].Artists {
 				mbid = uuid.Nil
@@ -94,6 +106,9 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 					MusicBrainzID: mbid,
 					Name:          getPrimaryAliasFromAliasSlice(ia.Aliases),
 				})
+				if errors.Is(err, db.ErrNotFound) && untrustedImport(ctx) && mbid != uuid.Nil {
+					artist, err = store.GetArtist(ctx, db.GetArtistOpts{Name: getPrimaryAliasFromAliasSlice(ia.Aliases)})
+				}
 				if errors.Is(err, db.ErrNotFound) {
 					var imgid = uuid.Nil
 					// not a perfect way to check if the image url is an actual source vs manual upload but
@@ -130,6 +145,9 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 				Title:         getPrimaryAliasFromAliasSlice(data.Listens[i].Album.Aliases),
 				ArtistID:      artistIds[0],
 			})
+			if errors.Is(err, db.ErrNotFound) && untrustedImport(ctx) && mbid != uuid.Nil {
+				album, err = store.GetAlbum(ctx, db.GetAlbumOpts{Title: getPrimaryAliasFromAliasSlice(data.Listens[i].Album.Aliases), ArtistID: artistIds[0]})
+			}
 			if errors.Is(err, db.ErrNotFound) {
 				var imgid = uuid.Nil
 				// not a perfect way to check if the image url is an actual source vs manual upload but
@@ -168,6 +186,9 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 				ReleaseID:     albumId,
 				ArtistIDs:     artistIds,
 			})
+			if errors.Is(err, db.ErrNotFound) && untrustedImport(ctx) && mbid != uuid.Nil {
+				track, err = store.GetTrack(ctx, db.GetTrackOpts{Title: getPrimaryAliasFromAliasSlice(data.Listens[i].Track.Aliases), ReleaseID: albumId, ArtistIDs: artistIds})
+			}
 			if errors.Is(err, db.ErrNotFound) {
 				// save track
 				track, err = store.SaveTrack(ctx, db.SaveTrackOpts{

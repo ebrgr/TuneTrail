@@ -21,13 +21,16 @@ func TestLastActiveAdministrator160(t *testing.T) {
 			ctx := context.Background()
 			path, err := bootstrap(t.TempDir(), true)
 			require.NoError(t, err)
-			a, err := sql.Open("sqlite", sqliteURI(path)+"?_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)")
+			a, err := sql.Open("sqlite", sqliteURI(path)+"?_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)")
 			require.NoError(t, err)
 			defer a.Close()
-			b, err := sql.Open("sqlite", sqliteURI(path)+"?_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)")
+			b, err := sql.Open("sqlite", sqliteURI(path)+"?_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)")
 			require.NoError(t, err)
 			defer b.Close()
 			stores := []*Sqlite{{db: a}, {db: b}}
+			var journal string
+			require.NoError(t, a.QueryRow(`PRAGMA journal_mode`).Scan(&journal))
+			require.Equal(t, "wal", journal)
 			var users []*models.User
 			var sessions []*models.Session
 			for _, name := range []string{"one", "two"} {

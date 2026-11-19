@@ -53,7 +53,7 @@ func EditAlias(ctx context.Context, s MediaStore, user *models.User, kind string
 	if strings.TrimSpace(alias) == "" || len(alias) > 512 || !utf8.ValidString(alias) {
 		return db.ErrInvalidInput
 	}
-	ctx = db.WithoutProfile(ctx)
+	ctx = db.WithCatalogEditorial(db.WithoutProfile(ctx))
 	switch kind {
 	case "artist":
 		switch action {
@@ -102,7 +102,7 @@ func UpdateMediaMetadata(ctx context.Context, s MediaStore, user *models.User, k
 	if mbid == uuid.Nil && various == nil {
 		return db.ErrInvalidInput
 	}
-	ctx = db.WithoutProfile(ctx)
+	ctx = db.WithCatalogEditorial(db.WithoutProfile(ctx))
 	switch kind {
 	case "artist":
 		if various != nil {

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 const MaxBytes = 10 << 20
@@ -22,19 +21,18 @@ func validURL(u *url.URL) bool {
 // request applies a deadline and validates every redirect without logging the URL.
 func request(ctx context.Context, method, raw string) (*http.Response, error) {
 	u, err := url.Parse(raw)
+	publicOnly := err == nil && u.Fragment == PublicSourceFragment
+	if publicOnly {
+		u.Fragment = ""
+	}
 	if err != nil || !validURL(u) {
 		return nil, errors.New("invalid image URL")
 	}
-	req, err := http.NewRequestWithContext(ctx, method, raw, nil)
+	req, err := http.NewRequestWithContext(ctx, method, u.String(), nil)
 	if err != nil {
 		return nil, errors.New("invalid image request")
 	}
-	client := http.Client{Timeout: 10 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error {
-		if len(via) >= 4 || !validURL(req.URL) {
-			return errors.New("invalid image redirect")
-		}
-		return nil
-	}}
+	client := imageClient(publicOnly, nil)
 	resp, err := client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {

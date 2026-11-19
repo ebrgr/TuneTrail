@@ -184,7 +184,11 @@ func TestHTMLManagementMatrix160(t *testing.T) {
 		form.Set("csrf_token", taskField139(t, page, "csrf_token"))
 		form.Set("submission_token", taskField139(t, page, "submission_token"))
 		path := fmt.Sprintf("/admin/profile/%d/%s", p.ID, op.suffix)
-		require.Equal(t, 303, taskRequest139(a, "POST", path, cookie, form, nil).Code, op.suffix)
+		response := taskRequest139(a, "POST", path, cookie, form, nil)
+		require.Equal(t, 303, response.Code, op.suffix)
+		followed := taskRequest139(a, "GET", response.Header().Get("Location"), cookie, nil, nil)
+		require.Equal(t, 200, followed.Code, followed.Body.String())
+		require.Contains(t, followed.Body.String(), "Changes saved.")
 		require.Equal(t, 403, taskRequest139(a, "POST", "/admin/profile/1/"+op.suffix, cookie, form, nil).Code)
 	}
 	for _, field := range []string{"role", "status", "user_id"} {
@@ -255,7 +259,7 @@ func TestOwnerImportMetadata160(t *testing.T) {
 	require.Equal(t, 1, n)
 	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM track_aliases WHERE alias='Track Extra'`).Scan(&n))
 	require.Equal(t, 1, n)
-	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM releases WHERE image_source='https://example.invalid/original.jpg'`).Scan(&n))
+	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM releases WHERE image_source='https://example.invalid/original.jpg#tunetrail-public-only'`).Scan(&n))
 	require.Equal(t, 1, n)
 	// A second export with changed editorial metadata reuses the existing identities.
 	changed := strings.ReplaceAll(data, "original.jpg", "changed.jpg")
@@ -265,7 +269,7 @@ func TestOwnerImportMetadata160(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM release_aliases WHERE alias='Injected Extra'`).Scan(&n))
 	require.Zero(t, n)
-	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM releases WHERE image_source='https://example.invalid/changed.jpg'`).Scan(&n))
+	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM releases WHERE image_source='https://example.invalid/changed.jpg#tunetrail-public-only'`).Scan(&n))
 	require.Zero(t, n)
 	_, err = admin.ImportHistory(ctx, a.store, identity.User, nil, 1, "koito", file)
 	require.ErrorIs(t, err, admin.ErrForbidden)

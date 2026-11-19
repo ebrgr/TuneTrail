@@ -102,7 +102,7 @@ IsRoute/IsPage/IsAction continuam como allowlist estrutural, com capacidade expl
 
 ACs de gestão #1/#2/#3 avaliados dentro das fronteiras explícitas da ISSUE-160: não incluem a implementação futura de gate de leitura/visibilidade, tokens ou navegação. O critério sobre chave de ingestão comprova ausência de sessão humana e negação dos dados privados de gestão; não substitui os testes do gate da ISSUE-161.
 
-## Resultado final
+## Verificação inicial (18/11/2026)
 
 - **make check: PASSOU**, incluindo go vet, testes Go sem cache, verificações UI/referências e **13/13 jornadas E2E** (web-assets, multiuser, admin, public, permissions, isolation, migration, ingest-migration, standalone, legacy-env, shutdown, vscode e tools).
 - **go test -race -count=1 ./engine/... ./internal/admin ./internal/adminui ./internal/adminweb ./internal/db/sqlite ./internal/models -timeout 10m: PASSOU**. Engine 168,496s; SQLite 123,848s; demais pacotes também verdes, sem data race.
@@ -115,3 +115,63 @@ ACs de gestão #1/#2/#3 avaliados dentro das fronteiras explícitas da ISSUE-160
 Rodadas intermediárias encontraram expectativas anteriores de schema v5 e bloqueio da própria conta; foram alinhadas ao schema v6 e à política nova. Fixtures de imagem que usavam usuários sem sessão passaram a autenticar pela mesma fronteira dos handlers, sem enfraquecer os guards. Uma rodada inicial de race com timeout de 120s expirou; a rodada completa com 10m acima passou. Nada disso permanece como falha aberta.
 
 Os três ACs de gestão foram comprovados nas superfícies existentes da ISSUE-160, conforme o escopo descrito acima. Não houve aceite do usuário sobre a entrega de código, mudança para Done ou autorização de publicação.
+
+
+## Correções após o parecer do Reviewer — 19/11/2026
+
+O parecer externo original e o comentário do Reviewer foram preservados, incluindo as ressalvas históricas: `PARECER-REVIEWER.md` e comentário de autoria reviewer na tarefa. O usuário reafirmou a opção 2; a confirmação foi registrada com autoria **ebrgr** na tarefa e incorporada ao **doc-041 §2**, pelo comando `backlog doc update doc-041 --content ...`. Essa decisão mantém o recurso, sem representar aceite da entrega ou publicação.
+
+### A — SSRF das imagens importadas
+
+`imagefetch.PublicSource` grava o fragmento reservado `#tunetrail-public-only` na URL de imagem vinda de importação Koito/TuneTrail por não-root. A marca persiste no banco, no export e no reimport; não exige coluna ou migração nova. Os adaptadores JSON (arquivo do diretório e upload multipart) e HTML passam a origem autenticada ao importador; o corpo/arquivo não escolhe esse privilégio. O serviço reconsulta a sessão para decidir a origem, sem confiar num papel armazenado no objeto do chamador.
+
+Na busca efetiva, `imagefetch.request` reconhece a marca e remove o fragmento antes da requisição. O transporte restrito não usa proxy de ambiente; resolve DNS, rejeita conjuntos de respostas com IP proibido, conecta ao literal aprovado e confere o IP efetivamente conectado. Cada conexão de redirect passa pela mesma política. HTTP(S) somente, sem credenciais, no máximo três redirects seguidos, timeout total de 10s, limites de dial/headers/TLS e corpo de até 10 MiB. Loopback, RFC1918, ULA, link-local, unspecified, metadata de nuvem, CGNAT, multicast, endereços de transição IPv6 e IPv4 mapeados internos são negados. Fontes do root sem a marca continuam aceitando servidores em rede local; não foi imposto bloqueio global às imagens do root.
+
+Testes:
+
+- `TestPublicAddress160`: IPv4/IPv6 proibidos, metadata, mapeamentos e endereços públicos.
+- `TestImportedImageLocalBlock160`: marca persistente e idempotente, Download não alcança o servidor local marcado; fonte root sem marca continua funcionando; esquemas/credenciais inválidos rejeitados.
+- `TestPublicDNSAndConnectedIP160`: DNS privado e misto rejeitados antes de dial, DNS resolvido uma vez e conexão ao literal público, peer privado ou divergente rejeitado.
+- `TestPublicRedirects160`: primeiro hop público simulado sem internet; redirects para IP privado e nome que resolve privado bloqueados sem conexão ao destino; loop limitado, deadline/cancelamento e resposta pública positiva.
+- `TestOwnerHTTPImportProvenance160`: os três caminhos humanos de importação preservam a marca; a requisição anônima posterior de imagem em `/image/{id}/128x128.webp` retorna fallback e **zero requisições ao serviço interno**. A importação não tenta remover as imagens do recurso.
+- `TestDownloadBoundsAndCancellation` continua cobrindo corpo acima do limite e cancelamento no leitor comum de Download, usado também pelas fontes restritas.
+
+### B — Pré-semeadura do catálogo
+
+Mitigação implementada **sem mudança de schema**. `source` dos aliases de entidades novas criadas por import não-root recebe `ProfileImport:<profile_id>`, inclusive o alias canônico e aliases extras. Nomes, imagens e aliases continuam exibidos no histórico e exportados. A resolução implícita por nome/alias em artistas, álbuns e faixas ignora essa origem em outros destinos. `CatalogProfile` preserva a identidade do destino quando `WithoutProfile` remove somente o escopo de leitura das escutas; não cria um gate de visibilidade da ISSUE-161.
+
+MBIDs desconhecidos não são gravados nas entidades novas do import não-root. MBIDs já existentes continuam resolvendo o catálogo sem editar suas entidades; quando um MBID desconhecido foi descartado, a repetição do import usa o nome do próprio perfil e evita duplicações. O enriquecimento automático futuro também conserva a proveniência dos aliases e não preenche MBIDs que promoveriam a entidade ao namespace global. Somente uma operação editorial explicitamente autorizada ao root marca o contexto de validação e pode promover MBIDs/aliases. Importações de operador/root e ingestão ListenBrainz conservam seus contratos; essa mitigação não é uma reforma geral da identidade musical ou do protocolo de ingestão.
+
+Testes:
+
+- `TestOwnerImportResolution160`: mantém resolução própria; nega resolução por nome/aliases e MBID desconhecido em outro destino; cobre títulos alternativos de álbum e informações de faixa; impede promoção automática de MBIDs e aliases; permite que uma entidade legítima posterior use o nome/MBID e verifica validação editorial explícita por root.
+- `TestImportProfileIdentity160`: excluir a conta/perfil e cadastrar outra não reutiliza a identidade do perfil; os aliases antigos não passam a resolver para a conta substituta, enquanto os metadados do catálogo continuam preservados.
+- `TestOwnerHTTPImportProvenance160`: arquivos com MBIDs desconhecidos não os gravam nas três tabelas, gravam a proveniência correta e continuam importando escutas; repetir o upload com esses MBIDs não duplica artistas/álbuns/faixas/escutas.
+- `TestOwnerImportMetadata160`: imagens e aliases extras continuam presentes, com a marca de rede na imagem; reimportar não edita metadados existentes.
+
+Consequência documentada no doc-041: nomes iguais podem representar entidades distintas em destinos diferentes até reconciliação explícita pelo root. Não se certifica a autenticidade semântica de metadados de arquivos, e não se cria sobreposição de catálogo por usuário ou uma nova tabela de identidade. Os registros compartilham as tabelas existentes; a resolução implícita usa a proveniência persistida.
+
+### C — Retorno HTML do dono
+
+`authorizePage` interpreta ausência de section com profile presente como seção profiles. O redirect existente `/admin?profile=N` passa pela autorização pessoal e exibe o aviso de sucesso; `/admin` sem perfil continua com o destino anterior, sem antecipar a navegação da ISSUE-163.
+
+`TestHTMLManagementMatrix160` segue os redirects de salvar perfil, criar chave, remover relay e limpar avatar; exige HTTP 200 e o aviso “Changes saved.”. O upload HTML em `TestOwnerHTTPImportProvenance160` também segue o redirect e comprova o resumo “Imported: 1”. CSRF e a ordem dos campos multipart da 159 foram preservados.
+
+### D — Último admin com WAL
+
+As duas conexões concorrentes de `TestLastActiveAdministrator160` usam `_pragma=journal_mode(WAL)` e o teste confere `PRAGMA journal_mode = wal`. Permanecem os cenários de rebaixamento, desativação, exclusão e operação mista, com administrador pending adicional e exatamente um administrador ativo sobrevivente. **Migração 006 intacta; nenhuma 007 criada.**
+
+### E — Campos extras (opcional)
+
+A tolerância em post_listens, apikeys e profile_relay foi mantida para não mudar contratos/clientes sem necessidade. O destino segue resolvido pelo servidor; um profile_id extra não é aplicado. Permanecem a rejeição estrita em conta/perfil e as allowlists HTML. A API ListenBrainz não mudou. O teste adversarial anterior de profile_id no corpo continua provando que nenhuma escuta vai para outro perfil.
+
+### Validação das correções
+
+- `make check`: **PASSOU**, com go vet, todos os testes Go sem cache, UI/referências e **13/13 jornadas E2E**.
+- `CGO_ENABLED=1 go test -race -count=1 ./engine/... ./internal/admin ./internal/adminui ./internal/db/... ./internal/imagefetch ./internal/importer ./imagecache -timeout 10m`: **PASSOU**, sem data race. Engine 171,039s, SQLite 122,392s; demais pacotes verdes.
+- `CGO_ENABLED=1 go test -race -count=1 ./engine ./internal/admin ./internal/imagefetch -run '160|TestPublic|TestImported' -timeout 3m`: **PASSOU**, após os últimos ajustes e o caso de upload repetido com MBIDs desconhecidos (engine 20,092s).
+- `git diff --check`: **PASSOU**.
+- Graphify AST atualizado a partir desta worktree: **4297 nós e 19137 arestas**, sem extração semântica/LLM; custo de API zero tokens.
+- Revisão diferencial/deslop pelo próprio executor, sem delegação: `REVISAO-CORRECOES.md`. Parecer original preservado em `PARECER-REVIEWER.md`; não se atribui ao Reviewer externo uma nova revisão destas correções.
+
+A política central, o schema v6, a 159 e os limites de login permanecem preservados. Tarefa **Em andamento**, sem push, merge, publish ou Done.
