@@ -61,6 +61,7 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 		declared += f.UncompressedSize64
 	}
 	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "listenbrainz", file)
+	defer flushFileShadow(ctx) // Flush a partial page even when the legacy parser returns early.
 	budget := &io.LimitedReader{N: maxExpanded + 1}
 	totalLines := 0
 	ctx = context.WithValue(ctx, archiveLinesKey{}, &totalLines)
@@ -102,6 +103,7 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 	if matched == 0 {
 		return invalidFile(fmt.Errorf("archive has no ListenBrainz listen files"))
 	}
+	flushFileShadow(ctx)
 	return finishImport(ctx, filename, 0)
 }
 

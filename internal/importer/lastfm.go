@@ -63,6 +63,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
 	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "lastfm", file)
+	defer flushFileShadow(ctx) // Flush a partial page even when the legacy parser returns early.
 	for _, item := range export {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -145,5 +146,6 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 			}
 		}
 	}
+	flushFileShadow(ctx)
 	return finishImport(ctx, filename, count)
 }

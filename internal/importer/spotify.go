@@ -45,6 +45,7 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
 	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "spotify", file)
+	defer flushFileShadow(ctx) // Flush a partial page even when the legacy parser returns early.
 	for _, item := range export {
 		seen(ctx)
 		if err := ctx.Err(); err != nil {
@@ -85,5 +86,6 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			return err
 		}
 	}
+	flushFileShadow(ctx)
 	return finishImport(ctx, filename, len(export))
 }

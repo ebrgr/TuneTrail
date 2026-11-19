@@ -211,6 +211,7 @@ func (s *Sqlite) ProfileListenCount(ctx context.Context, id int32) (int64, error
 }
 
 // DeleteListeningProfile removes the confirmed pair and sessions, preserving the last admin.
+// Profile cascades also remove all receipt history and integrations.
 func (s *Sqlite) DeleteListeningProfile(ctx context.Context, id int32, name string, count int64) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

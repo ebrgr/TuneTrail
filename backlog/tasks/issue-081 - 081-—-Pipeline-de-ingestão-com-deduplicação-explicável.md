@@ -4,7 +4,7 @@ title: '081 — Pipeline de ingestão com deduplicação explicável: ativação
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-19T16:18:00Z'
+updated_date: '2026-11-19T16:58:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -63,6 +63,15 @@ created: 2026-11-19T16:18:00Z
 ---
 
 Divisão aprovada pelo usuário em 2026-11-19. Parte 1 = ISSUE-171 (modo sombra, antes da 133); parte 2 = esta tarefa (ativação, depois da 171 e da 133). Confirmação do usuário, conferida na migração 004 (linhas 56 e 62): a v4 aceita duplicate_decision same, different e review com event_id NULL, o que viabiliza a parte 1 sem migração. O AC4 original (parecer do Advisor registrado) foi cumprido para o plano pelo doc-043 e permanece para o diff da ativação.
+
+---
+
+author: codex
+created: 2026-11-19T16:58:00Z
+
+---
+
+Entradas obrigatórias da ativação após a revisão da ISSUE-171. (3) Excluir recibos de sombra da fila do worker antes de ligá-lo: filtrar os rule_version shadow-v1/shadow-v2, adapter_version ou estado equivalente e verificar que o histórico existente não gera novos eventos. (6) Impor limites por campo, quantidade e tamanho total do snapshot, com política explícita para excedentes e cobertura em teste. (7) Registrar classe/código do erro de recebimento sem incluir payload nem segredos. Medir algumas semanas de modo sombra em produção com a consulta versionada registrada em VERIFICACAO.md da ISSUE-171 antes de habilitar a parte 2.
 
 ---
 <!-- COMMENTS:END -->

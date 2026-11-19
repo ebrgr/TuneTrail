@@ -284,6 +284,7 @@ func parseNullableUUID(s sql.NullString) *uuid.UUID {
 	return &u
 }
 
+// PurgeAllData removes history, catalog and receipt provenance in one transaction.
 func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -294,6 +295,8 @@ func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 	// alias tables automatically.
 	for _, stmt := range []string{
 		`DELETE FROM listens`,
+		`DELETE FROM ingest_events`,
+		`DELETE FROM integrations WHERE id GLOB 'listenbrainz:*' OR id GLOB 'file:*'`,
 		`DELETE FROM tracks`,
 		`DELETE FROM releases`,
 		`DELETE FROM artists`,

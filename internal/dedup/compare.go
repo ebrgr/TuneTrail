@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/unicode/norm"
 )
 
 type Policy struct {
@@ -13,7 +15,7 @@ type Policy struct {
 	Window  time.Duration
 }
 
-var Shadow = Policy{Version: "shadow-v1", Window: 2 * time.Second}
+var Shadow = Policy{Version: "shadow-v2", Window: 2 * time.Second}
 
 type Receipt struct {
 	ID, Source, Namespace, ExternalID, Digest, BatchDigest, Precision, State string
@@ -25,6 +27,7 @@ type Evidence struct {
 	Candidate          string `json:"candidate_receipt_id,omitempty"`
 	DeltaSeconds       int64  `json:"delta_seconds,omitempty"`
 	Precision          string `json:"precision"`
+	RecordingMatch     bool   `json:"recording_mbid_match,omitempty"`
 	CandidatePrecision string `json:"candidate_precision,omitempty"`
 }
 
@@ -51,10 +54,28 @@ func Compare(policy Policy, receipt Receipt, candidate *Receipt, sameKey bool) D
 	} else if receipt.Source == candidate.Source && receipt.Namespace == candidate.Namespace &&
 		receipt.ExternalID != "" && candidate.ExternalID != "" && receipt.ExternalID != candidate.ExternalID {
 		result.Reason = "distinct_external_ids"
-	} else if receipt.Time.Sub(candidate.Time).Abs() <= policy.Window &&
-		((receipt.Snapshot.Recording != "" && receipt.Snapshot.Recording == candidate.Snapshot.Recording) ||
-			(strings.EqualFold(receipt.Snapshot.Artist, candidate.Snapshot.Artist) && strings.EqualFold(receipt.Snapshot.Title, candidate.Snapshot.Title))) {
-		result.Value, result.Reason = "review", "ambiguous_time_candidate"
+	} else if receipt.Time.Sub(candidate.Time).Abs() <= policy.Window {
+		a, b := receipt.Snapshot, candidate.Snapshot
+		result.Evidence.RecordingMatch = sameRecording(a, b)
+		if result.Evidence.RecordingMatch ||
+			(NormalizeName(a.Artist) == NormalizeName(b.Artist) && NormalizeName(a.Title) == NormalizeName(b.Title)) {
+			result.Value, result.Reason = "review", "ambiguous_time_candidate"
+		}
 	}
 	return result
+}
+
+// NormalizeName folds Unicode case, canonical composition and runs of whitespace.
+func NormalizeName(name string) string {
+	return norm.NFC.String(cases.Fold().String(strings.Join(strings.Fields(name), " ")))
+}
+
+// sameRecording compares declared and mapped MusicBrainz recording identifiers.
+func sameRecording(a, b ingest.Snapshot) bool {
+	for _, left := range []string{a.Recording, a.MappedRecording} {
+		if left != "" && (strings.EqualFold(left, b.Recording) || strings.EqualFold(left, b.MappedRecording)) {
+			return true
+		}
+	}
+	return false
 }

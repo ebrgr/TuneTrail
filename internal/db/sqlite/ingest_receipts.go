@@ -3,9 +3,11 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/dedup"
@@ -22,7 +24,7 @@ type preparedReceipt struct {
 	snapshot, digest string
 }
 
-// ReceiveBatch takes the writer lock on its first statement, before querying keys or candidates.
+// ReceiveBatch reserves the SQLite writer before inspecting integrations, keys or candidates.
 func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) (results []ingest.Result, err error) {
 	defer func() {
 		var storage *sqlitedriver.Error
@@ -51,11 +53,25 @@ func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) (results 
 		data, _ := json.Marshal(digests)
 		batchDigest = ingest.Digest(data)
 	}
-	tx, err := s.db.BeginTx(ctx, nil)
+	tx, err := s.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer tx.Close()
+	committed := false
+	defer func() {
+		if committed {
+			return
+		}
+		// A failed commit or a canceled request can leave a transaction open.
+		// SQLite may already have rolled back on a storage error.
+		if _, err := tx.ExecContext(context.WithoutCancel(ctx), "ROLLBACK"); err != nil && !isAlreadyRolledBack(err) {
+			_ = tx.Raw(func(any) error { return driver.ErrBadConn })
+		}
+	}()
+	if _, err = tx.ExecContext(ctx, "BEGIN IMMEDIATE"); err != nil {
+		return nil, err
+	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO integrations (id, profile_id, source_type, created_at)
 		VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`, source, batch.ProfileID, batch.Source, batch.ReceivedAt.Unix())
 	if err != nil {
@@ -77,10 +93,18 @@ func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) (results 
 		}
 		results = append(results, result)
 	}
-	if err := tx.Commit(); err != nil {
+	if _, err := tx.ExecContext(ctx, "COMMIT"); err != nil {
 		return nil, &ingest.ErrUnavailable{Cause: err}
 	}
+	committed = true
 	return results, nil
+}
+
+// isAlreadyRolledBack recognizes automatic SQLite rollback after a storage error.
+func isAlreadyRolledBack(err error) bool {
+	var sqliteErr *sqlitedriver.Error
+	return errors.As(err, &sqliteErr) && sqliteErr.Code() == sqlitecodes.SQLITE_ERROR &&
+		strings.Contains(sqliteErr.Error(), "no transaction is active")
 }
 
 const receiptColumns = `receipt_id, source_instance_id, coalesce(external_namespace,''), coalesce(external_event_id,''),
@@ -100,7 +124,7 @@ func scanReceipt(row interface{ Scan(...any) error }) (r dedup.Receipt, err erro
 }
 
 // findKey checks each applicable unique index under the same writer transaction.
-func findKey(ctx context.Context, tx *sql.Tx, b ingest.Batch, i ingest.Item, source string) (*dedup.Receipt, error) {
+func findKey(ctx context.Context, tx *sql.Conn, b ingest.Batch, i ingest.Item, source string) (*dedup.Receipt, error) {
 	base := `SELECT ` + receiptColumns + ` FROM ingest_events WHERE profile_id=? AND source_instance_id=? AND `
 	var found *dedup.Receipt
 	find := func(predicate string, args ...any) error {
@@ -136,7 +160,7 @@ func findKey(ctx context.Context, tx *sql.Tx, b ingest.Batch, i ingest.Item, sou
 }
 
 // receiveItem records the decision without setting any of the future identity columns.
-func receiveItem(ctx context.Context, tx *sql.Tx, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, previousBatchDigest string) (ingest.Result, error) {
+func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, previousBatchDigest string) (ingest.Result, error) {
 	r := dedup.Receipt{Source: source, Namespace: i.ExternalNamespace, ExternalID: i.ExternalID, Digest: i.digest,
 		BatchDigest: batchDigest, Snapshot: i.Snapshot, Time: i.ListenedAt, Precision: "second"}
 	if r.Time.IsZero() {
@@ -165,17 +189,26 @@ func receiveItem(ctx context.Context, tx *sql.Tx, b ingest.Batch, i preparedRece
 	id := uuid.NewString()
 	if previous != nil {
 		id = previous.ID
-		if decision.Value == "review" {
-			_, err = tx.ExecContext(ctx, `INSERT INTO ingest_observations(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)
-				VALUES(?,?,?,1,?,?,?,?) ON CONFLICT(profile_id,receipt_id,digest_version,snapshot_digest) DO NOTHING`,
-				uuid.NewString(), b.ProfileID, id, i.digest, ingest.DigestVersion, i.snapshot, b.ReceivedAt.Unix())
-			if err != nil {
-				return ingest.Result{}, err
-			}
+		if decision.Value == "same" {
+			// A keyed retry returns the existing receipt without rewriting its verdict.
+			return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: previous.State == "pending_duplicate"}, nil
 		}
-		// An equivalent retry must not clear an earlier open review.
-		_, err = tx.ExecContext(ctx, `UPDATE ingest_events SET duplicate_decision=?,reason_codes=?,evidence=?,rule_version=?,state=?
-			WHERE profile_id=? AND receipt_id=? AND (state!='pending_duplicate' OR ?='review')`, decision.Value, string(reasons), string(evidence), decision.RuleVersion, state, b.ProfileID, id, decision.Value)
+		observation, err := tx.ExecContext(ctx, `INSERT INTO ingest_observations(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)
+				VALUES(?,?,?,1,?,?,?,?) ON CONFLICT(profile_id,receipt_id,digest_version,snapshot_digest) DO NOTHING`,
+			uuid.NewString(), b.ProfileID, id, i.digest, ingest.DigestVersion, i.snapshot, b.ReceivedAt.Unix())
+		if err != nil {
+			return ingest.Result{}, err
+		}
+		added, err := observation.RowsAffected()
+		if err != nil {
+			return ingest.Result{}, err
+		}
+		// Only a new conflicting observation can update the stored review evidence.
+		if added > 0 {
+			_, err = tx.ExecContext(ctx, `UPDATE ingest_events SET duplicate_decision=?,reason_codes=?,evidence=?,rule_version=?,state=?
+				WHERE profile_id=? AND receipt_id=?`, decision.Value, string(reasons), string(evidence), decision.RuleVersion, state, b.ProfileID, id)
+		}
+		return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: true}, err
 	} else {
 		_, err = tx.ExecContext(ctx, `INSERT INTO ingest_events
 			(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
@@ -186,12 +219,11 @@ func receiveItem(ctx context.Context, tx *sql.Tx, b ingest.Batch, i preparedRece
 			id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
 			b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, r.Time.UTC().Format(receiptTime), i.OriginalTime(), r.Precision, i.snapshot, i.digest, ingest.DigestVersion, state, decision.Value, string(reasons), string(evidence), decision.RuleVersion)
 	}
-	pending := state == "pending_duplicate" || (previous != nil && previous.State == "pending_duplicate")
-	return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: pending}, err
+	return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: state == "pending_duplicate"}, err
 }
 
 // compareNearby looks only at receipts for this profile within the rule's UTC window.
-func compareNearby(ctx context.Context, tx *sql.Tx, profile int32, r dedup.Receipt, decision dedup.Decision) (dedup.Decision, error) {
+func compareNearby(ctx context.Context, tx *sql.Conn, profile int32, r dedup.Receipt, decision dedup.Decision) (dedup.Decision, error) {
 	rows, err := tx.QueryContext(ctx, `SELECT `+receiptColumns+` FROM ingest_events
 		WHERE profile_id=? AND listened_at BETWEEN ? AND ? AND state!='invalid'
 		ORDER BY listened_at,receipt_id`, profile, r.Time.Add(-dedup.Shadow.Window).UTC().Format(receiptTime), r.Time.Add(dedup.Shadow.Window).UTC().Format(receiptTime))

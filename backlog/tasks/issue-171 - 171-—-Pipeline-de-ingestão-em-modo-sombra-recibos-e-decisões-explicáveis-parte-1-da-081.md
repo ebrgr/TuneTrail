@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T16:18:00Z'
-updated_date: '2026-11-19T16:33:00Z'
+updated_date: '2026-11-19T16:59:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -15,6 +15,7 @@ dependencies:
   - ISSUE-080
 references:
   - backlog/evidencias/issue-171/VERIFICACAO.md
+  - backlog/evidencias/issue-171/PARECER-REVIEWER.md
 documentation:
   - doc-043
 priority: high
@@ -37,7 +38,7 @@ Decisões adotadas (comentário do Advisor na ISSUE-081): mesma faixa duas vezes
 - [x] #1 O recibo de cada escuta e a decisão (same, different ou review) com reason_code, evidência e rule_version são gravados em ingest_events sem alterar nenhuma contagem de escutas; o caminho atual continua sendo a fonte da verdade
 - [x] #2 O 200 da API só sai depois do commit do recibo e falha de disco dá 503, sem perder o lote; playing_now continua só em memória
 - [x] #3 Testes de concorrência (envios iguais de conexões distintas disputando a mesma chave) e de repetições legítimas, incluindo mesma faixa no mesmo segundo, fuso e horário de verão
-- [x] #4 Relatório da taxa de Revisar sobre cópia de banco real, sem tocar o banco real, registrado em backlog/evidencias/issue-171/
+- [x] #4 Replay reproduzível em cópia privada comprova que a regra classifica o histórico persistido sem alterar a origem ou as escutas legadas. Replay sintético comprova Revisar entre fontes a 0–2 s e em duas entradas no mesmo segundo. A amostra histórica não estima a taxa em produção nem cobre reenvios descartados e tráfego entre fontes; registrar resultados, limites e consulta versionada para medir antes da ativação.
 - [x] #5 Confirmado em teste que linhas de sombra com duplicate_decision same e event_id NULL são aceitas pela v4 sem nova migração
 <!-- AC:END -->
 
@@ -68,6 +69,24 @@ created: 2026-11-19T16:33:00Z
 ---
 
 Verificação: cinco critérios comprovados. Aprovado o uso da hora de chegada somente no recibo estimated. Os testes cobrem commit, disco cheio, reenvio, fail-open, playing_now, WAL, fuso/horário de verão e a guarda v4. Replay em cópia privada: 0 de 80 escutas encaminhadas para Revisar, com hashes da origem e conteúdo legado preservados. A tarefa segue Em andamento.
+
+---
+
+author: reviewer
+created: 2026-11-19T16:40:00Z
+
+---
+
+Reviewer (leitura, sem repetir testes): REPROVADO com 1 item obrigatório. [BUG] PurgeAllData, DeleteListen e ApplyProfileDelete deixam os recibos de sombra (snapshot e chave de arquivo) depois da exclusão, sem purga, o que viola o doc-040 §4/§7. Ressalvas: linhas de sombra received/closed_at NULL entram em idx_ingest_queue (a 081 precisa filtrá-las); o UPDATE no reenvio sobrescreve a decisão original (different vira same); a comparação sem normalização subestima a taxa de Revisar; a trava depende da ordem do INSERT em integrations; importador grava um recibo por transação; snapshot sem limites; logs sem código de erro; AC4 (0/80) quase tautológico e replay não versionado. Modo sombra, 503 e fail-open, idempotência, perfil vindo do token e ausência de migração: OK. Advisor só na parte 2 (effort=high). Parecer em backlog/evidencias/issue-171/PARECER-REVIEWER.md.
+
+---
+
+author: codex
+created: 2026-11-19T16:59:00Z
+
+---
+
+Verificação após o parecer: exclusões atômicas com cascata e novo recibo após reimportar, decisões originais preservadas em reenvios equivalentes, normalização shadow-v2, BEGIN IMMEDIATE e disputa em WAL para as três chaves, lotes de 200 com cauda parcial. AC4 reescrito e comprovado com replay versionado: cópia histórica 0/80 sem mudança na origem ou em listens; sintético 4/10, incluindo fontes cruzadas a 0–2 s e repetição no mesmo segundo. O histórico não estima a taxa em produção. Ressalvas 3, 6 e 7 registradas na ISSUE-081. A tarefa segue Em andamento.
 
 ---
 <!-- COMMENTS:END -->

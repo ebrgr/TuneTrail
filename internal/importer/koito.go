@@ -51,6 +51,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
 	ctx = withFileShadow(ctx, store, profileID, "koito", f)
+	defer flushFileShadow(ctx) // Flush a partial page even when the legacy parser returns early.
 	// Validate all required identities before writing anything. Uploaded exports
 	// are untrusted and an empty artist list must not panic at artistIds[0].
 	for _, item := range data.Listens {
@@ -242,6 +243,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		}
 	}
 
+	flushFileShadow(ctx)
 	return finishImport(ctx, filename, count)
 }
 func getPrimaryAliasFromAliasSlice(aliases []models.Alias) string {

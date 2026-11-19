@@ -46,6 +46,7 @@ func (s *Sqlite) SaveListenWithResult(ctx context.Context, opts db.SaveListenOpt
 	return n > 0, err
 }
 
+// DeleteListen removes scoped history and matching receipts atomically.
 func (s *Sqlite) DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time) error {
 	if trackId == 0 {
 		return errors.New("DeleteListen: required parameter 'trackId' missing")
@@ -53,9 +54,15 @@ func (s *Sqlite) DeleteListen(ctx context.Context, trackId int32, listenedAt tim
 	if trackId <= 0 || db.ProfileID(ctx) <= 0 {
 		return db.ErrInvalidInput
 	}
-	result, err := s.db.ExecContext(ctx,
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	profile := db.ProfileID(ctx)
+	result, err := tx.ExecContext(ctx,
 		`DELETE FROM listens WHERE track_id = ? AND listened_at = ? AND profile_id = ?`,
-		trackId, listenedAt.Unix(), db.ProfileID(ctx),
+		trackId, listenedAt.Unix(), profile,
 	)
 	if err != nil {
 		return err
@@ -67,7 +74,10 @@ func (s *Sqlite) DeleteListen(ctx context.Context, trackId int32, listenedAt tim
 	if n == 0 {
 		return db.ErrNotFound
 	}
-	return nil
+	if err := deleteListenReceipts(ctx, tx, profile, trackId, listenedAt); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // listenRow is an intermediate scan target used to decouple the main rows

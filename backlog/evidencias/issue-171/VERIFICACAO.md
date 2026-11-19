@@ -1,43 +1,60 @@
-# ISSUE-171 — verificação do modo sombra
+# ISSUE-171 — verificação do modo sombra após a revisão
 
-## Decisão aceita
+O [parecer do Reviewer](PARECER-REVIEWER.md) avaliou o commit inicial `95c0875`. A correção trata o item obrigatório de exclusão e as ressalvas 1, 2, 4, 5 e 8. As ressalvas 3, 6 e 7 ficaram registradas na ISSUE-081 como entradas obrigatórias da ativação.
 
-Para itens ListenBrainz sem `listened_at`, o recibo usa a hora de chegada com precisão `estimated`. A escrita legada continua calculando o instante por item. Os horários podem divergir em lotes que cruzam a virada de segundo, preservando a chave de deduplicação usada em `listens`.
+## Comportamento verificado
 
-## Fluxo verificado
+- A exclusão individual remove recibos no mesmo perfil e segundo UTC quando artista e título correspondem aos nomes ou aliases do catálogo. As observações e os detalhes caem em cascata. `ApplyProfileDelete`, quando apaga escutas, limpa todos os recibos e integrações do perfil afetado. A exclusão da conta usa a cascata do perfil. A limpeza global remove todos os recibos e as integrações de sombra `listenbrainz:` e `file:`. Cada operação usa a mesma transação das exclusões legadas.
+- `BEGIN IMMEDIATE` reserva a escrita antes da consulta às chaves e aos candidatos. Reenvio equivalente reutiliza a chave e devolve `same` ao chamador, preservando decisão, evidência e versão gravadas. Uma variante incompatível preserva o snapshot original, grava observação e sinaliza Revisar. Decisões históricas já gravadas pela versão anterior não são reconstruídas.
+- `shadow-v2` normaliza caixa Unicode, NFC e espaços. MBIDs de gravação declarados e mapeados participam da comparação como evidência de candidatura. A janela de ±2 s seleciona uma ambiguidade e pode produzir Revisar. Igual continua exigindo chave confiável e conteúdo equivalente.
+- Cada importador acumula até 200 recibos por transação e descarrega a última página antes de arquivar o arquivo. O sombreamento mantém memória limitada ao lote, sem alterar as estruturas já usadas pelos parsers legados. Os ordinais incluem itens filtrados. O cursor lê checkpoints persistidos sem staging. O reenvio preenche páginas ausentes e mantém os IDs das existentes. Erros da gravação em sombra seguem em fail-open. Se o contexto for cancelado, a cauda ainda em memória pode ser recuperada reenviando o arquivo.
+- A API responde com 200 após o commit do recibo e o caminho legado. Falha de disco, armazenamento ou commit do recibo dá 503. Falha estritamente interna de sombra antes do commit continua em fail-open. `playing_now` segue efêmero e o relay mantém o fluxo existente. Para itens sem `listened_at`, o recibo guarda a hora de chegada como `estimated` e `listens` calcula por item. Se os dois instantes caírem em segundos diferentes, a correspondência de uma exclusão individual fica limitada ao segundo de `listens`; a limpeza do perfil remove esses recibos também.
 
-- A primeira escrita do lote serializa a consulta de chaves e candidatos entre conexões SQLite. O recibo registra decisão, motivo, evidência e regra. A resolução fica na versão zero e os IDs futuros ficam nulos.
-- A API confirma o lote após o commit do recibo e a ingestão legada. Erro de disco na gravação do recibo ou falha no commit gera 503 antes de tocar o catálogo. Uma falha interna de sombra anterior ao commit é registrada em log e segue pelo caminho legado, conforme a exceção solicitada. `playing_now` pula o ledger e o relay continua no fluxo existente.
-- Upload, importação manual e importação de inicialização passam pelos mesmos adaptadores. O SHA-256 dos bytes e o ordinal absoluto identificam cada checkpoint, inclusive quando o arquivo muda de nome. O cursor lê os snapshots já recebidos sem acesso à área de staging. Se o arquivo for reenviado, o parser reprocessa o caminho legado com as mesmas regras e o ledger reutiliza os recibos. A retomada da aplicação de eventos a partir desses checkpoints fica com a ISSUE-134.
-- O contador `Pending` é uma leitura do resultado de sombra para os itens do upload. Pode sobrepor `Imported` e `Duplicates` e preserva as pendências de sombra durante reenvio equivalente.
-- A chave opcional do cliente é escopada por perfil, instância, operação e ordinal. O adaptador ListenBrainz compatível só utiliza essa chave quando fornecida no cabeçalho `Idempotency-Key`. O armazenamento aceita IDs externos confiáveis com namespace explícito quando fornecidos por um adaptador. O payload compatível atual não declara tal ID.
-
-## Testes de aceite
+## Critérios de aceite
 
 | AC | Evidência |
 | --- | --- |
-| 1 | `TestShadowReceiptACK` persiste dois recibos e uma decisão de Revisar para duas entradas sem chave no mesmo segundo. `listens` contém uma escuta. O mesmo teste cobre fail-open e exclusão de campos não autorizados do snapshot. `TestShadowFileResume` cobre digest, ordinais, cursor e contadores legados. |
-| 2 | `TestShadowReceiptACK` injeta falha de commit por FK adiada, comprova 503 e confirma sucesso após reenvio. `TestShadowDiskFull` usa `max_page_count` para provocar SQLITE_FULL, observa rollback integral e reenvia o lote. O ACK de `playing_now` só atualiza o fluxo efêmero. |
-| 3 | `TestShadowWALRetry` disputa a mesma chave com dois pools WAL e guarda a observação da variante conflitante. `TestShadowRepetitions` cobre mesmo instante com offset diferente, a hora repetida na volta do horário de verão e ordinais de arquivo independentes. `TestShadowClientKey` cobre reenvio de cliente, extensão conflitante de lote e isolamento por perfil. |
-| 4 | Replay em cópia privada do banco real descrito abaixo. |
-| 5 | `TestShadowWALRetry` aplica até a migração 004 e confirma uma linha com `duplicate_decision='same'` e `event_id IS NULL`. |
+| 1 | `TestShadowReceiptACK` confirma dois recibos, uma decisão de Revisar e uma escuta legada. `TestShadowDeletePaths` cobre exclusão, rollback por falha, cascatas, preservação de outros perfis e reimportação após apagar. `TestShadowFileBatching` e `TestShadowFileResume` cobrem página parcial, reenvio, cursor e contadores legados. |
+| 2 | `TestShadowReceiptACK` injeta falha no commit por FK adiada e comprova 503, reenvio, fail-open e `playing_now`. `TestShadowDiskFull` provoca SQLITE_FULL com `max_page_count`, comprova rollback integral e repete o lote com sucesso. |
+| 3 | `TestShadowWALRetry` disputa os índices de ID externo, chave de cliente mais ordinal e arquivo mais ordinal por dois pools WAL, com uma linha por chave e preservação da decisão original. `TestShadowRepetitions` cobre fuso, horário de verão e mesmo segundo. `TestShadowUnicodeAndMappedRecording` cobre Unicode decomposto, caixa, espaços e MBID mapeado. |
+| 4 | Replay histórico em cópia privada e replay sintético reproduzíveis, descritos abaixo. O histórico mede a classificação de linhas que sobreviveram ao caminho legado e permite verificar a invariância dos dados. O cenário sintético comprova a resposta da regra, sem estimar a incidência dessas situações no tráfego. |
+| 5 | `TestShadowV4AcceptsSame` aplica somente até a migração 004. A regra compara com um candidato de ID confiável e a fixture insere uma nova linha com o resultado `same`, evidência apontando ao candidato e `event_id IS NULL`. A chave única continua no candidato, cuja decisão inicial é preservada. |
 
-## Medição em cópia privada do histórico real
+## Replay reproduzível
 
-Os helpers de `scripts/validate_ingest_migration.py` calcularam em memória os hashes físicos do banco de origem e de seus arquivos WAL, SHM e journal, quando presentes. Depois copiaram esses componentes para um diretório temporário antes da primeira conexão SQLite. Somente a cópia foi aberta, validada e atualizada da versão 5 para a 6.
+```sh
+python3 scripts/validate_ingest_shadow.py
+python3 scripts/validate_ingest_shadow.py --source /caminho/para/banco-quiescente.db
+```
 
-O replay projetou título, artista principal, lançamento, MBID, duração e instante de cada escuta preservada no histórico. Os itens foram ordenados por perfil, instante e faixa, e enviados em lotes de até 250 ao `ReceiveBatch`, como entregas sem chave confiável. A janela foi de ±2 s e a regra foi `shadow-v1`.
+O script copia DB, WAL, SHM e journal, quando presentes, para uma pasta temporária antes de usar SQLite. Compara em memória os hashes físicos da origem antes e depois. O replay usa o `ReceiveBatch` de produção com `shadow-v2`. No caso histórico, a cópia passou da versão 5 para a 6 e as contagens, o digest de `listens`, `integrity_check` e `foreign_key_check` foram conferidos. A origem teve hashes idênticos antes e depois.
 
-| Perfis com histórico | Escutas avaliadas | Diferente | Igual | Revisar | Taxa de Revisar |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 80 | 80 | 0 | 0 | 0,0% |
+| Replay | Diferente | Igual | Revisar |
+| --- | ---: | ---: | ---: |
+| Histórico real, 80 escutas em um perfil com histórico | 80 | 0 | 0 |
+| Fontes cruzadas, diferença de 0 s | 1 | 0 | 1 |
+| Fontes cruzadas, diferença de 1 s | 1 | 0 | 1 |
+| Fontes cruzadas, diferença de 2 s | 1 | 0 | 1 |
+| Duas entradas da mesma faixa no mesmo segundo | 1 | 0 | 1 |
+| Controle de fontes cruzadas, diferença de 3 s | 2 | 0 | 0 |
 
-As 80 linhas em `listens` da cópia mantiveram contagem e digest de conteúdo. `integrity_check` retornou `ok` e `foreign_key_check` não retornou linhas. Os hashes físicos da origem coincidiram antes e depois. O diretório temporário foi removido e só os agregados foram registrados.
+As duplas sintéticas têm grafias diferentes de álbum, caixa, espaços e acentos. Ao todo, foram **4 de 10** itens encaminhados para Revisar nessas fixtures. O **0 de 80** histórico vem de linhas que já passaram pela chave legada por perfil, faixa e segundo, sem proveniência de múltiplas fontes no replay. A amostra não recupera reenvios ou repetições já descartados e não estima a taxa em produção.
 
-A amostra mede colisões recuperáveis a partir do histórico salvo. Ela não cobre reenvios ou repetições no mesmo segundo já descartados pela chave legada, nem mede o tráfego futuro de fontes cruzadas. Os testes de aceitação exercitam essas colisões separadamente.
+## Medição antes da ativação
+
+Medir algumas semanas de modo sombra em produção antes de ligar a ISSUE-081. Fixar início e fim em Unix UTC, manter a consulta junto do relatório e repetir por versão da regra. A unidade é o recibo persistido; reenvios equivalentes reutilizam o recibo. Falhas de sombra que não geram recibos ficam fora do denominador.
+
+```sql
+SELECT rule_version, source_type, duplicate_decision, reason_codes, COUNT(*) AS receipts
+FROM ingest_events
+WHERE received_at >= :start_utc AND received_at < :end_utc
+  AND rule_version = 'shadow-v2' AND source_type IN ('listenbrainz', 'file')
+GROUP BY rule_version, source_type, duplicate_decision, reason_codes
+ORDER BY source_type, duplicate_decision, reason_codes;
+```
 
 ## Verificações locais
 
 - `TUNETRAIL_WEB_DIR="$PWD/assets" make check` passou, incluindo Go vet/test, UI e 13 de 13 jornadas e2e.
-- `CGO_ENABLED=1 go test -race -count=1` passou em `engine`, `engine/handlers` e `internal/db/sqlite`. Os pacotes `internal/importer`, `internal/ingest` e `internal/dedup` foram compilados com o detector e exercitados pelos testes integrados. O recorte `TestShadow` também passou separadamente.
-- Graphify AST foi atualizado a partir desta worktree. `git diff --check` passou.
+- `CGO_ENABLED=1 go test -race -count=1` passou em `engine`, `engine/handlers`, `internal/db/sqlite`, `internal/importer` e `internal/dedup`. `internal/ingest` e `scripts/ingest_shadow_replay` foram compilados com o detector. O teste de concorrência usou duas conexões WAL independentes.
+- Graphify AST foi atualizado a partir da worktree. `git diff --check` passou.

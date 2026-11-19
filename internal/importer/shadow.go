@@ -16,6 +16,8 @@ import (
 
 type shadowKey struct{}
 
+const shadowBatchSize = 200
+
 type fileShadow struct {
 	receiver ingest.Receiver
 	batch    ingest.Batch
@@ -40,27 +42,45 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 	}
 	return context.WithValue(ctx, shadowKey{}, &fileShadow{
 		receiver: receiver,
-		batch:    ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format},
+		batch:    ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
 		ordinal:  -1,
 	})
 }
 
-// captureFileListen checkpoints the absolute ordinal without influencing legacy writes.
+// captureFileListen buffers a bounded page with absolute ordinals.
 func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Time) {
 	shadow, ok := ctx.Value(shadowKey{}).(*fileShadow)
 	if !ok {
 		return
 	}
-	batch := shadow.batch
-	batch.ReceivedAt = time.Now()
-	batch.Items = []ingest.Item{{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at}}
-	results, err := shadow.receiver.ReceiveBatch(ctx, batch)
-	if err != nil {
-		logger.FromContext(ctx).Warn().Msg("Import shadow receipt failed")
+	if len(shadow.batch.Items) == 0 {
+		shadow.batch.ReceivedAt = time.Now()
+	}
+	shadow.batch.Items = append(shadow.batch.Items, ingest.Item{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at})
+	if len(shadow.batch.Items) == shadowBatchSize {
+		flushFileShadow(ctx)
+	}
+}
+
+// flushFileShadow commits full pages or the final partial page without affecting legacy status.
+func flushFileShadow(ctx context.Context) {
+	shadow, ok := ctx.Value(shadowKey{}).(*fileShadow)
+	if !ok || len(shadow.batch.Items) == 0 || ctx.Err() != nil {
 		return
 	}
-	if result, ok := ctx.Value(resultKey{}).(*Result); ok && len(results) == 1 && results[0].Pending {
-		result.Pending++
+	results, err := shadow.receiver.ReceiveBatch(ctx, shadow.batch)
+	clear(shadow.batch.Items)
+	shadow.batch.Items = shadow.batch.Items[:0]
+	if err != nil {
+		logger.FromContext(ctx).Warn().Msg("Import shadow receipt batch failed")
+		return
+	}
+	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
+		for _, receipt := range results {
+			if receipt.Pending {
+				result.Pending++
+			}
+		}
 	}
 }
 

@@ -138,7 +138,7 @@ func (s *Sqlite) PreviewProfileDelete(ctx context.Context, profile int32, kind s
 	return p, tx.Commit()
 }
 
-// ApplyProfileDelete rejects a stale confirmation and deletes only listens in one transaction.
+// ApplyProfileDelete rejects stale confirmations and clears receipt provenance for the affected profile.
 func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDeletePlan) (int64, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -165,6 +165,17 @@ func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDele
 	}
 	if count != current.Count {
 		return 0, db.ErrConflict
+	}
+	// Shadow receipts have no stable event link for a bulk catalog deletion.
+	if count > 0 {
+		for _, query := range []string{
+			`DELETE FROM ingest_events WHERE profile_id=?`,
+			`DELETE FROM integrations WHERE profile_id=?`,
+		} {
+			if _, err := tx.ExecContext(ctx, query, expected.ProfileID); err != nil {
+				return 0, staleWriteConflict(err)
+			}
+		}
 	}
 	if err = tx.Commit(); err != nil {
 		return 0, staleWriteConflict(err)
