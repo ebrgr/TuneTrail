@@ -1,11 +1,11 @@
 ---
 id: ISSUE-160
 title: 160 — Autorização de gestão própria e administração global
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T15:01:00Z'
+updated_date: '2026-11-19T15:10:00Z'
 labels:
   - admin
   - api
@@ -103,6 +103,24 @@ created: 2026-11-19T15:01:00Z
 ---
 
 Correções pós-Reviewer verificadas: confirmação da opção 2 registrada com autoria ebrgr e no doc-041 §2, com os riscos e mitigações. A: origem de imagem importada por não-root persistida; fetch público valida DNS, fixa IP e confere peer, sem proxy, revalida redirects e mantém limites de tempo/tamanho; fontes locais root preservadas. B: aliases usam proveniência por destino no campo source existente, MBIDs desconhecidos não são gravados e enriquecimento automático não promove a entidade; imagens/aliases/histórico e reimportação preservados, sem novo schema. C: redirect /admin?profile=N autorizado como profiles, com aviso de sucesso testado. D: concorrência do último admin em WAL, com asserção do modo. E: tolerância de campos extras mantida por compatibilidade; destino permanece do servidor. make check passou (13/13 E2E); race completo nos pacotes afetados e casos finais passaram. Graphify AST atualizado, diff/deslop e revisão diferencial pelo executor APROVADO, sem re-delegar. Parecer e comentário originais do Reviewer preservados e incluídos no commit. Migração 006 intacta, sem 007, sem mudanças na 159/limites de login; Em andamento, sem push/merge/publish/Done. Evidências detalhadas em VERIFICACAO.md.
+
+---
+
+author: advisor
+created: 2026-11-19T15:09:00Z
+
+---
+
+Parecer do Advisor (Modo A, por leitura, sem rodar testes): APROVADO. Sem falhas críticas. (1) SSRF: imagefetch/public.go resolve uma vez, valida todos os IPs, disca o IP literal e confere o peer; sem proxy; redirect revalidado pelo mesmo transport (máx. 3, 10 s, 10 MiB); a marca #tunetrail-public-only é aplicada pelo servidor a toda URL de import não-root (koito.go:92-97) antes de qualquer uso e acompanha image_source até imagecache/automatic_image; o dono não consegue retirá-la, e o root forjá-la só restringe. Formas alternativas (decimal/octal) caem na validação do IP resolvido. (2) Pré-semeadura: MBID descartado em Save*, promoção bloqueada em Update* sem WithCatalogEditorial (só root), aliases ProfileImport:N filtrados em GetArtist/GetAlbum/releaseByArtistAndTitles/trackByTrackInfo, proveniência herdada no enriquecimento; IDs de perfil são AUTOINCREMENT, então não há reuso de escopo. (3) Migração 006 só recria triggers dentro da transação do goose, Down bloqueado de propósito, e não está em nenhuma tag; UpdateAccountAccess começa com UPDATE (lock de escrita) que revalida o ator, então rebaixamento mútuo em paralelo falha com ErrConflict. (4) AuthorizeService reautentica a cada chamada; API key (SessionID nulo) e pending recebem negação. (5) Commits ISSUE-160, CHANGELOG, comentários em inglês e doc-041 §2 conferem. Melhorias opcionais: bloquear também 192.0.0.0/24 (metadata OCI legada 192.0.0.192), 192.88.99.0/24 e TEST-NETs em blockedPublicPrefixes; DROP TRIGGER IF EXISTS na 006; doc-041 registrar como risco residual que scrobbles e outros importadores do dono (não Koito) continuam gravando aliases e MBIDs globais, como antes. Atenção: a branch parte da v0.37 (8bbccb4), não da v0.38; é preciso fazer rebase sobre a main (ISSUE-075/169) antes do publish. Pode ir a aceite.
+
+---
+
+author: claude
+created: 2026-11-19T15:10:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-19, incluindo a exceção da importação por dono (doc-041 §2) já confirmada por ele. Pareceres: Reviewer (APROVADO COM RESSALVAS; SSRF, pré-semeadura, redirect do dono e teste em WAL corrigidos em 9de0bd6) e Advisor (APROVADO, effort medium). Melhorias opcionais do Advisor (bloqueios 192.0.0.0/24, 192.88.99.0/24 e TEST-NETs; DROP TRIGGER IF EXISTS na 006; risco residual de aliases/MBIDs de importadores não-Koito no doc-041) ficam registradas, sem bloquear.
 
 ---
 <!-- COMMENTS:END -->
