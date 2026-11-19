@@ -296,7 +296,6 @@ func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 	for _, stmt := range []string{
 		`DELETE FROM listens`,
 		`DELETE FROM ingest_events`,
-		`DELETE FROM integrations WHERE id GLOB 'listenbrainz:*' OR id GLOB 'file:*'`,
 		`DELETE FROM tracks`,
 		`DELETE FROM releases`,
 		`DELETE FROM artists`,
@@ -304,6 +303,9 @@ func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 		if _, err := tx.ExecContext(ctx, stmt); err != nil {
 			return fmt.Errorf("PurgeAllData: %w", err)
 		}
+	}
+	if err := deleteShadowIntegrations(ctx, tx, 0); err != nil {
+		return fmt.Errorf("PurgeAllData: %w", err)
 	}
 	return tx.Commit()
 }

@@ -42,7 +42,7 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 	}
 	return context.WithValue(ctx, shadowKey{}, &fileShadow{
 		receiver: receiver,
-		batch:    ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
+		batch:    ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceFile, Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
 		ordinal:  -1,
 	})
 }

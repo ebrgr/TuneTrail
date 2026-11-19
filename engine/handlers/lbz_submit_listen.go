@@ -342,7 +342,7 @@ func receiveListenBatch(ctx context.Context, receiver ingest.Receiver, profile i
 	if req.ListenType == ListenTypeImport {
 		operation = string(ListenTypeImport)
 	}
-	batch := ingest.Batch{ProfileID: profile, Source: "listenbrainz", Operation: operation, ReceivedAt: receivedAt}
+	batch := ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceListenBrainz, Operation: operation, ReceivedAt: receivedAt}
 	if key != "" {
 		batch.ClientKey = ingest.Digest([]byte(key))
 	}

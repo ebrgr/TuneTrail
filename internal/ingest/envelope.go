@@ -12,6 +12,12 @@ import (
 
 const DigestVersion = "sha256-json-v1"
 
+// These source types own temporary shadow integration identities.
+const (
+	ShadowSourceListenBrainz = "listenbrainz"
+	ShadowSourceFile         = "file"
+)
+
 // Snapshot only carries fields explicitly selected by an adapter.
 type Snapshot struct {
 	ArtistMBIDs       []string `json:"artist_mbids,omitempty"`

@@ -39,7 +39,7 @@ func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) (results 
 	if len(batch.Items) == 0 {
 		return nil, nil
 	}
-	source := fmt.Sprintf("%s:%d", batch.Source, batch.ProfileID)
+	source := receiptSourcePrefix(batch.Source) + fmt.Sprint(batch.ProfileID)
 	batchID := uuid.NewString()
 	prepared := make([]preparedReceipt, len(batch.Items))
 	digests := make([]string, len(batch.Items))
@@ -250,7 +250,7 @@ func (s *Sqlite) ReadFileReceipts(ctx context.Context, profile int32, format, di
 	rows, err := s.db.QueryContext(ctx, `SELECT item_ordinal,receipt_id,original_snapshot,listened_at,time_precision,state
 		FROM ingest_events WHERE profile_id=? AND source_instance_id=? AND file_format=? AND format_version='1'
 		  AND file_digest=? AND item_ordinal>? ORDER BY item_ordinal LIMIT 500`,
-		profile, fmt.Sprintf("file:%d", profile), format, digest, after)
+		profile, receiptSourcePrefix(ingest.ShadowSourceFile)+fmt.Sprint(profile), format, digest, after)
 	if err != nil {
 		return nil, err
 	}

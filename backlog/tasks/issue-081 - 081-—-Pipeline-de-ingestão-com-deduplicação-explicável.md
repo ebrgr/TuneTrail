@@ -4,7 +4,7 @@ title: '081 — Pipeline de ingestão com deduplicação explicável: ativação
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-19T16:58:00Z'
+updated_date: '2026-11-19T17:17:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -72,6 +72,15 @@ created: 2026-11-19T16:58:00Z
 ---
 
 Entradas obrigatórias da ativação após a revisão da ISSUE-171. (3) Excluir recibos de sombra da fila do worker antes de ligá-lo: filtrar os rule_version shadow-v1/shadow-v2, adapter_version ou estado equivalente e verificar que o histórico existente não gera novos eventos. (6) Impor limites por campo, quantidade e tamanho total do snapshot, com política explícita para excedentes e cobertura em teste. (7) Registrar classe/código do erro de recebimento sem incluir payload nem segredos. Medir algumas semanas de modo sombra em produção com a consulta versionada registrada em VERIFICACAO.md da ISSUE-171 antes de habilitar a parte 2.
+
+---
+
+author: codex
+created: 2026-11-19T17:17:00Z
+
+---
+
+Confirmação de entradas obrigatórias da ativação. (3) Antes de ativar o worker, excluir da seleção de idx_ingest_queue os recibos de sombra received com closed_at NULL por rule_version, adapter_version ou estado equivalente. (6) Limitar campos, quantidade e tamanho total do snapshot. (7) Registrar classe ou código do erro do recebimento sem expor dados do payload. Incluir também o limite de exclusão da parte 1: quando o segundo UTC de um recibo estimated diverge de listens, a exclusão individual não corresponde ao recibo, que permanece até a limpeza do perfil. A parte 2 deve tratar essa correspondência no desenho da exclusão e testá-la antes da ativação.
 
 ---
 <!-- COMMENTS:END -->

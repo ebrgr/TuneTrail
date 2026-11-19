@@ -168,13 +168,11 @@ func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDele
 	}
 	// Shadow receipts have no stable event link for a bulk catalog deletion.
 	if count > 0 {
-		for _, query := range []string{
-			`DELETE FROM ingest_events WHERE profile_id=?`,
-			`DELETE FROM integrations WHERE profile_id=?`,
-		} {
-			if _, err := tx.ExecContext(ctx, query, expected.ProfileID); err != nil {
-				return 0, staleWriteConflict(err)
-			}
+		if _, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=?`, expected.ProfileID); err != nil {
+			return 0, staleWriteConflict(err)
+		}
+		if err := deleteShadowIntegrations(ctx, tx, expected.ProfileID); err != nil {
+			return 0, staleWriteConflict(err)
 		}
 	}
 	if err = tx.Commit(); err != nil {

@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T16:18:00Z'
-updated_date: '2026-11-19T16:59:00Z'
+updated_date: '2026-11-19T17:18:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -87,6 +87,15 @@ created: 2026-11-19T16:59:00Z
 ---
 
 Verificação após o parecer: exclusões atômicas com cascata e novo recibo após reimportar, decisões originais preservadas em reenvios equivalentes, normalização shadow-v2, BEGIN IMMEDIATE e disputa em WAL para as três chaves, lotes de 200 com cauda parcial. AC4 reescrito e comprovado com replay versionado: cópia histórica 0/80 sem mudança na origem ou em listens; sintético 4/10, incluindo fontes cruzadas a 0–2 s e repetição no mesmo segundo. O histórico não estima a taxa em produção. Ressalvas 3, 6 e 7 registradas na ISSUE-081. A tarefa segue Em andamento.
+
+---
+
+author: codex
+created: 2026-11-19T17:18:00Z
+
+---
+
+Verificação do ponto 1 da leitura de 287914c: ApplyProfileDelete apaga todos os recibos e somente integrações de sombra do perfil na transação do histórico. ReceiveBatch, PurgeAllData e ApplyProfileDelete compartilham a definição das origens e identidades de sombra. TestShadowDeletePaths confirma que uma configuração externa, inclusive com prefixo file:, sobrevive à exclusão do histórico e que o outro perfil mantém seus dados. As entradas obrigatórias 3, 6, 7 e a divergência de horário estimated foram confirmadas no comentário da ISSUE-081. A tarefa segue Em andamento.
 
 ---
 <!-- COMMENTS:END -->

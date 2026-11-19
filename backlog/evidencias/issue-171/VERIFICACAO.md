@@ -4,7 +4,7 @@ O [parecer do Reviewer](PARECER-REVIEWER.md) avaliou o commit inicial `95c0875`.
 
 ## Comportamento verificado
 
-- A exclusão individual remove recibos no mesmo perfil e segundo UTC quando artista e título correspondem aos nomes ou aliases do catálogo. As observações e os detalhes caem em cascata. `ApplyProfileDelete`, quando apaga escutas, limpa todos os recibos e integrações do perfil afetado. A exclusão da conta usa a cascata do perfil. A limpeza global remove todos os recibos e as integrações de sombra `listenbrainz:` e `file:`. Cada operação usa a mesma transação das exclusões legadas.
+- A exclusão individual remove recibos no mesmo perfil e segundo UTC quando artista e título correspondem aos nomes ou aliases do catálogo. As observações e os detalhes caem em cascata. `ApplyProfileDelete`, quando apaga escutas, limpa todos os recibos e apenas as integrações de sombra do perfil afetado. A configuração de fontes externas é preservada. A exclusão da conta usa a cascata do perfil. A limpeza global remove todos os recibos e as integrações de sombra `listenbrainz:` e `file:`. Cada operação usa a mesma transação das exclusões legadas.
 - `BEGIN IMMEDIATE` reserva a escrita antes da consulta às chaves e aos candidatos. Reenvio equivalente reutiliza a chave e devolve `same` ao chamador, preservando decisão, evidência e versão gravadas. Uma variante incompatível preserva o snapshot original, grava observação e sinaliza Revisar. Decisões históricas já gravadas pela versão anterior não são reconstruídas.
 - `shadow-v2` normaliza caixa Unicode, NFC e espaços. MBIDs de gravação declarados e mapeados participam da comparação como evidência de candidatura. A janela de ±2 s seleciona uma ambiguidade e pode produzir Revisar. Igual continua exigindo chave confiável e conteúdo equivalente.
 - Cada importador acumula até 200 recibos por transação e descarrega a última página antes de arquivar o arquivo. O sombreamento mantém memória limitada ao lote, sem alterar as estruturas já usadas pelos parsers legados. Os ordinais incluem itens filtrados. O cursor lê checkpoints persistidos sem staging. O reenvio preenche páginas ausentes e mantém os IDs das existentes. Erros da gravação em sombra seguem em fail-open. Se o contexto for cancelado, a cauda ainda em memória pode ser recuperada reenviando o arquivo.
@@ -58,3 +58,11 @@ ORDER BY source_type, duplicate_decision, reason_codes;
 - `TUNETRAIL_WEB_DIR="$PWD/assets" make check` passou, incluindo Go vet/test, UI e 13 de 13 jornadas e2e.
 - `CGO_ENABLED=1 go test -race -count=1` passou em `engine`, `engine/handlers`, `internal/db/sqlite`, `internal/importer` e `internal/dedup`. `internal/ingest` e `scripts/ingest_shadow_replay` foram compilados com o detector. O teste de concorrência usou duas conexões WAL independentes.
 - Graphify AST foi atualizado a partir da worktree. `git diff --check` passou.
+
+## Separação entre histórico e configuração de fontes
+
+A criação dos recibos e a limpeza usam as mesmas origens reservadas. A exclusão de histórico reconhece as identidades exatas `listenbrainz:<perfil>` e `file:<perfil>`, preservando outros registros de configuração. `TestShadowDeletePaths` inclui uma configuração do próprio perfil com prefixo `file:` que sobrevive à exclusão individual, à exclusão de histórico por catálogo e à limpeza global. A exclusão por catálogo remove todos os recibos e as integrações de sombra daquele perfil na mesma transação. O teste também confirma a preservação da configuração, da integração de sombra e dos recibos do outro perfil nas exclusões de escopo individual.
+
+As entradas obrigatórias 3, 6 e 7 foram confirmadas na ISSUE-081. O comentário também registra a correspondência de exclusão quando um recibo `estimated` e a escuta legada caem em segundos diferentes.
+
+A verificação desta correção passou em `make check` com 13 de 13 jornadas e em `go test -race` para os pacotes tocados. O Graphify AST foi atualizado.

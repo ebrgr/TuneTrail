@@ -45,7 +45,7 @@ func TestShadowDeletePaths(t *testing.T) {
 			other := file
 			other.ProfileID = 2
 			otherReceipt := record(other)
-			execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('unrelated-integration',2,'other',0)`)
+			execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('file:configured-source',1,'external',0),('unrelated-integration',2,'other',0)`)
 			remove := func() error {
 				switch kind {
 				case "listen":
@@ -72,17 +72,23 @@ func TestShadowDeletePaths(t *testing.T) {
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_observations`))
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_event_details`))
 			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM integrations WHERE id='unrelated-integration'`))
+			configured := 1
+			if kind == "profile account" {
+				configured = 0
+			}
+			require.Equal(t, configured, scalar(t, s, `SELECT count(*) FROM integrations WHERE id='file:configured-source' AND profile_id=1`))
 			if kind == "global" {
 				require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens`))
-				require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM integrations`))
+				require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM integrations`))
 			} else {
 				require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=2`))
 				require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, otherReceipt.ReceiptID))
+				require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM integrations WHERE id='file:2' AND profile_id=2`))
 			}
 			if kind == "listen" {
 				require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id IN (?,?)`, unrelated.ReceiptID, nextSecond.ReceiptID))
 			} else {
-				require.Zero(t, scalar(t, s, `SELECT count(*) FROM integrations WHERE profile_id=1`))
+				require.Equal(t, configured, scalar(t, s, `SELECT count(*) FROM integrations WHERE profile_id=1`))
 				require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1`))
 			}
 			if kind != "profile account" {

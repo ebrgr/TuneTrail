@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/dedup"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 )
 
 // deleteListenReceipts compares the deleted track's aliases and credits with
@@ -66,4 +67,21 @@ func deleteListenReceipts(ctx context.Context, tx *sql.Tx, profile, track int32,
 		}
 	}
 	return nil
+}
+
+// receiptSourcePrefix keeps receipt creation and integration cleanup on the same identity format.
+func receiptSourcePrefix(source string) string {
+	return source + ":"
+}
+
+// deleteShadowIntegrations removes only adapter-owned identities, globally when profile is zero.
+func deleteShadowIntegrations(ctx context.Context, tx *sql.Tx, profile int32) error {
+	query := `DELETE FROM integrations WHERE id IN (? || profile_id, ? || profile_id)`
+	args := []any{receiptSourcePrefix(ingest.ShadowSourceListenBrainz), receiptSourcePrefix(ingest.ShadowSourceFile)}
+	if profile != 0 {
+		query += ` AND profile_id=?`
+		args = append(args, profile)
+	}
+	_, err := tx.ExecContext(ctx, query, args...)
+	return err
 }
