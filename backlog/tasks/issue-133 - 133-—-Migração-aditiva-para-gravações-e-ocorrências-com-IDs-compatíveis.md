@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T17:45:00Z'
+updated_date: '2026-11-19T17:56:00Z'
 labels:
   - banco
 milestone: m-11
@@ -16,6 +16,7 @@ dependencies:
 references:
   - backlog/decisions/decision-009
   - backlog/evidencias/issue-133/PLANO.md
+  - backlog/evidencias/issue-133/VERIFICACAO.md
 documentation:
   - doc-036
   - doc-039
@@ -33,12 +34,12 @@ Recorte 3 do estudo da ISSUE-116 (doc-036). Migração aditiva: faixas atuais vi
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Banco com vários perfis, aliases, MBIDs nulos e FKs migra com contagem de eventos idêntica por perfil
-- [ ] #2 Nenhuma fusão automática por título; mapeamento old_track_id → ocorrência/gravação guardado
-- [ ] #3 IDs e URLs anteriores continuam válidos
+- [x] #2 Nenhuma fusão automática por título; mapeamento old_track_id → ocorrência/gravação guardado
+- [x] #3 IDs e URLs anteriores continuam válidos
 - [ ] #4 Interrupção simulada reverte a transação; restauração do backup comprovada
-- [ ] #5 event_id próprio introduzido e ledger/outbox da ISSUE-080 relacionados a ele antes de ativar escritores novos
-- [ ] #6 Exclusão por event_id remove os recibos e as chaves vinculados, sem tombstone, e uma reimportação posterior cria evento novo
-- [ ] #7 Ponte de compatibilidade ou corte coordenado com os leitores da ISSUE-135 definidos e testados
+- [x] #5 event_id próprio introduzido e ledger/outbox da ISSUE-080 relacionados a ele antes de ativar escritores novos
+- [x] #6 Exclusão por event_id remove os recibos e as chaves vinculados, sem tombstone, e uma reimportação posterior cria evento novo
+- [x] #7 Ponte de compatibilidade ou corte coordenado com os leitores da ISSUE-135 definidos e testados
 <!-- AC:END -->
 
 ## Comments
@@ -104,6 +105,15 @@ created: 2026-11-19T17:45:00Z
 ---
 
 Decisão do usuário em 2026-11-19: aceito todas as recomendações do Advisor. Reconstrução filho-primeiro com FKs ligadas e track_id igual à ocorrência (nome pode mudar na 135); manter merge legado até o corte e o mapa em occurrences.legacy_track_id, com guardas contra colisão. Preservar byte a byte os recibos de sombra sem vínculo, sem associação heurística, e manter a limpeza da 171 enquanto só houver o escritor legado. Antes de ativar a 081, purgar os recibos de sombra com event_id nulo, com prévia e contagens. Ensaio somente em snapshot expressamente autorizado, serviço parado e disco livre de pelo menos 3× o banco; até indicação, só fixtures ou cópias sintéticas. Ordem: 162 publicada na main → 133 sem mudança de comportamento → 134/081 atrás das guardas → 135 com a migração de ativação no mesmo binário. Aguardar nova mensagem para iniciar a Fase 2.
+
+---
+
+author: codex
+created: 2026-11-19T17:56:00Z
+
+---
+
+Fase 2, passos 1–6: rebase sobre a main v0.42, migração 008 e ponte legada verificadas em fixtures sintéticas. AC2/3/5/6/7 verificados no escopo da 133; AC1 e AC4 seguem abertos até ensaio autorizado. make check passou (13/13 E2E), replay da sombra manteve as decisões e os binários v0.41/v0.42 recusaram v8. Integração dos leitores e escritores novos fica para o corte coordenado. Evidência em VERIFICACAO.md. Aguardar indicação de snapshot autorizado e nova instrução para o passo 7. Mantido Em andamento.
 
 ---
 <!-- COMMENTS:END -->
