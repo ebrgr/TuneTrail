@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-19T10:49:00Z'
+updated_date: '2026-11-19T10:50:00Z'
 labels:
   - ui
 milestone: m-10
@@ -91,6 +91,15 @@ created: 2026-11-19T10:49:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-19 após ver o servidor da fixture (tooltips dos gráficos, transições e Speculation Rules). AC2 verificado (JS 17.458 bytes gzip, zero alterações em assets/js); AC3 pelo aceite visual do usuário. AC1 NÃO marcado: jornadas públicas representativas sem scripts e o E2E 13/13 passaram, mas a matriz completa em navegador sem suporte não foi provada (o verificador de cache do Firefox, scripts/validate_web_cache.cjs:129, falha com SyntaxError já existente); o usuário aceitou com essa limitação. Reviewer de segurança não foi executado antes do aceite, por decisão do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-19T10:50:00Z
+
+---
+
+Publicação: versão 0.38 (tag `v0.38`), branch `feat/issue-075-view-transitions-speculation-rules-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

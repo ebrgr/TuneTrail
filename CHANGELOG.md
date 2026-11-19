@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.38] - 2026-11-19
+
 - Navegações ganham transições suaves e pré-carregamento de páginas públicas do mesmo perfil; gráficos mostram detalhes por intervalo sem JavaScript adicional (ISSUE-075).
 
 ## [0.37] - 2026-11-18
