@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T17:56:00Z'
+updated_date: '2026-11-19T18:04:00Z'
 labels:
   - banco
 milestone: m-11
@@ -17,6 +17,7 @@ references:
   - backlog/decisions/decision-009
   - backlog/evidencias/issue-133/PLANO.md
   - backlog/evidencias/issue-133/VERIFICACAO.md
+  - backlog/evidencias/issue-133/PARECER-REVIEWER.md
 documentation:
   - doc-036
   - doc-039
@@ -114,6 +115,30 @@ created: 2026-11-19T17:56:00Z
 ---
 
 Fase 2, passos 1–6: rebase sobre a main v0.42, migração 008 e ponte legada verificadas em fixtures sintéticas. AC2/3/5/6/7 verificados no escopo da 133; AC1 e AC4 seguem abertos até ensaio autorizado. make check passou (13/13 E2E), replay da sombra manteve as decisões e os binários v0.41/v0.42 recusaram v8. Integração dos leitores e escritores novos fica para o corte coordenado. Evidência em VERIFICACAO.md. Aguardar indicação de snapshot autorizado e nova instrução para o passo 7. Mantido Em andamento.
+
+---
+
+author: advisor
+created: 2026-11-19T18:03:00Z
+
+---
+
+Parecer do Advisor (Modo A, implementação 5c863ee/52248c1/ae09b13): REPROVADO COM RESSALVAS. Nenhuma falha crítica de corretude; a 008 cumpre o plano aprovado (índice único completo da tripla; event_id PK com DEFAULT randomblob, UNIQUE(profile_id,event_id) e origin legacy; recordings com sequência própria; occurrences AUTOINCREMENT com id=NEW.id estrito; guardas até o corte; guardas de outbox/revisão mantidas; asserções TEMP com FK check; checagem reversa; limites v8; dependência da 162; teste de falha com FS do goose). Ordem de colunas do ledger idêntica à 004.
+Ressalvas antes do ensaio: (R1) 008:119-121 cria FKs ON DELETE SET NULL em ingest_events.occurrence_id/recording_id sem índice filho; cada exclusão/merge de faixa e cada gravação órfã varre ingest_events inteiro sob lock de escrita (a sombra da 171 acumula recibos). Criar índices parciais WHERE ... IS NOT NULL. (R2) Desvio do plano: 008:21-24 copia o MBID declarado de tracks para recordings.musicbrainz_id sem proveniência, e doc-039:42 define essa coluna como MBID validado. Decidir agora: coluna de proveniência com DEFAULT legacy na própria 008 (tabela nova, custo zero) ou entrada obrigatória na 134 antes da regra 3 do resolvedor.
+Entradas para 134/135 (adicionáveis sem rebuild): coerência occurrence_id=listens.track_id e recording_id=occurrences.recording_id em recibos vinculados, identity_status coerente com accepted/duplicate e resolution_version monotônica (hoje só convenção); título/créditos apresentados da ocorrência sem tracks (doc-039:44); merge de gravações reversível para colisões de MBID legadas.
+Desvios menores: checagem reversa só para origem >=7 (ingest_schema.go:53; v3-v6 descartam objetos extras de listens em silêncio); sem evidência de kill de processo, disco cheio e bootstrap concorrente; caminho RAISE de 008:272 não exercitado.
+Melhoria opcional: comparar listens com listens_new antes do DROP elimina a cópia TEMP integral (008:56) da maior tabela.
+Pré-condições do ensaio: snapshot indicado e autorizado; serviço e ferramentas externas parados; cópia quiescente DB/WAL/SHM em diretório privado com hashes da origem antes/depois; espaço >=3x medido no diretório do banco E no diretório temporário do SQLite (TMPDIR); inventário só leitura na cópia (versão 7, outbox/revisões vazias, objetos extras em listens/tracks/ledger, integrity e FK ok); R1/R2 resolvidos; medir tempo, lock, pico de disco (DB+WAL+temp+backup) e crescimento/freelist; segundo boot; restauração do .pre-recording-identity com v0.42; evidência só agregada.
+Antes do aceite: nota de operador no CHANGELOG (upgrade irreversível, binário anterior recusa v8, backup, janela e espaço), restauração perde escritas pós-upgrade e o relay já entregue não volta. Entrada da purga de sombra sem event_id já registrada na ISSUE-081.
+
+---
+
+author: reviewer
+created: 2026-11-19T18:04:00Z
+
+---
+
+Parecer do Reviewer (leitura estática, sem testes): APROVADO COM RESSALVAS. Sem caminho de perda/corrupção no upgrade; filho-primeiro com FK ON, asserções TEMP CHECK(ok=1), cópia 1:1 de listens e ledger idêntico à 004 conferidos. Ressalvas: (1) 008 removeu os CHECKs de inatividade de ingest_events da 004 sem guarda removível substituta (trg_ingest_event_inactive); (2) faltam índices em ingest_events.occurrence_id/recording_id (varredura do ledger a cada exclusão de faixa); (3) checagem reversa só para origem v7; (4) dois alocadores de ID tracks/occurrences colidem pós-corte (134/135); (5) coerência recibo↔evento↔ocorrência sem trigger (081); (6) AC6/AC7 provados só por primitivas SQL; (7) origin sem enum; (8) avaliar linha no CHANGELOG. Detalhes em PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->

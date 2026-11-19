@@ -30,3 +30,11 @@ python3 scripts/repro_issue133_delete_scan.py \
 O script aceita `--receipts` para variar o número de recibos sintéticos. Ele cria e remove o próprio diretório temporário fora do repositório e aceita somente caminhos de executáveis.
 
 O passo 7 parou no primeiro defeito confirmado. Permanecem pendentes o gerador de catálogo e escutas, os ensaios de 30 mil e 300 mil escutas, o relatório de carga e o fechamento dos AC1 e AC4. A migração 008 e os arquivos em revisão não foram alterados. Nenhum banco real ou de usuário foi acessado.
+
+## 2026-11-19 — Enum de origem de escuta requer decisão
+
+Na rodada de correções autorizada por “aplique tudo”, a instrução para fechar o CHECK de `listens.origin` remete aos valores previstos no doc-039. O contrato identifica os eventos migrados como `legacy`, mas não enumera os valores de origem de eventos após o corte. O único outro literal de origem no doc-039, `unknown`, é descrito na seção de resolução de ocorrência para lançamento ausente. O doc-040 separa tipo de fonte e operação no envelope do recibo. Um evento pode ter mais de um recibo, então esses campos também não formam um enum inequívoco de origem do evento.
+
+Antes de fixar o CHECK na 008, é preciso definir se `origin` distingue apenas evento legado de evento resolvido pelo pipeline, ou se distingue os caminhos pelos quais um evento foi criado. Uma opção é fixar `legacy` e `pipeline`, mantendo o tipo da fonte e a operação nos recibos. Uma lista fechada incorreta poderia impedir a escrita na ativação. Corrigi-la depois da publicação exigiria nova reconstrução de `listens`, que na v8 é pai do ledger e da outbox.
+
+A execução foi interrompida conforme o ponto de parada solicitado. As correções na 008, o ensaio de carga e o fechamento dos AC1 e AC4 aguardam essa decisão. Os pareceres paralelos foram preservados neste commit.
