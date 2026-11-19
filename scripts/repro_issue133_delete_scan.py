@@ -20,6 +20,21 @@ def start_and_stop(binary, directory):
         server.stop()
 
 
+def delete_plans(conn):
+    """Cover outer deletes and the two nested foreign-key work items."""
+    plans = {}
+    for operation, statement in {
+        "DeleteTrack": "DELETE FROM tracks WHERE id=1",
+        "MergeTracks_delete_source": "DELETE FROM tracks WHERE id=1",
+        "DeleteRelease": "DELETE FROM releases WHERE id=1",
+        "DeleteOccurrence": "DELETE FROM occurrences WHERE id=1",
+        "DeleteOrphanRecording": "DELETE FROM recordings WHERE id=1",
+    }.items():
+        details = conn.execute(f"EXPLAIN QUERY PLAN {statement}")
+        plans[operation] = [row[3] for row in details if "ingest_events" in row[3]]
+    return plans
+
+
 def run(v7_binary, v8_binary, receipts):
     with tempfile.TemporaryDirectory(prefix="tunetrail-133-scan-", dir="/tmp") as temporary:
         root = Path(temporary)
@@ -70,12 +85,7 @@ def run(v7_binary, v8_binary, receipts):
                 "SELECT count(*), count(occurrence_id)+count(recording_id) FROM ingest_events"
             ).fetchone()
             assert (count, linked) == (receipts, 0)
-            plans = {}
-            for table in ("occurrences", "recordings"):
-                details = conn.execute(
-                    f"EXPLAIN QUERY PLAN DELETE FROM {table} WHERE id=1"
-                )
-                plans[table] = [row[3] for row in details if "ingest_events" in row[3]]
+            plans = delete_plans(conn)
             conn.execute("BEGIN IMMEDIATE")
             started = time.perf_counter()
             conn.execute("DELETE FROM tracks WHERE id=1")
@@ -91,7 +101,7 @@ def run(v7_binary, v8_binary, receipts):
                 "sqlite_version": sqlite3.sqlite_version,
                 "v8_fk_delete_plans": plans,
                 "legacy_track_delete_ms": round(elapsed * 1000, 3),
-                "confirmed": all("SCAN ingest_events" in plan for plan in plans.values()),
+                "full_scans": sum(line == "SCAN ingest_events" for plan in plans.values() for line in plan),
             }
 
 
