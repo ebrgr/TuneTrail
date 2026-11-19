@@ -440,18 +440,16 @@
                   
                 </ul>
                 <details>
-                  <summary>Create profile</summary>
+                  <summary>Create account and profile</summary>
                   <form method="post" action="/admin/profile/create" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-                    
                       <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-                    
                     <label>Name <input name="display_name" required></label>
                     <label>Slug <input name="slug" required></label>
                     <label>Icon <input name="icon"></label>
                     <label>Photo <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
                     <small>JPEG, PNG or static WebP.</small>
-                    <button>Create profile</button>
+                    <button>Create account and profile</button>
                   </form>
                 </details>
               </section>
@@ -497,7 +495,21 @@
                     <input type="hidden" name="profile_slug" value="alpha">
                     <button>Use initials</button>
                   </form>
-                  <p><a href="/admin/profile/1/delete-review">Review profile deletion</a></p>
+                    <h3>Account</h3>
+                    <p>Username <code>fixture-1</code></p>
+                      <form method="post" action="/admin/profile/1/account-token">
+                        <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                        <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                        <input type="hidden" name="profile_slug" value="alpha">
+                          <button>Issue activation token (24 hours)</button>
+                      </form>
+                    <form method="post" action="/admin/profile/1/account-role">
+                      <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                      <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+                      <input type="hidden" name="profile_slug" value="alpha">
+                        <button name="role" value="admin">Make administrator</button>
+                    </form>
+                  <p><a href="/admin/profile/1/delete-review">Review account and profile deletion</a></p>
                   <h3 id="keys">API keys</h3>
                   
                     <p>No API keys.</p>

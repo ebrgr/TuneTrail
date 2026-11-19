@@ -22,7 +22,7 @@ func ErrorStatus(err error) int {
 		return 400
 	case errors.Is(err, admin.ErrUnauthorized):
 		return 401
-	case errors.Is(err, admin.ErrForbidden), errors.Is(err, ErrCSRF):
+	case errors.Is(err, admin.ErrForbidden), errors.Is(err, db.ErrOwnAccountToken), errors.Is(err, ErrCSRF):
 		return 403
 	case errors.Is(err, db.ErrNotFound):
 		return 404
@@ -41,6 +41,10 @@ func ErrorStatus(err error) int {
 
 // PublicError is shared by JSON errors and future HTML status pages.
 func PublicError(err error) string {
+	// Self-issuance is distinguishable only to the authenticated root.
+	if errors.Is(err, db.ErrOwnAccountToken) {
+		return "cannot issue a token for your own account"
+	}
 	if errors.Is(err, db.ErrLastAdmin) {
 		return "the last administrator cannot be removed or demoted"
 	}

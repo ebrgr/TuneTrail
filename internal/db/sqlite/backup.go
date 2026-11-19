@@ -55,6 +55,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 5 {
 		pattern = ".pre-authorization-*.bak"
 	}
+	// Snapshot the pre-token schema before installing the credential table.
+	if version == 6 {
+		pattern = ".pre-account-tokens-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err

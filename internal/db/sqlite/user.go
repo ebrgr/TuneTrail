@@ -162,15 +162,21 @@ func (s *Sqlite) UpdateUser(ctx context.Context, opts db.UpdateUserOpts) error {
 		if err != nil {
 			return fmt.Errorf("UpdateUser: bcrypt: %w", err)
 		}
-		if _, err := tx.ExecContext(ctx,
-			`UPDATE users SET password = ?, status='active' WHERE id = ?`, hash, opts.ID); err != nil {
-			return fmt.Errorf("UpdateUser: password: %w", err)
-		}
-		if _, err := tx.ExecContext(ctx, `DELETE FROM sessions WHERE user_id = ?`, opts.ID); err != nil {
-			return fmt.Errorf("UpdateUser: revoke sessions: %w", err)
+		// Keep password storage and revocation shared with token redemption.
+		if err := setAccountPassword(ctx, tx, opts.ID, hash); err != nil {
+			return fmt.Errorf("UpdateUser: %w", err)
 		}
 	}
 	return tx.Commit()
+}
+
+// setAccountPassword performs the password change and session revocation in the caller's transaction.
+func setAccountPassword(ctx context.Context, tx *sql.Tx, id int32, hash []byte) error {
+	if _, err := tx.ExecContext(ctx, `UPDATE users SET password=?,status='active' WHERE id=?`, hash, id); err != nil {
+		return err
+	}
+	_, err := tx.ExecContext(ctx, `DELETE FROM sessions WHERE user_id=?`, id)
+	return err
 }
 
 func (s *Sqlite) SaveApiKey(ctx context.Context, opts db.SaveApiKeyOpts) (*models.ApiKey, error) {

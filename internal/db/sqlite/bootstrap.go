@@ -18,6 +18,9 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+// currentSchemaVersion is the latest embedded migration understood by bootstrap.
+const currentSchemaVersion = 7
+
 // regularFile rejects links and special files before opening database components.
 func regularFile(path string) (bool, error) {
 	info, err := os.Lstat(path)
@@ -121,7 +124,7 @@ func schemaVersion(db *sql.DB) (int, error) {
 	if err := db.QueryRow(`SELECT COALESCE(MAX(version_id),0) FROM goose_db_version WHERE is_applied=1`).Scan(&version); err != nil {
 		return 0, fmt.Errorf("invalid migration history: %w", err)
 	}
-	if version < 1 || version > 6 {
+	if version < 1 || version > currentSchemaVersion {
 		return 0, fmt.Errorf("unsupported schema version %d", version)
 	}
 	return version, nil
@@ -156,8 +159,8 @@ func checkDatabase(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if version < 3 || version > 6 {
-		return fmt.Errorf("schema version %d is not consolidated v3/v4/v5/v6", version)
+	if version < 3 || version > currentSchemaVersion {
+		return fmt.Errorf("schema version %d is not consolidated v3/v4/v5/v6/v7", version)
 	}
 	for _, q := range []string{`SELECT id,slug,display_name,avatar_image_id,avatar_icon,created_at FROM listening_profiles LIMIT 0`, `SELECT profile_id FROM listens LIMIT 0`, `SELECT profile_id FROM api_keys LIMIT 0`, `SELECT profile_id,url,token FROM profile_relays LIMIT 0`, `SELECT id,profile_id FROM legacy_relay_binding LIMIT 0`} {
 		rows, err := db.Query(q)
@@ -278,7 +281,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 				return "", err
 			}
 		}
-		if version < 6 {
+		if version < currentSchemaVersion {
 			backup, err := backupBeforeUpgrade(context.Background(), db, target, version)
 			if err != nil {
 				return "", err

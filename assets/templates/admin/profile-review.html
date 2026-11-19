@@ -17,10 +17,10 @@
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>{{trn "admin.profile.delete_title" "Delete profile {{.Name}}" "Name" .Profile.DisplayName}}</h1>
+          <h1>{{trn "admin.profile.delete_title" "Delete account and profile {{.Name}}" "Name" .Profile.DisplayName}}</h1>
           <p>{{trnp
             "admin.profile.delete_warning"
-            "Profile {{.Slug}} (ID {{.ID}}) currently has {{.Count}} listens. Its keys, relay and listening history will be removed. The administrator account and shared catalog remain."
+            "Profile {{.Slug}} (ID {{.ID}}) currently has {{.Count}} listens. This permanently deletes the account, its sessions and tokens, the profile, its API keys, relay and listening history."
             .Count
             "Slug"
             .Profile.Slug
@@ -36,7 +36,7 @@
             <input type="hidden" name="listen_count" value="{{.Count}}">
             <label>{{tr "admin.text.type_the_profile_name" "Type the profile name"}} <input name="display_name" required></label>
             <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_permanent_deletion" "Confirm permanent deletion"}}</label>
-            <button>{{tr "admin.text.delete_profile" "Delete profile"}}</button>
+            <button>{{tr "admin.text.delete_profile" "Delete account and profile"}}</button>
           </form>
           <p><a href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.cancel" "Cancel"}}</a></p>
         </main>

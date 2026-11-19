@@ -5,7 +5,7 @@ title: >-
   (ISSUE-100)
 type: specification
 created_date: '2026-11-17T17:17:00Z'
-updated_date: '2026-11-19T16:28:00Z'
+updated_date: '2026-11-19T16:59:00Z'
 tags:
   - design
 ---
@@ -45,15 +45,17 @@ Dono significa listening_profiles.user_id igual ao ID da conta autenticada. Entr
 | Adicionar, editar ou excluir escutas | Não | Somente seu perfil | Todos |
 | Importar/exportar histórico; criar, consultar e revogar chaves | Não | Somente seu perfil | Todos |
 | Nome, slug, avatar e checkbox require_login | Não | Somente seu perfil | Todos |
-| Cadastro/exclusão de conta e perfil | Não | Não | Sim |
+| Cadastro/exclusão de conta e perfil | Não | Não | Sim; pode excluir a própria conta com confirmação quando houver outro admin ativo |
 | Atribuição/revogação do papel admin | Não | Não | Sim |
 | Troca de senha própria | Não | Sim | Sim |
-| Emissão de token de recuperação para outra conta | Não | Não | Sim |
+| Emissão de token de ativação ou recuperação | Não | Não | Sim, para qualquer outra conta, inclusive outro admin; vedado para si mesmo |
 | Configuração e operação global do servidor | Não | Não | Sim |
 | Capas, aliases, merges e outras alterações do catálogo compartilhado | Não | Não | Sim |
 | Configuração de relay do perfil | Não | Somente seu perfil | Todos |
 
 Toda gestão humana exige sessão válida e autorização **no servidor**, inclusive chamadas diretas aos serviços. Ocultar botões não é controle de acesso. Corpo, query, slug, ID de chave ou seleção de perfil não podem substituir o dono/escopo resolvido pelo servidor. Usuário comum não pode atribuir role nem alterar o vínculo user_id pelo formulário ou API.
+
+Decisão de ebrgr em 19/11/2026 (ISSUE-162): o root pode excluir a própria conta e perfil mediante confirmação quando outro admin ativo permanecer. A emissão de token para si mesmo é vedada.
 
 O último administrador não pode ser excluído nem rebaixado. A consulta do número de administradores e a alteração devem ocorrer na mesma transação de escrita, inclusive em requisições concorrentes; uma validação apenas no navegador ou mutex do processo não basta. Se existir desativação de contas, ela também deve preservar ao menos um administrador apto a entrar.
 
@@ -134,11 +136,13 @@ Manter CSRF, SameOrigin, preauth de login, ParseSessionForm, limites de parsing/
 
 ### Recuperação sem e-mail
 
-Administrador emite token temporário de uso único para a conta escolhida. O destinatário define sua senha pelo fluxo de redefinição, sem receber senha permanente escolhida pelo admin. Usar token aleatório, guardar seu digest, registrar validade (proposta operacional: 30 minutos para recuperação), invalidar o anterior ao emitir outro e não expor o segredo em logs ou respostas públicas.
+Administrador emite token temporário de uso único para a conta escolhida. O destinatário define sua senha pelo fluxo de redefinição, sem receber senha permanente escolhida pelo admin. Usar token aleatório, guardar seu digest, registrar validade, invalidar o anterior ao emitir outro e não expor o segredo em logs ou respostas públicas.
 
 A posse do token só autoriza definir a senha daquela conta; não concede sessão de leitura/gestão. Validar validade/uso e consumir o token junto à atualização do hash e revogação das sessões em transação. Depois solicitar login normal. Não é necessário serviço de e-mail. Ativação de conta nova ou migrada pode usar o mesmo mecanismo, emitido sob demanda pelo admin; não compartilhar senha entre perfis.
 
-Para perda de acesso do único admin, prever recuperação local pelo operador com acesso ao servidor, sem senha mestra ou endpoint remoto de elevação. Isso não permite cadastro público nem concessão automática de admin.
+Decisão de ebrgr em 19/11/2026 (ISSUE-162): a validade é de 24 horas para ativação e de 30 minutos para recuperação, definida por constantes no código. O root pode emitir para qualquer outra conta, inclusive outro admin. A emissão para a própria conta é vedada.
+
+Decisão de ebrgr em 19/11/2026 (ISSUE-162): o único administrador recupera o acesso localmente com `reset-password`, sem token. O comando gera a nova senha, revoga as sessões e publica a senha no log do processo. O operador aceita esse risco e deve proteger o acesso aos logs. A gestão web e API não expõe senha nem hash. Não há senha mestra, cadastro público ou endpoint remoto de elevação.
 
 ## 6. Bootstrap e migração
 

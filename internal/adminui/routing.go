@@ -14,7 +14,7 @@ func IsPage(path string) bool {
 	if !strings.HasPrefix(path, "/") || strings.HasPrefix(path, "//") {
 		return false
 	}
-	if path == "/admin" || path == "/admin/settings" {
+	if path == "/admin" || path == "/admin/settings" || path == "/admin/redeem" {
 		return true
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
@@ -37,13 +37,14 @@ func IsAction(path string) bool {
 		return false
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
-	if path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" {
+	// Redemption is the only public action added to the admin routes.
+	if path == "/admin/redeem" || path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" {
 		return true
 	}
 	if len(p) >= 4 && p[0] == "admin" && p[1] == "profile" {
 		if len(p) == 4 {
 			switch p[3] {
-			case "save", "avatar", "avatar-clear", "delete", "import":
+			case "save", "avatar", "avatar-clear", "delete", "import", "account-token", "account-role":
 				return true
 			}
 		}

@@ -17,7 +17,8 @@ func validateSchemaLayout(db *sql.DB, version int) error {
 	}
 	defer reference.Close()
 	reference.SetMaxOpenConns(1)
-	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql", "006_active_admin_guards.sql"}[:version] {
+	// Build the reference through the requested version, including account credentials in v7.
+	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql", "006_active_admin_guards.sql", "007_account_tokens.sql"}[:version] {
 		ddl, err := migrations.Files.ReadFile(name)
 		if err != nil {
 			return fmt.Errorf("read schema reference: %w", err)

@@ -27,7 +27,20 @@
           {{if .Notice}}
             <p role="status">{{.Notice}}</p>
           {{end}}
-          {{if .Login}}
+          {{if .IssuedToken}}
+            <p>{{tr "admin.account.copy_token" "Copy this token now. Give it and the username to the account owner."}}</p>
+            <p><code>{{.IssuedToken}}</code></p>
+            <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
+            <p><a href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.profile" "Profile"}}</a></p>
+          {{else if .Redeem}}
+            <form method="post" action="/admin/redeem">
+              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+              <label>{{tr "admin.text.username" "Username"}} <input name="username" autocomplete="username" required></label>
+              <label>{{tr "admin.account.token" "Account token"}} <input name="account_token" autocomplete="off" required></label>
+              <label>{{tr "admin.account.new_password" "New password"}} <input type="password" name="password" autocomplete="new-password" required></label>
+              <button>{{tr "admin.account.redeem" "Redeem account token"}}</button>
+            </form>
+          {{else if .Login}}
             <form method="post" action="/admin/login">
               <input type="hidden" name="csrf_token" value="{{.CSRF}}">
               {{if .Submission}}
@@ -39,6 +52,7 @@
               <label><input type="checkbox" name="remember" value="1"> {{tr "admin.text.remember_me" "Remember me"}}</label>
               <button>{{tr "admin.text.sign_in" "Sign in"}}</button>
             </form>
+            <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
           {{else if .LogoutOnly}}
             <form method="post" action="/admin/logout">
               <input type="hidden" name="csrf_token" value="{{.CSRF}}">
@@ -88,21 +102,23 @@
                     <li>{{tr "admin.text.no_profiles_yet" "No profiles yet."}}</li>
                   {{end}}
                 </ul>
+                {{- if .AccountsRoot}}
                 <details>
-                  <summary>{{tr "admin.text.create_profile" "Create profile"}}</summary>
+                  <summary>{{tr "admin.text.create_profile" "Create account and profile"}}</summary>
                   <form method="post" action="/admin/profile/create" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-                    {{if .Submission}}
+                    {{- if .Submission}}
                       <input type="hidden" name="submission_token" value="{{.Submission}}">
-                    {{end}}
+                    {{- end}}
                     <label>{{tr "admin.text.name" "Name"}} <input name="display_name" required></label>
                     <label>{{tr "admin.text.slug" "Slug"}} <input name="slug" required></label>
                     <label>{{tr "admin.text.icon" "Icon"}} <input name="icon"></label>
                     <label>{{tr "admin.text.photo" "Photo"}} <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
                     <small>{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
-                    <button>{{tr "admin.text.create_profile" "Create profile"}}</button>
+                    <button>{{tr "admin.text.create_profile" "Create account and profile"}}</button>
                   </form>
                 </details>
+                {{- end}}
               </section>
               {{with .Profile}}
                 <nav
@@ -146,7 +162,33 @@
                     <input type="hidden" name="profile_slug" value="{{.Slug}}">
                     <button>{{tr "admin.text.use_initials" "Use initials"}}</button>
                   </form>
-                  <p><a href="/admin/profile/{{.ID}}/delete-review">{{tr "admin.text.review_profile_deletion" "Review profile deletion"}}</a></p>
+                  {{- if $.AccountsRoot}}
+                    <h3>{{tr "admin.text.account" "Account"}}</h3>
+                    <p>{{tr "admin.text.username" "Username"}} <code>{{$.Account.Username}}</code></p>
+                    {{- if $.CanIssueToken}}
+                      <form method="post" action="/admin/profile/{{.ID}}/account-token">
+                        <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                        <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                        <input type="hidden" name="profile_slug" value="{{.Slug}}">
+                        {{- if eq $.Account.Status "pending"}}
+                          <button>{{tr "admin.account.issue_activation" "Issue activation token (24 hours)"}}</button>
+                        {{- else}}
+                          <button>{{tr "admin.account.issue_reset" "Issue recovery token (30 minutes)"}}</button>
+                        {{- end}}
+                      </form>
+                    {{- end}}
+                    <form method="post" action="/admin/profile/{{.ID}}/account-role">
+                      <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                      <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                      <input type="hidden" name="profile_slug" value="{{.Slug}}">
+                      {{- if eq $.Account.Role "admin"}}
+                        <button name="role" value="user">{{tr "admin.account.demote" "Remove administrator role"}}</button>
+                      {{- else}}
+                        <button name="role" value="admin">{{tr "admin.account.promote" "Make administrator"}}</button>
+                      {{- end}}
+                    </form>
+                  <p><a href="/admin/profile/{{.ID}}/delete-review">{{tr "admin.text.review_profile_deletion" "Review account and profile deletion"}}</a></p>
+                  {{- end}}
                   <h3 id="keys">{{tr "admin.text.api_keys" "API keys"}}</h3>
                   {{range $.Keys}}
                     <details>

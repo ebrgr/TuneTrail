@@ -100,7 +100,7 @@ def main():
                 if conn.execute('PRAGMA integrity_check').fetchall() != [('ok',)] or conn.execute('PRAGMA foreign_key_check').fetchall():
                     raise AssertionError('database integrity')
                 version = conn.execute('SELECT max(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0]
-                if version != 6:
+                if version != 7:
                     raise AssertionError(f'unexpected schema {version}')
         docker('start', container)
         for _ in range(30):

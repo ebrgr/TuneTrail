@@ -205,7 +205,7 @@ func TestBootstrapIncompleteV4(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, conn.Close())
 			_, err = bootstrap(dir, true)
-			require.ErrorContains(t, err, "incompatible v6 schema")
+			require.ErrorContains(t, err, "incompatible v7 schema")
 		})
 	}
 	// An incomplete current v3 must be rejected before any backup is created.
@@ -302,7 +302,7 @@ func TestBootstrapKoitoV2WithoutUpstreamIndexes(t *testing.T) {
 	defer conn.Close()
 	version, err := schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, 6, version)
+	require.Equal(t, 7, version)
 	for _, name := range []string{"idx_artist_aliases_artist_id", "idx_listens_track_id_listened_at"} {
 		var found string
 		require.NoError(t, conn.QueryRow(`SELECT name FROM sqlite_master WHERE type='index' AND name=?`, name).Scan(&found))

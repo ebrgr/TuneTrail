@@ -2,6 +2,7 @@ package adminui
 
 // adminMessages contains only fixed diagnostics owned by the server.
 var adminMessages = map[string]string{
+	"cannot issue a token for your own account":           "admin.message.cannot_issue_a_token_for_your_own_account",
 	"the last administrator cannot be removed or demoted": "admin.message.last_administrator_required",
 	"image must be JPEG, PNG or static WebP":              "admin.message.image_must_be_jpeg_png_or_static_webp",
 	"check form fields":                                   "admin.message.check_form_fields",

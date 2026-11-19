@@ -11,6 +11,7 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/google/uuid"
 	sqlite3 "modernc.org/sqlite"
 )
 
@@ -167,6 +168,18 @@ func validProfileIdentity(name, slug string) bool {
 
 // CreateListeningProfile writes a pending account, its public profile and initial key atomically.
 func (s *Sqlite) CreateListeningProfile(ctx context.Context, name, slug, icon, token string) (*models.ListeningProfile, error) {
+	return s.createListeningProfile(ctx, uuid.Nil, name, slug, icon, token)
+}
+
+// CreateListeningProfileAsRoot verifies the live root session in the creation transaction.
+func (s *Sqlite) CreateListeningProfileAsRoot(ctx context.Context, session uuid.UUID, name, slug, icon, token string) (*models.ListeningProfile, error) {
+	if session == uuid.Nil {
+		return nil, db.ErrConflict
+	}
+	return s.createListeningProfile(ctx, session, name, slug, icon, token)
+}
+
+func (s *Sqlite) createListeningProfile(ctx context.Context, session uuid.UUID, name, slug, icon, token string) (*models.ListeningProfile, error) {
 	if !validProfileIdentity(name, slug) {
 		return nil, db.ErrInvalidInput
 	}
@@ -175,6 +188,12 @@ func (s *Sqlite) CreateListeningProfile(ctx context.Context, name, slug, icon, t
 		return nil, err
 	}
 	defer tx.Rollback()
+	// Keep root session validation in the same write transaction as the new account.
+	if session != uuid.Nil {
+		if _, err := lockRootAccount(ctx, tx, session); err != nil {
+			return nil, err
+		}
+	}
 	userID, err := insertPendingAccount(ctx, tx, slug)
 	if err != nil {
 		return nil, err
@@ -213,14 +232,31 @@ func (s *Sqlite) ProfileListenCount(ctx context.Context, id int32) (int64, error
 // DeleteListeningProfile removes the confirmed pair and sessions, preserving the last admin.
 // Profile cascades also remove all receipt history and integrations.
 func (s *Sqlite) DeleteListeningProfile(ctx context.Context, id int32, name string, count int64) error {
+	return s.deleteListeningProfile(ctx, uuid.Nil, id, "", name, count)
+}
+
+// DeleteListeningProfileAsRoot verifies the live root session and confirmed profile in the delete transaction.
+func (s *Sqlite) DeleteListeningProfileAsRoot(ctx context.Context, session uuid.UUID, id int32, slug, name string, count int64) error {
+	if session == uuid.Nil || slug == "" {
+		return db.ErrConflict
+	}
+	return s.deleteListeningProfile(ctx, session, id, slug, name, count)
+}
+
+func (s *Sqlite) deleteListeningProfile(ctx context.Context, session uuid.UUID, id int32, slug, name string, count int64) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	// The first statement acquires the write lock before observing administrator counts.
+	// Acquire the write lock before observing administrator counts.
+	if session != uuid.Nil {
+		if _, err := lockRootAccount(ctx, tx, session); err != nil {
+			return err
+		}
+	}
 	var userID int64
-	err = tx.QueryRowContext(ctx, `DELETE FROM listening_profiles WHERE id=? AND display_name=? AND (SELECT COUNT(*) FROM listens WHERE profile_id=?)=? RETURNING user_id`, id, name, id, count).Scan(&userID)
+	err = tx.QueryRowContext(ctx, `DELETE FROM listening_profiles WHERE id=? AND display_name=? AND (?='' OR slug=?) AND (SELECT COUNT(*) FROM listens WHERE profile_id=?)=? RETURNING user_id`, id, name, slug, slug, id, count).Scan(&userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return db.ErrNotFound
 	}

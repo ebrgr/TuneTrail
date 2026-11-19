@@ -79,7 +79,7 @@ def validate(binary, source, root, name):
         try:
             server.start()
             target = work / 'tunetrail.db'
-            check(target, 6)
+            check(target, 7)
             after = digests(target)
             assert all(after[table] == digest for table, digest in before.items()), 'existing rows changed'
             assert profile_counts(target) == counts
@@ -96,7 +96,7 @@ def validate(binary, source, root, name):
             server.stop()
             stable = digests(target)
             server.start()
-            check(target, 6)
+            check(target, 7)
             server.stop()
             assert digests(target) == stable, 'restart changed rows'
             # Restore to an empty isolated directory, then migrate the restored v3 again.
@@ -109,7 +109,7 @@ def validate(binary, source, root, name):
             restored_server = Server(binary, restored)
             try:
                 restored_server.start()
-                check(restored / 'tunetrail.db', 6)
+                check(restored / 'tunetrail.db', 7)
                 assert profile_counts(restored / 'tunetrail.db') == counts
             finally:
                 restored_server.stop()

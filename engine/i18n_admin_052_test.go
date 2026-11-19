@@ -47,7 +47,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	require.Contains(t, config.Body.String(), `name="KOITO_LOG_LEVEL"`)
 	review := get("/admin/profile/1/delete-review", "pt-BR", true)
 	require.Equal(t, 200, review.Code)
-	require.Contains(t, review.Body.String(), "Excluir perfil")
+	require.Contains(t, review.Body.String(), "Excluir conta e perfil")
 	cross := httptest.NewRequest("POST", "http://koito.test/admin/login", strings.NewReader(""))
 	cross.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: "pt-BR"})
 	cross.Header.Set("Origin", "http://evil.test")

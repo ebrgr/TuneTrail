@@ -403,8 +403,8 @@
 
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>Delete profile Fictional Alpha</h1>
-          <p>Profile alpha (ID 1) currently has 2 listens. Its keys, relay and listening history will be removed. The administrator account and shared catalog remain.</p>
+          <h1>Delete account and profile Fictional Alpha</h1>
+          <p>Profile alpha (ID 1) currently has 2 listens. This permanently deletes the account, its sessions and tokens, the profile, its API keys, relay and listening history.</p>
           <form method="post" action="/admin/profile/1/delete">
             <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
             
@@ -414,7 +414,7 @@
             <input type="hidden" name="listen_count" value="2">
             <label>Type the profile name <input name="display_name" required></label>
             <label><input type="checkbox" name="confirm" value="1" required> Confirm permanent deletion</label>
-            <button>Delete profile</button>
+            <button>Delete account and profile</button>
           </form>
           <p><a href="/admin?profile=1">Cancel</a></p>
         </main>

@@ -38,6 +38,7 @@ var templates = webassets.FS{Prefix: "admin"}
 // Store contains the existing persistence contracts; no implementation-specific database is needed.
 type Store interface {
 	db.UserStore
+	admin.ProfileAccountStore
 	db.ProfileStore
 	db.ImageStore
 	db.ExportStore
@@ -109,6 +110,9 @@ type view struct {
 	Login, LogoutOnly                               bool
 	Section                                         string
 	Submission                                      string
+	AccountsRoot, CanIssueToken, Redeem             bool
+	Account                                         db.AccountDetails
+	IssuedToken                                     string
 }
 
 // New constructs the protected handler and a bounded pre-login endpoint.
@@ -186,6 +190,10 @@ type headWriter struct{ http.ResponseWriter }
 func (w headWriter) Write(b []byte) (int, error) { return len(b), nil }
 func (w headWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Protect the redemption document and errors produced before dispatch.
+	if r.URL.Path == "/admin/redeem" {
+		w.Header().Set("Referrer-Policy", "no-referrer")
+	}
 	w = h.languages.Wrap(w, r)
 	if r.Method == http.MethodHead {
 		copy := r.Clone(r.Context())
@@ -200,6 +208,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	if !IsRoute(r.Method, r.URL.Path) {
 		textError(w, "item not found", http.StatusNotFound)
+		return
+	}
+	// Redemption uses preauthentication CSRF and does not create a session.
+	if r.URL.Path == "/admin/redeem" {
+		h.redeemAccount(w, r)
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -455,7 +468,9 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		h.fail(w, err)
 		return
 	}
-	v := view{User: id.User, Profiles: profiles, CSRF: token, Section: section, Submission: ticket}
+	// Load credential-free account details only for administrators.
+	v := view{User: id.User, Profiles: profiles, CSRF: token, Section: section, Submission: ticket,
+		AccountsRoot: admin.AuthorizeAction(id.User, admin.ManageAccounts, nil) == nil}
 	if q.Get("profile") != "" {
 		n, e := parseID(q.Get("profile"))
 		if e != nil {
@@ -466,6 +481,14 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		if err != nil {
 			h.fail(w, err)
 			return
+		}
+		if v.AccountsRoot {
+			v.Account, err = h.store.ProfileAccount(r.Context(), n)
+			if err != nil {
+				h.fail(w, err)
+				return
+			}
+			v.CanIssueToken = admin.AuthorizeAction(id.User, admin.IssueAccountToken, v.Profile) == nil
 		}
 		v.Keys, err = admin.Keys(r.Context(), h.store, id.User, n, v.Profile.Slug)
 		if err != nil {

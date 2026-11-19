@@ -39,12 +39,14 @@ type AccountStore interface {
 type Action string
 
 const (
-	ReadListening  Action = "profile.read-listening"
-	ManageProfile  Action = "profile.manage"
-	ManageAccount  Action = "account.self"
-	ManageAccounts Action = "accounts.manage"
-	ManageCatalog  Action = "catalog.manage"
-	ManageServer   Action = "server.manage"
+	ReadListening     Action = "profile.read-listening"
+	ManageProfile     Action = "profile.manage"
+	ManageAccount     Action = "account.self"
+	ManageAccounts    Action = "accounts.manage"
+	IssueAccountToken Action = "accounts.issue-token"
+	ChangeAccountRole Action = "accounts.change-role"
+	ManageCatalog     Action = "catalog.manage"
+	ManageServer      Action = "server.manage"
 )
 
 // AuthorizeAction is the shared HTML, JSON and service policy. Actors come from
@@ -76,6 +78,14 @@ func AuthorizeAction(user *models.User, action Action, resource *models.Listenin
 		}
 	case ManageAccount:
 		if user.Role == models.UserRoleAdmin || user.Role == models.UserRoleUser {
+			return nil
+		}
+	case IssueAccountToken, ChangeAccountRole:
+		// Account operations use the server-resolved profile owner as the target.
+		if user.Role == models.UserRoleAdmin && resource != nil && resource.ID > 0 && resource.UserID > 0 {
+			if action == IssueAccountToken && resource.UserID == user.ID {
+				return db.ErrOwnAccountToken
+			}
 			return nil
 		}
 	case ManageAccounts, ManageCatalog, ManageServer:
@@ -191,6 +201,11 @@ func loginWithCompare(ctx context.Context, store LoginStore, username, password 
 
 var usernamePattern = regexp.MustCompile(`^[a-zA-Z0-9_.-]{1,32}$`)
 
+// validAccountPassword applies the existing password change limits.
+func validAccountPassword(password string) bool {
+	return utf8.RuneCountInString(password) >= 8 && len(password) <= 72
+}
+
 // ChangeAccount validates explicit fields; the store atomically revokes all sessions on a password change.
 func ChangeAccount(ctx context.Context, store AccountStore, user *models.User, username, password *string) (bool, error) {
 	if err := AuthorizeService(ctx, store, user, ManageAccount, nil); err != nil {
@@ -202,7 +217,7 @@ func ChangeAccount(ctx context.Context, store AccountStore, user *models.User, u
 	if username != nil && !usernamePattern.MatchString(*username) {
 		return false, db.ErrInvalidInput
 	}
-	if password != nil && (utf8.RuneCountInString(*password) < 8 || len(*password) > 72) {
+	if password != nil && !validAccountPassword(*password) {
 		return false, db.ErrInvalidInput
 	}
 	opts := db.UpdateUserOpts{ID: user.ID}

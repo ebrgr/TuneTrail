@@ -7,6 +7,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/importer"
+	"github.com/ebrgr/TuneTrail/internal/models"
 	"io"
 	"net/http"
 	"strconv"
@@ -135,11 +136,31 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 	slug := f.SingleValue("profile_slug")
 	operation := strings.Join(parts[2:], "/")
 	target := profilePath(id)
-	if _, err = admin.Profile(r.Context(), h.store, identity.User, id, slug); err != nil {
+	profile, err := admin.Profile(r.Context(), h.store, identity.User, id, slug)
+	if err != nil {
 		h.fail(w, err)
 		return
 	}
 	switch operation {
+	case "account-token":
+		if !fields(f, "profile_slug") {
+			err = db.ErrInvalidInput
+			break
+		}
+		var token string
+		token, err = admin.IssueProfileAccountToken(r.Context(), h.store, identity.SessionID, id)
+		if err == nil {
+			// Only this response receives the plaintext. Never include it in a redirect or notice.
+			w.Header().Set("Referrer-Policy", "no-referrer")
+			h.render(w, http.StatusOK, view{IssuedToken: token, Profile: profile})
+			return
+		}
+	case "account-role":
+		if !fields(f, "profile_slug", "role") {
+			err = db.ErrInvalidInput
+			break
+		}
+		err = admin.ChangeProfileAccountRole(r.Context(), h.store, identity.SessionID, id, models.UserRole(f.SingleValue("role")))
 	case "import":
 		if !fields(f, "profile_slug", "profile_name", "confirm", "format", "file") || f.SingleValue("confirm") != "1" {
 			err = db.ErrInvalidInput
@@ -186,7 +207,13 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		}
 		err = admin.DeleteProfile(r.Context(), h.store, identity.User, id, slug, f.SingleValue("display_name"), count)
 		if err == nil {
-			h.putNotice(identity.SessionID, 0, "Profile deleted; the shared catalog remains.")
+			// A confirmed self-deletion revokes the account's sessions in the store.
+			if profile.UserID == identity.User.ID {
+				adminweb.ClearSessionCookie(w, r)
+				adminweb.ClearPreauth(w, r)
+			} else {
+				h.putNotice(identity.SessionID, 0, "Profile deleted; the shared catalog remains.")
+			}
 			http.Redirect(w, r, "/admin", http.StatusSeeOther)
 			return
 		}

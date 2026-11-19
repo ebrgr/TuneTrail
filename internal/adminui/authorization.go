@@ -51,6 +51,14 @@ func (h *Handler) authorizeAction(r *http.Request, id admin.Identity) error {
 	}
 	op := strings.Join(parts[2:], "/")
 	switch op {
+	case "account-token", "account-role":
+		// Resolve the profile owner before granting either root account capability.
+		action := admin.IssueAccountToken
+		if op == "account-role" {
+			action = admin.ChangeAccountRole
+		}
+		_, err := admin.AuthorizeAccountTarget(r.Context(), h.store, id.User, n, action)
+		return err
 	case "delete":
 		return admin.AuthorizeAction(id.User, admin.ManageAccounts, nil)
 	case "save", "avatar", "avatar-clear", "import", "keys/create", "relay/save", "relay/test", "relay/remove":

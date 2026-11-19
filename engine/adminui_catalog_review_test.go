@@ -110,7 +110,7 @@ func TestProfileReviewAndStaleCount(t *testing.T) {
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	require.Equal(t, 200, w.Code)
-	require.Contains(t, w.Body.String(), "shared catalog remain")
+	require.Contains(t, w.Body.String(), "permanently deletes the account, its sessions and tokens")
 	re := regexp.MustCompile(`name="csrf_token" value="([^"]+)"`)
 	m := re.FindStringSubmatch(w.Body.String())
 	require.Len(t, m, 2)

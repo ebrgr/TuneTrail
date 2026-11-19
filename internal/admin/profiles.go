@@ -91,7 +91,8 @@ func CreateProfile(ctx context.Context, store db.ProfileStore, user *models.User
 	if err != nil {
 		return nil, fmt.Errorf("generate key: %w", err)
 	}
-	return store.CreateListeningProfile(ctx, strings.TrimSpace(name), slug, icon, token)
+	// The service policy and the write transaction both verify current authority.
+	return store.CreateListeningProfileAsRoot(ctx, user.SessionID, strings.TrimSpace(name), slug, icon, token)
 }
 
 // UpdateProfile keeps the same numeric identity and requires the caller's current slug.
@@ -251,7 +252,8 @@ func DeleteProfile(ctx context.Context, store interface {
 	if name == "" || count < 0 {
 		return db.ErrInvalidInput
 	}
-	err = store.DeleteListeningProfile(ctx, id, name, count)
+	// Check the confirmed identity and session under the same write lock as the deletion.
+	err = store.DeleteListeningProfileAsRoot(ctx, user.SessionID, id, slug, name, count)
 	if errors.Is(err, db.ErrNotFound) {
 		_, check := store.GetListeningProfileByID(ctx, id)
 		if check == nil {

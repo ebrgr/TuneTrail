@@ -128,6 +128,8 @@ type DB interface {
 
 // ProfileStore keeps public listening identities independent of admin accounts.
 type ProfileStore interface {
+	CreateListeningProfileAsRoot(ctx context.Context, session uuid.UUID, name, slug, icon, token string) (*models.ListeningProfile, error)
+	DeleteListeningProfileAsRoot(ctx context.Context, session uuid.UUID, id int32, slug, name string, count int64) error
 	CreateListeningProfile(ctx context.Context, name, slug, icon, token string) (*models.ListeningProfile, error)
 	SetProfileAvatar(ctx context.Context, id int32, image, icon *string) error
 	ProfileListenCount(ctx context.Context, id int32) (int64, error)
