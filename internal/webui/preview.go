@@ -50,11 +50,12 @@ func ensureAssets() error {
 }
 
 type Profile struct {
-	ID    int    `json:"id"`
-	Slug  string `json:"slug"`
-	Name  string `json:"display_name"`
-	Icon  string `json:"avatar_icon"`
-	Image string `json:"avatar_image_id,omitempty"`
+	RequireLogin bool   `json:"require_login"`
+	ID           int    `json:"id"`
+	Slug         string `json:"slug"`
+	Name         string `json:"display_name"`
+	Icon         string `json:"avatar_icon"`
+	Image        string `json:"avatar_image_id,omitempty"`
 }
 type Media struct {
 	ID, Count            int
@@ -118,7 +119,7 @@ func (p LivePage) Nav() webassets.Nav {
 	return nav
 }
 
-var profiles = []Profile{{1, "demo", "Mara Silva", "headphones", ""}, {2, "luna", "Luna Paz", "", ""}, {3, "iara", "Iara Costa", "", "preview-photo"}}
+var profiles = []Profile{{ID: 1, Slug: "demo", Name: "Mara Silva", Icon: "headphones"}, {ID: 2, Slug: "luna", Name: "Luna Paz"}, {ID: 3, Slug: "iara", Name: "Iara Costa", Image: "preview-photo"}}
 
 func findProfile(slug string) *Profile {
 	for i := range profiles {

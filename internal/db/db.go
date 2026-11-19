@@ -136,11 +136,17 @@ type ProfileStore interface {
 	GetListeningProfile(ctx context.Context, slug string) (*models.ListeningProfile, error)
 	GetListeningProfileByID(ctx context.Context, id int32) (*models.ListeningProfile, error)
 	GetProfileByAPIKey(ctx context.Context, key string) (*models.ListeningProfile, error)
-	UpdateListeningProfile(ctx context.Context, id int32, displayName, slug string) error
+	UpdateListeningProfile(ctx context.Context, id int32, displayName, slug string, requireLogin *bool) error
 	GetApiKeysByProfileID(ctx context.Context, id int32) ([]models.ApiKey, error)
 	DeleteProfileApiKey(ctx context.Context, id, profileID int32) error
 	UpdateProfileApiKeyLabel(ctx context.Context, id, profileID int32, label string) error
 	GetProfileRelay(ctx context.Context, id int32) (string, string, error)
 	InitializeLegacyRelay(ctx context.Context, url, token string) error
 	SetProfileRelay(ctx context.Context, id int32, url, token string) error
+}
+
+// ListeningImageStore checks image eligibility before serving a cached variant.
+type ListeningImageStore interface {
+	ListeningImageExists(ctx context.Context, image uuid.UUID, profileID, playingTrackID int32) (bool, error)
+	DirectoryAvatarExists(ctx context.Context, image uuid.UUID) (bool, error)
 }

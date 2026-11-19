@@ -268,6 +268,11 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			h.fail(w, err)
 			return
 		}
+		// Use the listening policy to hide protected exports before management checks.
+		if admin.AuthorizeAction(identity.User, admin.ReadListening, profile) != nil {
+			h.fail(w, db.ErrNotFound)
+			return
+		}
 		if _, err = admin.Profile(r.Context(), h.store, identity.User, id, profile.Slug); err != nil {
 			h.fail(w, err)
 			return

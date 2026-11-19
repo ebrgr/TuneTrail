@@ -473,6 +473,12 @@
                     <input type="hidden" name="profile_slug" value="alpha">
                     <label>Name <input name="display_name" value="Fictional Alpha" required></label>
                     <label>Slug <input name="slug" value="alpha" required></label>
+                    <input type="hidden" name="require_login_present" value="1">
+                    <label>
+                      <input type="checkbox" name="require_login" value="1" >
+                      Require login to view listens
+                    </label>
+                    <small>Ingestion and configured relay continue when listening history is protected.</small>
                     <button>Save profile</button>
                   </form>
                   <h3>Avatar</h3>

@@ -122,6 +122,12 @@
                     <input type="hidden" name="profile_slug" value="{{.Slug}}">
                     <label>{{tr "admin.text.name" "Name"}} <input name="display_name" value="{{.DisplayName}}" required></label>
                     <label>{{tr "admin.text.slug" "Slug"}} <input name="slug" value="{{.Slug}}" required></label>
+                    <input type="hidden" name="require_login_present" value="1">
+                    <label>
+                      <input type="checkbox" name="require_login" value="1" {{if .RequireLogin}}checked{{end}}>
+                      {{tr "profiles.require_login" "Require login to view listens"}}
+                    </label>
+                    <small>{{tr "profiles.relay_continues" "Ingestion and configured relay continue when listening history is protected."}}</small>
                     <button>{{tr "admin.text.save_profile" "Save profile"}}</button>
                   </form>
                   <h3>{{tr "admin.text.avatar" "Avatar"}}</h3>

@@ -192,17 +192,22 @@ func FetchMissingAlbumImages(ctx context.Context, store db.AlbumStore) error {
 	}
 }
 
-// TODO: move this function into models
-func BuildImageList(imageid *uuid.UUID) models.ImageList {
-	if imageid == nil || *imageid == uuid.Nil {
+// BuildImageList adds a stable profile scope to listening-derived image URLs.
+func BuildImageList(ctx context.Context, imageid *uuid.UUID) models.ImageList {
+	if imageid == nil {
 		imageid = &uuid.Nil
 	}
+	base := "/image/"
+	if id := db.ProfileID(ctx); id > 0 {
+		base = fmt.Sprintf("/image/profile/%d/", id)
+	}
+	base += imageid.String() + "/"
 	return models.ImageList{
-		XS:     fmt.Sprintf("/image/%s/%s.webp", imageid.String(), imagecache.ImageSizeXS),
-		Small:  fmt.Sprintf("/image/%s/%s.webp", imageid.String(), imagecache.ImageSizeSmall),
-		Medium: fmt.Sprintf("/image/%s/%s.webp", imageid.String(), imagecache.ImageSizeMedium),
-		Large:  fmt.Sprintf("/image/%s/%s.webp", imageid.String(), imagecache.ImageSizeLarge),
-		XL:     fmt.Sprintf("/image/%s/%s.webp", imageid.String(), imagecache.ImageSizeXL),
+		XS:     base + imagecache.ImageSizeXS.String() + ".webp",
+		Small:  base + imagecache.ImageSizeSmall.String() + ".webp",
+		Medium: base + imagecache.ImageSizeMedium.String() + ".webp",
+		Large:  base + imagecache.ImageSizeLarge.String() + ".webp",
+		XL:     base + imagecache.ImageSizeXL.String() + ".webp",
 	}
 }
 

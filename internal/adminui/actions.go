@@ -191,11 +191,22 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			return
 		}
 	case "save":
-		if !fields(f, "profile_slug", "display_name", "slug") {
+		if !fields(f, "profile_slug", "display_name", "slug", "require_login_present", "require_login") {
 			err = db.ErrInvalidInput
 			break
 		}
-		_, err = admin.UpdateProfile(r.Context(), h.store, identity.User, id, slug, f.SingleValue("display_name"), f.SingleValue("slug"))
+		// The marker distinguishes an unchecked box from a legacy identity edit.
+		var visibility *bool
+		marker, value := f.Values["require_login_present"], f.Values["require_login"]
+		if len(marker) != 0 || len(value) != 0 {
+			if len(marker) != 1 || marker[0] != "1" || (len(value) > 0 && (len(value) != 1 || value[0] != "1")) {
+				err = db.ErrInvalidInput
+				break
+			}
+			enabled := len(value) == 1
+			visibility = &enabled
+		}
+		_, err = admin.UpdateProfile(r.Context(), h.store, identity.User, id, slug, f.SingleValue("display_name"), f.SingleValue("slug"), visibility)
 	case "avatar", "avatar-clear":
 		if !fields(f, "profile_slug", "icon", "image") {
 			err = db.ErrInvalidInput

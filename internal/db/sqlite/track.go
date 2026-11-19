@@ -63,7 +63,7 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 		return nil, fmt.Errorf("getTrackByID: %w", err)
 	}
 	track.MbzID = parseNullableUUID(mbzID)
-	track.Image = catalog.BuildImageList(parseNullableUUID(image))
+	track.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
 
 	artists, err := s.artistsForTrack(ctx, id)
 	if err != nil {
@@ -645,7 +645,7 @@ func (s *Sqlite) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts
 		}
 
 		t.MbzID = parseNullableUUID(mbzID)
-		t.Image = catalog.BuildImageList(parseNullableUUID(image))
+		t.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
 
 		item.Item = &t
 		tracks = append(tracks, item)
@@ -805,7 +805,7 @@ func (s *Sqlite) SearchTracks(ctx context.Context, q string) ([]*models.Track, e
 			return nil, err
 		}
 		t.MbzID = parseNullableUUID(mbzID)
-		t.Image = catalog.BuildImageList(parseNullableUUID(image))
+		t.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
 		score := fuzzyScore(q, t.Title)
 		if prev, ok := seen[t.ID]; !ok || score > prev {
 			seen[t.ID] = score

@@ -118,7 +118,11 @@ func (h *Pages) serveSearchFragment(w http.ResponseWriter, r *http.Request, p Li
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// Protected fragments must be fetched again after any session or visibility change.
 	w.Header().Set("Cache-Control", "private, no-cache")
+	if p.Profile.RequireLogin {
+		w.Header().Set("Cache-Control", "private, no-store")
+	}
 	w.Header().Add("Vary", "Cookie")
 	w.Header().Add("Vary", "X-TuneTrail-Partial")
 	w.Header().Set("X-Robots-Tag", "noindex")

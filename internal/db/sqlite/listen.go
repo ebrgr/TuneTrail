@@ -200,7 +200,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		if err != nil {
 			return nil, err
 		}
-		l.Track.Image = catalog.BuildImageList(imgid)
+		l.Track.Image = catalog.BuildImageList(ctx, imgid)
 		listens = append(listens, l)
 	}
 

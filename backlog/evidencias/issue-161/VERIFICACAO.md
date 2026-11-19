@@ -1,14 +1,14 @@
-# ISSUE-161 — verificação preliminar
+# ISSUE-161 — implementação e verificação
 
-## Decisão pendente sobre o cache legado
+## Decisão sobre o cache legado
 
 O doc-041 §3 exige que alternar `require_login` invalide as referências de cache que possam continuar expondo derivados de escutas. Também reconhece que cópias já baixadas ou publicadas por terceiros não podem ser retiradas.
 
 A rota existente `/image/{image_id}/{filename}` registra um handler global em `engine/routes.go`. Em `engine/handlers/image_handler.go`, o handler lê o cache de disco ou baixa a imagem e responde com `Cache-Control: public, max-age=2592000` antes de `http.ServeFile`. São 30 dias de validade pública. A URL não inclui perfil nem geração. Mesmo que a nova versão recuse a URL antiga na origem, um navegador ou cache intermediário que já tenha uma resposta fresca pode reutilizá-la sem enviar pedido ao servidor. Alterar a geração, enviar novos cabeçalhos e validar condicionais na origem passam a valer quando a requisição chega ao TuneTrail.
 
-Decisão necessária: tratar as respostas ainda frescas emitidas por versões anteriores como cópias já distribuídas, aplicando o gate a todas as requisições que chegarem à origem e impedindo novo armazenamento indevido, ou exigir um corte operacional com purga dos caches compartilhados sob controle do operador e tratamento da janela residual de até 30 dias para caches fora desse controle.
+O usuário escolheu a opção 1 em 19/11/2026. A origem autoriza cada pedido antes de consultar o cache ou avaliar uma condicional. Respostas antigas ainda frescas são cópias já distribuídas. O usuário aceitou a validade residual de até 30 dias em caches fora do controle do servidor, dispensando corte operacional e purga. Decisão registrada na tarefa com autoria `ebrgr` e no doc-041 §3.
 
-## Inventário inicial por superfície
+## Inventário antes da implementação
 
 | Superfície | Caminho encontrado | Verificação na versão atual |
 | --- | --- | --- |
@@ -22,3 +22,36 @@ Decisão necessária: tratar as respostas ainda frescas emitidas por versões an
 | Ingestão e relay | `/apis/listenbrainz/1` em `engine/routes.go` | A entrada de máquina usa a chave de ingestão. O teste de entrada e saída com perfil protegido está pendente. |
 
 A inspeção foi estática. A matriz visitante, usuário sem acesso, dono e root para perfis públicos e protegidos ainda não foi executada. Nenhum critério de aceite foi comprovado nesta etapa.
+
+
+## Resultado por papel
+
+Os resultados abaixo usam sessões reais e o roteador de produção. **V** é visitante, **O** é usuário de outro perfil, **D** é dono e **R** é root.
+
+| Superfície | Público V / O / D / R | Protegido V / O / D / R |
+| --- | --- | --- |
+| Diretório HTML e identidade pública | disponível para todos | disponível para todos, com cadeado, sem escutas, capas ou contagens |
+| Home, histórico, mídia, rankings, gráficos e retrospectiva | 200 / 200 / 200 / 200 | 404 / 404 / 200 / 200 |
+| JSON de escutas, estatísticas, atividade, resumo e mídia | 200 / 200 / 200 / 200 | 404 / 404 / 200 / 200 |
+| Busca HTML, JSON e fragmento `partial=1` | 200 / 200 / 200 / 200 | 404 / 404 / 200 / 200 |
+| Now-playing JSON e home | 200 / 200 / 200 / 200 | 404 / 404 / 200 / 200 |
+| Exportação JSON | 401 / 403 / 200 / 200 | 404 / 404 / 200 / 200 |
+| Exportação HTML | 401 / 403 / 200 / 200 | 401 / 404 / 200 / 200 |
+| Capa associada, URL com perfil, GET e HEAD | disponível para todos | 404 / 404 / disponível / disponível |
+| Avatar do diretório | disponível para todos | disponível para todos |
+| Editar visibilidade em gestão | 401 / 403 / permitido / permitido | 401 / 403 / permitido / permitido |
+
+- `AuthorizeAction` resolve `ReadListening` antes do despacho HTML e JSON e antes de ler imagens de um perfil. A autorização de dono/root reaproveita `ManageProfile`. As exportações ainda exigem autorização de gestão. Rotas antigas sem slug também aplicam a política quando o perfil único pode ser resolvido.
+- A busca de artistas, álbuns e faixas usa a CTE que limita `listens` ao perfil. O teste consulta um perfil público por artistas, álbuns e faixas presentes apenas no perfil protegido. O corpo e os cabeçalhos da negativa de leitura são equivalentes aos de perfil inexistente.
+- A URL atual de capa inclui o ID do perfil. A origem autoriza o perfil e verifica a associação antes de acessar disco, gerar variante ou buscar da fonte. Um evento now-playing ativo também pode justificar a imagem no seu perfil. A URL legada serve avatares e capas associadas a escutas públicas. O root autenticado pode servir imagens do catálogo em suas operações editoriais por essa URL, com cache privado quando a sessão for necessária.
+- Capas públicas revalidam na origem. Capas protegidas retornam `private, no-store`. O ETag inclui o estado da visibilidade e o arquivo servido. A troca do checkbox produz um validador diferente para os mesmos bytes, sem aceitar validadores antigos de data. O teste aquece o cache, envia GET/HEAD condicionais, confirma 404 antes de 304 para visitante, recebe 304 para o dono com o ETag protegido e confirma o retorno a acesso público.
+- A ISSUE-075 continua anunciando Speculation Rules apenas em documentos públicos bem-sucedidos sem cookie de sessão. Negativas não contêm regras. O roteador atual tem now-playing e seus consumidores HTML e JSON, sem endpoint de widget, RSS ou SSE.
+- Ingestão ListenBrainz por chave e relay de saída foram exercitados com perfil protegido e destino HTTP de teste. O teste verifica token, caminho e faixa do evento encaminhado, a escuta persistida e a negativa de leitura com a chave de máquina.
+- A referência determinística consumida por `ui.reference.check` foi atualizada para incluir cadeado em um perfil de teste, checkbox de gestão e URLs de capas com escopo. As mudanças restantes nos documentos públicos são a geração de templates recalculada. As migrações publicadas permanecem intactas.
+
+## Validação final
+
+- `make check` passou com go vet, testes Go sem cache, comparação exata da referência e 13/13 jornadas E2E.
+- `go test -race -count=1 ./engine/... ./internal/admin ./internal/adminui ./internal/adminweb ./internal/catalog ./internal/db/... ./internal/models ./internal/webui -timeout 10m` passou com `CGO_ENABLED=1` e os caminhos de assets e idiomas da worktree.
+- `git diff --check` passou. Graphify AST atualizado na worktree, com 4.410 nós e 19.373 arestas. A consulta posterior percorreu a política, os adaptadores e as verificações de imagens.
+- A matriz e os testes de cache comprovam o AC #1 nas superfícies existentes, o diretório e a gestão comprovam o AC #2 e a entrada ListenBrainz com relay de saída comprovam o AC #3.

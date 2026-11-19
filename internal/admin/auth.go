@@ -35,10 +35,11 @@ type AccountStore interface {
 	UpdateUser(context.Context, db.UpdateUserOpts) error
 }
 
-// Action is an explicit management capability; unknown actions are always denied.
+// Action is an explicit capability; unknown actions are always denied.
 type Action string
 
 const (
+	ReadListening  Action = "profile.read-listening"
 	ManageProfile  Action = "profile.manage"
 	ManageAccount  Action = "account.self"
 	ManageAccounts Action = "accounts.manage"
@@ -49,6 +50,16 @@ const (
 // AuthorizeAction is the shared HTML, JSON and service policy. Actors come from
 // session authentication; resources must be loaded by the server, never decoded from input.
 func AuthorizeAction(user *models.User, action Action, resource *models.ListeningProfile) error {
+	// Protected listening uses the same owner/root decision as profile management.
+	if action == ReadListening {
+		if resource == nil || resource.ID <= 0 || resource.UserID <= 0 {
+			return ErrForbidden
+		}
+		if !resource.RequireLogin {
+			return nil
+		}
+		return AuthorizeAction(user, ManageProfile, resource)
+	}
 	if user == nil {
 		return ErrUnauthorized
 	}

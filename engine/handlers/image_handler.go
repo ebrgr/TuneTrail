@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"os"
 
 	"github.com/ebrgr/TuneTrail/imagecache"
 	"github.com/ebrgr/TuneTrail/internal/db"
@@ -17,6 +18,13 @@ import (
 	"github.com/rs/zerolog"
 	"time"
 )
+
+type imageVisibilityKey struct{}
+
+// withImageVisibility carries the authorized representation into conditional serving.
+func withImageVisibility(ctx context.Context, visibility string) context.Context {
+	return context.WithValue(ctx, imageVisibilityKey{}, visibility)
+}
 
 func ImageHandler(store db.ImageStore) http.HandlerFunc {
 	downloadGroup := imagework.New(5, 30*time.Second)
@@ -35,7 +43,18 @@ func ImageHandler(store db.ImageStore) http.HandlerFunc {
 			return
 		}
 
-		image, err := imagecache.GetImageContext(r.Context(), imgid, filename)
+		// Normalize the variant before using it in cache lookup or response metadata.
+		size, err := imagecache.ParseImageSize(filename)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		if imgid == uuid.Nil {
+			serveDefaultImage(w, size)
+			return
+		}
+		filename = size.String() + ".webp"
+		image, err := imagecache.GetImageContext(ctx, imgid, filename)
 		if errors.Is(err, fs.ErrNotExist) {
 			l.Debug().Err(err).Msgf("ImageHandler: Could not find requested image %s. Attempting to download from source", imgid.String())
 			image, err = imageHandlerRedownload(w, r, l, store, downloadGroup, imgid, filename)
@@ -53,8 +72,22 @@ func ImageHandler(store db.ImageStore) http.HandlerFunc {
 
 		l.Debug().Msgf("ImageHandler: Serving image from path '%s'", image.Path)
 		w.Header().Set("Content-Type", image.Mime)
-		w.Header().Set("Cache-Control", "public, max-age=2592000")
-		http.ServeFile(w, r, image.Path)
+		// Only the authorized representation may participate in HTTP validation.
+		// Suppress Last-Modified so legacy date validators cannot cross a visibility change.
+		file, err := os.Open(image.Path)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer file.Close()
+		info, err := file.Stat()
+		if err != nil {
+			http.Error(w, "image unavailable", http.StatusInternalServerError)
+			return
+		}
+		visibility, _ := ctx.Value(imageVisibilityKey{}).(string)
+		w.Header().Set("ETag", fmt.Sprintf(`"161-%s-%s-%s-%x-%x"`, visibility, imgid, filename, info.ModTime().UnixNano(), info.Size()))
+		http.ServeContent(w, r, filename, time.Time{}, file)
 	}
 }
 
@@ -121,7 +154,7 @@ func defaultSVG(size imagecache.ImageSize) []byte {
 
 func serveDefaultImage(w http.ResponseWriter, size imagecache.ImageSize) {
 	w.Header().Set("Content-Type", "image/svg+xml")
-	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Cache-Control", "private, no-store")
 	w.WriteHeader(http.StatusOK)
 	w.Write(defaultSVG(size))
 }

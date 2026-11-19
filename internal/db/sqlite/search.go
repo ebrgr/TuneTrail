@@ -68,7 +68,7 @@ func (s *Sqlite) SearchArtists(ctx context.Context, q string) ([]*models.Artist,
 			return nil, err
 		}
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(parseNullableUUID(image))
+		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
 		score := fuzzyScore(q, a.Name)
 		if prev, ok := seen[a.ID]; !ok || score > prev {
 			seen[a.ID] = score
@@ -117,7 +117,7 @@ func (s *Sqlite) SearchAlbums(ctx context.Context, q string) ([]*models.Album, e
 			return nil, err
 		}
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(parseNullableUUID(image))
+		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
 		a.VariousArtists = variousArtists == 1
 		score := fuzzyScore(q, a.Title)
 		if prev, ok := seen[a.ID]; !ok || score > prev {

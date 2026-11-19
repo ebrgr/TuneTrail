@@ -95,7 +95,7 @@ func CreateProfile(ctx context.Context, store db.ProfileStore, user *models.User
 }
 
 // UpdateProfile keeps the same numeric identity and requires the caller's current slug.
-func UpdateProfile(ctx context.Context, store db.ProfileStore, user *models.User, id int32, expected, name, slug string) (*models.ListeningProfile, error) {
+func UpdateProfile(ctx context.Context, store db.ProfileStore, user *models.User, id int32, expected, name, slug string, requireLogin *bool) (*models.ListeningProfile, error) {
 	profileMu.Lock()
 	defer profileMu.Unlock()
 	if _, err := Profile(ctx, store, user, id, expected); err != nil {
@@ -104,7 +104,7 @@ func UpdateProfile(ctx context.Context, store db.ProfileStore, user *models.User
 	if err := ValidateProfile(name, slug, ""); err != nil {
 		return nil, err
 	}
-	if err := store.UpdateListeningProfile(ctx, id, strings.TrimSpace(name), slug); err != nil {
+	if err := store.UpdateListeningProfile(ctx, id, strings.TrimSpace(name), slug, requireLogin); err != nil {
 		return nil, err
 	}
 	return store.GetListeningProfileByID(ctx, id)

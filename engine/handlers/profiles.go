@@ -31,11 +31,12 @@ func UpdateProfileHandler(store db.ProfileStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p := middleware.ProfileFromContext(r.Context())
 		body, err := adminweb.DecodeManagementJSON[struct {
-			DisplayName *string `json:"display_name"`
-			Slug        *string `json:"slug"`
+			DisplayName  *string `json:"display_name"`
+			Slug         *string `json:"slug"`
+			RequireLogin *bool   `json:"require_login"`
 		}](r)
-		if err != nil || (body.DisplayName == nil && body.Slug == nil) {
-			utils.WriteError(w, "display_name or slug required", 400)
+		if err != nil || (body.DisplayName == nil && body.Slug == nil && body.RequireLogin == nil) {
+			utils.WriteError(w, "display_name, slug or require_login required", 400)
 			return
 		}
 		name, slug := p.DisplayName, p.Slug
@@ -45,7 +46,8 @@ func UpdateProfileHandler(store db.ProfileStore) http.HandlerFunc {
 		if body.Slug != nil {
 			slug = *body.Slug
 		}
-		updated, err := admin.UpdateProfile(r.Context(), store, middleware.GetUserFromContext(r.Context()), p.ID, p.Slug, name, slug)
+		// Omitted visibility retains the current database value.
+		updated, err := admin.UpdateProfile(r.Context(), store, middleware.GetUserFromContext(r.Context()), p.ID, p.Slug, name, slug, body.RequireLogin)
 		if err != nil {
 			status := adminweb.ErrorStatus(err)
 			if errors.Is(err, db.ErrConflict) {

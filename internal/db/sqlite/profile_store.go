@@ -14,12 +14,12 @@ import (
 	sqlite3 "modernc.org/sqlite"
 )
 
-const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, created_at, user_id"
+const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, created_at, user_id, require_login"
 
 // scanProfile includes canonical ownership without exposing it in public serialization.
 func scanProfile(row interface{ Scan(...any) error }) (*models.ListeningProfile, error) {
 	p := new(models.ListeningProfile)
-	err := row.Scan(&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt, &p.UserID)
+	err := row.Scan(&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt, &p.UserID, &p.RequireLogin)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, db.ErrNotFound
 	}
@@ -50,17 +50,18 @@ func (s *Sqlite) GetListeningProfileByID(ctx context.Context, id int32) (*models
 
 // GetProfileByAPIKey resolves the ingestion destination, never an authenticated actor.
 func (s *Sqlite) GetProfileByAPIKey(ctx context.Context, key string) (*models.ListeningProfile, error) {
-	return scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at,p.user_id FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key))
+	return scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at,p.user_id,p.require_login FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key))
 }
 
 var profileSlugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // UpdateListeningProfile distinguishes duplicate identity from infrastructure failures.
-func (s *Sqlite) UpdateListeningProfile(ctx context.Context, id int32, displayName, slug string) error {
+func (s *Sqlite) UpdateListeningProfile(ctx context.Context, id int32, displayName, slug string, requireLogin *bool) error {
 	if !validProfileIdentity(displayName, slug) {
 		return db.ErrInvalidInput
 	}
-	result, err := s.db.ExecContext(ctx, `UPDATE listening_profiles SET display_name=?,slug=? WHERE id=?`, displayName, slug, id)
+	// Leave visibility untouched when older callers update only the identity.
+	result, err := s.db.ExecContext(ctx, `UPDATE listening_profiles SET display_name=?,slug=?,require_login=COALESCE(?,require_login) WHERE id=?`, displayName, slug, requireLogin, id)
 	if err != nil {
 		return profileConstraint(err)
 	}

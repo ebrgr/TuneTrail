@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- O diretório público lista todos os perfis, e donos e administradores podem exigir login para acessar as escutas e capas de um perfil (ISSUE-161).
+
 ## [0.39] - 2026-11-19
 
 - Usuários gerenciam seus próprios dados, chaves e relay, com importações que preservam o isolamento entre perfis e bloqueiam buscas de imagens na rede interna; administração global e último administrador ativo permanecem protegidos (ISSUE-160).

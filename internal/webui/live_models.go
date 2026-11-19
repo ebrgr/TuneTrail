@@ -67,7 +67,7 @@ type LivePage struct {
 }
 
 func publicProfile(p models.ListeningProfile) Profile {
-	v := Profile{ID: int(p.ID), Slug: p.Slug, Name: p.DisplayName}
+	v := Profile{RequireLogin: p.RequireLogin, ID: int(p.ID), Slug: p.Slug, Name: p.DisplayName}
 	if p.AvatarIcon != nil {
 		v.Icon = *p.AvatarIcon
 	}

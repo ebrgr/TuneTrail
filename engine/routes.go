@@ -38,8 +38,12 @@ func bindRoutes(
 	}
 	r.Use(chimiddleware.GetHead)
 
-	r.With(chimiddleware.RequestSize(5<<20)).
-		Get("/image/{image_id}/{filename}", handlers.ImageHandler(db))
+	// Both current and legacy image URLs must pass the origin visibility gate.
+	image := handlers.ImageHandler(db)
+	r.With(chimiddleware.RequestSize(5<<20), handlers.ImageAccess(db)).
+		Get("/image/{image_id}/{filename}", image)
+	r.With(chimiddleware.RequestSize(5<<20), handlers.ImageAccess(db)).
+		Get("/image/profile/{profile_id}/{image_id}/{filename}", image)
 
 	// The same global limiter instance counts HTML and JSON login attempts together.
 	loginLimit := func(h http.Handler) http.Handler { return h }
@@ -58,7 +62,8 @@ func bindRoutes(
 		r.Route("/profiles/{slug}", func(r chi.Router) {
 			r.Use(middleware.ProfileScope(db))
 			r.Get("/", handlers.GetProfileHandler())
-			bindProfileReads(r, db)
+			r.With(middleware.RequireExport(db)).Get("/export", handlers.ExportHandler(db))
+			bindProfileReads(r.With(middleware.RequireListening(db)), db)
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireManagement(db, admin.ManageProfile))
 				r.Patch("/", handlers.UpdateProfileHandler(db))
@@ -66,7 +71,6 @@ func bindRoutes(
 				r.With(middleware.RequireAdmin(db)).Delete("/", handlers.DeleteProfileHandler(db))
 				r.Put("/avatar", handlers.ProfileAvatarHandler(db))
 				r.Delete("/avatar", handlers.ProfileAvatarHandler(db))
-				r.Get("/export", handlers.ExportHandler(db))
 				r.Post("/import", profileImportHandler(db, mbz))
 				r.Get("/relay", handlers.GetProfileRelayHandler(db))
 				r.Post("/relay/test", handlers.TestProfileRelayHandler(db))
@@ -83,7 +87,7 @@ func bindRoutes(
 		// Transitional endpoints only resolve an unambiguous single profile.
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.ProfileScope(db))
-			bindProfileReads(r, db)
+			bindProfileReads(r.With(middleware.RequireListening(db)), db)
 		})
 
 		r.Post("/logout", handlers.LogoutHandler(db))
@@ -109,7 +113,7 @@ func bindRoutes(
 		r.With(middleware.RequireManagement(db, admin.ManageAccount)).Get("/user", handlers.MeHandler())
 		r.With(middleware.RequireManagement(db, admin.ManageAccount)).Patch("/user", handlers.UpdateUserHandler(db))
 
-		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Get("/export", handlers.ExportHandler(db))
+		r.With(middleware.ProfileScope(db), middleware.RequireExport(db)).Get("/export", handlers.ExportHandler(db))
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAdmin(db))
 

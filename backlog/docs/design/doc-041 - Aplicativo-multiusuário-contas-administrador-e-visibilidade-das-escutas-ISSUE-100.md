@@ -5,7 +5,7 @@ title: >-
   (ISSUE-100)
 type: specification
 created_date: '2026-11-17T17:17:00Z'
-updated_date: '2026-11-19T10:52:00Z'
+updated_date: '2026-11-19T15:26:00Z'
 tags:
   - design
 ---
@@ -91,6 +91,10 @@ Widget/SVG, cards, RSS e SSE, quando disponíveis ou implementados, devem obedec
 Avatar de perfil permanece público por decisão do diretório. Imagens e URLs derivadas de escutas protegidas não podem contornar o gate. A rota global de imagens deve verificar a elegibilidade antes de servir cache, variantes ou redownload; UUID não é autorização. Uma capa compartilhada legitimamente pública pode permanecer acessível, sem revelar que determinado perfil protegido a ouviu. Não permitir enumeração de catálogo exclusivo do histórico protegido.
 
 Respostas protegidas ou personalizadas devem usar cache privado sem armazenamento compartilhado; autorizar antes de retornar 304. Alternar require_login deve invalidar respostas/fragmentos/widgets e referências de cache que poderiam continuar expondo escutas. Não deixar conteúdo protegido em cache público/CDN nem em URLs de exportação acessíveis sem sessão. Não é possível retirar cópias anteriormente baixadas ou publicadas por terceiros.
+
+### Cache legado — decisão do usuário em 19/11/2026
+
+Decisão do usuário em 19/11/2026 — opção 1. Respostas legadas de /image/{image_id}/{filename} com Cache-Control public, max-age=2592000 são cópias já distribuídas. A origem autoriza todas as requisições antes de servir bytes ou 304. Imagens de perfil protegido usam private, no-store. Alternar require_login muda o validador da imagem. O usuário aceita que caches fora do controle do servidor possam reutilizar os cabeçalhos antigos por até 30 dias. A decisão dispensa corte operacional e purga de caches compartilhados.
 
 ### Relay e integrações: consequência aceita
 

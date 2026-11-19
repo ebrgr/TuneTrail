@@ -310,7 +310,7 @@ func TestProfileKeysCannotMoveAndRelayDoesNotReassign(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "https://relay.test", url)
 	require.Equal(t, "legacy-token", token)
-	require.NoError(t, s.UpdateListeningProfile(ctx, 1, "Renamed", "renamed"))
+	require.NoError(t, s.UpdateListeningProfile(ctx, 1, "Renamed", "renamed", nil))
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "", ""))
 	require.NoError(t, s.InitializeLegacyRelay(ctx, "https://relay.test", "legacy-token"))
 	url, _, err = s.GetProfileRelay(ctx, 1)

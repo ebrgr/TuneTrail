@@ -65,11 +65,6 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
-	// An anonymous tab can outlive a login in another tab. Never speculate with account cookies.
-	if _, err := r.Cookie(adminweb.SessionCookie); err != http.ErrNoCookie && strings.Contains(r.Header.Get("Sec-Purpose"), "prefetch") {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
 	w = h.options.Languages.Wrap(w, r)
 	p := LivePage{Page: Page{Locale: i18n.ViewOf(w), Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: r.URL.RequestURI(), Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}, Params: cloneQuery(r.URL.Query())}
 	p.Admin = h.adminSession(r)
@@ -87,6 +82,12 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.fail(w, p, status)
 			return
 		}
+		// Authorize before dispatching any document or fragment read.
+		if !adminweb.CanReadListening(r, h.options.Sessions, profile) {
+			h.fail(w, p, http.StatusNotFound)
+			return
+		}
+		p.Prefetch = p.Prefetch && !profile.RequireLogin
 		public := publicProfile(*profile)
 		p.Profile = &public
 		r = r.WithContext(db.WithProfile(r.Context(), profile.ID))
@@ -94,6 +95,11 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if len(parts) > 1 {
 			p.Section = strings.Join(parts[1:], "/")
 		}
+	}
+	// An anonymous tab can outlive a login in another tab. Never speculate with account cookies.
+	if sessionErr != http.ErrNoCookie && strings.Contains(r.Header.Get("Sec-Purpose"), "prefetch") {
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
 	// The instant search fragment needs only the resolved profile (ISSUE-107).
 	if p.Profile != nil && p.Section == "search" && r.URL.Query().Get("partial") == "1" {
@@ -279,6 +285,9 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 			return
 		}
 		w.Header().Set("Cache-Control", "private, no-cache")
+		if p.Profile != nil && p.Profile.RequireLogin {
+			w.Header().Set("Cache-Control", "private, no-store")
+		}
 		w.Header().Add("Vary", "Cookie")
 		w.Header().Set("X-TuneTrail-UI-Generation", generation)
 		// Lets a page restored from the back/forward cache detect a login or logout.
@@ -292,6 +301,13 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 	_, _ = b.WriteTo(w)
 }
 func (h *Pages) fail(w http.ResponseWriter, p LivePage, status int) {
+	// A generic 404 must not reflect profile or route data through the language form.
+	if status == http.StatusNotFound {
+		p.CurrentURL = "/"
+		if p.Locale != nil {
+			p.Locale.Return = "/"
+		}
+	}
 	p.Status = status
 	p.Error = http.StatusText(status)
 	p.Title = p.Error

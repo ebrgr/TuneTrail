@@ -79,3 +79,32 @@ func (s *Sqlite) GetUserUploadedImageIDs(ctx context.Context) ([]uuid.UUID, erro
 	}
 	return ret, nil
 }
+
+// ListeningImageExists checks association at the origin even for cached variants.
+func (s *Sqlite) ListeningImageExists(ctx context.Context, image uuid.UUID, profileID, playingTrackID int32) (bool, error) {
+	var exists bool
+	err := s.db.QueryRowContext(ctx, `
+		WITH matching_tracks(id) AS (
+			SELECT t.id FROM releases r JOIN tracks t ON t.release_id=r.id WHERE r.image=?
+			UNION ALL
+			SELECT at.track_id FROM artists a JOIN artist_tracks at ON at.artist_id=a.id WHERE a.image=?
+			UNION ALL
+			SELECT t.id FROM artists a JOIN artist_releases ar ON ar.artist_id=a.id
+			JOIN tracks t ON t.release_id=ar.release_id WHERE a.image=?
+		)
+		SELECT EXISTS (
+			SELECT 1 FROM matching_tracks t
+			WHERE t.id=? OR EXISTS (
+				SELECT 1 FROM listens l JOIN listening_profiles p ON p.id=l.profile_id
+				WHERE l.track_id=t.id AND (p.id=? OR (?=0 AND p.require_login=0))
+			)
+		)`, image.String(), image.String(), image.String(), playingTrackID, profileID, profileID).Scan(&exists)
+	return exists, err
+}
+
+// DirectoryAvatarExists authorizes the deliberately public avatar exception.
+func (s *Sqlite) DirectoryAvatarExists(ctx context.Context, image uuid.UUID) (bool, error) {
+	var exists bool
+	err := s.db.QueryRowContext(ctx, `SELECT EXISTS (SELECT 1 FROM listening_profiles WHERE avatar_image_id=?)`, image.String()).Scan(&exists)
+	return exists, err
+}

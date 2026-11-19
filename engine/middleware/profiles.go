@@ -36,7 +36,7 @@ func ProfileScope(store db.ProfileStore) func(http.Handler) http.Handler {
 				p, err = store.GetListeningProfile(r.Context(), slug)
 				if err != nil {
 					if errors.Is(err, db.ErrNotFound) {
-						utils.WriteError(w, "profile not found", http.StatusNotFound)
+						listeningNotFound(w)
 					} else {
 						logger.FromContext(r.Context()).Err(err).Msg("Profile lookup failed")
 						utils.WriteError(w, "failed to resolve profile", http.StatusInternalServerError)
@@ -113,3 +113,40 @@ func RequireAdmin(store db.UserStore) func(http.Handler) http.Handler {
 
 // SameOrigin delegates the shared policy used by JSON and prepared HTML handlers.
 func SameOrigin(next http.Handler) http.Handler { return adminweb.SameOrigin(next) }
+
+// RequireListening applies the same policy to explicit and transitional reads.
+func RequireListening(store db.UserStore) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !adminweb.CanReadListening(r, store, ProfileFromContext(r.Context())) {
+				listeningNotFound(w)
+				return
+			}
+			w.Header().Set("Cache-Control", "private, no-store")
+			w.Header().Add("Vary", "Cookie")
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// listeningNotFound keeps protected reads indistinguishable from missing profiles.
+func listeningNotFound(w http.ResponseWriter) {
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.Header().Add("Vary", "Cookie")
+	utils.WriteError(w, "not found", http.StatusNotFound)
+}
+
+// RequireExport hides protected listening data before invoking ordinary management authorization.
+func RequireExport(store db.UserStore) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		managed := RequireManagement(store, admin.ManageProfile)(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			p := ProfileFromContext(r.Context())
+			if p != nil && p.RequireLogin && !adminweb.CanReadListening(r, store, p) {
+				listeningNotFound(w)
+				return
+			}
+			managed.ServeHTTP(w, r)
+		})
+	}
+}

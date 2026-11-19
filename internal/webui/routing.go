@@ -2,6 +2,7 @@ package webui
 
 import (
 	"github.com/ebrgr/TuneTrail/internal/adminui"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -51,6 +52,12 @@ func (h *Pages) RedirectLegacy(w http.ResponseWriter, r *http.Request) bool {
 	}
 	target := "/?next=" + url.QueryEscape(destination)
 	if len(profiles) == 1 {
+		// The transitional entry point follows the same policy as the scoped document.
+		if !adminweb.CanReadListening(r, h.options.Sessions, &profiles[0]) {
+			w.Header().Set("Cache-Control", "private, no-store")
+			http.NotFound(w, r)
+			return true
+		}
 		target = "/" + url.PathEscape(profiles[0].Slug) + destination
 	}
 	http.Redirect(w, r, target, http.StatusFound)
