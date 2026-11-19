@@ -128,7 +128,7 @@ func requireRecovered(t *testing.T, dir string, before map[string]tableDigest, l
 	require.NoError(t, checkDatabase(db))
 	version, err := schemaVersion(db)
 	require.NoError(t, err)
-	require.Equal(t, 7, version)
+	require.Equal(t, currentSchemaVersion, version)
 	for table, want := range before {
 		got := digestTable(t, db, table, want.columns)
 		require.Equal(t, want.rows, got.rows, "rows of %s", table)
@@ -266,7 +266,7 @@ func TestBootstrapInPlaceV2RecoversAtEveryPhase(t *testing.T) {
 			defer db.Close()
 			version, err := schemaVersion(db)
 			require.NoError(t, err)
-			require.Equal(t, 7, version)
+			require.Equal(t, currentSchemaVersion, version)
 			for table, want := range before {
 				got := digestTable(t, db, table, want.columns)
 				require.Equal(t, want.hash, got.hash, "legacy columns of %s", table)

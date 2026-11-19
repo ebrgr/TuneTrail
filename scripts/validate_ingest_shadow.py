@@ -10,8 +10,8 @@ import tempfile
 from validate_ingest_migration import ROOT, check, component_hashes, connect, copy_components, digests, profile_counts
 
 
-# Schema version the shadow receiver leaves behind after bootstrap (007 added account tokens in ISSUE-162).
-LATEST_SCHEMA = 7
+# Schema version the shadow receiver leaves behind after bootstrap.
+LATEST_SCHEMA = 8
 
 
 def run(mode, directory):

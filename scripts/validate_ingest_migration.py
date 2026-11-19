@@ -28,7 +28,7 @@ def digests(path):
         result = {}
         tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT IN ('goose_db_version','legacy_user_profiles')").fetchall()
         for (table,) in tables:
-            columns = {'users':'id,username,role,password','listening_profiles':'id,slug,display_name,avatar_image_id,avatar_icon,created_at'}.get(table,'*')
+            columns = {'listens':'profile_id,track_id,listened_at,user_id,client','users':'id,username,role,password','listening_profiles':'id,slug,display_name,avatar_image_id,avatar_icon,created_at'}.get(table,'*')
             clause = " WHERE status='active'" if table=='users' and 'status' in [r[1] for r in conn.execute('PRAGMA table_info(users)')] else ''
             rows = sorted(repr(row) for row in conn.execute(f'SELECT {columns} FROM "{table}"{clause}'))
             result[table] = hashlib.sha256('\n'.join(rows).encode()).hexdigest()
@@ -79,7 +79,7 @@ def validate(binary, source, root, name):
         try:
             server.start()
             target = work / 'tunetrail.db'
-            check(target, 7)
+            check(target, 8)
             after = digests(target)
             assert all(after[table] == digest for table, digest in before.items()), 'existing rows changed'
             assert profile_counts(target) == counts
@@ -96,7 +96,7 @@ def validate(binary, source, root, name):
             server.stop()
             stable = digests(target)
             server.start()
-            check(target, 7)
+            check(target, 8)
             server.stop()
             assert digests(target) == stable, 'restart changed rows'
             # Restore to an empty isolated directory, then migrate the restored v3 again.
@@ -109,11 +109,11 @@ def validate(binary, source, root, name):
             restored_server = Server(binary, restored)
             try:
                 restored_server.start()
-                check(restored / 'tunetrail.db', 7)
+                check(restored / 'tunetrail.db', 8)
                 assert profile_counts(restored / 'tunetrail.db') == counts
             finally:
                 restored_server.stop()
-            reports.append({'case': name, 'entry': filename, 'from': 3, 'to': 5,
+            reports.append({'case': name, 'entry': filename, 'from': 3, 'to': 8,
                             'counts_before': counts, 'counts_after': profile_counts(target),
                             'all_existing_table_digests_equal': True, 'backup_restore': 'ok',
                             'integrity': 'ok', 'restart': 'ok', 'public_stats': 'ok'})

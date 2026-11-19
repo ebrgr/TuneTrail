@@ -172,7 +172,7 @@ func TestAccountTokenUpgrade162(t *testing.T) {
 	require.Equal(t, 6, version)
 	version, err = schemaVersion(verify)
 	require.NoError(t, err)
-	require.Equal(t, 7, version)
+	require.Equal(t, currentSchemaVersion, version)
 	require.NoError(t, checkDatabase(verify))
 	_, err = bootstrap(filepath.Dir(source), false)
 	require.NoError(t, err)

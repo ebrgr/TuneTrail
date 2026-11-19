@@ -36,7 +36,7 @@ func TestTrackAlbumParticipation(t *testing.T) {
 	}
 	require.Equal(t, 4, scalar(t, s, `SELECT COUNT(*) FROM listens`))
 	require.NoError(t, checkIntegrity(s.db))
-	require.Equal(t, 7, scalar(t, s, `SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1`))
+	require.Equal(t, currentSchemaVersion, scalar(t, s, `SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1`))
 }
 
 // TestAlbumCreditsSurviveTrackEdits covers legacy, both credit orders, primary promotion and partial albums.

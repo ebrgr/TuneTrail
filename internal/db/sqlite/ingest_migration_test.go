@@ -34,7 +34,11 @@ func insertReceipt(t *testing.T, s *Sqlite, id string) {
 
 // TestIngestConstraints exercises trusted keys, scope, immutable observations and activation guards.
 func TestIngestConstraints(t *testing.T) {
-	s := ingestFixture(t)
+	s, _, _ := migrationDB(t, 7)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	testfixtures.Profile(t, s, 2, "two", "Two", 0)
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('source',1,'test',0),('other',2,'test',0)`)
+	insertReceipt(t, s, "receipt")
 	require.Equal(t, 90, scalar(t, s, `SELECT details_retention_days FROM integrations WHERE id='source'`))
 	require.Zero(t, scalar(t, s, `SELECT diagnostic_enabled FROM integrations WHERE id='source'`))
 	for _, q := range []string{
@@ -205,7 +209,7 @@ func TestBootstrapIncompleteV4(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, conn.Close())
 			_, err = bootstrap(dir, true)
-			require.ErrorContains(t, err, "incompatible v7 schema")
+			require.ErrorContains(t, err, fmt.Sprintf("incompatible v%d schema", currentSchemaVersion))
 		})
 	}
 	// An incomplete current v3 must be rejected before any backup is created.
@@ -258,6 +262,8 @@ func TestOutboxDetailRetention(t *testing.T) {
 	s := ingestFixture(t)
 	now := time.Unix(2000000000, 0)
 	cutoff := now.Unix() - 90*86400
+	seedMusic(t, s)
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1,'e1'),(1,1,2,'e2')`)
 	execSQL(t, s, `DROP TRIGGER trg_outbox_inactive`)
 	execSQL(t, s, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at,state,closed_at) VALUES
  ('sent',1,'source','e1','listen','k1',0,'sent',1),('open',1,'source','e2','listen','k2',0,'failed',NULL)`)
@@ -302,7 +308,7 @@ func TestBootstrapKoitoV2WithoutUpstreamIndexes(t *testing.T) {
 	defer conn.Close()
 	version, err := schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, 7, version)
+	require.Equal(t, currentSchemaVersion, version)
 	for _, name := range []string{"idx_artist_aliases_artist_id", "idx_listens_track_id_listened_at"} {
 		var found string
 		require.NoError(t, conn.QueryRow(`SELECT name FROM sqlite_master WHERE type='index' AND name=?`, name).Scan(&found))
