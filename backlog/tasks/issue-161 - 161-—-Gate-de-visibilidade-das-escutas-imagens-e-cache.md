@@ -1,11 +1,11 @@
 ---
 id: ISSUE-161
 title: 161 — Gate de visibilidade das escutas, imagens e cache
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T16:32:00Z'
+updated_date: '2026-11-19T16:33:00Z'
 labels:
   - api
   - ui
@@ -102,6 +102,15 @@ created: 2026-11-19T16:32:00Z
 ---
 
 Verificação do risco 1: cache público de 30 dias com ETag em capas de perfil público, avatares e capas da rota legada elegíveis ao público. Capas protegidas usam private, no-store. GET e HEAD condicionais de visitante e de usuário sem acesso retornaram 404, enquanto uma condicional autorizada recebeu 304. make check passou com 13/13 E2E e go test -race passou em engine e engine/handlers. Custo residual registrado em VERIFICACAO.md. Os riscos 2 a 5 seguem como pendências por decisão do usuário.
+
+---
+
+author: claude
+created: 2026-11-19T16:33:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-19, incluindo a opção 1 para o cache legado de imagens, o cache público de 30 dias restaurado para imagens públicas (11400e8) e o risco residual documentado no doc-041 §3. Parecer do Reviewer (Opus, effort high): APROVADO COM RESSALVAS, sem vazamento de privacidade; o risco 1 (desempenho das capas) foi tratado com o max-age de 30 dias, sem migração nem índice, e o diff dessa correção foi revisado por leitura pelo Claude. Pendências conhecidas e NÃO implementadas por decisão do usuário: (2) rota antiga sem slug com perfil único protegido responde 404 em texto puro e sem Vary: Cookie; (3) aria-label do cadeado em span genérico em assets/templates/public/live.html; (4) arquivo backlog/evidencias/issue-161/REVIEWER.md é só autoavaliação do Codex; (5) lacunas de teste (imagem ao root pela URL antiga, PATCH com campos extras, 404 idêntico em mais rotas). Considerar na ISSUE-163.
 
 ---
 <!-- COMMENTS:END -->
