@@ -3,11 +3,11 @@ id: ISSUE-171
 title: >-
   171 — Pipeline de ingestão em modo sombra: recibos e decisões explicáveis
   (parte 1 da 081)
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T16:18:00Z'
-updated_date: '2026-11-19T17:18:00Z'
+updated_date: '2026-11-19T17:22:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -96,6 +96,15 @@ created: 2026-11-19T17:18:00Z
 ---
 
 Verificação do ponto 1 da leitura de 287914c: ApplyProfileDelete apaga todos os recibos e somente integrações de sombra do perfil na transação do histórico. ReceiveBatch, PurgeAllData e ApplyProfileDelete compartilham a definição das origens e identidades de sombra. TestShadowDeletePaths confirma que uma configuração externa, inclusive com prefixo file:, sobrevive à exclusão do histórico e que o outro perfil mantém seus dados. As entradas obrigatórias 3, 6, 7 e a divergência de horário estimated foram confirmadas no comentário da ISSUE-081. A tarefa segue Em andamento.
+
+---
+
+author: claude
+created: 2026-11-19T17:22:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-19. Pareceres: Reviewer (Opus, effort high) REPROVADO por 1 item obrigatório (recibos de sombra sobreviviam à exclusão), corrigido em 287914c junto com as ressalvas 1, 2, 4, 5 e 8; ponto adicional do Claude (ApplyProfileDelete apagava todas as integrations do perfil) corrigido em aaf7b60 e revisado por leitura do diff. Ressalvas 3, 6 e 7 e o limite dos recibos estimated registrados na ISSUE-081 como entrada obrigatória da ativação. O AC4 foi reescrito e cobre apenas o que o relatório prova (0 de 80 na cópia real; 4 de 10 no replay sintético com origens cruzadas): a taxa de Revisar em produção ainda precisa de algumas semanas de modo sombra antes de habilitar a parte 2. Advisor obrigatório (effort high) sobre o diff da ativação na ISSUE-081.
 
 ---
 <!-- COMMENTS:END -->
