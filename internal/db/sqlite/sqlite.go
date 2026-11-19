@@ -37,7 +37,7 @@ func newDatabase(allowCreate bool) (*Sqlite, error) {
 	if err != nil {
 		return nil, fmt.Errorf("sqlite.New: bootstrap: %w", err)
 	}
-	dsn := sqliteURI(databasePath) + "?mode=rw&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)"
+	dsn := sqliteURI(databasePath) + "?mode=rw&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)&_pragma=synchronous(FULL)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("sqlite.New: open: %w", err)

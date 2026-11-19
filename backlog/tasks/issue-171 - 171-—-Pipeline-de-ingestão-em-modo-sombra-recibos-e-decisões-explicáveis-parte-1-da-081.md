@@ -3,14 +3,18 @@ id: ISSUE-171
 title: >-
   171 — Pipeline de ingestão em modo sombra: recibos e decisões explicáveis
   (parte 1 da 081)
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-19T16:18:00Z'
+updated_date: '2026-11-19T16:33:00Z'
 labels:
   - ingestao
 milestone: m-11
 dependencies:
   - ISSUE-080
+references:
+  - backlog/evidencias/issue-171/VERIFICACAO.md
 documentation:
   - doc-043
 priority: high
@@ -30,9 +34,40 @@ Decisões adotadas (comentário do Advisor na ISSUE-081): mesma faixa duas vezes
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 O recibo de cada escuta e a decisão (same, different ou review) com reason_code, evidência e rule_version são gravados em ingest_events sem alterar nenhuma contagem de escutas; o caminho atual continua sendo a fonte da verdade
-- [ ] #2 O 200 da API só sai depois do commit do recibo e falha de disco dá 503, sem perder o lote; playing_now continua só em memória
-- [ ] #3 Testes de concorrência (envios iguais de conexões distintas disputando a mesma chave) e de repetições legítimas, incluindo mesma faixa no mesmo segundo, fuso e horário de verão
-- [ ] #4 Relatório da taxa de Revisar sobre cópia de banco real, sem tocar o banco real, registrado em backlog/evidencias/issue-171/
-- [ ] #5 Confirmado em teste que linhas de sombra com duplicate_decision same e event_id NULL são aceitas pela v4 sem nova migração
+- [x] #1 O recibo de cada escuta e a decisão (same, different ou review) com reason_code, evidência e rule_version são gravados em ingest_events sem alterar nenhuma contagem de escutas; o caminho atual continua sendo a fonte da verdade
+- [x] #2 O 200 da API só sai depois do commit do recibo e falha de disco dá 503, sem perder o lote; playing_now continua só em memória
+- [x] #3 Testes de concorrência (envios iguais de conexões distintas disputando a mesma chave) e de repetições legítimas, incluindo mesma faixa no mesmo segundo, fuso e horário de verão
+- [x] #4 Relatório da taxa de Revisar sobre cópia de banco real, sem tocar o banco real, registrado em backlog/evidencias/issue-171/
+- [x] #5 Confirmado em teste que linhas de sombra com duplicate_decision same e event_id NULL são aceitas pela v4 sem nova migração
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-19T16:18:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-171` na branch `feat/issue-171-pipeline-de-ingestao-em-modo` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-19T16:19:00Z
+
+---
+
+Decisão pendente: para itens sem listened_at, o recibo atômico usa a hora de chegada, enquanto o caminho legado calcula a hora por item. Usar a chegada também no legado pode mudar a contagem por faixa e segundo. Proposta e impacto registrados em VERIFICACAO.md. Nenhum critério marcado.
+
+---
+
+author: codex
+created: 2026-11-19T16:33:00Z
+
+---
+
+Verificação: cinco critérios comprovados. Aprovado o uso da hora de chegada somente no recibo estimated. Os testes cobrem commit, disco cheio, reenvio, fail-open, playing_now, WAL, fuso/horário de verão e a guarda v4. Replay em cópia privada: 0 de 80 escutas encaminhadas para Revisar, com hashes da origem e conteúdo legado preservados. A tarefa segue Em andamento.
+
+---
+<!-- COMMENTS:END -->

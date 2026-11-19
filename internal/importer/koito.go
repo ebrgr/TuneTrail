@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/imagefetch"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
@@ -48,6 +50,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 	if len(data.Listens) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
+	ctx = withFileShadow(ctx, store, profileID, "koito", f)
 	// Validate all required identities before writing anything. Uploaded exports
 	// are untrusted and an empty artist list must not panic at artistIds[0].
 	for _, item := range data.Listens {
@@ -80,6 +83,15 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			ignored(ctx)
 			continue
 		}
+		item := data.Listens[i]
+		captureFileListen(ctx, ingest.Snapshot{
+			Artist:       getPrimaryAliasFromAliasSlice(item.Artists[0].Aliases),
+			Title:        getPrimaryAliasFromAliasSlice(item.Track.Aliases),
+			Release:      getPrimaryAliasFromAliasSlice(item.Album.Aliases),
+			DurationMS:   int64(item.Track.Duration) * 1000,
+			Client:       item.Client,
+			OriginalTime: item.ListenedAt.Format(time.RFC3339Nano),
+		}, item.ListenedAt)
 		err := func() error {
 			unlock, err := catalog.LockAssociations(ctx)
 			if err != nil {

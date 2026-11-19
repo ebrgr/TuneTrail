@@ -8,12 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
@@ -21,20 +23,29 @@ import (
 	"github.com/google/uuid"
 )
 
+// ImportListenBrainzExport uses one ordinal stream across the archive members.
 func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
 	if db.ProfileID(ctx) <= 0 {
 		return fmt.Errorf("explicit import profile required")
 	}
 	l := logger.FromContext(ctx)
 
-	r, err := zip.OpenReader(importPath(ctx, filename))
+	file, err := os.Open(importPath(ctx, filename))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	r, err := zip.NewReader(file, info.Size())
 	if err != nil {
 		if errors.Is(err, zip.ErrFormat) {
 			return invalidFile(err)
 		}
 		return err
 	}
-	defer r.Close()
 
 	const maxMembers = 1000
 	const maxExpanded = 256 << 20
@@ -49,6 +60,7 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 		}
 		declared += f.UncompressedSize64
 	}
+	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "listenbrainz", file)
 	budget := &io.LimitedReader{N: maxExpanded + 1}
 	totalLines := 0
 	ctx = context.WithValue(ctx, archiveLinesKey{}, &totalLines)
@@ -95,6 +107,7 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 
 type archiveLinesKey struct{}
 
+// ImportListenBrainzFile preserves the source timestamp in the shadow snapshot.
 func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, r io.Reader, filename string) error {
 	if db.ProfileID(ctx) <= 0 {
 		return fmt.Errorf("explicit import profile required")
@@ -211,6 +224,11 @@ func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.Mus
 			Client:             client,
 			SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 		}
+		var observedAt time.Time
+		if payload.ListenedAt != 0 {
+			observedAt = time.Unix(int64(payload.ListenedAt), 0)
+		}
+		captureFileListen(ctx, ingest.ListenBrainzSnapshot(payload.TrackMeta), observedAt)
 		err = catalog.SubmitListen(ctx, store, opts)
 		if err != nil {
 			l.Err(err).Msg("Failed to import LastFM playback item")

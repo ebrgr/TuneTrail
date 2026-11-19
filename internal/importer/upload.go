@@ -3,21 +3,29 @@ package importer
 import (
 	"context"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"io"
 	"os"
 	"path"
 
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
 )
 
 // Result distinguishes newly stored listens from duplicates and skipped entries.
-type Result struct{ Processed, Imported, Duplicates, Ignored, Errors int }
+type Result struct {
+	Processed, Imported, Duplicates, Ignored, Errors int
+	Pending                                          int // Shadow count that can overlap Imported or Duplicates.
+}
 type resultKey struct{}
 
+// seen advances the absolute file ordinal before validation or filtering.
 func seen(ctx context.Context) {
+	if shadow, ok := ctx.Value(shadowKey{}).(*fileShadow); ok {
+		shadow.ordinal++
+	}
 	if r, ok := ctx.Value(resultKey{}).(*Result); ok {
 		r.Processed++
 	}
@@ -35,6 +43,15 @@ type UploadStore interface {
 type countingStore struct {
 	UploadStore
 	result *Result
+}
+
+// ReceiveBatch forwards optional shadow support through the counting wrapper.
+func (s countingStore) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]ingest.Result, error) {
+	receiver, ok := s.UploadStore.(ingest.Receiver)
+	if !ok {
+		return nil, nil
+	}
+	return receiver.ReceiveBatch(ctx, batch)
 }
 
 func (s countingStore) SaveListen(ctx context.Context, o db.SaveListenOpts) error {

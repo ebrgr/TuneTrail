@@ -15,6 +15,7 @@ import (
 	"github.com/ebrgr/TuneTrail/engine/middleware"
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
@@ -126,6 +127,7 @@ type submitListenHandlerStore interface {
 // LbzSubmitListenHandler bounds raw bodies before buffering, decoding or relaying them.
 func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainzCaller) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		receivedAt := time.Now()
 		l := logger.FromContext(r.Context())
 
 		l.Debug().Msg("LbzSubmitListenHandler: Received request to submit listens")
@@ -180,6 +182,20 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 			l.Debug().Msg("LbzSubmitListenHandler: Payload must only contain one listen for non-import requests")
 			utils.WriteError(w, "payload must only contain one listen for non-import requests", http.StatusBadRequest)
 			return
+		}
+
+		// Persist valid batches before any catalog or relay work takes place.
+		if receiver, ok := store.(ingest.Receiver); ok && req.ListenType != ListenTypePlayingNow {
+			err := receiveListenBatch(r.Context(), receiver, profile.ID, req, r.Header.Get("Idempotency-Key"), receivedAt)
+			var unavailable *ingest.ErrUnavailable
+			if errors.As(err, &unavailable) {
+				l.Warn().Msg("ListenBrainz receipt storage unavailable")
+				utils.WriteError(w, "listen receipt storage unavailable", http.StatusServiceUnavailable)
+				return
+			}
+			if err != nil {
+				l.Warn().Msg("ListenBrainz shadow receipt failed")
+			}
 		}
 
 		for _, payload := range req.Payload {
@@ -318,4 +334,30 @@ func buildCaolescingKey(p LbzSubmitListenPayload) string {
 	// The payload contains only JSON-supported strings, integers and slices.
 	data, _ := json.Marshal(p)
 	return fmt.Sprintf("%x", sha256.Sum256(data))
+}
+
+// receiveListenBatch projects allowlisted fields and leaves legacy timestamps alone.
+func receiveListenBatch(ctx context.Context, receiver ingest.Receiver, profile int32, req LbzSubmitListenRequest, key string, receivedAt time.Time) error {
+	operation := string(ListenTypeSingle)
+	if req.ListenType == ListenTypeImport {
+		operation = string(ListenTypeImport)
+	}
+	batch := ingest.Batch{ProfileID: profile, Source: "listenbrainz", Operation: operation, ReceivedAt: receivedAt}
+	if key != "" {
+		batch.ClientKey = ingest.Digest([]byte(key))
+	}
+	for ordinal, payload := range req.Payload {
+		meta := payload.TrackMeta
+		if meta.ArtistName == "" || meta.TrackName == "" {
+			// Capture the prefix that legacy validation will process.
+			break
+		}
+		item := ingest.Item{Ordinal: ordinal, Snapshot: ingest.ListenBrainzSnapshot(meta)}
+		if payload.ListenedAt != 0 {
+			item.ListenedAt = time.Unix(int64(payload.ListenedAt), 0)
+		}
+		batch.Items = append(batch.Items, item)
+	}
+	_, err := receiver.ReceiveBatch(ctx, batch)
+	return err
 }

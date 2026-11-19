@@ -44,6 +44,7 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 	if len(export) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
+	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "spotify", file)
 	for _, item := range export {
 		seen(ctx)
 		if err := ctx.Err(); err != nil {
@@ -75,7 +76,7 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			ProfileID:      db.ProfileID(ctx),
 			SkipCacheImage: !cfg.FetchImagesDuringImport(),
 		}
-		err = catalog.SubmitListen(ctx, store, opts)
+		err = submitFileListen(ctx, store, opts, item.Timestamp.Format(time.RFC3339Nano))
 		if err != nil {
 			l.Err(err).Msg("Failed to import spotify playback item")
 			return fmt.Errorf("ImportSpotifyFile: %w", err)

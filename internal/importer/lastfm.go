@@ -62,6 +62,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 	if len(export) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
+	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "lastfm", file)
 	for _, item := range export {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -133,7 +134,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 				ProfileID:          db.ProfileID(ctx),
 				SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 			}
-			err = catalog.SubmitListen(ctx, store, opts)
+			err = submitFileListen(ctx, store, opts, track.Date.Unix)
 			if err != nil {
 				l.Err(err).Msg("Failed to import LastFM playback item")
 				return fmt.Errorf("ImportLastFMFile: %w", err)
