@@ -10,6 +10,10 @@ import tempfile
 from validate_ingest_migration import ROOT, check, component_hashes, connect, copy_components, digests, profile_counts
 
 
+# Schema version the shadow receiver leaves behind after bootstrap (007 added account tokens in ISSUE-162).
+LATEST_SCHEMA = 7
+
+
 def run(mode, directory):
     """Pass only a temporary path to the Go receiver and return its aggregates."""
     (Path(directory) / ".shadow-replay-copy").touch(exist_ok=False)
@@ -35,7 +39,7 @@ def synthetic():
             }
         database = Path(tmp) / "tunetrail.db"
         assert profile_counts(database) == {}
-        check(database, 6)
+        check(database, LATEST_SCHEMA)
         return report
 
 
@@ -62,7 +66,7 @@ def historical(source):
         }
         assert profile_counts(database) == counts
         assert digests(database)["listens"] == listens
-        check(database, 6)
+        check(database, LATEST_SCHEMA)
     assert component_hashes(source) == before
     return {"input_schema": schema, "listen_counts": counts, "source_components_unchanged": True,
             "legacy_listens_unchanged": True, **report}
