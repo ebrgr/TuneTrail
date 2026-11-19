@@ -19,7 +19,7 @@ import (
 )
 
 // currentSchemaVersion is the latest embedded migration understood by bootstrap.
-const currentSchemaVersion = 7
+const currentSchemaVersion = 8
 
 // regularFile rejects links and special files before opening database components.
 func regularFile(path string) (bool, error) {
@@ -160,7 +160,7 @@ func checkDatabase(db *sql.DB) error {
 		return err
 	}
 	if version < 3 || version > currentSchemaVersion {
-		return fmt.Errorf("schema version %d is not consolidated v3/v4/v5/v6/v7", version)
+		return fmt.Errorf("schema version %d is not a supported consolidated schema", version)
 	}
 	for _, q := range []string{`SELECT id,slug,display_name,avatar_image_id,avatar_icon,created_at FROM listening_profiles LIMIT 0`, `SELECT profile_id FROM listens LIMIT 0`, `SELECT profile_id FROM api_keys LIMIT 0`, `SELECT profile_id,url,token FROM profile_relays LIMIT 0`, `SELECT id,profile_id FROM legacy_relay_binding LIMIT 0`} {
 		rows, err := db.Query(q)

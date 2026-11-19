@@ -59,6 +59,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 6 {
 		pattern = ".pre-account-tokens-*.bak"
 	}
+	// Keep the v7 snapshot separate from backups of previous upgrades.
+	if version == 7 {
+		pattern = ".pre-recording-identity-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err
