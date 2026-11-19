@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.40] - 2026-11-19
+
 - O diretório público lista todos os perfis, e donos e administradores podem exigir login para acessar as escutas e capas de um perfil (ISSUE-161).
 
 ## [0.39] - 2026-11-19

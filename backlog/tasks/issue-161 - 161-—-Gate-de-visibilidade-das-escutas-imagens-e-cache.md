@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T16:33:00Z'
+updated_date: '2026-11-19T16:34:00Z'
 labels:
   - api
   - ui
@@ -111,6 +111,15 @@ created: 2026-11-19T16:33:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-19, incluindo a opção 1 para o cache legado de imagens, o cache público de 30 dias restaurado para imagens públicas (11400e8) e o risco residual documentado no doc-041 §3. Parecer do Reviewer (Opus, effort high): APROVADO COM RESSALVAS, sem vazamento de privacidade; o risco 1 (desempenho das capas) foi tratado com o max-age de 30 dias, sem migração nem índice, e o diff dessa correção foi revisado por leitura pelo Claude. Pendências conhecidas e NÃO implementadas por decisão do usuário: (2) rota antiga sem slug com perfil único protegido responde 404 em texto puro e sem Vary: Cookie; (3) aria-label do cadeado em span genérico em assets/templates/public/live.html; (4) arquivo backlog/evidencias/issue-161/REVIEWER.md é só autoavaliação do Codex; (5) lacunas de teste (imagem ao root pela URL antiga, PATCH com campos extras, 404 idêntico em mais rotas). Considerar na ISSUE-163.
+
+---
+
+author: ebrgr
+created: 2026-11-19T16:34:00Z
+
+---
+
+Publicação: versão 0.40 (tag `v0.40`), branch `feat/issue-161-gate-de-visibilidade-das-escutas` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
