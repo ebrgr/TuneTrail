@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T16:18:00Z'
-updated_date: '2026-11-19T17:22:00Z'
+updated_date: '2026-11-19T17:23:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -105,6 +105,15 @@ created: 2026-11-19T17:22:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-19. Pareceres: Reviewer (Opus, effort high) REPROVADO por 1 item obrigatório (recibos de sombra sobreviviam à exclusão), corrigido em 287914c junto com as ressalvas 1, 2, 4, 5 e 8; ponto adicional do Claude (ApplyProfileDelete apagava todas as integrations do perfil) corrigido em aaf7b60 e revisado por leitura do diff. Ressalvas 3, 6 e 7 e o limite dos recibos estimated registrados na ISSUE-081 como entrada obrigatória da ativação. O AC4 foi reescrito e cobre apenas o que o relatório prova (0 de 80 na cópia real; 4 de 10 no replay sintético com origens cruzadas): a taxa de Revisar em produção ainda precisa de algumas semanas de modo sombra antes de habilitar a parte 2. Advisor obrigatório (effort high) sobre o diff da ativação na ISSUE-081.
+
+---
+
+author: ebrgr
+created: 2026-11-19T17:23:00Z
+
+---
+
+Publicação: versão 0.41 (tag `v0.41`), branch `feat/issue-171-pipeline-de-ingestao-em-modo` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

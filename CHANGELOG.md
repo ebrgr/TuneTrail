@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.41] - 2026-11-19
+
 - A exclusão de escutas também remove os recibos de ingestão correspondentes e libera suas chaves para reimportação (ISSUE-171).
 
 - A API ListenBrainz responde com HTTP 503 quando o armazenamento dos recibos falha, permitindo reenviar o lote (ISSUE-171).
