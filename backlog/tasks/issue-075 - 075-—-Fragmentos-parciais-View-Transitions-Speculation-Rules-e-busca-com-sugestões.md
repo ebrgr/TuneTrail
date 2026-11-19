@@ -1,11 +1,11 @@
 ---
 id: ISSUE-075
 title: 075 — View Transitions, Speculation Rules e tooltips dos gráficos
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-19T00:34:00Z'
+updated_date: '2026-11-19T10:49:00Z'
 labels:
   - ui
 milestone: m-10
@@ -34,7 +34,7 @@ Passos:
 <!-- AC:BEGIN -->
 - [ ] #1 Todas as jornadas continuam funcionando com JavaScript desligado e em navegadores sem suporte a View Transitions e Speculation Rules
 - [x] #2 Nenhum JavaScript novo além do mínimo necessário (orçamento total abaixo de 25 KB comprimido); Speculation Rules não pré-carregam URLs com efeito colateral nem rotas administrativas
-- [ ] #3 Gráficos com detalhe por title e tooltip CSS, tabelas acessíveis mantidas; capturas e aceite visual do usuário
+- [x] #3 Gráficos com detalhe por title e tooltip CSS, tabelas acessíveis mantidas; capturas e aceite visual do usuário
 <!-- AC:END -->
 
 ## Comments
@@ -82,6 +82,15 @@ created: 2026-11-19T00:34:00Z
 ---
 
 Verificação Codex: escopo reduzido implementado sem JS novo; View Transitions com movimento reduzido, prefetch restrito a GETs públicos sem queries do mesmo perfil/origem e sem cookies de conta (corrida de login recebe 204/no-store), títulos SVG e tooltips data-tip com tabelas/details preservados. make check aprovado, 13/13 E2E; JS 17.458 bytes gzip. Capturas Orca com fixture e CSP script-src none em backlog/evidencias/ISSUE-075/. AC #2 comprovado; #1 permanece aberto por falta de matriz completa sem suporte e falha SyntaxError no verificador extra Firefox; #3 aguarda aceite visual do usuário. Estado mantido Em andamento, sem push/merge/publish/Done.
+
+---
+
+author: claude
+created: 2026-11-19T10:49:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-19 após ver o servidor da fixture (tooltips dos gráficos, transições e Speculation Rules). AC2 verificado (JS 17.458 bytes gzip, zero alterações em assets/js); AC3 pelo aceite visual do usuário. AC1 NÃO marcado: jornadas públicas representativas sem scripts e o E2E 13/13 passaram, mas a matriz completa em navegador sem suporte não foi provada (o verificador de cache do Firefox, scripts/validate_web_cache.cjs:129, falha com SyntaxError já existente); o usuário aceitou com essa limitação. Reviewer de segurança não foi executado antes do aceite, por decisão do usuário.
 
 ---
 <!-- COMMENTS:END -->
