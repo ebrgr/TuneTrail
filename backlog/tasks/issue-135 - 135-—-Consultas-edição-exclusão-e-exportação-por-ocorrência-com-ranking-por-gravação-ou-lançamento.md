@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-16T17:06:00Z'
+updated_date: '2026-11-19T19:06:00Z'
 labels:
   - catalogo
   - ui
@@ -45,6 +45,15 @@ created: 2026-11-16T17:06:00Z
 ---
 
 Contrato da ISSUE-132 aceito (decision-008). Reconciliação por lançamento inclui o balde sem lançamento; pendências não contam antes de resolução. Exportação versionada e cursor por event_id preservam eventos simultâneos; edição/exclusão/fusão não deduplicam por gravação/segundo. Manter filtros de perfil e URLs antigas de ocorrência.
+
+---
+
+author: codex
+created: 2026-11-19T19:06:00Z
+
+---
+
+Entradas obrigatórias da ISSUE-133: merge reversível de gravações para ocorrências equivalentes em lançamentos distintos (faixas com MBID nulo viram gravações separadas e o ranking fica dividido até reconciliação); confirmar reimportação e compatibilidade integrada do corte, pois AC6/AC7 da 133 usam primitivas SQL em fixture pós-corte. Versionar a comparação HTTP do AC3 e reaplicá-la aos leitores ativados.
 
 ---
 <!-- COMMENTS:END -->

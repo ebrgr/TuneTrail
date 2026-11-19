@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T18:04:00Z'
+updated_date: '2026-11-19T19:06:00Z'
 labels:
   - banco
 milestone: m-11
@@ -139,6 +139,15 @@ created: 2026-11-19T18:04:00Z
 ---
 
 Parecer do Reviewer (leitura estática, sem testes): APROVADO COM RESSALVAS. Sem caminho de perda/corrupção no upgrade; filho-primeiro com FK ON, asserções TEMP CHECK(ok=1), cópia 1:1 de listens e ledger idêntico à 004 conferidos. Ressalvas: (1) 008 removeu os CHECKs de inatividade de ingest_events da 004 sem guarda removível substituta (trg_ingest_event_inactive); (2) faltam índices em ingest_events.occurrence_id/recording_id (varredura do ledger a cada exclusão de faixa); (3) checagem reversa só para origem v7; (4) dois alocadores de ID tracks/occurrences colidem pós-corte (134/135); (5) coerência recibo↔evento↔ocorrência sem trigger (081); (6) AC6/AC7 provados só por primitivas SQL; (7) origin sem enum; (8) avaliar linha no CHANGELOG. Detalhes em PARECER-REVIEWER.md.
+
+---
+
+author: ebrgr
+created: 2026-11-19T19:06:00Z
+
+---
+
+Decisão em 2026-11-19: opção B para listens.origin. Criar event_origins e cadastrar somente legacy antes de reconstruir listens. Usar FK sem cascata, DEFAULT legacy e cadastrar por INSERT as origens definidas e validadas pela ISSUE-134. Aplicar os pareceres na 008 ainda inédita e refazer o ensaio em cópias sintéticas.
 
 ---
 <!-- COMMENTS:END -->

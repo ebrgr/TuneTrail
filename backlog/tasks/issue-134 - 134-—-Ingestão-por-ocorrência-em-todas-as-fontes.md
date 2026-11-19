@@ -4,7 +4,7 @@ title: 134 — Ingestão por ocorrência em todas as fontes
 status: Aberta
 assignee: []
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-17T16:18:00Z'
+updated_date: '2026-11-19T19:06:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -47,6 +47,15 @@ created: 2026-11-16T17:06:00Z
 ---
 
 Contrato da ISSUE-132 aceito (decision-008). Implementar recebimentos duráveis, conflitos preservados para revisão por perfil, idempotência por fonte/ID ou digest/ordinal, Pending na importação e retomada sem depender do staging. Reenvios indistinguíveis sem ID confiável não permitem exatamente uma vez automático. Coordenar revisão/consulta com ISSUE-083 e relay elegível com ISSUE-082.
+
+---
+
+author: codex
+created: 2026-11-19T19:06:00Z
+
+---
+
+Entradas obrigatórias da ISSUE-133: cadastrar por INSERT em event_origins as origens usadas no pipeline e validá-las no escritor. Validar a proveniência legacy_declared de recordings.musicbrainz_id antes da regra 3 do resolvedor. Garantir por trigger removível que recibo vinculado tem occurrence_id=listens.track_id e recording_id=occurrences.recording_id, identity_status coerente com accepted/duplicate e resolution_version monotônica. No corte, aposentar ou compatibilizar o alocador de tracks e occurrences para evitar colisão; definir como guardar título e créditos apresentados sem linha em tracks (doc-039 §Contrato de entidades).
 
 ---
 <!-- COMMENTS:END -->

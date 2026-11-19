@@ -98,6 +98,10 @@ Na Fase 2, rodar testes de migração/recuperação e concorrência direcionados
 3. Preservar byte a byte os recibos de sombra sem vínculo e manter a limpeza da 171 enquanto só houver o escritor legado. Vínculo exige evidência independente de heurísticas. A purga dos recibos de sombra com `event_id` nulo, com prévia e contagens, é entrada obrigatória antes da ativação da ISSUE-081.
 4. Ensaio apenas em snapshot autorizado pelo usuário, com serviço parado e disco livre ≥3× o tamanho do banco. Até indicação e autorização expressas, usar somente fixtures e cópias sintéticas. Ordem 162 → 133 sem mudança de comportamento → 134/081 atrás das guardas → 135 com migração de ativação no mesmo binário.
 
+5. Decisão de ebrgr em 2026-11-19, opção B: criar e semear `event_origins` somente com `legacy` antes de reconstruir `listens`. A coluna tem default legacy, FK com RESTRICT e valida o cadastro por chave primária. A ISSUE-134 cadastra as origens futuras por INSERT e valida no escritor. O backfill usa legacy explicitamente. A guarda temporária continua a impedir origens novas até o corte.
+6. As correções dos pareceres preservam MBIDs como `legacy_declared` até validação na regra 3 da ISSUE-134, indexam as FKs de occurrence/recording no ledger, ampliam a checagem reversa para v3–v8 e separam as guardas de INSERT e UPDATE de recibos. Durante a ponte, SaveTrack aloca acima do maior track presente e da sequência de occurrences. O INSERT da ponte ainda recusa colisões diretas. A migração de ativação remove as guardas de recibos, revisão e outbox e deve aposentar ou compatibilizar a escrita em tracks.
+7. Decisão de ebrgr em 2026-11-19: substituir o passo 7 com dados reais por ensaio com 30 mil e 300 mil escutas sintéticas. Reter o índice `idx_listens_profile_listened_at` enquanto a equivalência dos planos de leitura não estiver comprovada.
+
 ## Sequência da Fase 2
 
 1. Após publicação da 162 na main e nova instrução do usuário, rebase sobre a main com a 007. A ISSUE-133 depende da ISSUE-162 no Backlog.
@@ -106,5 +110,5 @@ Na Fase 2, rodar testes de migração/recuperação e concorrência direcionados
 4. Rodar AC1/AC2/AC5/AC6, cobrindo cascatas, merge e exclusão de lançamento. Reexecutar os testes de sombra da 171 sem alterações.
 5. Rodar testes de falha da 008, retry e restauração (AC4).
 6. Exercitar os bloqueios e a remoção coordenada das guardas em fixture sintética (AC7).
-7. Ensaiar somente na cópia do snapshot indicado e autorizado, respeitando serviço parado e espaço mínimo.
+7. Ensaiar somente em cópias de bancos sintéticos gerados fora do repositório, respeitando serviço parado e espaço mínimo.
 8. Executar o Reviewer, registrar evidências e deixar a entrega pronta para aceite.

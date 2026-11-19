@@ -4,7 +4,7 @@ title: '081 — Pipeline de ingestão com deduplicação explicável: ativação
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-19T17:45:00Z'
+updated_date: '2026-11-19T19:06:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -90,6 +90,15 @@ created: 2026-11-19T17:45:00Z
 ---
 
 Entrada obrigatória para ativação, decisão do usuário de 2026-11-19 na ISSUE-133: com prévia e contagens por perfil, purgar os recibos de sombra da 171 cujo event_id seja nulo antes de ativar a 081. Preservar os recibos vinculados e a configuração das fontes. A 133 preserva os recibos sem vínculo byte a byte e mantém a limpeza legada; a purga de ativação libera chaves de sombra que poderiam bloquear reimportação, inclusive de recibos estimated em outro segundo. Coordenar com leitores e migração de ativação da 135 no mesmo binário.
+
+---
+
+author: codex
+created: 2026-11-19T19:06:00Z
+
+---
+
+Entrada obrigatória adicional da ISSUE-133: após a purga aprovada dos recibos de sombra sem evento e no corte coordenado com a 135, a migração de ativação remove trg_ingest_event_inactive (INSERT), trg_ingest_event_inactive_update, trg_ingest_revision_inactive e trg_outbox_inactive.
 
 ---
 <!-- COMMENTS:END -->

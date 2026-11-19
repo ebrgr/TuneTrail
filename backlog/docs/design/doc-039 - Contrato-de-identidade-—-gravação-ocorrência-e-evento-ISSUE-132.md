@@ -50,6 +50,12 @@ O ledger ingest_events da ISSUE-080 guarda recebimentos e decisões; listens gua
 
 IDs externos devem indicar o namespace (recording, track, release), a fonte e seu nível de confiança. UUID sintaticamente válido não comprova o tipo nem a correção do ID. Se o tipo não puder ser validado, conservar a afirmação original e não usá-la para substituir identidade consolidada.
 
+### Decisões da ISSUE-133 em 2026-11-19
+
+Por decisão de ebrgr, `event_origins` é a tabela de referência extensível de `listens.origin`. A 008 cadastra somente `legacy`. A ISSUE-134 define, cadastra por INSERT e valida no escritor as novas origens, preservando o schema de `listens`.
+
+A 008 preserva o MBID copiado das faixas com `recordings.mbid_source='legacy_declared'`. A regra 3 do resolvedor da ISSUE-134 deve validar a declaração antes de tratá-la como uma identidade de gravação confirmada.
+
 ## Resolução de ocorrência
 
 1. ID de ocorrência/track MBID validado e coerente com gravação e lançamento.
