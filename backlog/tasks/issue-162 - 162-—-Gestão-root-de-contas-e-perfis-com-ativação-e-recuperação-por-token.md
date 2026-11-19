@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T17:45:00Z'
+updated_date: '2026-11-19T17:46:00Z'
 labels:
   - admin
   - banco
@@ -120,6 +120,15 @@ created: 2026-11-19T17:45:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-19. Pareceres: Reviewer (Opus, effort high) APROVADO COM RESSALVAS, sem bug bloqueante; riscos 1 (resgate sem bcrypt antes do token válido), 2 (tokens apagados ao mudar papel/status) e 5 (testes) corrigidos em 9bdf7fe, com o diff revisado por leitura pelo Claude. Pendência conhecida e NÃO implementada por decisão do usuário: risco 4 (CreateListeningProfile e DeleteListeningProfile, sem validação de sessão, continuam na interface ProfileStore; a produção não os chama). Risco 3 (validate_ingest_shadow.py: check da versão do schema 6 para 7) tratado no rebase. Exceção aceita: o comando local reset-password mantém a nova senha no log do processo (doc-041 §5); o AC3 vale para web e API. Observação para a 163: toda tentativa de resgate, mesmo com token inválido, toma o lock de escrita por um instante.
+
+---
+
+author: ebrgr
+created: 2026-11-19T17:46:00Z
+
+---
+
+Publicação: versão 0.42 (tag `v0.42`), branch `feat/issue-162-gestao-root-de-contas-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

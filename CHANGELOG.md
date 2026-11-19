@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.42] - 2026-11-19
+
 - Administradores podem gerenciar contas e perfis juntos, atribuir o papel de administrador e emitir tokens de ativação e recuperação de uso único (ISSUE-162).
 
 ## [0.41] - 2026-11-19
