@@ -4,7 +4,7 @@ title: '081 — Pipeline de ingestão com deduplicação explicável: ativação
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-19T17:17:00Z'
+updated_date: '2026-11-19T17:45:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -81,6 +81,15 @@ created: 2026-11-19T17:17:00Z
 ---
 
 Confirmação de entradas obrigatórias da ativação. (3) Antes de ativar o worker, excluir da seleção de idx_ingest_queue os recibos de sombra received com closed_at NULL por rule_version, adapter_version ou estado equivalente. (6) Limitar campos, quantidade e tamanho total do snapshot. (7) Registrar classe ou código do erro do recebimento sem expor dados do payload. Incluir também o limite de exclusão da parte 1: quando o segundo UTC de um recibo estimated diverge de listens, a exclusão individual não corresponde ao recibo, que permanece até a limpeza do perfil. A parte 2 deve tratar essa correspondência no desenho da exclusão e testá-la antes da ativação.
+
+---
+
+author: codex
+created: 2026-11-19T17:45:00Z
+
+---
+
+Entrada obrigatória para ativação, decisão do usuário de 2026-11-19 na ISSUE-133: com prévia e contagens por perfil, purgar os recibos de sombra da 171 cujo event_id seja nulo antes de ativar a 081. Preservar os recibos vinculados e a configuração das fontes. A 133 preserva os recibos sem vínculo byte a byte e mantém a limpeza legada; a purga de ativação libera chaves de sombra que poderiam bloquear reimportação, inclusive de recibos estimated em outro segundo. Coordenar com leitores e migração de ativação da 135 no mesmo binário.
 
 ---
 <!-- COMMENTS:END -->
