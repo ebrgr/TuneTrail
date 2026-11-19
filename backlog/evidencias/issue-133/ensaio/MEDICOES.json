@@ -1,0 +1,898 @@
+{
+  "end30": {
+    "after": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "event_origins": 1,
+        "ingest_event_details": 0,
+        "ingest_events": 30000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 30000,
+        "occurrences": 9012,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "recordings": 9012,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "a2f0d63784bc025e054472b46f16a181193f8353ee1bce7ae842fe54520fa1ae",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "121f4360ceb5b94677bc4a0cca2a4dc0d2b2fae1421f0afca0b4b4c2b67b19a7",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "cc719a36c2383ff10b5a3fac19541184af183727a5fa6719cc47de149fe5440e",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "6c46450caf31a93c3666fb1e91e27f4f586f4eea7d18cf7a08dff4bbf003c06d",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 5901,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 10000,
+        "public-fixture": 10001,
+        "relay-fixture": 9999
+      }
+    },
+    "alternative": null,
+    "backup_bytes": 16576512,
+    "before": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "ingest_event_details": 0,
+        "ingest_events": 30000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 30000,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "a2f0d63784bc025e054472b46f16a181193f8353ee1bce7ae842fe54520fa1ae",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "121f4360ceb5b94677bc4a0cca2a4dc0d2b2fae1421f0afca0b4b4c2b67b19a7",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "cc719a36c2383ff10b5a3fac19541184af183727a5fa6719cc47de149fe5440e",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "6c46450caf31a93c3666fb1e91e27f4f586f4eea7d18cf7a08dff4bbf003c06d",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 4255,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 10000,
+        "public-fixture": 10001,
+        "relay-fixture": 9999
+      }
+    },
+    "bootstrap": {
+      "disk_bytes": 61651536,
+      "rss_kib": 45472,
+      "seconds": 2.1995,
+      "wal_bytes": 20838992
+    },
+    "compared_http_routes": 34,
+    "db_bytes": 24170496,
+    "delete_plans": {
+      "DeleteOccurrence": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_occurrence (occurrence_id=?)"
+      ],
+      "DeleteOrphanRecording": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_recording (recording_id=?)"
+      ],
+      "DeleteRelease": [],
+      "DeleteTrack": [],
+      "MergeTracks_delete_source": []
+    },
+    "legacy_write_seconds": {
+      "delete_listen": 0.0007,
+      "delete_profile": 0.1637,
+      "delete_release": 0.0009,
+      "insert": 0.0055,
+      "merge_track": 0.0012,
+      "purge": 0.3727,
+      "repeat": 0.0043,
+      "shadow_api": 0.0165
+    },
+    "origin_fk_ms_per_30000": {
+      "with_origin_fk": 9.558,
+      "without_origin_fk": 8.247
+    },
+    "rollback_seconds": 0.7806,
+    "seed": 133,
+    "source_components_unchanged": true,
+    "source_hashes": {
+      "-shm": "d91193f874a50b8f04bf5d11444d4de06b43715203bd674cd3f271c8ebfed14a",
+      "-wal": "9438b099429d3b7d6692ca4e3630fca663c7e78093282d823e1e48356e6d8f87",
+      "db": "aa7da437aa3b7801196a21ffe93b4916b33d77e977d216eaf87bc583d9f478ad"
+    },
+    "upsert": {
+      "v7": {
+        "ms_per_1000": 2.616,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      },
+      "v8": {
+        "ms_per_1000": 39.028,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      }
+    }
+  },
+  "fault30": {
+    "after": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "event_origins": 1,
+        "ingest_event_details": 0,
+        "ingest_events": 30000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 30000,
+        "occurrences": 9012,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "recordings": 9012,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "890d0fe95bd1f9bc7040d3e07065d41bebfebf8b16aa9fd793fb0aaae9df57d9",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "121f4360ceb5b94677bc4a0cca2a4dc0d2b2fae1421f0afca0b4b4c2b67b19a7",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "cc719a36c2383ff10b5a3fac19541184af183727a5fa6719cc47de149fe5440e",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "f513c3ac2cf056eead8f725780c5b567d8f6ad277dc303e8c2ff568373fc55ed",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 5908,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 10000,
+        "public-fixture": 10001,
+        "relay-fixture": 9999
+      }
+    },
+    "alternative": null,
+    "backup_bytes": 16576512,
+    "before": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "ingest_event_details": 0,
+        "ingest_events": 30000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 30000,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "890d0fe95bd1f9bc7040d3e07065d41bebfebf8b16aa9fd793fb0aaae9df57d9",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "121f4360ceb5b94677bc4a0cca2a4dc0d2b2fae1421f0afca0b4b4c2b67b19a7",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "cc719a36c2383ff10b5a3fac19541184af183727a5fa6719cc47de149fe5440e",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "f513c3ac2cf056eead8f725780c5b567d8f6ad277dc303e8c2ff568373fc55ed",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 4255,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 10000,
+        "public-fixture": 10001,
+        "relay-fixture": 9999
+      }
+    },
+    "bootstrap": {
+      "disk_bytes": 61709048,
+      "rss_kib": 42912,
+      "seconds": 2.2373
+    },
+    "compared_http_routes": 34,
+    "db_bytes": 24199168,
+    "delete_plans": {
+      "DeleteOccurrence": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_occurrence (occurrence_id=?)"
+      ],
+      "DeleteOrphanRecording": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_recording (recording_id=?)"
+      ],
+      "DeleteRelease": [],
+      "DeleteTrack": [],
+      "MergeTracks_delete_source": []
+    },
+    "legacy_write_seconds": {
+      "delete_listen": 0.0011,
+      "delete_profile": 0.1815,
+      "delete_release": 0.0012,
+      "insert": 0.0061,
+      "merge_track": 0.0013,
+      "purge": 0.4448,
+      "repeat": 0.0047,
+      "shadow_api": 0.0164
+    },
+    "rollback_seconds": 0.9631,
+    "seed": 133,
+    "source_components_unchanged": true,
+    "source_hashes": {
+      "-shm": "4356ce497501cc888a8961dcd9623d140fad92069971f0c67488f537b16de5f8",
+      "-wal": "0bfab6b555bb09c3ab6ffaf6cdeed9836bf72908bf7368f3177520ef5a0818e4",
+      "db": "e4f77797a0654a91588df71b6d246f6f8f6a5ef393b80e7fd38e8cefc28dd90f"
+    },
+    "upsert": {
+      "v7": {
+        "ms_per_1000": 2.714,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      },
+      "v8": {
+        "ms_per_1000": 33.369,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      }
+    }
+  },
+  "fault300": {
+    "after": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "event_origins": 1,
+        "ingest_event_details": 0,
+        "ingest_events": 300000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 300000,
+        "occurrences": 9012,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "recordings": 9012,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "ab549305f77196e51b506037104a1a088e0d59ea41cec8beafabd4ee086b1866",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "ffc2499ea5d9ccb4a471fd26f7cf04e4353fb3b4c6eeceadf27194572a3d5ad3",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "67c4494b4227a6837d22098f89455a34487a3020d9143e4a34dc749c4017167a",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "0c202f0072f372578decc7051d3f74d26a09a9f5fdf2e07f34a07e96a0cf6e13",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 49257,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 100000,
+        "public-fixture": 100001,
+        "relay-fixture": 99999
+      }
+    },
+    "alternative": null,
+    "backup_bytes": 137646080,
+    "before": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "ingest_event_details": 0,
+        "ingest_events": 300000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 300000,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "ab549305f77196e51b506037104a1a088e0d59ea41cec8beafabd4ee086b1866",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "ffc2499ea5d9ccb4a471fd26f7cf04e4353fb3b4c6eeceadf27194572a3d5ad3",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "67c4494b4227a6837d22098f89455a34487a3020d9143e4a34dc749c4017167a",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "0c202f0072f372578decc7051d3f74d26a09a9f5fdf2e07f34a07e96a0cf6e13",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 35359,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 100000,
+        "public-fixture": 100001,
+        "relay-fixture": 99999
+      }
+    },
+    "bootstrap": {
+      "disk_bytes": 539261680,
+      "rss_kib": 41008,
+      "seconds": 23.1181
+    },
+    "compared_http_routes": 34,
+    "db_bytes": 201756672,
+    "delete_plans": {
+      "DeleteOccurrence": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_occurrence (occurrence_id=?)"
+      ],
+      "DeleteOrphanRecording": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_recording (recording_id=?)"
+      ],
+      "DeleteRelease": [],
+      "DeleteTrack": [],
+      "MergeTracks_delete_source": []
+    },
+    "legacy_write_seconds": {
+      "delete_listen": 0.0008,
+      "delete_profile": 2.6003,
+      "delete_release": 0.001,
+      "insert": 0.0184,
+      "merge_track": 0.0013,
+      "purge": 4.6002,
+      "repeat": 0.0175,
+      "shadow_api": 0.0677
+    },
+    "rollback_seconds": 9.3075,
+    "seed": 133,
+    "source_components_unchanged": true,
+    "source_hashes": {
+      "-shm": "6260d4e63fd8e96b7343cb3d8ebca77b36950d824257c83c52423634e89a6c2a",
+      "-wal": "13aa5e7b26cd6fabfcc2fedac464078e642bfd9038407a32c7a187d5186ea4c5",
+      "db": "65a1b75585d488d02fb0fd8283179d3b71a58a05956bb7fc5c466aacc02cda05"
+    },
+    "upsert": {
+      "v7": {
+        "ms_per_1000": 2.772,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      },
+      "v8": {
+        "ms_per_1000": 38.513,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      }
+    }
+  },
+  "final30": {
+    "after": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "event_origins": 1,
+        "ingest_event_details": 0,
+        "ingest_events": 30000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 30000,
+        "occurrences": 9012,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "recordings": 9012,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "5a4cc24eedf2def1e1794f43c6edcae4947f66c3b1b6b72d330ad63974e08223",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "121f4360ceb5b94677bc4a0cca2a4dc0d2b2fae1421f0afca0b4b4c2b67b19a7",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "cc719a36c2383ff10b5a3fac19541184af183727a5fa6719cc47de149fe5440e",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "21a500a4b810736fedefe4ee687075cb2ea47136ec36f11dd45f1fa47fd10148",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 5902,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 10000,
+        "public-fixture": 10001,
+        "relay-fixture": 9999
+      }
+    },
+    "alternative": {
+      "disk_bytes": 61902640,
+      "rss_kib": 44176,
+      "seconds": 2.8853
+    },
+    "backup_bytes": 16576512,
+    "before": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "ingest_event_details": 0,
+        "ingest_events": 30000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 30000,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "5a4cc24eedf2def1e1794f43c6edcae4947f66c3b1b6b72d330ad63974e08223",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "121f4360ceb5b94677bc4a0cca2a4dc0d2b2fae1421f0afca0b4b4c2b67b19a7",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "cc719a36c2383ff10b5a3fac19541184af183727a5fa6719cc47de149fe5440e",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "21a500a4b810736fedefe4ee687075cb2ea47136ec36f11dd45f1fa47fd10148",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 4255,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 10000,
+        "public-fixture": 10001,
+        "relay-fixture": 9999
+      }
+    },
+    "bootstrap": {
+      "disk_bytes": 61836912,
+      "rss_kib": 42768,
+      "seconds": 2.4565
+    },
+    "compared_http_routes": 34,
+    "db_bytes": 24174592,
+    "delete_plans": {
+      "DeleteOccurrence": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_occurrence (occurrence_id=?)"
+      ],
+      "DeleteOrphanRecording": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_recording (recording_id=?)"
+      ],
+      "DeleteRelease": [],
+      "DeleteTrack": [],
+      "MergeTracks_delete_source": []
+    },
+    "legacy_write_seconds": {
+      "delete_listen": 0.0008,
+      "delete_profile": 0.1634,
+      "delete_release": 0.0009,
+      "insert": 0.0057,
+      "merge_track": 0.0012,
+      "purge": 0.3812,
+      "repeat": 0.0043,
+      "shadow_api": 0.0159
+    },
+    "seed": 133,
+    "source_components_unchanged": true,
+    "source_hashes": {
+      "-shm": "16adadbb7eb8cd1b8236043c02704b9847765b2de55031e2630f0135ab9d3680",
+      "-wal": "322c50e288afd590bb6cc77375809d02b5f29ea853a35aef6c5abac1ab571b33",
+      "db": "28151a55f118dbffd230ced6f95d757eab294311164914d3a8c7b0225e426b0b"
+    },
+    "upsert": {
+      "v7": {
+        "ms_per_1000": 2.782,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      },
+      "v8": {
+        "ms_per_1000": 42.493,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      }
+    }
+  },
+  "final300": {
+    "after": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "event_origins": 1,
+        "ingest_event_details": 0,
+        "ingest_events": 300000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 300000,
+        "occurrences": 9012,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "recordings": 9012,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "fa7598d02d391aab0b0c8d4f9016e8d41df31668568b19edeeaf09b29ec887ac",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "ffc2499ea5d9ccb4a471fd26f7cf04e4353fb3b4c6eeceadf27194572a3d5ad3",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "67c4494b4227a6837d22098f89455a34487a3020d9143e4a34dc749c4017167a",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "1fc872e80680095cebc7f3812667832f0d76a73017ce67ce7c32cb08ac5a82ac",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 49248,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 100000,
+        "public-fixture": 100001,
+        "relay-fixture": 99999
+      }
+    },
+    "alternative": {
+      "disk_bytes": 539360584,
+      "rss_kib": 47072,
+      "seconds": 27.8946
+    },
+    "backup_bytes": 137646080,
+    "before": {
+      "counts": {
+        "account_tokens": 0,
+        "api_keys": 3,
+        "artist_aliases": 1200,
+        "artist_releases": 1503,
+        "artist_tracks": 11265,
+        "artists": 600,
+        "ingest_event_details": 0,
+        "ingest_events": 300000,
+        "ingest_observations": 0,
+        "ingest_revisions": 0,
+        "integrations": 7,
+        "legacy_relay_binding": 0,
+        "listening_profiles": 4,
+        "listens": 300000,
+        "outbox": 0,
+        "outbox_details": 0,
+        "profile_relays": 1,
+        "release_aliases": 3004,
+        "releases": 1502,
+        "sessions": 1,
+        "track_aliases": 18024,
+        "tracks": 9012,
+        "users": 4
+      },
+      "digests": {
+        "account_tokens": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "api_keys": "fa7598d02d391aab0b0c8d4f9016e8d41df31668568b19edeeaf09b29ec887ac",
+        "artist_aliases": "8b813bbb2dfd2ed2a1c8ac0cd269beab05885aedb788f7c3e22b18231105ffc6",
+        "artist_releases": "f285bef184038a4735238527845d3659f55c3484e88cb63d289c806e9586754c",
+        "artist_tracks": "e70db1ee9db221551ff7fb0d9f35b9055dcd006c467afc7e1c5e4ea766099856",
+        "artists": "c4b19b3073d77fc03563e6b0c995823cf968006d118e2e3903001ab88c0e0a27",
+        "ingest_event_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_events": "ffc2499ea5d9ccb4a471fd26f7cf04e4353fb3b4c6eeceadf27194572a3d5ad3",
+        "ingest_observations": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "ingest_revisions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "integrations": "9d1a1763f0f18e8bd407fe5ef6aa97aec20f06e4a5323ac618133a938230c459",
+        "legacy_relay_binding": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "listening_profiles": "d0933fd6f1444e2dc689435e7a00f1bed700f7f73ac4f3e368f3e776c581e6ec",
+        "listens": "67c4494b4227a6837d22098f89455a34487a3020d9143e4a34dc749c4017167a",
+        "outbox": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "outbox_details": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "profile_relays": "17ef262d872e845c56c359ed7036c7cdd2df02f4ac1788a6c1769ea83144ad26",
+        "release_aliases": "3aba616a61324c09a44427bb837c87e702626465d72cb5a3800b780a21e58fb5",
+        "releases": "b212324d3397b5953bfbf2f0dc30ee0d0215364905944e76d687247e39d9c943",
+        "sessions": "1fc872e80680095cebc7f3812667832f0d76a73017ce67ce7c32cb08ac5a82ac",
+        "track_aliases": "e7628cc47b7dc0067d0439287b0e42dca419531a01f06e1fbc6cd0e732959539",
+        "tracks": "31d5294edcb752d56786606eaea0a8bed4ec6b5657fa0c8ee7ffddc7d818de1f",
+        "users": "b254705c74d7c1f1d3cc149fabc2ec41b2c309546228d75e432eaddf9a66b361"
+      },
+      "free_pages": 0,
+      "page_count": 35359,
+      "profiles": {
+        "empty-fixture": 0,
+        "protected-fixture": 100000,
+        "public-fixture": 100001,
+        "relay-fixture": 99999
+      }
+    },
+    "bootstrap": {
+      "disk_bytes": 539294856,
+      "rss_kib": 45008,
+      "seconds": 24.3367
+    },
+    "compared_http_routes": 34,
+    "db_bytes": 201719808,
+    "delete_plans": {
+      "DeleteOccurrence": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_occurrence (occurrence_id=?)"
+      ],
+      "DeleteOrphanRecording": [
+        "SEARCH ingest_events USING COVERING INDEX idx_ingest_recording (recording_id=?)"
+      ],
+      "DeleteRelease": [],
+      "DeleteTrack": [],
+      "MergeTracks_delete_source": []
+    },
+    "legacy_write_seconds": {
+      "delete_listen": 0.0017,
+      "delete_profile": 2.7504,
+      "delete_release": 0.001,
+      "insert": 0.025,
+      "merge_track": 0.0013,
+      "purge": 4.946,
+      "repeat": 0.0211,
+      "shadow_api": 0.0771
+    },
+    "seed": 133,
+    "source_components_unchanged": true,
+    "source_hashes": {
+      "-shm": "1f0e22ed4f0532060ef5abc7b7a0dde0abccee1a61f200535d3f818676258ccb",
+      "-wal": "2b9b0f8866f4637954f023f970ed279b09e8f7e612c0f7f88e26add74e021cab",
+      "db": "d7d89b1bd876460faf780379029dd021c61d9a217199451b3dc3a4f1af731d64"
+    },
+    "upsert": {
+      "v7": {
+        "ms_per_1000": 2.872,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      },
+      "v8": {
+        "ms_per_1000": 42.844,
+        "profile_time_plan": [
+          "SEARCH listens USING COVERING INDEX idx_listens_profile_listened_at (profile_id=?)"
+        ]
+      }
+    }
+  }
+}

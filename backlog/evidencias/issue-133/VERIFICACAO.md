@@ -26,6 +26,16 @@ A exclusão de lançamento foi exercitada durante a ponte e após a retirada das
 - Comparação HTTP v7/v8 e recusa do v8 por binários anteriores em diretório temporário, usando a fixture de `scripts/validate_multiuser.py`.
 - Graphify AST atualizado e `git diff --check` sem erros.
 
-## Ponto de parada
+## Ponto de parada da verificação inicial
 
-A ISSUE-133 segue Em andamento. AC1 e AC4 ficam abertos até o ensaio. O passo 7 exige nova instrução e indicação explícita do snapshot pelo usuário, com serviço parado e espaço livre de pelo menos três vezes o tamanho do banco. A revisão do passo 8 também fica pendente.
+Naquele ponto, AC1 e AC4 seguiram abertos até o ensaio e o passo 7 aguardava nova instrução. O registro abaixo cobre a decisão posterior e os resultados do ensaio sintético.
+
+## Ensaio sintético após os pareceres
+
+A decisão de 2026-11-19 substituiu o snapshot real por duas cargas sintéticas v7. O bootstrap v8 preservou os digests de origem e as contagens por perfil em 30 mil e 300 mil escutas, com 34 respostas HTTP equivalentes por carga. A falha tardia via FS do Goose preservou v7 e os digests em ambas. O retry, o backup VACUUM INTO e a restauração com v0.42 passaram em ambas. Os binários v0.41/v0.42 recusaram v8. AC1 e AC4 foram verificados no ensaio aprovado. Um snapshot real é verificação adicional opcional.
+
+A 008 corrigida inclui as guardas de resolução de recibo, os índices parciais para as referências do ledger, a proveniência legacy_declared, o catálogo de origens semeado só com legacy e a checagem de layout para origens v3–v8. O alocador da ponte preserva o high-water mark, com teste explícito do RAISE em caso de colisão. O índice histórico de perfil/instante segue utilizado. O teste pós-corte retira explicitamente as guardas temporárias antes de vincular recibos.
+
+`make check` passou com 13/13 jornadas E2E. O detector de corrida passou em engine e internal/db/sqlite em execuções separadas. Os tempos foram 212,3 s e 194,4 s, respectivamente. O replay sintético da sombra manteve as decisões esperadas.
+
+[Relatório, comandos e métricas](ensaio/RELATORIO.md) · [Planos antes e depois](ensaio/ACHADOS.md)

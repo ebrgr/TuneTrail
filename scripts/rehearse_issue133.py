@@ -8,6 +8,7 @@ from pathlib import Path
 import random
 import shutil
 import sqlite3
+import statistics
 import subprocess
 import tempfile
 import threading
@@ -162,6 +163,28 @@ def benchmark_writes(path):
         return {"ms_per_1000": round(elapsed * 1000, 3), "profile_time_plan": plan}
 
 
+def benchmark_origin_lookup():
+    """Isolate the origin FK using two otherwise identical in-memory tables."""
+    timings = {"without_origin_fk": [], "with_origin_fk": []}
+    with sqlite3.connect(":memory:") as conn:
+        conn.executescript("""
+            PRAGMA foreign_keys=ON;
+            CREATE TABLE event_origins(origin TEXT NOT NULL PRIMARY KEY, description TEXT NOT NULL);
+            INSERT INTO event_origins VALUES ('legacy','Synthetic reference');
+            CREATE TABLE without_origin_fk(id INTEGER PRIMARY KEY,origin TEXT NOT NULL DEFAULT 'legacy');
+            CREATE TABLE with_origin_fk(id INTEGER PRIMARY KEY,
+                origin TEXT NOT NULL DEFAULT 'legacy' REFERENCES event_origins(origin));
+        """)
+        for index in range(8):
+            for table in sorted(timings, reverse=bool(index % 2)):
+                conn.execute("BEGIN")
+                start = time.perf_counter()
+                conn.executemany(f"INSERT INTO {table}(id) VALUES(?)", ((n,) for n in range(30000)))
+                timings[table].append((time.perf_counter() - start) * 1000)
+                conn.rollback()
+    return {name: round(statistics.median(samples), 3) for name, samples in timings.items()}
+
+
 def timed(call):
     start = time.monotonic()
     result = call()
@@ -169,7 +192,7 @@ def timed(call):
 
 
 def measured_start(server, temp_root):
-    peaks = {"rss_kib": 0, "disk_bytes": 0}
+    peaks = {"rss_kib": 0, "disk_bytes": 0, "wal_bytes": 0}
     finished = threading.Event()
 
     def sample():
@@ -183,6 +206,11 @@ def measured_start(server, temp_root):
                 except FileNotFoundError:
                     pass
             peaks["disk_bytes"] = max(peaks["disk_bytes"], size)
+            try:
+                wal = (server.directory / "tunetrail.db-wal").stat().st_size
+            except FileNotFoundError:
+                wal = 0
+            peaks["wal_bytes"] = max(peaks["wal_bytes"], wal)
             if server.process:
                 rss = subprocess.run(["ps", "-o", "rss=", "-p", str(server.process.pid)],
                                      capture_output=True, text=True).stdout.strip()
@@ -423,7 +451,8 @@ def rehearse(root, args):
                 "source_components_unchanged": True, "before": pre, "after": post,
                 "db_bytes": path.stat().st_size, "backup_bytes": backup.stat().st_size,
                 "bootstrap": measured, "alternative": alternative, "rollback_seconds": rollback, "compared_http_routes": len(before_reads),
-                "legacy_write_seconds": writes, "upsert": benchmarks, "delete_plans": plans}
+                "legacy_write_seconds": writes, "upsert": benchmarks, "delete_plans": plans,
+                "origin_fk_ms_per_30000": benchmark_origin_lookup()}
 
 
 def main():

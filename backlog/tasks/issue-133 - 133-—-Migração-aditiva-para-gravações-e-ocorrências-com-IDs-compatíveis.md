@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T19:06:00Z'
+updated_date: '2026-11-19T19:15:00Z'
 labels:
   - banco
 milestone: m-11
@@ -18,6 +18,7 @@ references:
   - backlog/evidencias/issue-133/PLANO.md
   - backlog/evidencias/issue-133/VERIFICACAO.md
   - backlog/evidencias/issue-133/PARECER-REVIEWER.md
+  - backlog/evidencias/issue-133/ensaio/RELATORIO.md
 documentation:
   - doc-036
   - doc-039
@@ -34,10 +35,10 @@ Recorte 3 do estudo da ISSUE-116 (doc-036). Migração aditiva: faixas atuais vi
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Banco com vários perfis, aliases, MBIDs nulos e FKs migra com contagem de eventos idêntica por perfil
+- [x] #1 Banco com vários perfis, aliases, MBIDs nulos e FKs migra com contagem de eventos idêntica por perfil
 - [x] #2 Nenhuma fusão automática por título; mapeamento old_track_id → ocorrência/gravação guardado
 - [x] #3 IDs e URLs anteriores continuam válidos
-- [ ] #4 Interrupção simulada reverte a transação; restauração do backup comprovada
+- [x] #4 Interrupção simulada reverte a transação; restauração do backup comprovada
 - [x] #5 event_id próprio introduzido e ledger/outbox da ISSUE-080 relacionados a ele antes de ativar escritores novos
 - [x] #6 Exclusão por event_id remove os recibos e as chaves vinculados, sem tombstone, e uma reimportação posterior cria evento novo
 - [x] #7 Ponte de compatibilidade ou corte coordenado com os leitores da ISSUE-135 definidos e testados
@@ -148,6 +149,15 @@ created: 2026-11-19T19:06:00Z
 ---
 
 Decisão em 2026-11-19: opção B para listens.origin. Criar event_origins e cadastrar somente legacy antes de reconstruir listens. Usar FK sem cascata, DEFAULT legacy e cadastrar por INSERT as origens definidas e validadas pela ISSUE-134. Aplicar os pareceres na 008 ainda inédita e refazer o ensaio em cópias sintéticas.
+
+---
+
+author: codex
+created: 2026-11-19T19:15:00Z
+
+---
+
+Ensaio aprovado com dados sintéticos, 30 mil e 300 mil escutas em quatro perfis. AC1: contagens por perfil, digests de linhas e integridade preservados. AC4: falha tardia do Goose preservou v7 e digests, retry aplicou v8, VACUUM INTO e restauração em v0.42 conferidos em ambas as cargas. Binários v0.41/v0.42 recusam v8. Guardas, proveniência e event_origins (somente legacy) testadas. Os índices parciais eliminaram a varredura integral; mantido índice por perfil/instante escolhido pelo EXPLAIN. AC6/7 provados com primitivas SQL e ponte legada, com validação integrada reservada para ativação. make check 13/13 e race de engine/SQLite passaram. Snapshot real opcional. Em andamento.
 
 ---
 <!-- COMMENTS:END -->

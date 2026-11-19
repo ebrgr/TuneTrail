@@ -38,3 +38,17 @@ Na rodada de correções autorizada por “aplique tudo”, a instrução para f
 Antes de fixar o CHECK na 008, é preciso definir se `origin` distingue apenas evento legado de evento resolvido pelo pipeline, ou se distingue os caminhos pelos quais um evento foi criado. Uma opção é fixar `legacy` e `pipeline`, mantendo o tipo da fonte e a operação nos recibos. Uma lista fechada incorreta poderia impedir a escrita na ativação. Corrigi-la depois da publicação exigiria nova reconstrução de `listens`, que na v8 é pai do ledger e da outbox.
 
 A execução foi interrompida conforme o ponto de parada solicitado. As correções na 008, o ensaio de carga e o fechamento dos AC1 e AC4 aguardam essa decisão. Os pareceres paralelos foram preservados neste commit.
+
+## 2026-11-19 — Correção e nova medição da varredura
+
+Reprodução em cópia com 30.000 recibos de sombra sem vínculo, SQLite 3.54.1, série pontual. Os planos externos de DeleteTrack, fase DELETE do MergeTracks e DeleteRelease não expandem os triggers no EXPLAIN QUERY PLAN. As operações HTTP foram exercitadas no ensaio e foram explicadas separadamente as duas operações internas executadas pelos triggers e pelas FKs.
+
+| Operação examinada | 008 de ae09b13 | 008 corrigida |
+| --- | --- | --- |
+| DELETE de occurrence, acionado por exclusão de faixa, merge ou exclusão de lançamento | SCAN ingest_events | SEARCH ingest_events USING COVERING INDEX idx_ingest_occurrence (occurrence_id=?) |
+| DELETE de gravação órfã | SCAN ingest_events | SEARCH ingest_events USING COVERING INDEX idx_ingest_recording (recording_id=?) |
+| DELETE externo da faixa, com rollback após medir | 6,186 ms | 0,120 ms |
+
+Os dois índices cobrem somente as referências não nulas. Em ambas as execuções, as cascatas removeram a ocorrência e a gravação órfã e preservaram os 30.000 recibos sem vínculo. As outras FKs dessas cascatas já têm cobertura pelos índices compostos ou por PK. O ensaio também verifica que a consulta de perfil e instante ainda escolhe `idx_listens_profile_listened_at`, mantido na 008.
+
+A decisão sobre origem foi resolvida por ebrgr com a opção B. A 008 semeia apenas `legacy` em `event_origins` e `listens.origin` usa uma FK sem cascata. A ISSUE-134 pode cadastrar valores na ativação por INSERT.
