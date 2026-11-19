@@ -43,7 +43,7 @@ func TestArtworkHTTPFailures036(t *testing.T) {
 func TestArtworkRemoteLimit036(t *testing.T) {
 	a := newProfileTestApp(t)
 	ctx := context.Background()
-	user, err := a.store.GetAdminUser(ctx)
+	user, err := sessionUser160(a)
 	require.NoError(t, err)
 	require.NoError(t, a.store.Exec(`INSERT INTO artists(id) VALUES(10)`))
 	require.NoError(t, a.store.Exec(`INSERT INTO artist_aliases VALUES(10,'Fake Artist','User',1)`))

@@ -83,7 +83,7 @@ def run(binary, root, mode, legacy_env=False):
             with sqlite3.connect(directory / "tunetrail.db") as conn:
                 assert conn.execute("PRAGMA integrity_check").fetchall() == [("ok",)]
                 assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
-                assert conn.execute("SELECT max(version_id) FROM goose_db_version WHERE is_applied=1").fetchone() == (5,)
+                assert conn.execute("SELECT max(version_id) FROM goose_db_version WHERE is_applied=1").fetchone() == (6,)
             log.flush()
             warned = "is deprecated; rename it to TUNETRAIL_CONFIG_DIR" in (directory / "server.log").read_text(errors="ignore")
             # Deprecated names must warn; current names must not.

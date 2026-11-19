@@ -65,8 +65,9 @@ func LocalListenTime(value, zone, offset string) (time.Time, error) {
 func ManualListen(ctx context.Context, s interface {
 	db.TrackStore
 	db.ListenStore
+	db.ProfileStore
 }, user *models.User, profileID, trackID int32, at time.Time, client string) (bool, error) {
-	if err := Authorize(user); err != nil {
+	if _, err := AuthorizeProfile(ctx, s, user, profileID); err != nil {
 		return false, err
 	}
 	if profileID <= 0 || trackID <= 0 || at.IsZero() || at.After(time.Now()) {
@@ -89,8 +90,11 @@ func ManualListen(ctx context.Context, s interface {
 }
 
 // RemovePersonalListen addresses a single profile, track and instant.
-func RemovePersonalListen(ctx context.Context, s db.ListenStore, user *models.User, profileID, trackID int32, at time.Time) error {
-	if err := Authorize(user); err != nil {
+func RemovePersonalListen(ctx context.Context, s interface {
+	db.ListenStore
+	db.ProfileStore
+}, user *models.User, profileID, trackID int32, at time.Time) error {
+	if _, err := AuthorizeProfile(ctx, s, user, profileID); err != nil {
 		return err
 	}
 	if profileID <= 0 || trackID <= 0 || at.IsZero() {

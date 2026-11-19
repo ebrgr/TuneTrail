@@ -30,7 +30,7 @@ func (s failingAlbumStore) UpdateAlbum(context.Context, db.UpdateAlbumOpts) erro
 func TestArtworkPublicationAndTrackAlbumIdentity(t *testing.T) {
 	a := newProfileTestApp(t)
 	ctx := context.Background()
-	user, err := a.store.GetAdminUser(ctx)
+	user, err := sessionUser160(a)
 	require.NoError(t, err)
 	for _, q := range []string{`INSERT INTO artists(id) VALUES(10)`, `INSERT INTO artist_aliases VALUES(10,'Fake Artist','User',1)`, `INSERT INTO releases(id,various_artists) VALUES(11,0)`, `INSERT INTO release_aliases VALUES(11,'Fake Album','User',1)`, `INSERT INTO artist_releases VALUES(10,11,1)`, `INSERT INTO tracks(id,release_id,duration) VALUES(12,11,60)`, `INSERT INTO track_aliases VALUES(12,'Fake Track','User',1)`, `INSERT INTO artist_tracks VALUES(10,12,1)`} {
 		require.NoError(t, a.store.Exec(q))

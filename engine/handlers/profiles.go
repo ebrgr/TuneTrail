@@ -30,7 +30,7 @@ func GetProfileHandler() http.HandlerFunc {
 func UpdateProfileHandler(store db.ProfileStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p := middleware.ProfileFromContext(r.Context())
-		body, err := utils.DecodeBody[struct {
+		body, err := adminweb.DecodeManagementJSON[struct {
 			DisplayName *string `json:"display_name"`
 			Slug        *string `json:"slug"`
 		}](r)

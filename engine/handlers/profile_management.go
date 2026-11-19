@@ -16,7 +16,7 @@ import (
 func CreateProfileHandler(store db.ProfileStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.Body = http.MaxBytesReader(w, r.Body, 4096)
-		body, err := utils.DecodeBody[struct {
+		body, err := adminweb.DecodeManagementJSON[struct {
 			DisplayName string `json:"display_name"`
 			Slug        string `json:"slug"`
 			AvatarIcon  string `json:"avatar_icon"`
@@ -37,8 +37,14 @@ func CreateProfileHandler(store db.ProfileStore) http.HandlerFunc {
 		utils.WriteJSON(w, 201, profile)
 	}
 }
+
+// ProfileManagementHandler authorizes before counting personal listens.
 func ProfileManagementHandler(store db.ProfileStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if _, err := admin.AuthorizeProfile(r.Context(), store, middleware.GetUserFromContext(r.Context()), db.ProfileID(r.Context())); err != nil {
+			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
+			return
+		}
 		count, err := store.ProfileListenCount(r.Context(), db.ProfileID(r.Context()))
 		if err != nil {
 			utils.WriteError(w, "failed to count listens", 500)
@@ -53,7 +59,7 @@ func DeleteProfileHandler(store interface {
 }) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p := middleware.ProfileFromContext(r.Context())
-		body, err := utils.DecodeBody[struct {
+		body, err := adminweb.DecodeManagementJSON[struct {
 			DisplayName string `json:"display_name"`
 			ListenCount *int64 `json:"listen_count"`
 		}](r)
@@ -70,10 +76,7 @@ func DeleteProfileHandler(store interface {
 }
 
 // ProfileAvatarHandler shares validation and file cleanup policy with Go forms.
-func ProfileAvatarHandler(store interface {
-	db.ProfileStore
-	db.ImageStore
-}) http.HandlerFunc {
+func ProfileAvatarHandler(store admin.AvatarStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		p := middleware.ProfileFromContext(r.Context())
 		// Bound avatar requests before multipart data is parsed.

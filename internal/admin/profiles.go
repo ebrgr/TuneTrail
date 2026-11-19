@@ -63,13 +63,13 @@ func ValidateProfile(name, slug, icon string) error {
 
 // Profile resolves stable identity and detects a stale slug after a rename.
 func Profile(ctx context.Context, store db.ProfileStore, user *models.User, id int32, slug string) (*models.ListeningProfile, error) {
-	if err := Authorize(user); err != nil {
-		return nil, err
+	if user == nil {
+		return nil, ErrUnauthorized
 	}
 	if id <= 0 || slug == "" {
 		return nil, db.ErrInvalidInput
 	}
-	p, err := store.GetListeningProfileByID(ctx, id)
+	p, err := AuthorizeProfile(ctx, store, user, id)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func Profile(ctx context.Context, store db.ProfileStore, user *models.User, id i
 
 // CreateProfile preserves the store's atomic profile and initial-key transaction.
 func CreateProfile(ctx context.Context, store db.ProfileStore, user *models.User, name, slug, icon string) (*models.ListeningProfile, error) {
-	if err := Authorize(user); err != nil {
+	if err := AuthorizeService(ctx, store, user, ManageAccounts, nil); err != nil {
 		return nil, err
 	}
 	if err := ValidateProfile(name, slug, icon); err != nil {
@@ -160,6 +160,7 @@ func RevokeKey(ctx context.Context, store db.ProfileStore, user *models.User, id
 
 // AvatarStore supplies both profile writes and global reference checks.
 type AvatarStore interface {
+	SessionReader
 	db.ProfileStore
 	db.ImageStore
 }
@@ -167,7 +168,7 @@ type AvatarStore interface {
 // SetAvatar serializes profile avatar updates and never deletes a previously published image during a concurrent catalog write.
 func SetAvatar(ctx context.Context, store AvatarStore, user *models.User, id int32, slug, icon string, image io.ReadSeeker) (*models.ListeningProfile, error) {
 	// Authorize before occupying a limited administrative image slot.
-	if err := Authorize(user); err != nil {
+	if _, err := AuthorizeProfile(ctx, store, user, id); err != nil {
 		return nil, err
 	}
 	ctx, release, err := AcquireImageAdmission(ctx)
@@ -179,7 +180,7 @@ func SetAvatar(ctx context.Context, store AvatarStore, user *models.User, id int
 		return nil, err
 	}
 	defer profileMu.Unlock()
-	if err := Authorize(user); err != nil {
+	if _, err := AuthorizeProfile(ctx, store, user, id); err != nil {
 		return nil, err
 	}
 	if err := ValidateProfile("avatar", slug, icon); err != nil {
@@ -237,6 +238,10 @@ func DeleteProfile(ctx context.Context, store interface {
 	db.ProfileStore
 	db.ImageStore
 }, user *models.User, id int32, slug, name string, count int64) error {
+	// Account/profile deletion is always a root capability.
+	if err := AuthorizeService(ctx, store, user, ManageAccounts, nil); err != nil {
+		return err
+	}
 	profileMu.Lock()
 	defer profileMu.Unlock()
 	p, err := Profile(ctx, store, user, id, slug)

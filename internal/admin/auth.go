@@ -35,15 +35,84 @@ type AccountStore interface {
 	UpdateUser(context.Context, db.UpdateUserOpts) error
 }
 
-// Authorize keeps privilege checks available to non-HTTP callers of admin services.
-func Authorize(user *models.User) error {
+// Action is an explicit management capability; unknown actions are always denied.
+type Action string
+
+const (
+	ManageProfile  Action = "profile.manage"
+	ManageAccount  Action = "account.self"
+	ManageAccounts Action = "accounts.manage"
+	ManageCatalog  Action = "catalog.manage"
+	ManageServer   Action = "server.manage"
+)
+
+// AuthorizeAction is the shared HTML, JSON and service policy. Actors come from
+// session authentication; resources must be loaded by the server, never decoded from input.
+func AuthorizeAction(user *models.User, action Action, resource *models.ListeningProfile) error {
 	if user == nil {
 		return ErrUnauthorized
 	}
-	if user.Role != models.UserRoleAdmin {
+	if user.Status != "active" || user.ID <= 0 {
 		return ErrForbidden
 	}
-	return nil
+	switch action {
+	case ManageProfile:
+		if resource == nil || resource.ID <= 0 || resource.UserID <= 0 {
+			return ErrForbidden
+		}
+		if user.Role == models.UserRoleAdmin || user.Role == models.UserRoleUser && resource.UserID == user.ID {
+			return nil
+		}
+	case ManageAccount:
+		if user.Role == models.UserRoleAdmin || user.Role == models.UserRoleUser {
+			return nil
+		}
+	case ManageAccounts, ManageCatalog, ManageServer:
+		if user.Role == models.UserRoleAdmin {
+			return nil
+		}
+	}
+	return ErrForbidden
+}
+
+// Authorize is root-only policy shorthand for adapters with an authenticated actor.
+func Authorize(user *models.User) error { return AuthorizeAction(user, ManageServer, nil) }
+
+// AuthorizeProfile loads the canonical owner before granting a personal capability.
+func AuthorizeProfile(ctx context.Context, store interface {
+	GetListeningProfileByID(context.Context, int32) (*models.ListeningProfile, error)
+}, user *models.User, id int32) (*models.ListeningProfile, error) {
+	if user == nil {
+		return nil, ErrUnauthorized
+	}
+	p, err := store.GetListeningProfileByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if err := AuthorizeService(ctx, store, user, ManageProfile, p); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// AuthorizeService re-resolves the human session at the service boundary. An
+// ingestion-attributed User or a stale role object cannot act as a human session.
+func AuthorizeService(ctx context.Context, store any, user *models.User, action Action, resource *models.ListeningProfile) error {
+	if user == nil || user.SessionID == uuid.Nil {
+		return ErrUnauthorized
+	}
+	reader, ok := store.(SessionReader)
+	if !ok {
+		return ErrForbidden
+	}
+	identity, err := Authenticate(ctx, reader, user.SessionID)
+	if err != nil {
+		return err
+	}
+	if identity.User.ID != user.ID {
+		return ErrForbidden
+	}
+	return AuthorizeAction(identity.User, action, resource)
 }
 
 // Authenticate resolves an active actor independently of role, without extending session lifetime.
@@ -58,7 +127,9 @@ func Authenticate(ctx context.Context, store SessionReader, id uuid.UUID) (Ident
 	if user == nil || user.Status != "active" {
 		return Identity{}, ErrUnauthorized
 	}
-	return Identity{User: user, SessionID: id}, nil
+	actor := *user
+	actor.SessionID = id
+	return Identity{User: &actor, SessionID: id}, nil
 }
 
 // invalidLoginHash is generated once at the same cost used by stored credentials.
@@ -111,7 +182,7 @@ var usernamePattern = regexp.MustCompile(`^[a-zA-Z0-9_.-]{1,32}$`)
 
 // ChangeAccount validates explicit fields; the store atomically revokes all sessions on a password change.
 func ChangeAccount(ctx context.Context, store AccountStore, user *models.User, username, password *string) (bool, error) {
-	if err := Authorize(user); err != nil {
+	if err := AuthorizeService(ctx, store, user, ManageAccount, nil); err != nil {
 		return false, err
 	}
 	if username == nil && password == nil {

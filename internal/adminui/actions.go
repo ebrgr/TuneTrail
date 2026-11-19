@@ -159,7 +159,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			err = db.ErrInvalidInput
 			break
 		}
-		result, e := importer.Upload(r.Context(), h.store, h.musicBrainz, id, f.SingleValue("format"), upload.Path)
+		result, e := admin.ImportHistory(r.Context(), h.store, identity.User, h.musicBrainz, id, f.SingleValue("format"), upload.Path)
 		const importSummary = "Processed: {{.Processed}}. Imported: {{.Imported}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}."
 		values := map[string]any{"Processed": result.Processed, "Imported": result.Imported, "Duplicates": result.Duplicates, "Ignored": result.Ignored, "Errors": result.Errors}
 		if e != nil {

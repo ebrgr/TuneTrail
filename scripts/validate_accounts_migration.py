@@ -40,7 +40,7 @@ def preserved(path, before):
 
 def accounts(path):
     """Check required ownership, uniqueness, public defaults and retired bridge."""
-    check(path, 5)
+    check(path, 6)
     with connect(path) as conn:
         assert conn.execute('SELECT COUNT(*) FROM listening_profiles WHERE user_id IS NULL OR require_login<>0').fetchone() == (0,)
         assert conn.execute('SELECT COUNT(*) FROM users u WHERE NOT EXISTS(SELECT 1 FROM listening_profiles p WHERE p.user_id=u.id)').fetchone() == (0,)
@@ -98,7 +98,7 @@ def validate(binary, source, root, index, stage_v4=False):
     finally:
         server.stop()
     assert component_hashes(source) == original, 'source components changed independently'
-    return dict(case=index, source_version=version, target_version=5, counts_before=counts,
+    return dict(case=index, source_version=version, target_version=6, counts_before=counts,
                 counts_after=profile_counts(database), account_states=status,
                 preserved=True, backup_restore=True, restart=True, source_unchanged=True)
 

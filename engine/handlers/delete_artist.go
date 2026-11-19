@@ -12,7 +12,8 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
-func DeleteArtistHandler(store db.ArtistStore) http.HandlerFunc {
+// DeleteArtistHandler delegates global deletion to the shared authorization service.
+func DeleteArtistHandler(store db.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
@@ -28,7 +29,7 @@ func DeleteArtistHandler(store db.ArtistStore) http.HandlerFunc {
 
 		l.Debug().Msgf("DeleteArtistHandler: Deleting artist with ID %d", artistID)
 
-		err = store.DeleteArtist(ctx, int32(artistID))
+		err = admin.DeleteCatalogItem(ctx, store, middleware.GetUserFromContext(ctx), "artist", int32(artistID))
 		if err != nil {
 			if errors.Is(err, db.ErrNotFound) {
 				w.WriteHeader(http.StatusNoContent)

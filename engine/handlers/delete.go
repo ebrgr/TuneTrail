@@ -14,7 +14,11 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/utils"
 )
 
-func DeleteListenHandler(store db.ListenStore) http.HandlerFunc {
+// DeleteListenHandler checks personal ownership in the shared service.
+func DeleteListenHandler(store interface {
+	db.ListenStore
+	db.ProfileStore
+}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
@@ -74,7 +78,12 @@ func PurgeAllDataHandler(store db.DB) http.HandlerFunc {
 
 		l.Debug().Msg("PurgeAllDataHandler: Received request to purge all data")
 
-		if err := store.PurgeAllData(ctx); err != nil {
+		// Global deletion must remain root-only even when called without route middleware.
+		if err := admin.AuthorizeAction(middleware.GetUserFromContext(ctx), admin.ManageServer, nil); err != nil {
+			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
+			return
+		}
+		if err := admin.PurgeData(ctx, store, middleware.GetUserFromContext(ctx)); err != nil {
 			l.Err(err).Msg("PurgeAllDataHandler: Failed to purge all data")
 			utils.WriteError(w, "failed to purge data", http.StatusInternalServerError)
 			return

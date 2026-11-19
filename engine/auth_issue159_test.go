@@ -23,7 +23,7 @@ func TestUserAuthenticationKeepsAdminRoutesClosed159(t *testing.T) {
 	login := a.request("POST", "/apis/web/v1/login", `{"username":"listener","password":"test-password"}`, "", false)
 	require.Equal(t, 204, login.Code)
 	cookie := login.Result().Cookies()[0]
-	for _, path := range []string{"/admin", "/admin/settings", "/admin/profile/1/delete-review", "/admin/profile/1/export", "/apis/web/v1/user", "/apis/web/v1/profiles/default/management"} {
+	for _, path := range []string{"/admin", "/admin/settings", "/admin/profile/1/delete-review", "/admin/profile/1/export", "/apis/web/v1/profiles/default/management"} {
 		r := httptest.NewRequest("GET", "http://koito.test"+path, nil)
 		r.AddCookie(cookie)
 		w := httptest.NewRecorder()

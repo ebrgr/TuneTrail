@@ -76,7 +76,7 @@ func (c ArtworkClient) download(ctx context.Context, raw string) ([]byte, error)
 // A track explicitly targets its current album; previous files remain for orphan collection.
 func ReplaceArtwork(ctx context.Context, s ArtworkStore, user *models.User, kind string, id int32, rawURL string, upload io.Reader, c ArtworkClient) (uuid.UUID, error) {
 	// Authorize before occupying a limited administrative image slot.
-	if err := Authorize(user); err != nil {
+	if err := AuthorizeService(ctx, s, user, ManageCatalog, nil); err != nil {
 		return uuid.Nil, err
 	}
 	ctx, release, err := AcquireImageAdmission(ctx)

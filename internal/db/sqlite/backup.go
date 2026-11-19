@@ -52,6 +52,9 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 4 {
 		pattern = ".pre-accounts-*.bak"
 	}
+	if version == 5 {
+		pattern = ".pre-authorization-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err

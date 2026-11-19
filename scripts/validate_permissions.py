@@ -135,7 +135,13 @@ def run_mode(binary, root, mode):
         for method,path in routes:
             for actor,cookie,token,want in actors:
                 status, headers, body = c.request(method,path,cookie=cookie,token=token)
-                expect(status,want,f'{mode} {actor} {method} {path}')
+                # ISSUE-160 grants self-account access; an empty PATCH is still invalid.
+                expected = want
+                if actor == 'non-admin' and path == WEB+'/user':
+                    expected = 200 if method == 'GET' else 400
+                if actor == 'non-admin' and path in ('/admin/account/password', '/admin/account/username'):
+                    expected = 400  # Missing form content type is rejected before CSRF parsing.
+                expect(status,expected,f'{mode} {actor} {method} {path}')
                 assert 'no-store' in headers.get('Cache-Control',''), (mode,method,path,actor)
                 assert PASSWORD.encode() not in body and key.encode() not in body
                 checks += 1

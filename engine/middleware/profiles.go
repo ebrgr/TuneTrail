@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/logger"
@@ -83,12 +84,16 @@ func IngestionKey(store db.ProfileStore) func(http.Handler) http.Handler {
 	}
 }
 
-// RequireAdmin shares authentication errors and cache policy with HTML adapters.
-func RequireAdmin(store db.UserStore) func(http.Handler) http.Handler {
+// RequireManagement authenticates on every request and delegates to the common policy.
+// The caller explicitly selects a capability; no route inherits access by proximity.
+func RequireManagement(store db.UserStore, action admin.Action) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Cache-Control", "no-store")
 			u, err := validateSession(r.Context(), store, r)
+			if err == nil {
+				err = admin.AuthorizeAction(u, action, ProfileFromContext(r.Context()))
+			}
 			if err != nil {
 				if adminweb.ErrorStatus(err) == 500 {
 					logger.FromContext(r.Context()).Err(err).Msg("Administrative session lookup failed")
@@ -96,13 +101,14 @@ func RequireAdmin(store db.UserStore) func(http.Handler) http.Handler {
 				utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 				return
 			}
-			if u.Role != models.UserRoleAdmin {
-				utils.WriteError(w, "administrator required", 403)
-				return
-			}
 			next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), UserContextKey, u)))
 		})
 	}
+}
+
+// RequireAdmin keeps global administration behind an explicit root capability.
+func RequireAdmin(store db.UserStore) func(http.Handler) http.Handler {
+	return RequireManagement(store, admin.ManageServer)
 }
 
 // SameOrigin delegates the shared policy used by JSON and prepared HTML handlers.

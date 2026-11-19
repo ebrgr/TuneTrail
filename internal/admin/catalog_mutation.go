@@ -18,7 +18,7 @@ type CatalogMutationStore interface {
 
 // PreviewCatalogMutation requires an administrator and computes global impact.
 func PreviewCatalogMutation(ctx context.Context, s CatalogMutationStore, user *models.User, plan db.CatalogPlan) (db.CatalogPlan, error) {
-	if err := Authorize(user); err != nil {
+	if err := AuthorizeService(ctx, s, user, ManageCatalog, nil); err != nil {
 		return plan, err
 	}
 	return s.PreviewCatalogMutation(ctx, plan)
@@ -26,7 +26,7 @@ func PreviewCatalogMutation(ctx context.Context, s CatalogMutationStore, user *m
 
 // ApplyCatalogMutation changes the catalog only after transactional revalidation.
 func ApplyCatalogMutation(ctx context.Context, s CatalogMutationStore, user *models.User, plan db.CatalogPlan) error {
-	if err := Authorize(user); err != nil {
+	if err := AuthorizeService(ctx, s, user, ManageCatalog, nil); err != nil {
 		return err
 	}
 	profiles, err := s.ListListeningProfiles(ctx)

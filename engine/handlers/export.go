@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/ebrgr/TuneTrail/engine/middleware"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
-	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 )
@@ -21,7 +22,11 @@ func (w *exportResponse) Write(data []byte) (int, error) {
 	return w.ResponseWriter.Write(data)
 }
 
-func ExportHandler(store db.ExportStore) http.HandlerFunc {
+// ExportHandler requires a human capability even for public profiles.
+func ExportHandler(store interface {
+	db.ExportStore
+	db.ProfileStore
+}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Disposition", `attachment; filename="tunetrail_export.json"`)
@@ -34,9 +39,13 @@ func ExportHandler(store db.ExportStore) http.HandlerFunc {
 			utils.WriteError(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
+		if err := admin.AuthorizeAction(middleware.GetUserFromContext(ctx), admin.ManageProfile, u); err != nil {
+			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
+			return
+		}
 		w.Header().Set("Cache-Control", "no-store")
 		stream := &exportResponse{ResponseWriter: w}
-		err := export.ExportData(ctx, u, store, stream)
+		err := admin.ExportHistory(ctx, store, middleware.GetUserFromContext(ctx), u.ID, stream)
 		if err != nil {
 			l.Err(err).Msg("ExportHandler: Failed to create export file")
 			if !stream.started {

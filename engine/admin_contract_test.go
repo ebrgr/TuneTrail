@@ -102,7 +102,8 @@ func TestAdminSessionCookiesAndPrivileges(t *testing.T) {
 	r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: session.ID.String()})
 	w := httptest.NewRecorder()
 	a.router.ServeHTTP(w, r)
-	require.Equal(t, 403, w.Code)
+	// ISSUE-160 permits authenticated access to the caller's own account.
+	require.Equal(t, 200, w.Code)
 	require.NoError(t, a.store.Exec(`UPDATE sessions SET expires_at=1 WHERE id=?`, a.cookie))
 	require.Equal(t, 401, a.request("GET", "/apis/web/v1/user", "", "", true).Code)
 }

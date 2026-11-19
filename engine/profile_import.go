@@ -11,6 +11,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/ebrgr/TuneTrail/engine/middleware"
+	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/importer"
@@ -37,9 +40,15 @@ func importProfileFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCal
 		return fmt.Errorf("%w: unrecognized import format", importer.ErrInvalidFile)
 	}
 }
+
+// profileImportHandler authorizes the URL-selected profile before staging any file.
 func profileImportHandler(store db.DB, mbzc mbz.MusicBrainzCaller) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		if err := admin.AuthorizeAction(middleware.GetUserFromContext(r.Context()), admin.ManageProfile, middleware.ProfileFromContext(r.Context())); err != nil {
+			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
+			return
+		}
 		contentType, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 		if contentType == "multipart/form-data" {
 			uploadProfileImport(w, r, store, mbzc)

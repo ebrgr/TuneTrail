@@ -5,11 +5,17 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/memkv"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 type cacheMutationStore struct{ replacement int32 }
+
+// GetUserBySession supplies an authenticated actor for the isolated cache test.
+func (s cacheMutationStore) GetUserBySession(context.Context, uuid.UUID) (*models.User, error) {
+	return &models.User{ID: 1, Role: models.UserRoleAdmin, Status: "active"}, nil
+}
 
 // PreviewCatalogMutation satisfies the review interface without performing I/O.
 func (s cacheMutationStore) PreviewCatalogMutation(_ context.Context, p db.CatalogPlan) (db.CatalogPlan, error) {
@@ -33,7 +39,7 @@ func TestCatalogMutationKeepsNewPlayback(t *testing.T) {
 		memkv.Store.Set("now-playing:19001", int32(7))
 		memkv.Store.Set("now-playing:19002", int32(9))
 		plan := db.CatalogPlan{Kind: "track", Action: "delete", AffectedTrackIDs: []int32{7}}
-		require.NoError(t, ApplyCatalogMutation(context.Background(), cacheMutationStore{replacement}, &models.User{Role: models.UserRoleAdmin}, plan))
+		require.NoError(t, ApplyCatalogMutation(context.Background(), cacheMutationStore{replacement}, &models.User{ID: 1, Status: "active", Role: models.UserRoleAdmin, SessionID: uuid.New()}, plan))
 		first, ok := memkv.Store.Get("now-playing:19001")
 		require.True(t, ok)
 		require.Equal(t, replacement, first)

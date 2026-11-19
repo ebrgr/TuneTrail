@@ -14,11 +14,12 @@ import (
 	sqlite3 "modernc.org/sqlite"
 )
 
-const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, created_at"
+const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, created_at, user_id"
 
+// scanProfile includes canonical ownership without exposing it in public serialization.
 func scanProfile(row interface{ Scan(...any) error }) (*models.ListeningProfile, error) {
 	p := new(models.ListeningProfile)
-	err := row.Scan(&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt)
+	err := row.Scan(&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt, &p.UserID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, db.ErrNotFound
 	}
@@ -46,8 +47,10 @@ func (s *Sqlite) GetListeningProfile(ctx context.Context, slug string) (*models.
 func (s *Sqlite) GetListeningProfileByID(ctx context.Context, id int32) (*models.ListeningProfile, error) {
 	return scanProfile(s.db.QueryRowContext(ctx, `SELECT `+profileColumns+` FROM listening_profiles WHERE id=?`, id))
 }
+
+// GetProfileByAPIKey resolves the ingestion destination, never an authenticated actor.
 func (s *Sqlite) GetProfileByAPIKey(ctx context.Context, key string) (*models.ListeningProfile, error) {
-	return scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key))
+	return scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at,p.user_id FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key))
 }
 
 var profileSlugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
@@ -222,7 +225,7 @@ func (s *Sqlite) DeleteListeningProfile(ctx context.Context, id int32, name stri
 	if err != nil {
 		return err
 	}
-	result, err := tx.ExecContext(ctx, `DELETE FROM users WHERE id=? AND (role<>'admin' OR (SELECT COUNT(*) FROM users WHERE role='admin')>1)`, userID)
+	result, err := tx.ExecContext(ctx, `DELETE FROM users WHERE id=? AND (role<>'admin' OR status<>'active' OR (SELECT COUNT(*) FROM users WHERE role='admin' AND status='active')>1)`, userID)
 	if err != nil {
 		return err
 	}

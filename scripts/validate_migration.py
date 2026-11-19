@@ -68,7 +68,7 @@ def migrate(binary, root, name, stack, wal=False):
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (2,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
     with contextlib.closing(sqlite3.connect(directory / 'tunetrail.db')) as conn:
-        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (5,)
+        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (6,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
         assert not conn.execute('PRAGMA foreign_key_check').fetchall()
     assert server.request('GET', WEB + '/profiles/default/stats?period=all_time')['listen_count'] == (2 if wal else 1)

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminui"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
@@ -59,10 +60,10 @@ func bindRoutes(
 			r.Get("/", handlers.GetProfileHandler())
 			bindProfileReads(r, db)
 			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireAdmin(db))
+				r.Use(middleware.RequireManagement(db, admin.ManageProfile))
 				r.Patch("/", handlers.UpdateProfileHandler(db))
 				r.Get("/management", handlers.ProfileManagementHandler(db))
-				r.Delete("/", handlers.DeleteProfileHandler(db))
+				r.With(middleware.RequireAdmin(db)).Delete("/", handlers.DeleteProfileHandler(db))
 				r.Put("/avatar", handlers.ProfileAvatarHandler(db))
 				r.Delete("/avatar", handlers.ProfileAvatarHandler(db))
 				r.Get("/export", handlers.ExportHandler(db))
@@ -96,6 +97,19 @@ func bindRoutes(
 			w.WriteHeader(http.StatusOK)
 		})
 
+		// Personal routes resolve their profile before authorizing the session.
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Post("/listens", handlers.SubmitListenWithIDHandler(db))
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Delete("/listens", handlers.DeleteListenHandler(db))
+
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Get("/user/apikeys", handlers.GetApiKeysHandler(db))
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Post("/user/apikeys", handlers.GenerateApiKeyHandler(db))
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Patch("/user/apikeys/{id}", handlers.UpdateApiKeyLabelHandler(db))
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Delete("/user/apikeys/{id}", handlers.DeleteApiKeyHandler(db))
+
+		r.With(middleware.RequireManagement(db, admin.ManageAccount)).Get("/user", handlers.MeHandler())
+		r.With(middleware.RequireManagement(db, admin.ManageAccount)).Patch("/user", handlers.UpdateUserHandler(db))
+
+		r.With(middleware.ProfileScope(db), middleware.RequireManagement(db, admin.ManageProfile)).Get("/export", handlers.ExportHandler(db))
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAdmin(db))
 
@@ -126,18 +140,6 @@ func bindRoutes(
 			r.Patch("/track/{id}/aliases/primary", handlers.SetPrimaryTrackAliasHandler(db))
 			r.Patch("/track/{id}/artists/{artist_id}", handlers.SetPrimaryTrackArtistHandler(db))
 
-			r.With(middleware.ProfileScope(db)).Post("/listens", handlers.SubmitListenWithIDHandler(db))
-			r.With(middleware.ProfileScope(db)).Delete("/listens", handlers.DeleteListenHandler(db))
-
-			r.With(middleware.ProfileScope(db)).Get("/user/apikeys", handlers.GetApiKeysHandler(db))
-			r.With(middleware.ProfileScope(db)).Post("/user/apikeys", handlers.GenerateApiKeyHandler(db))
-			r.With(middleware.ProfileScope(db)).Patch("/user/apikeys/{id}", handlers.UpdateApiKeyLabelHandler(db))
-			r.With(middleware.ProfileScope(db)).Delete("/user/apikeys/{id}", handlers.DeleteApiKeyHandler(db))
-
-			r.Get("/user", handlers.MeHandler())
-			r.Patch("/user", handlers.UpdateUserHandler(db))
-
-			r.With(middleware.ProfileScope(db)).Get("/export", handlers.ExportHandler(db))
 			r.Delete("/data", handlers.PurgeAllDataHandler(db))
 		})
 	})

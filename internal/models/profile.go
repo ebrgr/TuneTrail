@@ -2,6 +2,8 @@ package models
 
 // ListeningProfile is a public listening identity, independent of admin sessions.
 type ListeningProfile struct {
+	// UserID is canonical ownership for server authorization, never a directory field.
+	UserID        int32   `json:"-"`
 	ID            int32   `json:"id"`
 	Slug          string  `json:"slug"`
 	DisplayName   string  `json:"display_name"`

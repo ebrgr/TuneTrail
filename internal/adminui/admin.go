@@ -20,7 +20,6 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
-	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/images"
 	"github.com/ebrgr/TuneTrail/internal/importer"
@@ -237,7 +236,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			h.fail(w, err)
 			return
 		}
-		if err := admin.Authorize(identity.User); err != nil {
+		if err := h.authorizePage(r, identity); err != nil {
 			h.logoutPage(w, r, identity)
 			return
 		}
@@ -249,7 +248,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "GET" && strings.HasPrefix(r.URL.Path, "/admin/profile/") && strings.HasSuffix(r.URL.Path, "/export") {
-		identity, err := adminweb.AdminIdentity(r, h.store)
+		identity, err := adminweb.SessionIdentity(r, h.store)
 		if err != nil {
 			h.fail(w, err)
 			return
@@ -275,7 +274,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Disposition", `attachment; filename="tunetrail_export.json"`)
-		if err := export.ExportData(r.Context(), profile, h.store, w); err != nil {
+		if err := admin.ExportHistory(r.Context(), h.store, identity.User, profile.ID, w); err != nil {
 			logger.FromContext(r.Context()).Error().Err(err).Msg("Administrative export interrupted")
 		}
 		return
@@ -284,18 +283,16 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		textError(w, "item not found", http.StatusNotFound)
 		return
 	}
-	// Logout needs an active session and its form tokens, independently of role.
-	var identity admin.Identity
-	var err error
-	if r.URL.Path == "/admin/logout" {
-		identity, err = adminweb.SessionIdentity(r, h.store)
-	} else {
-		identity, err = adminweb.AdminIdentity(r, h.store)
+	// Resolve the session independently of role, then authorize the listed operation.
+	identity, err := adminweb.SessionIdentity(r, h.store)
+	if err == nil {
+		err = h.authorizeAction(r, identity)
 	}
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
+
 	h.action(w, r, identity)
 }
 
@@ -430,6 +427,14 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		h.fail(w, err)
 		return
 	}
+	// Limit the management document to resources authorized by the same policy.
+	allowed := profiles[:0]
+	for _, p := range profiles {
+		if admin.AuthorizeAction(id.User, admin.ManageProfile, &p) == nil {
+			allowed = append(allowed, p)
+		}
+	}
+	profiles = allowed
 	section := q.Get("section")
 	if section == "" {
 		section = "profiles"

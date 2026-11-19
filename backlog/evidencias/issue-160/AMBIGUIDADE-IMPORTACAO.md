@@ -26,3 +26,7 @@ Escolher a regra para importação feita pelo dono:
 2. Permitir também capas e aliases na criação de entidades novas pela importação, como exceção explícita à regra root; alterações editoriais de entidades existentes seguem exclusivas do root.
 
 Não foi escolhida uma regra implicitamente. Os endpoints permanecem sob a exigência administrativa existente. Não foram executados make check ou testes de corrida, pois não houve implementação. Nenhum AC foi marcado. ISSUE-160 permanece Em andamento; sem push, merge, publicação ou Done.
+
+## Decisão do usuário
+
+Opção 2 autorizada explicitamente: a importação do dono pode criar entidades novas com capas e aliases. Alterações editoriais de entidades existentes continuam exclusivas do root. Implementação retomada; o registro de interrupção acima descreve somente o momento anterior à decisão.

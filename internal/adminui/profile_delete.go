@@ -19,6 +19,11 @@ import (
 
 // reviewProfileDelete issues a scoped, short-lived plan and a required one-use submission ticket.
 func (h *Handler) reviewProfileDelete(w http.ResponseWriter, r *http.Request, identity admin.Identity, p *models.ListeningProfile, kind string, id int32) {
+	// Authorize before exposing the personal deletion preview.
+	if err := h.authorizePersonalPlan(r, identity, p.ID); err != nil {
+		h.fail(w, err)
+		return
+	}
 	partial := r.URL.Query().Get("partial") == "1"
 	if partial && !dialogRequested(r) {
 		q := r.URL.Query()
@@ -26,12 +31,15 @@ func (h *Handler) reviewProfileDelete(w http.ResponseWriter, r *http.Request, id
 		http.Redirect(w, r, (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).RequestURI(), http.StatusSeeOther)
 		return
 	}
-	store, ok := h.store.(db.ProfileDeleteStore)
+	store, ok := h.store.(interface {
+		db.ProfileStore
+		db.ProfileDeleteStore
+	})
 	if !ok {
 		h.fail(w, fmt.Errorf("personal deletion unavailable"))
 		return
 	}
-	plan, err := store.PreviewProfileDelete(r.Context(), p.ID, kind, id)
+	plan, err := admin.PreviewPersonalDelete(r.Context(), store, identity.User, p.ID, kind, id)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -91,16 +99,28 @@ func (h *Handler) reviewProfileDelete(w http.ResponseWriter, r *http.Request, id
 
 // confirmProfileDelete consumes the ticket even on failure; uncertain results are never retried.
 func (h *Handler) confirmProfileDelete(w http.ResponseWriter, r *http.Request, identity admin.Identity, p *models.ListeningProfile, form *adminweb.PreparedForm, plan db.ProfileDeletePlan) {
+	// Revalidate ownership when applying a previously reviewed plan.
+	if plan.ProfileID != p.ID {
+		h.fail(w, db.ErrConflict)
+		return
+	}
+	if err := h.authorizePersonalPlan(r, identity, p.ID); err != nil {
+		h.fail(w, err)
+		return
+	}
 	if err := h.consumeSubmission(identity.SessionID, form.SingleValue("submission_token")); err != nil {
 		h.fail(w, err)
 		return
 	}
-	store, ok := h.store.(db.ProfileDeleteStore)
+	store, ok := h.store.(interface {
+		db.ProfileStore
+		db.ProfileDeleteStore
+	})
 	if !ok {
 		h.fail(w, fmt.Errorf("personal deletion unavailable"))
 		return
 	}
-	count, err := store.ApplyProfileDelete(r.Context(), plan)
+	count, err := admin.ApplyPersonalDelete(r.Context(), store, identity.User, plan)
 	if err != nil {
 		h.fail(w, err)
 		return

@@ -14,11 +14,13 @@ const (
 )
 
 type User struct {
-	ID       int32    `json:"id"`
-	Username string   `json:"username"`
-	Role     UserRole `json:"role"` // 'admin' | 'user'
-	Status   string   `json:"-"`    // active or pending; never a public directory credential
-	Password []byte   `json:"-"`
+	// SessionID is set only by human session authentication and is never serialized.
+	SessionID uuid.UUID `json:"-"`
+	ID        int32     `json:"id"`
+	Username  string    `json:"username"`
+	Role      UserRole  `json:"role"` // 'admin' | 'user'
+	Status    string    `json:"-"`    // active or pending; never a public directory credential
+	Password  []byte    `json:"-"`
 }
 
 type ApiKey struct {

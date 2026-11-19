@@ -42,7 +42,7 @@ func (s failingImageStore) ImageHasAssociation(context.Context, uuid.UUID) (bool
 func TestAvatarPublicationAndCollectorSafety(t *testing.T) {
 	a := newProfileTestApp(t)
 	ctx := context.Background()
-	user, err := a.store.GetAdminUser(ctx)
+	user, err := sessionUser160(a)
 	require.NoError(t, err)
 	var data bytes.Buffer
 	require.NoError(t, png.Encode(&data, image.NewRGBA(image.Rect(0, 0, 8, 8))))
@@ -86,7 +86,7 @@ func TestAvatarPublicationAndCollectorSafety(t *testing.T) {
 func TestUnsupportedAvatar033(t *testing.T) {
 	a := newProfileTestApp(t)
 	ctx := context.Background()
-	user, err := a.store.GetAdminUser(ctx)
+	user, err := sessionUser160(a)
 	require.NoError(t, err)
 	before, err := a.store.GetListeningProfileByID(ctx, 2)
 	require.NoError(t, err)

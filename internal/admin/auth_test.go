@@ -20,7 +20,11 @@ func accountFixture(t *testing.T) (*sqlite.Sqlite, *models.User) {
 	t.Cleanup(func() { s.Close(context.Background()) })
 	u, e := s.SaveUser(context.Background(), db.SaveUserOpts{Username: "admin", Password: "original-password", Role: models.UserRoleAdmin})
 	require.NoError(t, e)
-	return s, u
+	session, e := admin.Login(context.Background(), s, u.Username, "original-password", false)
+	require.NoError(t, e)
+	identity, e := admin.Authenticate(context.Background(), s, session.ID)
+	require.NoError(t, e)
+	return s, identity.User
 }
 
 // TestSessionLifetimeAndRevocation checks fixed lifetimes and account/profile independence.

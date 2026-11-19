@@ -21,6 +21,9 @@ func ValidateMerge(user *models.User, from, to int32) error {
 func MergeArtists(ctx context.Context, store interface {
 	MergeArtists(context.Context, int32, int32, bool) error
 }, user *models.User, from, to int32, replace bool) error {
+	if err := AuthorizeService(ctx, store, user, ManageCatalog, nil); err != nil {
+		return err
+	}
 	if err := ValidateMerge(user, from, to); err != nil {
 		return err
 	}
@@ -31,6 +34,9 @@ func MergeArtists(ctx context.Context, store interface {
 func MergeAlbums(ctx context.Context, store interface {
 	MergeAlbums(context.Context, int32, int32, bool) error
 }, user *models.User, from, to int32, replace bool) error {
+	if err := AuthorizeService(ctx, store, user, ManageCatalog, nil); err != nil {
+		return err
+	}
 	if err := ValidateMerge(user, from, to); err != nil {
 		return err
 	}
@@ -41,6 +47,9 @@ func MergeAlbums(ctx context.Context, store interface {
 func MergeTracks(ctx context.Context, store interface {
 	MergeTracks(context.Context, int32, int32) error
 }, user *models.User, from, to int32) error {
+	if err := AuthorizeService(ctx, store, user, ManageCatalog, nil); err != nil {
+		return err
+	}
 	if err := ValidateMerge(user, from, to); err != nil {
 		return err
 	}

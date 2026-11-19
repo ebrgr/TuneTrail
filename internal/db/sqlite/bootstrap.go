@@ -121,7 +121,7 @@ func schemaVersion(db *sql.DB) (int, error) {
 	if err := db.QueryRow(`SELECT COALESCE(MAX(version_id),0) FROM goose_db_version WHERE is_applied=1`).Scan(&version); err != nil {
 		return 0, fmt.Errorf("invalid migration history: %w", err)
 	}
-	if version < 1 || version > 5 {
+	if version < 1 || version > 6 {
 		return 0, fmt.Errorf("unsupported schema version %d", version)
 	}
 	return version, nil
@@ -156,8 +156,8 @@ func checkDatabase(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	if version < 3 || version > 5 {
-		return fmt.Errorf("schema version %d is not consolidated v3/v4/v5", version)
+	if version < 3 || version > 6 {
+		return fmt.Errorf("schema version %d is not consolidated v3/v4/v5/v6", version)
 	}
 	for _, q := range []string{`SELECT id,slug,display_name,avatar_image_id,avatar_icon,created_at FROM listening_profiles LIMIT 0`, `SELECT profile_id FROM listens LIMIT 0`, `SELECT profile_id FROM api_keys LIMIT 0`, `SELECT profile_id,url,token FROM profile_relays LIMIT 0`, `SELECT id,profile_id FROM legacy_relay_binding LIMIT 0`} {
 		rows, err := db.Query(q)
@@ -278,7 +278,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 				return "", err
 			}
 		}
-		if version < 5 {
+		if version < 6 {
 			backup, err := backupBeforeUpgrade(context.Background(), db, target, version)
 			if err != nil {
 				return "", err

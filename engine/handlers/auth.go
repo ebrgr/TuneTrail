@@ -89,7 +89,7 @@ func UpdateUserHandler(store db.UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		r.Body = http.MaxBytesReader(w, r.Body, 4096)
-		body, err := utils.DecodeBody[struct {
+		body, err := adminweb.DecodeManagementJSON[struct {
 			Username *string `json:"username"`
 			Password *string `json:"password"`
 		}](r)

@@ -116,7 +116,7 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		h.fail(w, err)
 		return
 	}
-	identity, err := adminweb.AdminIdentity(r, h.store)
+	identity, err := adminweb.SessionIdentity(r, h.store)
 	if errors.Is(err, admin.ErrUnauthorized) && r.Method == "GET" {
 		next := adminweb.SafeReturn(r.URL.RequestURI())
 		if next == "" && len(parts) == 5 && parts[4] == "review" {
@@ -138,13 +138,25 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		h.fail(w, err)
 		return
 	}
+	// Personal tasks require canonical ownership; all other editors require root.
+	if personalMediaRoute(r, parts) {
+		err = admin.AuthorizeAction(identity.User, admin.ManageProfile, profile)
+	} else {
+		err = admin.AuthorizeAction(identity.User, admin.ManageCatalog, nil)
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
 	if len(parts) == 5 && parts[4] == "confirm" && r.Method == "POST" {
 		h.confirmCatalog(w, r, identity, profile, kind, id)
 		return
 	}
-	if err = admin.MediaExists(r.Context(), h.store, identity.User, kind, id); err != nil {
-		h.fail(w, err)
-		return
+	if !personalMediaRoute(r, parts) {
+		if err = admin.MediaExists(r.Context(), h.store, identity.User, kind, id); err != nil {
+			h.fail(w, err)
+			return
+		}
 	}
 	// Personal deletion is a direct confirmation, including the old review link.
 	if len(parts) == 5 && r.Method == "GET" && (parts[4] == "delete" || parts[4] == "review" && r.URL.Query().Get("action") == "delete") {

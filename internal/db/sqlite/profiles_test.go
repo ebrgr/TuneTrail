@@ -390,7 +390,7 @@ func TestConsolidatedProfileMigrationRollsBackLateFailure(t *testing.T) {
 	require.NoError(t, err)
 	version, err = p.GetDBVersion(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, 5, version)
+	require.EqualValues(t, 6, version)
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://relay.test", "relay-token"))
 	url, token, err := s.GetProfileRelay(ctx, 1)
 	require.NoError(t, err)

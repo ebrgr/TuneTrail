@@ -12,6 +12,7 @@ import (
 
 // MediaStore contains the shared catalog operations required by administrative editors.
 type MediaStore interface {
+	SessionReader
 	db.ArtistStore
 	db.AlbumStore
 	db.TrackStore
@@ -19,7 +20,7 @@ type MediaStore interface {
 
 // MediaExists resolves an explicitly identified catalog item outside personal read scope.
 func MediaExists(ctx context.Context, s MediaStore, user *models.User, kind string, id int32) error {
-	if err := Authorize(user); err != nil {
+	if err := AuthorizeService(ctx, s, user, ManageCatalog, nil); err != nil {
 		return err
 	}
 	if id <= 0 {
