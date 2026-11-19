@@ -1,11 +1,11 @@
 ---
 id: ISSUE-133
 title: 133 — Migração aditiva para gravações e ocorrências com IDs compatíveis
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T19:15:00Z'
+updated_date: '2026-11-19T19:17:00Z'
 labels:
   - banco
 milestone: m-11
@@ -158,6 +158,15 @@ created: 2026-11-19T19:15:00Z
 ---
 
 Ensaio aprovado com dados sintéticos, 30 mil e 300 mil escutas em quatro perfis. AC1: contagens por perfil, digests de linhas e integridade preservados. AC4: falha tardia do Goose preservou v7 e digests, retry aplicou v8, VACUUM INTO e restauração em v0.42 conferidos em ambas as cargas. Binários v0.41/v0.42 recusam v8. Guardas, proveniência e event_origins (somente legacy) testadas. Os índices parciais eliminaram a varredura integral; mantido índice por perfil/instante escolhido pelo EXPLAIN. AC6/7 provados com primitivas SQL e ponte legada, com validação integrada reservada para ativação. make check 13/13 e race de engine/SQLite passaram. Snapshot real opcional. Em andamento.
+
+---
+
+author: claude
+created: 2026-11-19T19:17:00Z
+
+---
+
+Aceite explícito do usuário em 2026-11-19. Pareceres: Advisor (Opus, effort high) sobre o plano (aceito integralmente) e sobre o diff (REPROVADO COM RESSALVAS, sem falha crítica) e Reviewer (Opus, effort high) APROVADO COM RESSALVAS, sem caminho de perda ou corrupção de dados. Ajustes aplicados na 008 antes da publicação: trg_ingest_event_inactive (INSERT e UPDATE), índices parciais em ingest_events(occurrence_id) e (recording_id), coluna mbid_source em recordings (legacy_declared), tabela event_origins semeada só com legacy (opção B do usuário), checagem reversa de layout para upgrades v3-v6, teste de colisão de IDs e nota de operador no CHANGELOG. Ensaio SINTÉTICO (não houve snapshot real): 30 mil escutas em 2,46 s e 300 mil em 24,34 s, pico de disco de 61,84 MB e 539,29 MB, RSS de cerca de 45 MB, exclusão de faixa com 30 mil recibos de 6,19 ms para 0,12 ms, contagens por perfil e digests iguais, 34 respostas HTTP equivalentes, falha tardia do goose com v7 intacta e restauração do backup comprovada. Limites aceitos: ensaio sintético; pico do WAL separado não capturado na carga de 300 mil; AC6 e AC7 comprovados com primitivas SQL em fixture pós-corte. Entradas obrigatórias registradas nas ISSUE-134, 135 e 081.
 
 ---
 <!-- COMMENTS:END -->
