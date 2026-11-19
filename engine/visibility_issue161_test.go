@@ -51,14 +51,20 @@ func TestListeningVisibility161(t *testing.T) {
 	require.Equal(t, 200, a.request("POST", submit, listenBody("playing_now", "Playing 161", 0), key.Key, false).Code)
 	require.Contains(t, json160(a, "GET", api+"/now-playing", "", "", "").Body.String(), "Playing 161")
 
+	const publicCache = "public, max-age=2592000"
 	imageResponse := taskRequest139(a, "GET", scopedImage, "", nil, nil)
 	require.Equal(t, 200, imageResponse.Code)
+	require.Equal(t, publicCache, imageResponse.Header().Get("Cache-Control"))
 	publicTag := imageResponse.Header().Get("ETag")
 	require.NotEmpty(t, publicTag)
 	require.Contains(t, taskRequest139(a, "GET", prefix+"/listens", "", nil, nil).Body.String(), scopedImage)
-	require.Equal(t, 200, taskRequest139(a, "GET", legacyImage, "", nil, nil).Code)
+	legacy := taskRequest139(a, "GET", legacyImage, "", nil, nil)
+	require.Equal(t, 200, legacy.Code)
+	require.Equal(t, publicCache, legacy.Header().Get("Cache-Control"))
 	conditional := map[string]string{"If-None-Match": publicTag}
-	require.Equal(t, 304, taskRequest139(a, "HEAD", scopedImage, "", nil, conditional).Code)
+	public304 := taskRequest139(a, "HEAD", scopedImage, "", nil, conditional)
+	require.Equal(t, 304, public304.Code)
+	require.Equal(t, publicCache, public304.Header().Get("Cache-Control"))
 
 	readPaths := []string{
 		prefix, prefix + "/listens", prefix + "/chart/top/artists", prefix + "/track/12", prefix + "/rewind",
@@ -90,7 +96,9 @@ func TestListeningVisibility161(t *testing.T) {
 		require.NotContains(t, directory.Body.String(), id.String())
 		avatarPath := fmt.Sprintf("/image/%s/128x128.webp", avatarID)
 		require.Contains(t, directory.Body.String(), avatarPath)
-		require.Equal(t, 200, json160(a, "GET", avatarPath, "", "", "").Code)
+		avatar := json160(a, "GET", avatarPath, "", "", "")
+		require.Equal(t, 200, avatar.Code)
+		require.Equal(t, publicCache, avatar.Header().Get("Cache-Control"))
 		require.Equal(t, protected, bytes.Contains(directory.Body.Bytes(), []byte("🔒")))
 
 		for _, actor := range []struct{ name, cookie string }{
@@ -142,8 +150,18 @@ func TestListeningVisibility161(t *testing.T) {
 	protectedTag := protectedImage.Header().Get("ETag")
 	require.NotEmpty(t, protectedTag)
 	require.NotEqual(t, publicTag, protectedTag)
-	require.Equal(t, 304, taskRequest139(a, "GET", scopedImage, owner, nil, map[string]string{"If-None-Match": protectedTag}).Code)
-	require.Equal(t, 404, taskRequest139(a, "GET", scopedImage, "", nil, map[string]string{"If-None-Match": protectedTag}).Code)
+	protectedConditional := map[string]string{"If-None-Match": protectedTag}
+	protected304 := taskRequest139(a, "GET", scopedImage, owner, nil, protectedConditional)
+	require.Equal(t, 304, protected304.Code)
+	require.Equal(t, "private, no-store", protected304.Header().Get("Cache-Control"))
+	for _, cookie := range []string{"", other} {
+		for _, method := range []string{"GET", "HEAD"} {
+			denied := taskRequest139(a, method, scopedImage, cookie, nil, protectedConditional)
+			require.Equal(t, 404, denied.Code)
+			require.Equal(t, "private, no-store", denied.Header().Get("Cache-Control"))
+			require.Empty(t, denied.Header().Get("ETag"))
+		}
+	}
 
 	// A different public profile cannot expose protected-only artists, albums or tracks.
 	results := json160(a, "GET", "/apis/web/v1/profiles/default/search?q=Source", "", "", "")

@@ -66,9 +66,9 @@ func ImageAccess(store db.DB) func(http.Handler) http.Handler {
 					return
 				}
 			}
-			// Public responses revalidate so a visibility change takes effect at the origin.
+			// Fresh public copies may outlive a visibility change. Origin requests still pass the gate.
 			if visibility != "true" {
-				w.Header().Set("Cache-Control", "public, no-cache")
+				w.Header().Set("Cache-Control", "public, max-age=2592000")
 			}
 			ctx = withImageVisibility(ctx, visibility)
 			next.ServeHTTP(w, r.WithContext(ctx))

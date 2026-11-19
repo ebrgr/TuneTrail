@@ -5,7 +5,7 @@ title: >-
   (ISSUE-100)
 type: specification
 created_date: '2026-11-17T17:17:00Z'
-updated_date: '2026-11-19T15:26:00Z'
+updated_date: '2026-11-19T16:28:00Z'
 tags:
   - design
 ---
@@ -95,6 +95,10 @@ Respostas protegidas ou personalizadas devem usar cache privado sem armazenament
 ### Cache legado — decisão do usuário em 19/11/2026
 
 Decisão do usuário em 19/11/2026 — opção 1. Respostas legadas de /image/{image_id}/{filename} com Cache-Control public, max-age=2592000 são cópias já distribuídas. A origem autoriza todas as requisições antes de servir bytes ou 304. Imagens de perfil protegido usam private, no-store. Alternar require_login muda o validador da imagem. O usuário aceita que caches fora do controle do servidor possam reutilizar os cabeçalhos antigos por até 30 dias. A decisão dispensa corte operacional e purga de caches compartilhados.
+
+### Cache público de imagens — decisão após o Reviewer em 19/11/2026
+
+Decisão do usuário em 19/11/2026 após o parecer do Reviewer. Imagens públicas, incluindo capas e avatares, voltam a usar Cache-Control public, max-age=2592000 com ETag. Imagens de perfil protegido usam private, no-store. A origem autoriza toda requisição antes de bytes ou 304. O usuário aceita que, depois de marcar require_login, cópias públicas já servidas possam permanecer frescas por até 30 dias em navegadores e caches. A consulta de associação continua nas requisições à origem, sem novos índices ou migração 007.
 
 ### Relay e integrações: consequência aceita
 

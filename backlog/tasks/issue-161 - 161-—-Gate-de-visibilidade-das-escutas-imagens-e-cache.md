@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T16:06:00Z'
+updated_date: '2026-11-19T16:32:00Z'
 labels:
   - api
   - ui
@@ -18,6 +18,7 @@ references:
   - backlog/decisions/decision-010
   - backlog/evidencias/issue-161/VERIFICACAO.md
   - backlog/evidencias/issue-161/REVIEWER.md
+  - backlog/evidencias/issue-161/PARECER-REVIEWER.md
 documentation:
   - doc-041
 priority: high
@@ -74,6 +75,33 @@ created: 2026-11-19T16:06:00Z
 ---
 
 Verificação: matriz público/protegido por papel em HTML, JSON, busca, fragmentos, now-playing, exportação e imagens. GET e HEAD condicionais são autorizados antes de 304. Diretório público e gestão por sessão conferidos. Ingestão por chave e relay HTTP exercitados com perfil protegido. make check passou com 13/13 jornadas E2E, go test -race passou nos pacotes tocados e a referência determinística coincide. Revisão local aprovada. A tarefa segue Em andamento.
+
+---
+
+author: reviewer
+created: 2026-11-19T16:23:00Z
+
+---
+
+Reviewer: APROVADO COM RESSALVAS, sem vazamento de privacidade. O gate ReadListening reaproveita a política da 160 em JSON, HTML, transicionais, legado, busca (CTE), exportação e imagens, antes de 304/ETag. A opção 1 está registrada. Riscos não bloqueantes: falta índice em releases/artists.image para a checagem por imagem, agora sem cache longo; 404 em texto puro na rota legada de perfil único; aria-label do cadeado; REVIEWER.md ambíguo; lacunas de teste (imagem legada do root, PATCH com campos extras). Advisor opcional (@Opus medium). Parecer: backlog/evidencias/issue-161/PARECER-REVIEWER.md
+
+---
+
+author: ebrgr
+created: 2026-11-19T16:28:00Z
+
+---
+
+Decisão do usuário em 19/11/2026 após o parecer do Reviewer. Imagens públicas, incluindo capas e avatares, voltam a usar Cache-Control public, max-age=2592000 com ETag. Imagens de perfil protegido usam private, no-store. A origem autoriza toda requisição antes de bytes ou 304. O usuário aceita que, depois de marcar require_login, cópias públicas já servidas possam permanecer frescas por até 30 dias em navegadores e caches. A consulta de associação continua nas requisições à origem, sem novos índices ou migração 007. Por decisão do usuário, os riscos 2 a 5 seguem como pendências conhecidas: 404 da rota legada sem slug para o perfil único, acessibilidade do cadeado, ambiguidade de REVIEWER.md e lacunas de cobertura (imagem legada do root, PATCH com campos extras e rotas adicionais na comparação de negativas).
+
+---
+
+author: codex
+created: 2026-11-19T16:32:00Z
+
+---
+
+Verificação do risco 1: cache público de 30 dias com ETag em capas de perfil público, avatares e capas da rota legada elegíveis ao público. Capas protegidas usam private, no-store. GET e HEAD condicionais de visitante e de usuário sem acesso retornaram 404, enquanto uma condicional autorizada recebeu 304. make check passou com 13/13 E2E e go test -race passou em engine e engine/handlers. Custo residual registrado em VERIFICACAO.md. Os riscos 2 a 5 seguem como pendências por decisão do usuário.
 
 ---
 <!-- COMMENTS:END -->
