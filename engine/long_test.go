@@ -81,6 +81,8 @@ func truncateTestData(t *testing.T) {
 	// Belt-and-suspenders: delete any releases the trigger may have missed
 	// (e.g. releases that were never associated with an artist).
 	require.NoError(t, store.Exec("DELETE FROM releases"))
+	// Each scenario uses fixed fixture IDs. Only reset the test catalog sequence.
+	require.NoError(t, store.Exec("DELETE FROM sqlite_sequence WHERE name='occurrences'"))
 }
 
 func newTestDB() *sqlite.Sqlite {

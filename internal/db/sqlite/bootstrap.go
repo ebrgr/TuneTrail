@@ -437,7 +437,8 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 			db.Close()
 			return "", e
 		}
-		if v == 3 {
+		// Validate all consolidated legacy layouts before replacing any identity tables.
+		if v >= 3 {
 			if e = checkDatabase(db); e != nil {
 				db.Close()
 				return "", e

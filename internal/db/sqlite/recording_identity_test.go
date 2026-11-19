@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -320,5 +321,23 @@ func TestRecordingIdentityReceiptGate(t *testing.T) {
 	} {
 		_, err := s.db.Exec(q)
 		require.ErrorContains(t, err, "Receipt resolution requires pipeline activation", q)
+	}
+}
+
+// TestRecordingIdentityPreflight protects custom objects on every pre-008 entry path.
+func TestRecordingIdentityPreflight(t *testing.T) {
+	for version := int64(3); version <= 6; version++ {
+		t.Run(fmt.Sprint(version), func(t *testing.T) {
+			s, _, source := migrationDB(t, version)
+			execSQL(t, s, `CREATE INDEX unrelated_artist_image ON artists(image)`)
+			require.NoError(t, checkDatabase(s.db))
+			execSQL(t, s, `CREATE INDEX unexpected_listens_client ON listens(client)`)
+			for _, name := range []string{"tunetrail.db", "koito.db"} {
+				dir := t.TempDir()
+				require.NoError(t, copyDatabase(source, filepath.Join(dir, name)))
+				_, err := bootstrap(dir, false)
+				require.ErrorContains(t, err, "unexpected index unexpected_listens_client")
+			}
+		})
 	}
 }
