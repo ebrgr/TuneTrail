@@ -332,7 +332,12 @@ func TestRecordingIdentityPreflight(t *testing.T) {
 			execSQL(t, s, `CREATE INDEX unrelated_artist_image ON artists(image)`)
 			require.NoError(t, checkDatabase(s.db))
 			execSQL(t, s, `CREATE INDEX unexpected_listens_client ON listens(client)`)
-			for _, name := range []string{"tunetrail.db", "koito.db"} {
+			names := []string{"tunetrail.db"}
+			if version == 3 {
+				// Only v1–v3 can enter through the upstream filename.
+				names = append(names, "koito.db")
+			}
+			for _, name := range names {
 				dir := t.TempDir()
 				require.NoError(t, copyDatabase(source, filepath.Join(dir, name)))
 				_, err := bootstrap(dir, false)
