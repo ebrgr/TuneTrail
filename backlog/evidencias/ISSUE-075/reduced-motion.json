@@ -1,0 +1,11 @@
+{
+  "id": "721316ea-dd16-402d-a5d1-bcbde5f2e215",
+  "ok": true,
+  "result": {
+    "result": "{\"reduce\":true,\"rules\":[\"@view-transition { navigation: auto; }\",\"@media (prefers-reduced-motion: reduce) {\\n  @view-transition { navigation: none; }\\n  ::view-transition-old(root), ::view-transition-new(root) { animation: auto ease 0s 1 normal none running none; }\\n}\"],\"animation\":\"none\"}",
+    "origin": "http://localhost:52563/alpha/track/1"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}

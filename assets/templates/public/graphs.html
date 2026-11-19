@@ -87,11 +87,22 @@
             stroke-width="2"
             vector-effect="non-scaling-stroke"
           />
-          {{if .SingleX}}
-            <circle cx="{{.SingleX}}" cy="{{.SingleY}}" r="3" fill="var(--color-primary)"/>
+          {{/* ISSUE-075: native SVG details survive without scripting or CSS tooltips. */}}
+          {{range .Rows}}
+            <circle cx="{{.X}}" cy="{{.Y}}" r="3" fill="var(--color-primary)">
+              <title>{{datetime .From}} – {{datetime .To}}{{if .Last}} {{tr "ui.inclusive" "(inclusive)"}}{{end}} · {{quantity "quantity.plays" .Count}}</title>
+            </circle>
           {{end}}
         </g>
       </svg>
+      {{/* HTML owns CSS tooltips; the details table remains the keyboard/screen-reader view. */}}
+      <div class="interest-tips" aria-hidden="true">
+        {{range .Rows}}
+          <span
+            data-tip="{{datetime .From}} – {{datetime .To}}{{if .Last}} {{tr "ui.inclusive" "(inclusive)"}}{{end}} · {{quantity "quantity.plays" .Count}}"
+          ></span>
+        {{end}}
+      </div>
     </div>
   {{end}}
   <details class="graph-values">

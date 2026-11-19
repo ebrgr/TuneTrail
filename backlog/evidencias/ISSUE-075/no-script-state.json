@@ -1,0 +1,11 @@
+{
+  "id": "3f25be15-71eb-4bce-86a1-0f3401f9283f",
+  "ok": true,
+  "result": {
+    "result": "{\"enhance\":\"undefined\",\"width\":320,\"viewport\":320,\"details\":2,\"titles\":16,\"rect\":{\"x\":41,\"y\":390.1953125,\"width\":238,\"height\":120,\"top\":390.1953125,\"right\":279,\"bottom\":510.1953125,\"left\":41}}",
+    "origin": "http://localhost:52676/alpha/track/1"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}

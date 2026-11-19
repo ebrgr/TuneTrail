@@ -1,0 +1,102 @@
+CGO_ENABLED=0 go vet ./...
+CGO_ENABLED=0 go test -count=1 ./... -timeout 60s
+ok  	github.com/ebrgr/TuneTrail/cmd/api	1.371s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	0.394s
+?   	github.com/ebrgr/TuneTrail/db/migrations_sqlite	[no test files]
+ok  	github.com/ebrgr/TuneTrail/engine	13.488s
+ok  	github.com/ebrgr/TuneTrail/engine/handlers	0.669s
+ok  	github.com/ebrgr/TuneTrail/engine/middleware	0.755s
+ok  	github.com/ebrgr/TuneTrail/imagecache	0.859s
+ok  	github.com/ebrgr/TuneTrail/internal/admin	2.512s
+ok  	github.com/ebrgr/TuneTrail/internal/adminui	1.593s
+ok  	github.com/ebrgr/TuneTrail/internal/adminweb	1.240s
+ok  	github.com/ebrgr/TuneTrail/internal/catalog	1.419s
+ok  	github.com/ebrgr/TuneTrail/internal/cfg	1.539s
+ok  	github.com/ebrgr/TuneTrail/internal/db	0.983s
+ok  	github.com/ebrgr/TuneTrail/internal/db/sqlite	7.554s
+ok  	github.com/ebrgr/TuneTrail/internal/export	1.018s
+ok  	github.com/ebrgr/TuneTrail/internal/i18n	0.873s
+ok  	github.com/ebrgr/TuneTrail/internal/imagefetch	0.834s
+ok  	github.com/ebrgr/TuneTrail/internal/imagepipeline	0.679s
+ok  	github.com/ebrgr/TuneTrail/internal/images	0.760s
+ok  	github.com/ebrgr/TuneTrail/internal/imagework	0.864s
+?   	github.com/ebrgr/TuneTrail/internal/importer	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/listenbrainz	0.741s
+ok  	github.com/ebrgr/TuneTrail/internal/listening	0.827s
+?   	github.com/ebrgr/TuneTrail/internal/logger	[no test files]
+?   	github.com/ebrgr/TuneTrail/internal/mbz	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/memkv	0.694s
+?   	github.com/ebrgr/TuneTrail/internal/models	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/relay	0.803s
+ok  	github.com/ebrgr/TuneTrail/internal/summary	0.830s
+?   	github.com/ebrgr/TuneTrail/internal/testfixtures	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/utils	0.829s
+?   	github.com/ebrgr/TuneTrail/internal/version	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webassets	1.431s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	0.903s
+ok  	github.com/ebrgr/TuneTrail/internal/webui	1.679s
+ok  	github.com/ebrgr/TuneTrail/queue	0.646s
+?   	github.com/ebrgr/TuneTrail/scripts/experiments/tls034	[no test files]
+?   	github.com/ebrgr/TuneTrail/testing_init	[no test files]
+ok  	github.com/ebrgr/TuneTrail/internal/webui	0.483s
+{
+  "files": 169,
+  "differences": [],
+  "exit_code": 0
+}
+python3 -m unittest discover -s scripts -p test_compare_ui_reference.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.004s
+
+OK
+CGO_ENABLED=0 go vet ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+CGO_ENABLED=0 go test -count=1 ./internal/webui ./internal/webquery ./internal/listening ./cmd/ui-preview
+ok  	github.com/ebrgr/TuneTrail/internal/webui	2.242s
+ok  	github.com/ebrgr/TuneTrail/internal/webquery	0.459s
+ok  	github.com/ebrgr/TuneTrail/internal/listening	0.574s
+ok  	github.com/ebrgr/TuneTrail/cmd/ui-preview	0.192s
+node --check assets/js/theme.js
+node --check assets/js/ui.js
+node --check assets/js/theme-picker.js
+node --check assets/js/search.js
+node --check assets/js/media-dialog.js
+node --check assets/js/enhance.js
+node --check assets/js/live.js
+node --check assets/js/admin.js
+node --test internal/webui/theme.test.mjs
+✔ unavailable storage and invalid saved JSON leave a usable default (4.337041ms)
+✔ custom colors survive startup and reset clears inline overrides (0.480458ms)
+✔ incomplete and injected palettes cannot set arbitrary CSS (0.238667ms)
+✔ legacy nav-layout is inert without deleting browser storage (0.23ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60.900625
+python3 -m unittest scripts/test_check_web_style.py
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 0.037s
+
+OK
+python3 scripts/check_web_style.py
+CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
+python3 scripts/e2e.py --binary ./tunetrail
+PASS  web-assets     3.1s
+PASS  multiuser      1.5s
+PASS  admin          2.9s
+PASS  public         0.6s
+PASS  permissions    1.2s
+PASS  isolation      2.7s
+PASS  migration      2.5s
+PASS  ingest-migration   1.5s
+PASS  standalone     0.3s
+PASS  legacy-env     0.3s
+PASS  shutdown       0.9s
+PASS  vscode         0.0s
+PASS  tools         18.8s
+e2e: 13/13 journeys passed

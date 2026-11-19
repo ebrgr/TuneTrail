@@ -1,0 +1,19 @@
+CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
+PASS cache/history chrome 157.0.8103.79
+Error: SyntaxError: missing ) in parenthetical
+    at Object.evaluate (/Users/evertonberger/orca/workspaces/TuneTrail/issue-075/scripts/validate_web_cache.cjs:132:48)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async run (/Users/evertonberger/orca/workspaces/TuneTrail/issue-075/scripts/validate_web_cache.cjs:264:3)
+    at async /Users/evertonberger/orca/workspaces/TuneTrail/issue-075/scripts/validate_web_cache.cjs:335:5
+Traceback (most recent call last):
+  File "/Users/evertonberger/orca/workspaces/TuneTrail/issue-075/scripts/validate_web_cache.py", line 49, in <module>
+    main()
+    ~~~~^^
+  File "/Users/evertonberger/orca/workspaces/TuneTrail/issue-075/scripts/validate_web_cache.py", line 43, in main
+    subprocess.run(['node', str(Path(__file__).with_suffix('.cjs')), *options], check=True, timeout=180)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py", line 692, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command ['node', '/Users/evertonberger/orca/workspaces/TuneTrail/issue-075/scripts/validate_web_cache.cjs', 'http://127.0.0.1:59948', '/tmp/tunetrail-cache106-6_0ovs00/data/tunetrail.db', '/private/var/folders/vx/yd50k5wx7_3c5yk_12vq0s780000gn/T/tmp.DhKa5UzmxR/firefox', 'firefox', '2'] returned non-zero exit status 1.
+make: *** [web.cache.check] Error 1

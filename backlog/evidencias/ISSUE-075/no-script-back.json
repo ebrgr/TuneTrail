@@ -1,0 +1,11 @@
+{
+  "id": "43232938-10e8-45d5-ac54-4b7098601793",
+  "ok": true,
+  "result": {
+    "result": "{\"url\":\"http://localhost:52675/alpha/search?q=Faixa\",\"query\":\"Artista\",\"enhance\":\"undefined\"}",
+    "origin": "http://localhost:52675/alpha/search?q=Faixa"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}

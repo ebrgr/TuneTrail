@@ -1,0 +1,11 @@
+{
+  "id": "058d9e73-ee66-40de-b2c2-826c393945fb",
+  "ok": true,
+  "result": {
+    "result": "{\"validJSON\":true,\"tests\":[{\"url\":\"/alpha\",\"matches\":true},{\"url\":\"/alpha/listens\",\"matches\":true},{\"url\":\"/alpha/chart/top/tracks\",\"matches\":true},{\"url\":\"/alpha/track/1\",\"matches\":true},{\"url\":\"/alpha/artist/1\",\"matches\":true},{\"url\":\"/alpha/album/1\",\"matches\":true},{\"url\":\"/beta/track/1\",\"matches\":false},{\"url\":\"/alpha/manage/track/1/delete\",\"matches\":false},{\"url\":\"/alpha/track/1/delete\",\"matches\":false},{\"url\":\"/admin\",\"matches\":false},{\"url\":\"/apis/web/v1/logout\",\"matches\":false},{\"url\":\"/logout\",\"matches\":false},{\"url\":\"/alpha?logout=1\",\"matches\":false},{\"url\":\"/alpha/track/1?action=delete\",\"matches\":false},{\"url\":\"/alpha/listens?page=2\",\"matches\":false},{\"url\":\"https://example.com/alpha/track/1\",\"matches\":false}],\"downloadSelector\":\"[download], [target], [rel~=external]\",\"csp\":null}",
+    "origin": "http://localhost:52563/alpha/track/1"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}

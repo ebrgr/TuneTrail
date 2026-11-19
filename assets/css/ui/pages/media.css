@@ -73,7 +73,7 @@
 .media-interest { width:min(100%,35rem); }
 
 /* Apply shared spacing and surface tokens at this size. */
-.interest-card { padding: var(--space-5); }
+.interest-card { position:relative; padding: var(--space-5); }
 .interest-svg { display:block; width:100%; height:120px; overflow:hidden; }
 
 /* Use the shared type scale at this reading size. */
@@ -135,5 +135,15 @@
 .media-tabs a:hover { text-decoration:underline; }
 .media-tabs a:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
 .media-detail [id] { scroll-margin-top:var(--space-5); }
+
+
+/* ISSUE-075: reuse the heatmap data-tip surface without adding script or focus stops. */
+.interest-tips { position:absolute; inset:var(--space-5); display:flex; }
+.interest-tips > span { flex:1; min-width:0; }
+.interest-tips [data-tip]::after {
+  left:0; right:0; bottom:100%; white-space:normal;
+  z-index:2; overflow-wrap:anywhere;
+}
+.interest-tips [data-tip]:hover::after { opacity:1; }
 
 }

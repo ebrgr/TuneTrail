@@ -3,6 +3,10 @@
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{.Theme}}">
     <head>
       {{template "partial/head" (head "live" (printf "%s - TuneTrail" .Title))}}
+      {{/* ISSUE-075: only anonymous, successful profile documents advertise public GETs. */}}
+      {{if and .Prefetch .Profile (eq .Status 200) (not .Error)}}
+        {{template "partial/speculation" .Profile}}
+      {{end}}
       {{- if and .Admin (or .Media (eq .Section "home") (eq .Section "listens"))}}
       <link rel="stylesheet" href="{{asset "media-dialog.css"}}">
       <script defer src="{{asset "enhance.js"}}"></script>
@@ -442,4 +446,24 @@
     {{end}}
     <button class="large-button">{{tr "ui.apply" "Apply"}}</button>
   </form>
+{{end}}
+
+{{/* ISSUE-075: exact public routes only; URLPattern search="" rejects every query.
+     Relative path patterns inherit the document origin; no prerender or account pages. */}}
+{{define "partial/speculation"}}
+<script type="speculationrules">
+{"prefetch":[{"source":"document","eagerness":"moderate","where":{"and":[
+  {"href_matches":[
+    {"pathname":"/{{.Slug}}","search":""},
+    {"pathname":"/{{.Slug}}/listens","search":""},
+    {"pathname":"/{{.Slug}}/chart/top/artists","search":""},
+    {"pathname":"/{{.Slug}}/chart/top/albums","search":""},
+    {"pathname":"/{{.Slug}}/chart/top/tracks","search":""},
+    {"pathname":"/{{.Slug}}/artist/:id(\\d+)","search":""},
+    {"pathname":"/{{.Slug}}/album/:id(\\d+)","search":""},
+    {"pathname":"/{{.Slug}}/track/:id(\\d+)","search":""}
+  ]},
+  {"not":{"selector_matches":"[download], [target], [rel~=external]"}}
+]}}]}
+</script>
 {{end}}

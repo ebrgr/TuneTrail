@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Cache-Control: private, no-cache
+Content-Language: en
+Content-Type: text/html; charset=utf-8
+Vary: Accept-Language
+Vary: Cookie
+X-Request-Id: DQsXneeY
+X-Tunetrail-Admin: false
+X-Tunetrail-Timezone: America/Sao_Paulo
+X-Tunetrail-Ui-Generation: 0.37-5ebef48bc2e64c0a216c925f5c6075614ad394b437b821a4f1dd8464cdeb2c94
+X-Tunetrail-Week-Start: 0
+Date: Thu, 19 Nov 2026 00:32:52 GMT

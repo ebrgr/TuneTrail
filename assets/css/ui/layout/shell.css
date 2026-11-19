@@ -161,3 +161,10 @@ footer a:hover { text-decoration: underline; }
   .nav-periods a[aria-current] { color: var(--color-fg); background: var(--color-bg-tertiary); border-radius: var(--radius-sm); }
 }
 }
+
+/* ISSUE-075: native full-document navigation keeps history and cache ownership in the browser. */
+@view-transition { navigation: auto; }
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation:none; }
+}

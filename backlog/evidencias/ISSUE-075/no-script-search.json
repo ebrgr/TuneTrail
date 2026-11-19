@@ -1,0 +1,11 @@
+{
+  "id": "545e4925-db06-4fc0-8b6d-c42412ab8b22",
+  "ok": true,
+  "result": {
+    "result": "{\"url\":\"http://localhost:52675/alpha/search?q=Artista\",\"query\":\"Artista\",\"items\":2,\"enhance\":\"undefined\"}",
+    "origin": "http://localhost:52675/alpha/search?q=Artista"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}

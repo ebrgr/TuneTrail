@@ -151,12 +151,12 @@ ui.reference.test:
 
 ui.check: ui.reference.test
 
-# Compare the current ISSUE-073 layout reference; visual acceptance remains a separate user decision.
+# Compare the current ISSUE-075 chart/navigation reference; visual acceptance remains a separate user decision.
 .PHONY: ui.reference.check
 ui.reference.check:
 	@task_reference_dir=$$(mktemp -d); trap 'rm -rf "$$task_reference_dir"' EXIT; \
 	TZ=UTC TUNETRAIL_UI_REFERENCE="$$task_reference_dir/candidate" CGO_ENABLED=0 go test ./internal/webui -run '^TestUIReference$$' -count=1 && \
-	python3 scripts/compare_ui_reference.py backlog/evidencias/ISSUE-073/reference "$$task_reference_dir/candidate"
+	python3 scripts/compare_ui_reference.py backlog/evidencias/ISSUE-075/reference "$$task_reference_dir/candidate"
 
 ui.check: ui.reference.check
 

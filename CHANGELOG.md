@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Navegações ganham transições suaves e pré-carregamento de páginas públicas do mesmo perfil; gráficos mostram detalhes por intervalo sem JavaScript adicional (ISSUE-075).
+
 ## [0.37] - 2026-11-18
 
 - Contas de usuários comuns passam a autenticar com sessões individuais, mantendo a administração restrita a administradores e permitindo sair pela página de acesso negado (ISSUE-159).

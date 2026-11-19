@@ -1,0 +1,47 @@
+{
+  "files": [
+    {
+      "file": "assets/js/admin.js",
+      "bytes": 2727,
+      "gzip_bytes": 1187
+    },
+    {
+      "file": "assets/js/enhance.js",
+      "bytes": 4953,
+      "gzip_bytes": 1915
+    },
+    {
+      "file": "assets/js/live.js",
+      "bytes": 5016,
+      "gzip_bytes": 2045
+    },
+    {
+      "file": "assets/js/media-dialog.js",
+      "bytes": 22637,
+      "gzip_bytes": 6109
+    },
+    {
+      "file": "assets/js/search.js",
+      "bytes": 4332,
+      "gzip_bytes": 1692
+    },
+    {
+      "file": "assets/js/theme-picker.js",
+      "bytes": 3447,
+      "gzip_bytes": 1354
+    },
+    {
+      "file": "assets/js/theme.js",
+      "bytes": 2562,
+      "gzip_bytes": 1090
+    },
+    {
+      "file": "assets/js/ui.js",
+      "bytes": 6112,
+      "gzip_bytes": 2066
+    }
+  ],
+  "raw_total": 51786,
+  "gzip_total": 17458,
+  "method": "gzip level 9 per file, mtime=0; all assets/js/*.js; no executable JavaScript added"
+}

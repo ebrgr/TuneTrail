@@ -13,6 +13,7 @@ type InterestRow struct {
 	From, To    time.Time
 	Count       int64
 	Last, Empty bool
+	X, Y        string // Numeric SVG coordinates for per-interval titles (ISSUE-075).
 }
 
 type InterestGraph struct {
@@ -45,7 +46,7 @@ func buildInterest(items []db.InterestBucket, loc *time.Location, id string) (*I
 		if !last && item.BucketStart.Equal(item.BucketEnd) && item.ListenCount != 0 {
 			return nil, fmt.Errorf("nonempty zero-width interest bucket")
 		}
-		g.Rows = append(g.Rows, InterestRow{item.BucketStart.In(loc), item.BucketEnd.In(loc), item.ListenCount, last, !last && item.BucketStart.Equal(item.BucketEnd)})
+		g.Rows = append(g.Rows, InterestRow{item.BucketStart.In(loc), item.BucketEnd.In(loc), item.ListenCount, last, !last && item.BucketStart.Equal(item.BucketEnd), "", ""})
 		g.Total += item.ListenCount
 		peak = max(peak, item.ListenCount)
 	}
@@ -61,6 +62,11 @@ func buildInterest(items []db.InterestBucket, loc *time.Location, id string) (*I
 			xs[i] = left + float64(i)*(right-left)/float64(len(items)-1)
 		}
 		ys[i] = bottom - float64(item.ListenCount)/float64(peak)*(bottom-top)
+	}
+	// Keep point details aligned with the same coordinates used by the curve.
+	for i := range g.Rows {
+		g.Rows[i].X = fmt.Sprintf("%.3f", xs[i])
+		g.Rows[i].Y = fmt.Sprintf("%.3f", ys[i])
 	}
 	g.Line = boundedCurve(xs, ys)
 	g.Area = g.Line + fmt.Sprintf(" L%.3f,%.3f L%.3f,%.3f Z", xs[len(xs)-1], bottom, xs[0], bottom)

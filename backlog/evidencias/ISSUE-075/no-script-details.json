@@ -1,0 +1,11 @@
+{
+  "id": "ffb977fe-800d-47b9-85a2-b0bf665fedfc",
+  "ok": true,
+  "result": {
+    "result": "{\"open\":true,\"rows\":17,\"scripts\":\"undefined\"}",
+    "origin": "http://localhost:52675/alpha/track/1"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}

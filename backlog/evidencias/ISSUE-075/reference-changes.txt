@@ -1,0 +1,156 @@
+{
+  "files": 169,
+  "differences": [
+    {
+      "file": "admin/account.html",
+      "result": "different",
+      "base_sha256": "4ff9f361cc0fec0f2e425d09d456a952e4ba04d1bccef87391d161cd14197833",
+      "new_sha256": "144f35407afbd6043234154bf79d80952c590b210fe78baa01c193b45cca322f"
+    },
+    {
+      "file": "admin/album.html",
+      "result": "different",
+      "base_sha256": "8b323291a3c2da13f4c10890ff652a52f279a1cc8cdadd6b6843d65b2a74cc52",
+      "new_sha256": "8f27d6d2e5bfed6718f40358aa2baa67212605b6f42587e899e302123f283e14"
+    },
+    {
+      "file": "admin/artist.html",
+      "result": "different",
+      "base_sha256": "4fd27c864feeed9ad126389fd43ad09e3f3f8b567aa88228eb6b6a173d8f671c",
+      "new_sha256": "c0d2f43e63293bd52980f078c51d28d00cd483a2a4d1c6b6897e7065de4ecbe6"
+    },
+    {
+      "file": "admin/delete.html",
+      "result": "different",
+      "base_sha256": "0055646a710f9ed4f1b209c71707b7dd2ece3cf5a8638212addfa65a7ea584be",
+      "new_sha256": "8933ccddac78e91053cd21611fd220fe141f1e4ac6bfafd588154d3d26ebea58"
+    },
+    {
+      "file": "admin/login.html",
+      "result": "different",
+      "base_sha256": "2dfc43bdba710be2b60a96aefeb9af7c0e1bdea35ddc7feaa2bbe66f473c4d3a",
+      "new_sha256": "1b2ad02d7060ab6f0bca7ecf9fc0c1082ef8836f571e91c54081a8804224b8bb"
+    },
+    {
+      "file": "admin/merge.html",
+      "result": "different",
+      "base_sha256": "99c4a89f7964d551835424ca8cd0f89107c77abf84629f57765f6163c2eaa3a9",
+      "new_sha256": "a6433b8518ba43a2777fad5f60867ec9c193ffe6b547e11c74192ee64a5d089b"
+    },
+    {
+      "file": "admin/profiles.html",
+      "result": "different",
+      "base_sha256": "0ebe49c86c386c3fe0a146aee24332d8bf8dfce915b586353048561e06c1482d",
+      "new_sha256": "dd363e696fbcfeeb3bda18bf5b9eed815dee234c21337053c87cf5462bf53921"
+    },
+    {
+      "file": "admin/settings.html",
+      "result": "different",
+      "base_sha256": "e3cd56d1e047fadd7c290f1e8677d10e9e51fba61ac6d9fcbe1a152f1c5e270c",
+      "new_sha256": "f9e166624d30a0b6e5c3f7d9920dceea532b967313193f37c02708143105f259"
+    },
+    {
+      "file": "admin/track.html",
+      "result": "different",
+      "base_sha256": "2f8da245731dbdee6228bfa2a93abcbfda76ca277006df3d1f6cdc54721242a4",
+      "new_sha256": "4bfb67033d538d43c88e98247b8b8e39ee773bcd6f981db4ee204cfb7482108c"
+    },
+    {
+      "file": "preview-assets/ui.css",
+      "result": "different",
+      "base_sha256": "980626cf2c17de7db406a3953af04f91343b3dd192d245ceedbf479427ba4ea8",
+      "new_sha256": "5f1ba4f735fac0d63b9962c0562735f15146a406846c250f0818ef376ec0d6fc"
+    },
+    {
+      "file": "preview/home.html",
+      "result": "different",
+      "base_sha256": "a91f0d423ab37e9e93bb7e647df8d2f1785def513ca582813510e2982c30f4af",
+      "new_sha256": "49fecf697d2528c001dbe30a857e1091907f47318e9a3c122afe682ed4b8dca4"
+    },
+    {
+      "file": "preview/profiles.html",
+      "result": "different",
+      "base_sha256": "2350bddaf20a2153b0bfcb4144b223926be9f8a5a4d7c3ce8ac2393a0aec7c37",
+      "new_sha256": "7553bdf038336fd9892a5aaa6b1c96ada1b48ce5a9acad25b8b92bfc2b6d53ba"
+    },
+    {
+      "file": "public/album.html",
+      "result": "different",
+      "base_sha256": "6a4315148a4bbc3aeefcf09ee3ef7fd99415d04377f1ebe67a064b71bcb2aa16",
+      "new_sha256": "d5cdc2405fb8cbb35b8cb7f95a9ab3f38c670634a606a91afedc54513aa831eb"
+    },
+    {
+      "file": "public/albums.html",
+      "result": "different",
+      "base_sha256": "2bfba14b9de39c8c5f3e20fb99261b8aa1d5a7b9b8918db1be760287a1bb7433",
+      "new_sha256": "6b8999ae7d6f4fe1a42b4a056db158dbd59d07b8b609f9cf5a5907b6ee99de5c"
+    },
+    {
+      "file": "public/artist.html",
+      "result": "different",
+      "base_sha256": "2616719a161b5ff9ca9425211e21b889d153cd9303a84bfb1dcbda147375985e",
+      "new_sha256": "ec45636b885e6ee625f7a26278d872463a18ae2eb70f39db892c30d12b243259"
+    },
+    {
+      "file": "public/artists.html",
+      "result": "different",
+      "base_sha256": "8256c6efacaacdc28bc28a5bc30c4e43f17e630208275c4d1c6a41e5227ea574",
+      "new_sha256": "ac068af0379b7931b25bf259a6739105608ac9bd8e328d317aac1e91e0fbd948"
+    },
+    {
+      "file": "public/empty.html",
+      "result": "different",
+      "base_sha256": "f243dfb5d5eb384cd1e0730d291506f5aedddd13c5df2001a9b0f99d29fe46e0",
+      "new_sha256": "ceae64fdccc08f64887133046aa300dd4eaccfac97a3813cd27098e4b215410e"
+    },
+    {
+      "file": "public/home.html",
+      "result": "different",
+      "base_sha256": "483470b345fe019d8de744b7b741212f32ceab92fbd2910b43274eb6a477d2c0",
+      "new_sha256": "f06e9042f519b7a8fe3f08c565fde1d115ed0fd61456048e3bec5362cf92bc1e"
+    },
+    {
+      "file": "public/listens.html",
+      "result": "different",
+      "base_sha256": "8bd372783fbdcff61c084bd0b7a272529459dcd53e19dbe69a83187afa95f68d",
+      "new_sha256": "cac1afd1d8afa933fcad339b06378c9322e56845893867a5d98ba3d617c09d11"
+    },
+    {
+      "file": "public/profiles.html",
+      "result": "different",
+      "base_sha256": "f5f94cf36e0386f4dedd2eea9814cf218bdd8eaca7d179f678a40396ac7c8ee2",
+      "new_sha256": "92fb66becc83f34f9c1d81c20a4d49a1164c55072a42334865680c424cca85ba"
+    },
+    {
+      "file": "public/rewind-year.html",
+      "result": "different",
+      "base_sha256": "827a707b98cf499d2721af9ec891c61b63aaf6a8e7a9818da700a2805d8f1d87",
+      "new_sha256": "1f46ce6379ea6cff64e2337050def598bac144987d982e46e157683726ff0027"
+    },
+    {
+      "file": "public/rewind.html",
+      "result": "different",
+      "base_sha256": "693616afd8d57d67f80a367a6bfb8f221d2091a29b60efd37706a86dabaa3bab",
+      "new_sha256": "84a887ba4053b2754f64e8964e46a7c2c41f86a7d458931200d93e25e5f8f1ce"
+    },
+    {
+      "file": "public/track.html",
+      "result": "different",
+      "base_sha256": "1481c2aeff8dcfc0d9867c5f2c1e4898ffa191ee1c903cfc9662fb7d9ae36496",
+      "new_sha256": "0b742a8091e782a07f73fdef1aa9c3f6cf037b7bc516ebd5ab8d08c14db2f426"
+    },
+    {
+      "file": "public/tracks.html",
+      "result": "different",
+      "base_sha256": "b40da9c325e19eb1673ff85149277c0a6ca760f5380b64375abb14d63759ea32",
+      "new_sha256": "9617a1f8178035a18df1f5f555313f176fd0c4f0d802b155431037fa294b519d"
+    },
+    {
+      "file": "web-assets/ui.css",
+      "result": "different",
+      "base_sha256": "980626cf2c17de7db406a3953af04f91343b3dd192d245ceedbf479427ba4ea8",
+      "new_sha256": "5f1ba4f735fac0d63b9962c0562735f15146a406846c250f0818ef376ec0d6fc"
+    }
+  ],
+  "exit_code": 2
+}

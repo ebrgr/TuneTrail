@@ -65,9 +65,17 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", 405)
 		return
 	}
+	// An anonymous tab can outlive a login in another tab. Never speculate with account cookies.
+	if _, err := r.Cookie(adminweb.SessionCookie); err != http.ErrNoCookie && strings.Contains(r.Header.Get("Sec-Purpose"), "prefetch") {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 	w = h.options.Languages.Wrap(w, r)
 	p := LivePage{Page: Page{Locale: i18n.ViewOf(w), Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: r.URL.RequestURI(), Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}, Params: cloneQuery(r.URL.Query())}
 	p.Admin = h.adminSession(r)
+	// Do not speculate on any account-specific document, including ordinary users.
+	_, sessionErr := r.Cookie(adminweb.SessionCookie)
+	p.Prefetch = sessionErr == http.ErrNoCookie
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if r.URL.Path != "/" {
 		profile, err := h.store.GetListeningProfile(r.Context(), parts[0])

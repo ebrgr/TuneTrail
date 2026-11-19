@@ -37,6 +37,8 @@ type Pager struct {
 }
 type LivePage struct {
 	CurrentURL string
+	// Prefetch is limited to anonymous public documents (ISSUE-075).
+	Prefetch bool
 	// Admin is true only for a valid administrator session cookie (ISSUE-109).
 	Admin           bool
 	AllowEmptyMedia bool

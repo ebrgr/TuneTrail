@@ -1,0 +1,11 @@
+{
+  "id": "ec6c7c55-2721-4dae-b8f7-8e915361a311",
+  "ok": true,
+  "result": {
+    "result": "{\"opacity\":\"1\",\"content\":\"\\\"03/11/2018 23:59:00 -03 – 06/05/2019 13:19:51 -03 · 4 reproduções\\\"\"}",
+    "origin": "http://localhost:59882/alpha/track/1"
+  },
+  "_meta": {
+    "runtimeId": "b2a9b75b-ad10-4729-ac1a-c250dc6a6db8"
+  }
+}
