@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T15:10:00Z'
+updated_date: '2026-11-19T15:11:00Z'
 labels:
   - admin
   - api
@@ -121,6 +121,15 @@ created: 2026-11-19T15:10:00Z
 ---
 
 Aceite explícito do usuário em 2026-11-19, incluindo a exceção da importação por dono (doc-041 §2) já confirmada por ele. Pareceres: Reviewer (APROVADO COM RESSALVAS; SSRF, pré-semeadura, redirect do dono e teste em WAL corrigidos em 9de0bd6) e Advisor (APROVADO, effort medium). Melhorias opcionais do Advisor (bloqueios 192.0.0.0/24, 192.88.99.0/24 e TEST-NETs; DROP TRIGGER IF EXISTS na 006; risco residual de aliases/MBIDs de importadores não-Koito no doc-041) ficam registradas, sem bloquear.
+
+---
+
+author: ebrgr
+created: 2026-11-19T15:11:00Z
+
+---
+
+Publicação: versão 0.39 (tag `v0.39`), branch `feat/issue-160-autorizacao-de-gestao-propria-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
