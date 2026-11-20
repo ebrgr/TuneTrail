@@ -53,6 +53,8 @@
 
   // The server marks administrator sessions with data-admin (ISSUE-109); no role fetch is needed.
   const admin = 'admin' in body.dataset;
+  const signedIn = 'signedIn' in body.dataset;
+  const manageListening = 'manageListening' in body.dataset;
 
   // Restore authority and compare server-resolved context without trusting preference cookies.
   async function activate(restored) {
@@ -76,7 +78,9 @@
             (generation && generation !== body.dataset.uiGeneration) ||
             (timezone && body.dataset.timezone && timezone !== body.dataset.timezone) ||
             (week && body.dataset.weekStart && week !== body.dataset.weekStart) ||
-            (session && session !== String(admin))) {
+            (session && session !== String(admin)) ||
+            head.headers.get('X-TuneTrail-Signed-In') !== String(signedIn) ||
+            head.headers.get('X-TuneTrail-Manage-Listening') !== String(manageListening)) {
           location.reload(); return;
         }
       });

@@ -10,11 +10,11 @@
       
       <link rel="stylesheet" href="/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4">
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
-      <link rel="stylesheet" href="/web-assets/ui.css?v=5f1ba4f735fac0d63b9962c0562735f15146a406846c250f0818ef376ec0d6fc">
+      <link rel="stylesheet" href="/web-assets/ui.css?v=cb1edd56a3cf01ab66f11ff9b4ad5caaad662a2430497a602935e6740fae25d2">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
       
       <script defer src="/web-assets/ui.js?v=ea8325bf79b4abd89126396760b6fa381531ad2c1a4d7e8284514ebdaa5b65a1"></script>
-      <script defer src="/web-assets/live.js?v=8556a42a1fec73006c3694ff811230eb39ad57d1a2275a38bc23c7c23c9f2527"></script>
+      <script defer src="/web-assets/live.js?v=3461007255956d6cce691b86d772d3449a4e099833728050cdb735067a32703e"></script>
       <script defer src="/web-assets/search.js?v=61928d55f830e5b1b39b99b56805c949a0fe9f6a3888ced653436d231f998b45"></script>
 
       
@@ -42,15 +42,18 @@
       data-cover-fallback-url="/web-assets/icons/Disc3.svg?v=7126dd36422a0ef86efa8d2a4bac38ba04df0dd92a3b33be1a4310558017aa15"
       data-i18n-delete-label="Delete listening record"
       data-assets="/web-assets"
-      data-ui-generation="0.10-48207ba88e70ccb9f706e7d269250a8932a544d3bde416dae235edb371bf4ce1"
+      data-ui-generation="0.10-26a922a4ad86dfe86735a1316718a7ea435747e266c6d86f0e43d25b4427dbbf"
       data-timezone="UTC"
       data-week-start="0"
       data-force-timezone="false"
       data-section="media"
       
+      
+      
       data-profile-id="1"
       data-profile-slug="alpha"
     >
+      <a class="skip-link" href="#live-content">Skip to content</a>
       <div class="app-shell">
         
   <nav class="sidebar" aria-label="Main navigation">
@@ -67,24 +70,28 @@
     </div>
     <div class="nav-destinations">
       <a class="nav-button" href="/alpha?period=all_time&amp;tz=UTC"
+        
         aria-label="Home" data-tip="Home">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
 <span class="nav-label">Home</span>
       </a>
       
         <a class="nav-button" href="/alpha/chart/top/artists?period=all_time&amp;tz=UTC"
+          
           aria-label="Rankings" data-tip="Rankings">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-music2 lucide-music-2" aria-hidden="true"><circle cx="8" cy="18" r="4"></circle><path d="M12 18V2l7 4"></path></svg>
 <span class="nav-label">Rankings</span>
         </a>
         
         <a class="nav-button" href="/alpha/rewind"
+          
           aria-label="Rewind" data-tip="Rewind">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-history" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
 <span class="nav-label">Rewind</span>
         </a>
         
           <a class="nav-button" href="/alpha/search?period=all_time&amp;tz=UTC"
+            
             aria-label="Search" data-dialog="search-dialog" data-tip="Search">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
 <span class="nav-label">Search</span>
@@ -124,17 +131,15 @@
 <span>Theme and language</span>
           </button>
           
-    <section class="nav-admin-actions" aria-labelledby="nav-admin-title">
-      <h2 class="nav-group-title" id="nav-admin-title">Administration</h2>
+    
       
-        <a
-          class="nav-button"
-          href="/admin"
-          
-          aria-label="Sign in"
-        ><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></svg><span class="nav-action-label">Sign in</span></a>
+  <a class="nav-button" href="/admin?next=%2Falpha%2Fartist%2F1%3Ftz%3DUTC" >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></svg><span class="nav-action-label">Sign in</span>
+  </a>
+
       
-    </section>
+      
+    
     <h2 class="nav-group-title">About TuneTrail</h2>
       <a
         class="nav-button"
@@ -166,7 +171,7 @@
     
   </nav>
 
-        <div class="app-content">
+        <div class="app-content" id="live-content" tabindex="-1">
           
   
     <header class="profile-header">
@@ -306,7 +311,6 @@
         
         
           
-  
   
     <table class="listens">
       <tbody>

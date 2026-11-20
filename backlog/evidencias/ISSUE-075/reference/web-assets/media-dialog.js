@@ -151,7 +151,7 @@
     if (signal.aborted) return;
     const current = document.querySelector('.media-heading');
     const heading = next.querySelector('.media-heading');
-    if (!next.body.hasAttribute('data-admin') || !heading || heading.dataset.entity !== current.dataset.entity ||
+    if (!next.body.hasAttribute('data-manage-listening') || !heading || heading.dataset.entity !== current.dataset.entity ||
         heading.dataset.entityId !== current.dataset.entityId) throw Error('Context changed');
     current.replaceWith(heading);
     document.title = next.title;
@@ -164,7 +164,7 @@
     if (!response.ok || response.redirected) throw Error('History unavailable');
     const next = new DOMParser().parseFromString(await response.text(), 'text/html');
     if (signal.aborted) return;
-    if (!next.body.hasAttribute('data-admin') || next.body.dataset.profileSlug !== document.body.dataset.profileSlug ||
+    if (!next.body.hasAttribute('data-manage-listening') || next.body.dataset.profileSlug !== document.body.dataset.profileSlug ||
         !next.querySelector('main')) throw Error('Context changed');
     const current = document.querySelector('main');
     const scroll = {left:scrollX, top:scrollY};
@@ -439,7 +439,8 @@
     try {
       const response = await fetch(location.href, {method: 'HEAD', signal: controller.signal, cache: 'no-store', credentials: 'same-origin'});
       if (validation !== controller || controller.signal.aborted) return;
-      if (!response.ok || response.redirected || response.headers.get('X-TuneTrail-Admin') !== 'true' ||
+      if (!response.ok || response.redirected || response.headers.get('X-TuneTrail-Manage-Listening') !== 'true' ||
+          response.headers.get('X-TuneTrail-Admin') !== String('admin' in document.body.dataset) ||
           response.headers.get('X-TuneTrail-UI-Generation') !== document.body.dataset.uiGeneration) { location.reload(); return; }
       ready = true;
       listenControls();
