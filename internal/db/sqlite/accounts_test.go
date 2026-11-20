@@ -56,6 +56,9 @@ func TestAccountsMigrationPreservesData(t *testing.T) {
 			var kept []byte
 			require.NoError(t, conn.QueryRow(`SELECT password FROM users WHERE id=7 AND role='admin' AND status='active'`).Scan(&kept))
 			require.Equal(t, hash, kept)
+			cost, err := bcrypt.Cost(kept)
+			require.NoError(t, err)
+			require.Equal(t, bcrypt.DefaultCost, cost)
 			require.Equal(t, 1, scalar(t, upgraded, `SELECT COUNT(*) FROM sessions WHERE id='keep-session' AND user_id=7`))
 			require.Equal(t, 2, scalar(t, upgraded, `SELECT COUNT(*) FROM users`))
 			require.Equal(t, 1, scalar(t, upgraded, `SELECT COUNT(*) FROM users u JOIN listening_profiles p ON p.user_id=u.id WHERE p.id=20 AND status='pending' AND role='user' AND length(password)=0 AND require_login=0`))

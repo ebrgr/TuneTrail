@@ -73,6 +73,14 @@ func TestListeningVisibility161(t *testing.T) {
 		api + "/track/12", api + "/search?q=Source", api + "/now-playing", scopedImage,
 	}
 	other := ordinarySession161(t, a)
+	for _, field := range []string{`"role":"admin"`, `"user_id":1`} {
+		patch := `{"require_login":true,` + field + `}`
+		require.Equal(t, 400, json160(a, "PATCH", api+"/", patch, owner, "").Code)
+		profile, err := a.store.GetListeningProfile(ctx, p.Slug)
+		require.NoError(t, err)
+		require.Equal(t, p.UserID, profile.UserID)
+		require.False(t, profile.RequireLogin)
+	}
 	require.Equal(t, 401, json160(a, "PATCH", api+"/", `{"require_login":true}`, "", "").Code)
 	require.Equal(t, 403, json160(a, "PATCH", api+"/", `{"require_login":true}`, other, "").Code)
 	for _, protected := range []bool{false, true} {
@@ -144,6 +152,10 @@ func TestListeningVisibility161(t *testing.T) {
 			require.Empty(t, response.Header().Get("ETag"))
 		}
 	}
+	legacyRoot := taskRequest139(a, "GET", legacyImage, a.cookie, nil, conditional)
+	require.Equal(t, 200, legacyRoot.Code)
+	require.Equal(t, "private, no-store", legacyRoot.Header().Get("Cache-Control"))
+	require.Contains(t, legacyRoot.Header().Values("Vary"), "Cookie")
 	protectedImage := taskRequest139(a, "GET", scopedImage, owner, nil, conditional)
 	require.Equal(t, 200, protectedImage.Code)
 	require.Equal(t, "private, no-store", protectedImage.Header().Get("Cache-Control"))
@@ -171,7 +183,10 @@ func TestListeningVisibility161(t *testing.T) {
 	require.NotContains(t, results.Body.String(), "Source Track")
 	require.Equal(t, 404, json160(a, "GET", api+"/now-playing", "", "", key.Key).Code)
 	for _, cookie := range []string{"", other} {
-		for _, path := range []string{prefix, api + "/stats"} {
+		for _, path := range []string{
+			prefix, api + "/stats", api + "/track/12/interest", api + "/track/12/aliases",
+			api + "/top/albums", api + "/first-activity",
+		} {
 			headers := map[string]string{"If-None-Match": "*", "Sec-Purpose": "prefetch"}
 			w := taskRequest139(a, "GET", path, cookie, nil, headers)
 			missing := taskRequest139(a, "GET", strings.Replace(path, prefix, "/unknown-161", 1), cookie, nil, headers)

@@ -17,7 +17,6 @@ dependencies:
 references:
   - backlog/decisions/decision-010
   - backlog/evidencias/issue-161/VERIFICACAO.md
-  - backlog/evidencias/issue-161/REVIEWER.md
   - backlog/evidencias/issue-161/PARECER-REVIEWER.md
 documentation:
   - doc-041
