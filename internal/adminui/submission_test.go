@@ -2,14 +2,20 @@ package adminui
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/ebrgr/TuneTrail/internal/admin"
+	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 // TestOneUseSubmission protects duplicate actions while permitting separate tabs.
@@ -109,4 +115,49 @@ func TestSubmissionExpiryAndGlobalCeiling159(t *testing.T) {
 	_, err = h.newSubmission(uuid.New())
 	require.ErrorIs(t, err, db.ErrConflict)
 	require.Len(t, h.submissions, 4096)
+}
+
+// TestLogoutSubmissionRenewsExpiry verifies renewal through the real logout form and POST.
+func TestLogoutSubmissionRenewsExpiry(t *testing.T) {
+	ctx := context.Background()
+	store, err := sqlite.NewInMemory()
+	require.NoError(t, err)
+	defer store.Close(ctx)
+	_, err = store.SaveUser(ctx, db.SaveUserOpts{Username: "listener", Password: "test-password", Role: models.UserRoleUser})
+	require.NoError(t, err)
+	session, err := admin.Login(ctx, store, "listener", "test-password", false)
+	require.NoError(t, err)
+	identity, err := admin.Authenticate(ctx, store, session.ID)
+	require.NoError(t, err)
+	h, err := New(store, Options{RequireSubmissionToken: true})
+	require.NoError(t, err)
+
+	first, err := h.LogoutForm(identity)
+	require.NoError(t, err)
+	id := uuid.MustParse(first.Submission)
+	now := time.Now()
+	h.submissions[id] = submissionTicket{session.ID, now.Add(time.Minute), true}
+	expired := uuid.New()
+	h.submissions[expired] = submissionTicket{uuid.New(), now.Add(-time.Minute), false}
+
+	renewed, err := h.LogoutForm(identity)
+	require.NoError(t, err)
+	require.Equal(t, first.Submission, renewed.Submission)
+	require.False(t, h.submissions[id].Expires.Before(now.Add(30*time.Minute)))
+	require.False(t, h.submissions[id].Expires.After(time.Now().Add(30*time.Minute)))
+	require.NotContains(t, h.submissions, expired)
+
+	form := url.Values{"csrf_token": {renewed.CSRF}, "submission_token": {renewed.Submission}}
+	post := func(path string) *httptest.ResponseRecorder {
+		r := httptest.NewRequest(http.MethodPost, path, strings.NewReader(form.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		r.AddCookie(&http.Cookie{Name: adminweb.SessionCookie, Value: session.ID.String()})
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+	require.Equal(t, http.StatusConflict, post("/admin/account/username").Code)
+	require.Equal(t, http.StatusSeeOther, post("/admin/logout").Code)
+	_, err = admin.Authenticate(ctx, store, session.ID)
+	require.ErrorIs(t, err, admin.ErrUnauthorized)
 }

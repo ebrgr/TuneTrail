@@ -19,13 +19,13 @@ func (h *Handler) newSubmission(session uuid.UUID) (string, error) {
 	return h.issueSubmission(session, false)
 }
 
-// issueSubmission reuses one logout-only ticket so navigation cannot evict edit forms.
+// issueSubmission renews a logout-only ticket so each page gets a full TTL without evicting edit forms.
 func (h *Handler) issueSubmission(session uuid.UUID, logout bool) (string, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	now := time.Now()
 	count := 0
-	var oldest uuid.UUID
+	var oldest, reusableLogout uuid.UUID
 	var oldestExpiry time.Time
 	for k, v := range h.submissions {
 		if now.After(v.Expires) {
@@ -34,7 +34,8 @@ func (h *Handler) issueSubmission(session uuid.UUID, logout bool) (string, error
 		}
 		if v.Session == session && v.Logout == logout {
 			if logout {
-				return k.String(), nil
+				reusableLogout = k
+				continue
 			}
 			if count == 0 || v.Expires.Before(oldestExpiry) {
 				oldest, oldestExpiry = k, v.Expires
@@ -42,7 +43,11 @@ func (h *Handler) issueSubmission(session uuid.UUID, logout bool) (string, error
 			count++
 		}
 	}
-	// All tickets have the same TTL, so the earliest expiry identifies the oldest issue.
+	if reusableLogout != uuid.Nil {
+		h.submissions[reusableLogout] = submissionTicket{session, now.Add(30 * time.Minute), true}
+		return reusableLogout.String(), nil
+	}
+	// Edit tickets keep their original expiry, so the earliest expiry identifies the oldest issue.
 	if count >= maxSessionSubmissions {
 		delete(h.submissions, oldest)
 	}

@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Navigation follows account and profile permissions. Listeners can open their own account, manage their own listens, and sign out from the menu. Sign-in returns to an authorized page or the account’s default destination (ISSUE-163).
+- Navigation follows account and profile permissions. Listeners can open their own account, manage their own listens, and sign out from the menu. Sign-in returns to an authorized page or the account’s default destination. Opening a new page refreshes the sign-out form’s validity (ISSUE-163).
 
 - The profile protection form explains that a configured relay continues sending listens to the external service (ISSUE-163).
 
