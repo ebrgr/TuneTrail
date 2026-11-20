@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T02:14:00Z'
+updated_date: '2026-11-20T14:40:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -151,6 +151,15 @@ created: 2026-11-20T02:14:00Z
 ---
 
 Fase 2, parada após C2 para parecer do Advisor. C1 (c53408f) separa a associação de catálogo da escrita legada e mantém o lock e o comportamento dos chamadores. C2 inclui a migração 009, modo imutável por recibo, fila parcial ativa, flags por perfil com padrão 0, guardas por linha e backup v8. O teste de upgrade confirma a preservação dos dados, o índice usado em EXPLAIN e a resolução de um recibo ativo com admissão desligada. go test passou em SQLite, dedup, catálogo, importadores, engine, handlers, middleware e administração com TUNETRAIL_WEB_DIR apontando para os assets da worktree. Nenhum AC marcado nesta parada.
+
+---
+
+author: codex
+created: 2026-11-20T14:40:00Z
+
+---
+
+Fase 2: usuário registrou APROVADO para C1+C2, sem item obrigatório nesses commits. Endurecimento das guardas no fbab8a6. C3 (4660905) implementa resolução por lease e CAS sob BEGIN IMMEDIATE, colisão da tripla e decisão/revisão/outbox atômicas. C4 (8512a94) integra ListenBrainz, os importadores e exclusões. compareNearby filtra mode=shadow para preservar a série de comparação do modo sombra; a resolução ativa consulta eventos vivos. Replay entre modos conserva o dono de cada chave. recording_identity_test.go conserva o corte histórico em v8 com UpTo 8; a ISSUE-135 deve partir de v9. A outbox possui guarda de INSERT; a ISSUE-082 deve considerar guarda de UPDATE de event_id/profile_id. C5 expõe GET e PUT root em /apis/web/v1/profiles/{slug}/ingest-activation: exportar a prévia agregada, confirmar com o digest e active=true, review=false; a purga da sombra sem vínculo e a ativação são atômicas. Antes do piloto, manter a medição de produção aprovada e coordenar a janela de corte. A reativação por perfil após o modo sombra exige nova prévia. O mestre TUNETRAIL_INGEST_ACTIVE é lido no restart. go test passou nos pacotes afetados e o Graphify AST foi atualizado. Parada para Advisor high e depois Reviewer. C6, make check, medição de produção e marcação dos ACs ficam pendentes.
 
 ---
 <!-- COMMENTS:END -->
