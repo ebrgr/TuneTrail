@@ -18,6 +18,8 @@ import (
 
 const activeRuleVersion = "active-v1"
 
+var errIngestTrackMissing = errors.New("ingest track no longer exists")
+
 type claimedReceipt struct {
 	id, lease, client, source string
 	profile, track            int32
@@ -66,9 +68,17 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	if receipt.source == ingest.ShadowSourceFile {
 		receipt.track = receipt.snapshot.CatalogTrackID
 	}
-	if receipt.track == 0 {
-		receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, receipt.source, mbzc))
+	if receipt.track != 0 {
+		err = s.finishIngest(ctx, receipt)
+		if !errors.Is(err, errIngestTrackMissing) {
+			if err != nil {
+				return true, s.retryIngest(ctx, receipt, err)
+			}
+			return true, nil
+		}
 	}
+	// A native track can disappear after admission. Reassociate from the durable snapshot.
+	receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, receipt.source, mbzc))
 	if err == nil {
 		err = s.finishIngest(ctx, receipt)
 	}
@@ -122,17 +132,20 @@ func (s *Sqlite) retryIngest(ctx context.Context, r claimedReceipt, cause error)
 // finishIngest rechecks the claim and legacy identity under the same writer reservation as the decision.
 func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		var recording int64
+		var recording sql.NullInt64
 		var review bool
 		var precision, admissionReason string
 		err := tx.QueryRowContext(ctx, `SELECT o.recording_id,coalesce(f.review,0),e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),'')
-			FROM ingest_events e JOIN occurrences o ON o.id=? AND o.legacy_track_id=o.id
+			FROM ingest_events e LEFT JOIN occurrences o ON o.id=? AND o.legacy_track_id=o.id
 			LEFT JOIN profile_ingest_flags f ON f.profile_id=e.profile_id
 			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.closed_at IS NULL
 			AND e.resolution_version=? AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
 			r.track, r.id, r.profile, r.version, r.work, r.lease, time.Now().Unix()).Scan(&recording, &review, &precision, &admissionReason)
 		if err != nil {
 			return err
+		}
+		if !recording.Valid {
+			return errIngestTrackMissing
 		}
 		var existing, candidate string
 		err = tx.QueryRowContext(ctx, `SELECT event_id FROM listens WHERE profile_id=? AND track_id=? AND listened_at=?`,
@@ -156,12 +169,12 @@ func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 						AND prior.format_version=incoming.format_version AND prior.item_ordinal<>incoming.item_ordinal)
 					)
 				) ORDER BY l.listened_at,l.event_id LIMIT 1`,
-				r.profile, r.unix-2, r.unix+2, r.track, recording, r.id).Scan(&candidate)
+				r.profile, r.unix-2, r.unix+2, r.track, recording.Int64, r.id).Scan(&candidate)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 		}
-		return finalizeActiveReceipt(ctx, tx, r, recording, precision, review, existing, candidate, admissionReason)
+		return finalizeActiveReceipt(ctx, tx, r, recording.Int64, precision, review, existing, candidate, admissionReason)
 	})
 }
 

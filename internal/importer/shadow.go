@@ -83,6 +83,9 @@ func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Ti
 	}
 	item := ingest.Item{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at}
 	if shadow.active {
+		if snapshot.Artist == "" || snapshot.Title == "" {
+			return invalidFile(fmt.Errorf("listen at ordinal %d requires an artist and title", item.Ordinal))
+		}
 		encoded, _ := item.Encode()
 		if len(encoded) > 10<<10 {
 			return invalidFile(fmt.Errorf("listen at ordinal %d exceeds 10 KiB", item.Ordinal))
