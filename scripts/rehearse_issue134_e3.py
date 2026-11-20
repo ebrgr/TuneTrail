@@ -17,12 +17,17 @@ def rehearse(binary, baseline, root):
     directory = root / "load"
     init(baseline, directory)
     with database(directory) as conn:
-        conn.execute("INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('bulk',1,'fixture',0)")
+        conn.executescript("""
+            INSERT INTO users(id,username,role,password,status) VALUES(2,'bulk-shadow','user',x'','pending');
+            INSERT INTO listening_profiles(id,slug,display_name,created_at,user_id,require_login)
+                VALUES(2,'bulk-shadow','Bulk shadow',0,2,1);
+            INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('bulk',2,'fixture',0);
+        """)
         conn.execute("""WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<300000)
             INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,
                 adapter_version,batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,
                 original_snapshot,snapshot_digest,digest_version)
-            SELECT 'bulk-'||i,1,'bulk',1,'fixture','1','bulk',i,'import',0,'second','unknown','{}','fixture','1' FROM n""")
+            SELECT 'bulk-'||i,2,'bulk',1,'fixture','1','bulk',i,'import',0,'second','unknown','{}','fixture','1' FROM n""")
         conn.commit()
         conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
 
@@ -36,10 +41,6 @@ def rehearse(binary, baseline, root):
             query = sql.split("QueryContext(ctx, `SELECT o.id", 1)[1].split("`", 1)[0]
             plan = [row[3] for row in conn.execute("EXPLAIN QUERY PLAN SELECT o.id" + query,
                                                     ("Song", "Song", '["Artist"]', 1, False, ""))]
-            start = time.monotonic()
-            conn.execute("DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow'")
-            conn.commit()
-            purge = time.monotonic() - start
             conn.execute("INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)")
 
         server.login()
@@ -61,7 +62,7 @@ def rehearse(binary, baseline, root):
 
         def states():
             with database(directory) as conn:
-                return dict(conn.execute("SELECT state,count(*) FROM ingest_events GROUP BY state"))
+                return dict(conn.execute("SELECT state,count(*) FROM ingest_events WHERE profile_id=1 GROUP BY state"))
 
         wait_for(lambda: states().get("accepted") == 101)
         visible_at = time.monotonic()
@@ -97,11 +98,13 @@ def rehearse(binary, baseline, root):
         wait_for(lambda: states().get("accepted") == 102)
         submit(server, first + 60000, key="master-off", expected=503)
         assert states() == {"accepted": 102, "pending_duplicate": 20}
+        with database(directory) as conn:
+            assert conn.execute("SELECT count(*) FROM ingest_events WHERE profile_id=2 AND mode='shadow'").fetchone() == (300000,)
     finally:
         server.stop()
 
     return {"seed_shadow_receipts": 300000, "upgrade_health_seconds": round(upgrade, 3),
-            "shadow_delete_commit_seconds": round(purge, 3), "accepted_first_wave": 101,
+            "shadow_receipts_retained_during_resolution": 300000, "accepted_first_wave": 101,
             "first_wave_seconds": round(visible_at - started, 3),
             "last_upload_ack_to_all_visible_ms": round(max(0, visible_at - max(arrivals.values())) * 1000, 1),
             "overlap_pending": 20, "commit_rollback_and_restart": True, "occurrence_query_plan": plan,

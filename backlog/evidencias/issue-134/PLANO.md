@@ -199,3 +199,5 @@ Retomada após rebase em v0.45.
 - Feito — Adiciona ensaio de carga e retomada da E3. Pendente — executar ensaio, registrar evidências, make check e Backlog.
 
 - Feito — Verifica contadores, replay renomeado e playing now. Pendente — reexecutar ensaio e make check, registrar evidências e Backlog.
+
+- Feito — Mede resolução com 300 mil recibos retidos em outro perfil. Pendente — rodar cenário de escala final e registrar resultados.
