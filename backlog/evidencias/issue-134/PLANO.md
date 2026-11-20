@@ -177,3 +177,5 @@ Retomada após rebase em v0.45.
 - Feito — Preserva metadados de ocorrência no ListenBrainz HTTP. Pendente — ListenBrainz ZIP e demais fontes, precisão do ledger, digest, exclusão, ensaio e verificações.
 
 - Feito — Habilita o adaptador ListenBrainz ZIP por ocorrência. Pendente — Last.fm, Spotify, Maloja, nativo e verificações.
+
+- Feito — Habilita o adaptador Last.fm por ocorrência. Pendente — Spotify, Maloja, nativo e verificações.

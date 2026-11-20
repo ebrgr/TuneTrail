@@ -54,3 +54,12 @@ func TestOccurrenceListenBrainzZIP(t *testing.T) {
 		require.Equal(t, 3, s.TrackNumber)
 	})
 }
+
+func TestOccurrenceLastFM(t *testing.T) {
+	data := []byte(`[{"track":[{"artist":{"#text":"Solo"},"album":{"#text":"Album"},"name":"Track","date":{"uts":"1780000000"}}]}]`)
+	occurrenceFileFixture(t, "lastfm", "lastfm_import", data, func(s ingest.Snapshot) {
+		require.Equal(t, []string{"Solo"}, s.ArtistNames)
+		require.Equal(t, "1780000000", s.OriginalTime)
+		require.Empty(t, s.Recording)
+	})
+}

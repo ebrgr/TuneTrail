@@ -76,7 +76,7 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 // occurrenceFileReady enables each format only once its adapter is ready.
 func occurrenceFileReady(format string) bool {
 	switch format {
-	case "listenbrainz":
+	case "listenbrainz", "lastfm":
 		return true
 	default:
 		return false
@@ -87,6 +87,12 @@ func occurrenceFileReady(format string) bool {
 func activeFileIngest(ctx context.Context) bool {
 	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
 	return ok && job.mode.Active
+}
+
+// occurrenceFileIngest reports whether the pinned job uses the occurrence adapter.
+func occurrenceFileIngest(ctx context.Context) bool {
+	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
+	return ok && job.mode.Variant == "occurrence"
 }
 
 // captureFileListen buffers a bounded page with absolute ordinals.
@@ -160,7 +166,7 @@ func flushFileShadow(ctx context.Context) error {
 }
 
 // submitFileListen records the observed fields before catalog enrichment.
-func submitFileListen(ctx context.Context, store importStore, opts catalog.SubmitListenOpts, originalTime string) error {
+func submitFileListen(ctx context.Context, store importStore, opts catalog.SubmitListenOpts, originalTime string, enrich ...func(*ingest.Snapshot)) error {
 	snapshot := ingest.Snapshot{Artist: opts.Artist, ArtistNames: opts.ArtistNames, Title: opts.TrackTitle,
 		Release: opts.ReleaseTitle, DurationMS: int64(opts.Duration) * 1000, Client: opts.Client, OriginalTime: originalTime, SkipCacheImage: opts.SkipCacheImage}
 	// Preserve the same identifiers and named credits passed to the legacy catalog.
@@ -178,6 +184,11 @@ func submitFileListen(ctx context.Context, store importStore, opts catalog.Submi
 	}
 	if opts.RecordingMbzID != uuid.Nil {
 		snapshot.Recording = opts.RecordingMbzID.String()
+	}
+	if occurrenceFileIngest(ctx) {
+		for _, apply := range enrich {
+			apply(&snapshot)
+		}
 	}
 	if err := captureFileListen(ctx, snapshot, opts.Time); err != nil || activeFileIngest(ctx) {
 		return err

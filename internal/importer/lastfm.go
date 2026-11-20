@@ -10,6 +10,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
@@ -81,7 +82,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 				return err
 			}
 			album := track.Album.Text
-			if album == "" {
+			if album == "" && !occurrenceFileIngest(ctx) {
 				album = track.Name
 			}
 			if track.Name == "" || track.Artist.Text == "" {
@@ -138,7 +139,9 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 				ProfileID:          db.ProfileID(ctx),
 				SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 			}
-			err = submitFileListen(ctx, store, opts, track.Date.Unix)
+			err = submitFileListen(ctx, store, opts, track.Date.Unix, func(snapshot *ingest.Snapshot) {
+				snapshot.ArtistNames = []string{track.Artist.Text}
+			})
 			if err != nil {
 				l.Err(err).Msg("Failed to import LastFM playback item")
 				return fmt.Errorf("ImportLastFMFile: %w", err)
