@@ -124,7 +124,7 @@ A medição separada executou o SQL da 010 em transação com SQLite do Python. 
 - **E2.** `INSERT OR REPLACE` pode contornar a guarda de remoção de flag quando recursive_triggers está desligado. Os fluxos atuais usam INSERT/UPDATE ou upsert. Documentar o risco ao introduzir escritores novos.
 - **E3, antes do Reviewer.** Registrar em inglês no CHANGELOG o upgrade v9→v10, o backup `.pre-occurrence-ingest-*.bak` e a recusa de v10 pela v0.44, seguindo o formato da entrada da v8.
 
-**Parada após a E1.** O Advisor high deve revisar a migração e a verificação antes de liberar a E2.
+**E2 autorizada.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala exclusivamente guardas de variante, origem, conversão e relay. A E3 aguarda revisão do resolvedor.
 
 1. **E1.** Migração 010 e testes de upgrade, restore, cascatas e replay contra a tag v0.44. **Parada para Advisor high.**
 2. **E2.** Resolvedor, ACs 1–3 e 6, incluindo corrida de duas conexões. **Parada para Advisor.**

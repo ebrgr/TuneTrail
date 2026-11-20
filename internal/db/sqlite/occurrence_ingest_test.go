@@ -134,7 +134,7 @@ func TestOccurrenceRepairAssertions(t *testing.T) {
 
 // TestOccurrenceFlagRequiresActive keeps the flag attached to its active profile.
 func TestOccurrenceFlagRequiresActive(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedIdentityHistory(t, s)
 	_, err := s.db.Exec(`INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,0,1)`)
 	require.ErrorContains(t, err, "requires active ingestion")
@@ -153,7 +153,7 @@ func TestOccurrenceFlagRequiresActive(t *testing.T) {
 
 // TestOccurrenceLinkRequiresIDs rejects incomplete links on insertion and first acceptance.
 func TestOccurrenceLinkRequiresIDs(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedOccurrenceLinks(t, s)
 	const insert = `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,
 		batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
@@ -186,7 +186,7 @@ func TestOccurrenceGuardCascades(t *testing.T) {
 		{"profile", "DELETE FROM listening_profiles WHERE id=1; DELETE FROM users WHERE id=1"},
 	} {
 		t.Run(deletion.name, func(t *testing.T) {
-			s, _, _ := migrationDB(t, currentSchemaVersion)
+			s, _, _ := migrationDB(t, 10)
 			seedOccurrenceLinks(t, s)
 			execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
 			for _, query := range []string{
@@ -210,7 +210,7 @@ func TestOccurrenceGuardCascades(t *testing.T) {
 
 // TestOccurrenceMergeSync keeps the surviving link aligned and deletes the colliding one.
 func TestOccurrenceMergeSync(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedOccurrenceLinks(t, s)
 	require.NoError(t, s.MergeTracks(context.Background(), 70, 1))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='linked-42'`))
@@ -223,7 +223,7 @@ func TestOccurrenceMergeSync(t *testing.T) {
 
 // TestOccurrenceMergeRequiresRevision catches an insert skipped under UPDATE OR IGNORE.
 func TestOccurrenceMergeRequiresRevision(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedOccurrenceLinks(t, s)
 	// A NULL decision is legal on the ledger but violates the revision's NOT NULL.
 	execSQL(t, s, `UPDATE ingest_events SET duplicate_decision=NULL,resolution_version=2 WHERE receipt_id='linked-43'`)
@@ -236,7 +236,7 @@ func TestOccurrenceMergeRequiresRevision(t *testing.T) {
 
 // TestOccurrenceGuards exercises registered origins, immutable fields and protected parents.
 func TestOccurrenceGuards(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedOccurrenceLinks(t, s)
 	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,origin) VALUES(1,70,44,'listenbrainz_api');
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,
@@ -272,7 +272,7 @@ func TestOccurrenceGuards(t *testing.T) {
 
 // TestOccurrenceStandaloneGuard requires a title and prevents changing the bridge.
 func TestOccurrenceStandaloneGuard(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedIdentityHistory(t, s)
 	for _, query := range []string{
 		`INSERT INTO occurrences(recording_id) SELECT recording_id FROM occurrences WHERE id=1`,
@@ -296,7 +296,7 @@ func TestOccurrenceStandaloneGuard(t *testing.T) {
 
 // TestOccurrenceBridgeMBID covers legacy fills and no-op updates at the SQL boundary.
 func TestOccurrenceBridgeMBID(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 10)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `INSERT INTO tracks(id,release_id) VALUES(71,1),(72,1);
 		UPDATE occurrences SET recording_id=(SELECT recording_id FROM occurrences WHERE id=1) WHERE id=70;

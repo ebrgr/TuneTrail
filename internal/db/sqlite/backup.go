@@ -71,6 +71,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 9 {
 		pattern = ".pre-occurrence-ingest-*.bak"
 	}
+	// Preserve the pre-cut schema when installing writer guards.
+	if version == 10 {
+		pattern = ".pre-occurrence-writer-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err
