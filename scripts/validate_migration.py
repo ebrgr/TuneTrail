@@ -15,7 +15,7 @@ from pathlib import Path
 
 from roadmap06_fixture import FIXTURE_PASSWORD_HASH
 from validate_admin_webui import validate as validate_admin
-from validate_multiuser import Server, WEB, LBZ, create_legacy, snapshot, validate_journey
+from validate_multiuser import LATEST_SCHEMA_VERSION, Server, WEB, LBZ, create_legacy, snapshot, validate_journey
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -68,7 +68,7 @@ def migrate(binary, root, name, stack, wal=False):
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (2,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
     with contextlib.closing(sqlite3.connect(directory / 'tunetrail.db')) as conn:
-        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (8,)
+        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (LATEST_SCHEMA_VERSION,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
         assert not conn.execute('PRAGMA foreign_key_check').fetchall()
     assert server.request('GET', WEB + '/profiles/default/stats?period=all_time')['listen_count'] == (2 if wal else 1)

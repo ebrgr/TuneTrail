@@ -12,7 +12,7 @@ import sqlite3
 import time
 import urllib.parse
 import uuid
-from validate_multiuser import Server, WEB, LBZ, ROOT
+from validate_multiuser import LATEST_SCHEMA_VERSION, Server, WEB, LBZ, ROOT
 
 
 def upload_image(server, path, data):
@@ -109,7 +109,7 @@ def validate(server, key):
     with sqlite3.connect(server.directory / 'tunetrail.db') as conn:
         assert conn.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
         assert not conn.execute('PRAGMA foreign_key_check').fetchall()
-        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0] == 8
+        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0] == LATEST_SCHEMA_VERSION
     return {'profiles': 3, 'mara_listens': stats['listen_count'], 'history_page_2': 52, 'schema': 4, 'interest_totals': interest_totals, 'http_pages': pages, 'checks': ['scoping', 'API/HTML parity', 'invalid filters', 'interest intervals and bounds', 'Go management links and media', 'admin authentication', 'same-origin mutations', 'SQLite integrity']}
 
 

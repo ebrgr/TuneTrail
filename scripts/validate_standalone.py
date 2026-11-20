@@ -11,7 +11,7 @@ import tempfile
 import time
 import urllib.error
 
-from validate_multiuser import clean_environment
+from validate_multiuser import LATEST_SCHEMA_VERSION, clean_environment
 import urllib.request
 from pathlib import Path
 
@@ -83,7 +83,7 @@ def run(binary, root, mode, legacy_env=False):
             with sqlite3.connect(directory / "tunetrail.db") as conn:
                 assert conn.execute("PRAGMA integrity_check").fetchall() == [("ok",)]
                 assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
-                assert conn.execute("SELECT max(version_id) FROM goose_db_version WHERE is_applied=1").fetchone() == (8,)
+                assert conn.execute("SELECT max(version_id) FROM goose_db_version WHERE is_applied=1").fetchone() == (LATEST_SCHEMA_VERSION,)
             log.flush()
             warned = "is deprecated; rename it to TUNETRAIL_CONFIG_DIR" in (directory / "server.log").read_text(errors="ignore")
             # Deprecated names must warn; current names must not.

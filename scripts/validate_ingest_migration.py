@@ -14,7 +14,7 @@ import sqlite3
 import tempfile
 
 from roadmap06_fixture import FIXTURE_PASSWORD_HASH
-from validate_multiuser import Server, WEB, ROOT, create_legacy
+from validate_multiuser import LATEST_SCHEMA_VERSION, Server, WEB, ROOT, create_legacy
 
 
 def connect(path):
@@ -79,7 +79,7 @@ def validate(binary, source, root, name):
         try:
             server.start()
             target = work / 'tunetrail.db'
-            check(target, 8)
+            check(target, LATEST_SCHEMA_VERSION)
             after = digests(target)
             assert all(after[table] == digest for table, digest in before.items()), 'existing rows changed'
             assert profile_counts(target) == counts
@@ -96,7 +96,7 @@ def validate(binary, source, root, name):
             server.stop()
             stable = digests(target)
             server.start()
-            check(target, 8)
+            check(target, LATEST_SCHEMA_VERSION)
             server.stop()
             assert digests(target) == stable, 'restart changed rows'
             # Restore to an empty isolated directory, then migrate the restored v3 again.
@@ -109,11 +109,11 @@ def validate(binary, source, root, name):
             restored_server = Server(binary, restored)
             try:
                 restored_server.start()
-                check(restored / 'tunetrail.db', 8)
+                check(restored / 'tunetrail.db', LATEST_SCHEMA_VERSION)
                 assert profile_counts(restored / 'tunetrail.db') == counts
             finally:
                 restored_server.stop()
-            reports.append({'case': name, 'entry': filename, 'from': 3, 'to': 8,
+            reports.append({'case': name, 'entry': filename, 'from': 3, 'to': LATEST_SCHEMA_VERSION,
                             'counts_before': counts, 'counts_after': profile_counts(target),
                             'all_existing_table_digests_equal': True, 'backup_restore': 'ok',
                             'integrity': 'ok', 'restart': 'ok', 'public_stats': 'ok'})
