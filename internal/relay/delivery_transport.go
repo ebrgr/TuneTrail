@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -26,10 +27,18 @@ var reservedPrefixes = [...]netip.Prefix{
 	netip.MustParsePrefix("169.254.0.0/16"),
 	netip.MustParsePrefix("172.16.0.0/12"),
 	netip.MustParsePrefix("192.0.0.0/24"),
+	netip.MustParsePrefix("192.0.2.0/24"),
 	netip.MustParsePrefix("192.168.0.0/16"),
 	netip.MustParsePrefix("198.18.0.0/15"),
+	netip.MustParsePrefix("198.51.100.0/24"),
+	netip.MustParsePrefix("203.0.113.0/24"),
+	netip.MustParsePrefix("240.0.0.0/4"),
+	netip.MustParsePrefix("2001::/32"),
+	netip.MustParsePrefix("::/96"),
+	netip.MustParsePrefix("2001:db8::/32"),
 	netip.MustParsePrefix("fc00::/7"),
 	netip.MustParsePrefix("fe80::/10"),
+	netip.MustParsePrefix("fec0::/10"),
 }
 
 // Block translated addresses outright. Public relays reached only through DNS64
@@ -62,8 +71,15 @@ func dialAllowed(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) boo
 			return false
 		}
 	}
-	if allow != nil && allow.Allows(hostPort, ip) {
-		return true
+	if allow != nil {
+		// The transport supplies an explicit port even for default scheme ports.
+		host, port, err := net.SplitHostPort(hostPort)
+		if err == nil && port != "" {
+			canonical := net.JoinHostPort(strings.ToLower(strings.TrimSuffix(host, ".")), port)
+			if allow.Allows(canonical, ip) {
+				return true
+			}
+		}
 	}
 	if plainHTTP || !ip.IsGlobalUnicast() {
 		return false

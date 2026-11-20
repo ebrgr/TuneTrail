@@ -183,6 +183,30 @@ func TestDialPolicy(t *testing.T) {
 	require.True(t, dialAllowed("[::1]:80", "[::1]:80", allowAll, true))
 }
 
+// TestDialReservedExceptions checks that operator policy can allow reserved routes.
+func TestDialReservedExceptions(t *testing.T) {
+	allowAll := allowFunc(func(string, netip.Addr) bool { return true })
+	for _, raw := range []string{
+		"2001::1", "::192.0.2.1", "240.0.0.1", "192.0.2.1", "198.51.100.1",
+		"203.0.113.1", "2001:db8::1", "fec0::1",
+	} {
+		sockaddr := net.JoinHostPort(raw, "443")
+		require.False(t, dialAllowed("relay.test:443", sockaddr, nil, false), raw)
+		require.True(t, dialAllowed("relay.test:443", sockaddr, allowAll, false), raw)
+	}
+}
+
+// TestDialAllowlistHostPort checks the canonical key passed to operator policy.
+func TestDialAllowlistHostPort(t *testing.T) {
+	for given, want := range map[string]string{
+		"RELAY.Example.:80": "relay.example:80",
+		"[FD00::A]:443":     "[fd00::a]:443",
+	} {
+		allow := allowFunc(func(hostPort string, _ netip.Addr) bool { return hostPort == want })
+		require.True(t, dialAllowed(given, "127.0.0.1:80", allow, true))
+	}
+}
+
 // TestDeliverRechecksDNS controls the DNS answer between two real HTTP attempts.
 func TestDeliverRechecksDNS(t *testing.T) {
 	var requests atomic.Int32
