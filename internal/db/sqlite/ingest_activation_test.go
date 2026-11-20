@@ -142,8 +142,10 @@ func TestIngestAdmissionModeReplay(t *testing.T) {
 			activeMode, replay, err := s.AdmitIngest(ctx, batch, true, nil, nil)
 			require.NoError(t, err)
 			require.True(t, activeMode)
-			require.True(t, replay[0].Replay)
-			require.Equal(t, shadow[0].ReceiptID, replay[0].ReceiptID)
+			require.False(t, replay[0].Replay)
+			require.NotEqual(t, shadow[0].ReceiptID, replay[0].ReceiptID)
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, shadow[0].ReceiptID))
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND mode='active' AND state='received'`, replay[0].ReceiptID))
 
 			pinned, err := s.BeginImportIngest(ctx, 1, true)
 			require.NoError(t, err)
@@ -283,4 +285,77 @@ func TestExpiredIngestLeaseCanBeReclaimed(t *testing.T) {
 	require.ErrorIs(t, s.finishIngest(ctx, first), sql.ErrNoRows)
 	require.NoError(t, worker.finishIngest(ctx, second))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=100`))
+}
+
+// TestIngestReclaimsShadowBatch verifies atomic replacement, preservation, and resolution.
+func TestIngestReclaimsShadowBatch(t *testing.T) {
+	ctx := context.Background()
+	s, _, _ := migrationDB(t, 9)
+	seedIdentityHistory(t, s)
+	at := time.Unix(900, 0)
+	snapshot := ingest.Snapshot{Artist: "Artist", Title: "Intro", CatalogTrackID: 1}
+	batch := ingest.Batch{ProfileID: 1, Source: ingest.ShadowSourceFile, Operation: "import", ReceivedAt: at,
+		FileFormat: "koito", FileDigest: ingest.Digest([]byte("fixture")), Items: []ingest.Item{
+			{Ordinal: 0, Snapshot: snapshot}, // The shadow estimated time must survive a later retry.
+			{Ordinal: 1, Snapshot: snapshot, ListenedAt: time.Unix(42, 0)},
+			{Ordinal: 2, Snapshot: snapshot, ListenedAt: time.Unix(42, 0)},
+		}}
+	shadow, err := s.ReceiveBatch(ctx, batch)
+	require.NoError(t, err)
+	other := batch
+	other.ProfileID = 2
+	otherShadow, err := s.ReceiveBatch(ctx, other)
+	require.NoError(t, err)
+
+	// Seed the linked compatibility case; normal v9 shadow writers cannot create it.
+	execSQL(t, s, `DROP TRIGGER trg_ingest_event_mode_update;
+		UPDATE ingest_events SET state='accepted',duplicate_decision='different',event_id=(SELECT event_id FROM listens WHERE rowid=10)
+		WHERE receipt_id=?`, shadow[2].ReceiptID)
+	execSQL(t, s, `INSERT INTO ingest_observations
+		(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)
+		VALUES('retired-variant',1,?,1,'variant','1','{}',0);
+		INSERT INTO ingest_event_details(profile_id,receipt_id,resolution_version,kind,payload)
+		VALUES(1,?,0,'diagnostic','{}')`, shadow[0].ReceiptID, shadow[0].ReceiptID)
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`)
+	batch.Items = append(batch.Items, ingest.Item{Ordinal: 3, Snapshot: snapshot, ListenedAt: time.Unix(950, 0)})
+	batch.ReceivedAt = at.Add(time.Hour)
+
+	execSQL(t, s, `CREATE TABLE reclaim_commit_fk(id INTEGER REFERENCES listening_profiles(id) DEFERRABLE INITIALLY DEFERRED);
+		CREATE TRIGGER reclaim_commit_failure AFTER INSERT ON ingest_events WHEN NEW.mode='active' AND NEW.item_ordinal=3
+		BEGIN INSERT INTO reclaim_commit_fk VALUES(-1); END`)
+	_, results, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+	var unavailable *ingest.ErrUnavailable
+	require.ErrorAs(t, err, &unavailable)
+	require.Empty(t, results)
+	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND file_format='koito' AND mode='shadow'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE id='retired-variant'`))
+	execSQL(t, s, `DROP TRIGGER reclaim_commit_failure`)
+
+	active, results, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+	require.NoError(t, err)
+	require.True(t, active)
+	require.Len(t, results, 4)
+	for _, i := range []int{0, 1, 3} {
+		require.False(t, results[i].Replay)
+		require.True(t, results[i].Pending)
+	}
+	require.Equal(t, ingest.Result{ReceiptID: shadow[2].ReceiptID, Decision: "different", Replay: true}, results[2])
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id IN (?,?)`, shadow[0].ReceiptID, shadow[1].ReceiptID))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE id='retired-variant'`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_event_details WHERE receipt_id=?`, shadow[0].ReceiptID))
+	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND mode='shadow'
+		AND receipt_id IN (?,?,?)`, otherShadow[0].ReceiptID, otherShadow[1].ReceiptID, otherShadow[2].ReceiptID))
+
+	for range 3 {
+		found, err := s.ResolveNextIngest(ctx, nil)
+		require.NoError(t, err)
+		require.True(t, found)
+	}
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id IN (?,?) AND state='accepted'`, results[0].ReceiptID, results[3].ReceiptID))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND state='duplicate'
+		AND event_id=(SELECT event_id FROM listens WHERE rowid=10)`, results[1].ReceiptID))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND mode='shadow' AND state='accepted'
+		AND event_id=(SELECT event_id FROM listens WHERE rowid=10) AND resolution_version=0`, results[2].ReceiptID))
+	require.Equal(t, 5, scalar(t, s, `SELECT count(*) FROM listens`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND track_id=1 AND listened_at=900`))
 }

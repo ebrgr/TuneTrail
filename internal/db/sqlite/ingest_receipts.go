@@ -320,7 +320,7 @@ func replayIngest(r *dedup.Receipt) ingest.Result {
 		Pending: r.State != "accepted" && r.State != "duplicate" && r.State != "invalid"}
 }
 
-// receiveActiveItem replays keys held by either mode and records active variants separately.
+// receiveActiveItem replaces unlinked shadow receipts and replays linked or active owners.
 func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool) (ingest.Result, error) {
 	previous, err := findKey(ctx, tx, b, i.Item, source, true)
 	if errors.Is(err, errReceiptKeyConflict) {
@@ -329,13 +329,29 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 	if err != nil {
 		return ingest.Result{}, err
 	}
+	var shadowEstimate time.Time
+	if previous != nil && previous.Mode == "shadow" {
+		// Release the shared key under the admission writer lock. Foreign keys
+		// remove shadow observations and details as part of the same transaction.
+		result, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND receipt_id=?
+			AND mode='shadow' AND event_id IS NULL`, b.ProfileID, previous.ID)
+		if err != nil {
+			return ingest.Result{}, err
+		}
+		deleted, err := result.RowsAffected()
+		if err != nil {
+			return ingest.Result{}, err
+		}
+		if deleted == 0 {
+			return replayIngest(previous), nil
+		}
+		if previous.Precision == "estimated" {
+			shadowEstimate = previous.Time
+		}
+		previous = nil
+	}
 	if previous != nil {
 		result := replayIngest(previous)
-		if previous.Mode == "shadow" {
-			// Shadow has no event link. Reuse the key explicitly and never promote its owner.
-			result.Pending = previous.State == "pending_duplicate"
-			return result, nil
-		}
 		digest, comparableBatchDigest := i.digest, batchDigest
 		if previous.DigestVersion == ingest.LegacyDigestVersion {
 			digest, comparableBatchDigest = i.legacyDigest, legacyBatchDigest
@@ -352,6 +368,10 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 	at, precision := i.ListenedAt, "second"
 	if at.IsZero() {
 		at, precision = b.ReceivedAt, "estimated"
+		// Reuse the original estimate for a keyed retry without a timestamp.
+		if !shadowEstimate.IsZero() {
+			at = shadowEstimate
+		}
 	}
 	state, reasons := "received", "[]"
 	if batchConflict {
