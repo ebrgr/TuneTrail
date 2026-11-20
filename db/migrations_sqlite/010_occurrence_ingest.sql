@@ -134,7 +134,7 @@ END;
 -- A foreign-key SET NULL can precede the deletion of the associated listen.
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_link_insert BEFORE INSERT ON ingest_events
-WHEN NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
+WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
     SELECT 1 FROM listens l JOIN occurrences o ON o.id=l.track_id
     WHERE (l.profile_id,l.event_id)=(NEW.profile_id,NEW.event_id)
       AND (NEW.occurrence_id IS NULL OR NEW.occurrence_id=l.track_id)
@@ -146,7 +146,7 @@ END;
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_link_update BEFORE UPDATE OF state,identity_status,profile_id,event_id,occurrence_id,recording_id ON ingest_events
-WHEN NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
+WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
     SELECT 1 FROM listens l LEFT JOIN occurrences o ON o.id=l.track_id
     WHERE (l.profile_id,l.event_id)=(NEW.profile_id,NEW.event_id)
       AND (NEW.occurrence_id IS NULL OR NEW.occurrence_id=l.track_id)
@@ -159,12 +159,12 @@ END;
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_resolution_version BEFORE UPDATE OF resolution_version,state,identity_status,duplicate_decision,event_id,occurrence_id,recording_id ON ingest_events
-WHEN NEW.resolution_version<OLD.resolution_version OR (
+WHEN NEW.mode='active' AND (NEW.resolution_version<OLD.resolution_version OR (
     NEW.resolution_version=OLD.resolution_version AND (OLD.state IN ('accepted','duplicate') OR NEW.state IN ('accepted','duplicate'))
     AND (NEW.state IS NOT OLD.state OR NEW.identity_status IS NOT OLD.identity_status
          OR NEW.duplicate_decision IS NOT OLD.duplicate_decision OR NEW.event_id IS NOT OLD.event_id
          OR (NEW.occurrence_id IS NOT NULL AND NEW.occurrence_id IS NOT OLD.occurrence_id)
-         OR (NEW.recording_id IS NOT NULL AND NEW.recording_id IS NOT OLD.recording_id)))
+         OR (NEW.recording_id IS NOT NULL AND NEW.recording_id IS NOT OLD.recording_id))))
 BEGIN
     SELECT RAISE(ABORT,'Ingest decision requires a newer resolution version');
 END;
