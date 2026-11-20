@@ -157,7 +157,7 @@ Com o mestre desligado, o início de importação consulta a flag sem reservar o
 6. Escrever CHANGELOG em inglês para o upgrade v9→v11. Incluir `.pre-occurrence-ingest-*.bak`, `.pre-occurrence-writer-*.bak` e recusa do banco v11 pela v0.44.
 7. Encerrar a E3 no Reviewer. Iniciar a E4 depois da revisão.
 
-**Parada após a E2.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala guardas de variante, origem, conversão, relay e release vinculado. A emenda da E2 encerra esta fase. A E3 aguarda liberação.
+**Parada após a E2.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala guardas de variante, origem, conversão, relay e release vinculado. A emenda da E2 encerrou a revisão do resolvedor. A E3 foi implementada após o rebase sobre v0.45.
 
 1. **E1.** Migração 010 e testes de upgrade, restore, cascatas e replay contra a tag v0.44. **Parada para Advisor high.**
 2. **E2.** Resolvedor, ACs 1–3 e 6, incluindo corrida de duas conexões. **Parada para Advisor.**
@@ -207,3 +207,15 @@ Retomada após rebase em v0.45.
 - Feito — Separa os parâmetros do recibo e da revisão na fixture de cascata. Pendente — repetir testes dos pacotes e make check.
 
 - Feito — Registra ensaio E3 com retenção, rollback e EXPLAIN. Pendente — verificar suíte final, ACs e Backlog.
+
+
+### Verificação dos critérios
+
+- **ACs 1–3 e 6.** Os testes de A/B, Intro em posições distintas, ambiguidade, prova conflitante e sobreposição confirmaram identidades e pendências. O ensaio de sobreposição resultou em 20 pendências e zero escutas adicionais.
+- **AC 4.** Os testes e o ensaio verificaram concorrência pela mesma chave, reenvio com observação, replay após renomeação, recibo v9 pré-upgrade e repetições em segundos ou posições distintos.
+- **AC 5.** As fixtures verificaram reimportação total e parcial de lote e arquivo, a exclusão de duplicados vinculados, isolamento por perfil e descarte com lease em voo. O descarte explícito está disponível no armazenamento para a futura revisão por perfil.
+- **AC 7.** Há fixtures para as seis origens e testes de precisão e offset. O ensaio confirmou retomada após reinício com o mestre desligado e sem staging. Playing now continuou efêmero.
+
+Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A sintaxe do ensaio Python foi verificada, o graphify AST foi atualizado e o replay desligado coincidiu com a v0.44. Os números e limites do ensaio estão em [ENSAIO-E3.md](ENSAIO-E3.md).
+
+- Feito — Fecha a verificação da E3 e registra a parada para Reviewer. Pendente — Reviewer antes da E4.

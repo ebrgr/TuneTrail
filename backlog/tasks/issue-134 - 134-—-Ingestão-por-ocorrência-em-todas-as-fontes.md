@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T20:50:00Z'
+updated_date: '2026-11-20T21:11:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/decisions/decision-009
   - backlog/evidencias/issue-134/PLANO.md
+  - backlog/evidencias/issue-134/ENSAIO-E3.md
 documentation:
   - doc-036
   - doc-039
@@ -31,13 +32,13 @@ Recorte 4 do estudo da ISSUE-116 (doc-036). Ingestão grava a ocorrência ouvida
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Mesmo MBID em A/B gera uma gravação e duas ocorrências
-- [ ] #2 Duas faixas 'Intro' com IDs ou posições diferentes continuam separadas
-- [ ] #3 Sem desambiguador, o evento é preservado para revisão
-- [ ] #4 Reimportação idempotente e repetição legítima testadas conforme a ISSUE-081
-- [ ] #5 Reimportação após a exclusão cria evento novo; arquivo ou lote parcialmente excluído reaproveita os recibos vivos e recria só os excluídos
-- [ ] #6 Ambiguidade não prova igualdade: candidatos indistinguíveis vão para Revisar com evidência e regra versionadas, sem apagar nem contar uma segunda escuta
-- [ ] #7 Fontes e importadores usam o envelope comum, com precisão temporal e retomada independente do staging
+- [x] #1 Mesmo MBID em A/B gera uma gravação e duas ocorrências
+- [x] #2 Duas faixas 'Intro' com IDs ou posições diferentes continuam separadas
+- [x] #3 Sem desambiguador, o evento é preservado para revisão
+- [x] #4 Reimportação idempotente e repetição legítima testadas conforme a ISSUE-081
+- [x] #5 Reimportação após a exclusão cria evento novo; arquivo ou lote parcialmente excluído reaproveita os recibos vivos e recria só os excluídos
+- [x] #6 Ambiguidade não prova igualdade: candidatos indistinguíveis vão para Revisar com evidência e regra versionadas, sem apagar nem contar uma segunda escuta
+- [x] #7 Fontes e importadores usam o envelope comum, com precisão temporal e retomada independente do staging
 <!-- AC:END -->
 
 ## Comments
@@ -121,6 +122,15 @@ created: 2026-11-20T20:50:00Z
 ---
 
 Emenda da E2 após parecer REPROVADO COM RESSALVAS. A 011 e occurrence-v1 incorporam dedup de créditos, Duplicate com origem original, corte com sombra limpa (D9), redirecionamentos e fallback textual auditável (D7), descarte de afirmação externa conflitante (D8), evidência tipada, HTTP 409 e guarda de release vinculado. Admissão desligada usa leitura sob contenção e duração mantém o MBID legado. Testes dos pacotes afetados e make check 13/13 passaram. Replay v0.44 e restore repetidos com paridade. Pendências registradas no plano: posições legadas e fusão provisória na 135, fragmentação em MB indisponível e compilação na E4, consulta por alias e EXPLAIN de ocorrências no ensaio, cache/timeout antes dos 300 mil e ordinais do mesmo lote LB na E3/135. O texto de conflito do listen-add segue como pendência de apresentação. E3 segue aguardando liberação, com sequência E3 → Reviewer → E4.
+
+---
+
+author: codex
+created: 2026-11-20T21:11:00Z
+
+---
+
+E3 concluída sobre v0.45, com commits por fatia e estado de retomada no PLANO. As seis origens foram verificadas, com modo e variante fixados no job, metadados e precisão preservados, replay de chave antiga com observação, exclusão e reimportação total/parcial, leases revogados e retomada sem staging. ACs 1–7 verificados por testes ou ensaio. O perfil separado conservou 300 mil recibos de sombra durante a resolução. Onda inicial de 101 escutas, 20 pendências na sobreposição, rollback seguido de recuperação após reinício e paridade v0.44 com controles desligados. Testes dos pacotes afetados, make check 13/13, sintaxe do ensaio e graphify AST concluídos. Aguarda Reviewer antes da E4. Status Em andamento.
 
 ---
 <!-- COMMENTS:END -->
