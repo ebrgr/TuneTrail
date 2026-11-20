@@ -83,11 +83,21 @@ END;
 DROP TRIGGER trg_identity_legacy_occurrence;
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_occurrence_insert BEFORE INSERT ON occurrences
-WHEN (NEW.legacy_track_id IS NULL AND NEW.release_id IS NOT NULL)
+WHEN (NEW.legacy_track_id IS NULL AND
+      (NEW.release_id IS NOT NULL OR coalesce(length(trim(NEW.presented_title)),0)=0))
   OR (NEW.legacy_track_id IS NOT NULL AND NOT EXISTS (
       SELECT 1 FROM tracks WHERE id=NEW.legacy_track_id AND release_id=NEW.release_id))
 BEGIN
-    SELECT RAISE(ABORT,'Occurrence with a release requires a matching track');
+    SELECT RAISE(ABORT,'Occurrence requires a matching track or a title without a release');
+END;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TRIGGER trg_identity_occurrence_bridge_update BEFORE UPDATE OF legacy_track_id,release_id ON occurrences
+WHEN NEW.legacy_track_id IS NOT OLD.legacy_track_id
+  OR (NEW.legacy_track_id IS NULL AND NEW.release_id IS NOT NULL)
+BEGIN
+    SELECT RAISE(ABORT,'Cannot change occurrence bridge or assign a release without a track');
 END;
 -- +goose StatementEnd
 

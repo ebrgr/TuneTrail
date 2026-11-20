@@ -147,6 +147,7 @@ func TestRecordingIdentityExactDeletion(t *testing.T) {
 		DROP TRIGGER trg_ingest_revision_inactive;
 		DROP TRIGGER trg_outbox_inactive;
 		INSERT INTO occurrences(recording_id,release_id) SELECT recording_id,release_id FROM occurrences WHERE id=1;
+		-- Schema v8 has no presented_title column; preserve the historical standalone fixture.
 		INSERT INTO occurrences(recording_id) SELECT recording_id FROM occurrences WHERE id=1;
 		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,42,'survives')`)
 	for _, query := range []string{
@@ -285,7 +286,7 @@ func TestRecordingIdentityAllocator(t *testing.T) {
 	_, err := provider.Up(ctx)
 	require.NoError(t, err)
 	execSQL(t, s, `DELETE FROM tracks WHERE id=70;
-		INSERT INTO occurrences(recording_id) SELECT recording_id FROM occurrences WHERE id=1`)
+		INSERT INTO occurrences(recording_id,presented_title) SELECT recording_id,'Independent track' FROM occurrences WHERE id=1`)
 	independent := scalar(t, s, `SELECT id FROM occurrences WHERE legacy_track_id IS NULL`)
 	require.Greater(t, independent, 70)
 	_, err = s.db.Exec(`INSERT INTO tracks(id,release_id) VALUES(?,1)`, independent)

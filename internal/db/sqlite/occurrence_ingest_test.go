@@ -209,6 +209,30 @@ func TestOccurrenceGuards(t *testing.T) {
 	require.NoError(t, checkDatabase(s.db))
 }
 
+// TestOccurrenceStandaloneGuard requires a title and prevents changing the bridge.
+func TestOccurrenceStandaloneGuard(t *testing.T) {
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	seedIdentityHistory(t, s)
+	for _, query := range []string{
+		`INSERT INTO occurrences(recording_id) SELECT recording_id FROM occurrences WHERE id=1`,
+		`INSERT INTO occurrences(recording_id,presented_title) SELECT recording_id,'   ' FROM occurrences WHERE id=1`,
+	} {
+		_, err := s.db.Exec(query)
+		require.ErrorContains(t, err, "title without a release")
+	}
+	execSQL(t, s, `INSERT INTO occurrences(id,recording_id,presented_title) SELECT 90,recording_id,'Observed' FROM occurrences WHERE id=1;
+		INSERT INTO releases(id) VALUES(2);
+		UPDATE tracks SET release_id=2 WHERE id=1`)
+	require.Equal(t, 2, scalar(t, s, `SELECT release_id FROM occurrences WHERE id=1`))
+	for _, query := range []string{
+		`UPDATE occurrences SET legacy_track_id=NULL WHERE id=1`,
+		`UPDATE occurrences SET release_id=1 WHERE id=90`,
+	} {
+		_, err := s.db.Exec(query)
+		require.ErrorContains(t, err, "Cannot change occurrence bridge")
+	}
+}
+
 // TestOccurrenceBridgeMBID covers legacy fills and no-op updates at the SQL boundary.
 func TestOccurrenceBridgeMBID(t *testing.T) {
 	s, _, _ := migrationDB(t, currentSchemaVersion)
