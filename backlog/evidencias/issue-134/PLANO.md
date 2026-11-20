@@ -189,3 +189,5 @@ Retomada após rebase em v0.45.
 - Feito — Remove recibos e chaves na exclusão para permitir reimportação. Pendente — precisão, replay de digest, cache, ensaio e verificações.
 
 - Feito — Persiste instante, precisão, offset e semântica observados. Pendente — replay ampliado, cache, ensaio e verificações.
+
+- Feito — Verifica observação no replay de snapshot v9 ampliado. Pendente — cache, ensaio e verificação final.

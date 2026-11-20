@@ -540,3 +540,33 @@ func TestOccurrenceDiscardPending(t *testing.T) {
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE listened_at=1900`))
 	require.NotEqual(t, id, admitOccurrenceFixture(t, s, snapshot, 1900, "discard"))
 }
+
+// TestExpandedV9SnapshotReplay upgrades a pre-v10 key and records the enriched payload as an observation.
+func TestExpandedV9SnapshotReplay(t *testing.T) {
+	ctx := context.Background()
+	s, provider, _ := migrationDB(t, 9)
+	seedIdentityHistory(t, s)
+	batch := ingest.Batch{ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ClientKey: "stable", ReceivedAt: time.Now(),
+		Items: []ingest.Item{{ListenedAt: time.Unix(1780000000, 0), Snapshot: ingest.Snapshot{Title: "Song", Artist: "Artist", Release: "Album"}}}}
+	snapshot, digest := batch.Items[0].Encode()
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('listenbrainz:1',1,'listenbrainz',0);
+		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1);
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,
+			client_idempotency_key,batch_digest)
+		VALUES('old',1,'listenbrainz:1',1,'listenbrainz','1','seed',0,'single',0,'second','unknown',?,?,?,'active','stable','old')`,
+		string(snapshot), digest, ingest.DigestVersion)
+	_, err := provider.Up(ctx)
+	require.NoError(t, err)
+	batch.Items[0].Snapshot.TrackNumber = 2
+	for range 2 {
+		active, results, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+		require.NoError(t, err)
+		require.True(t, active)
+		require.Len(t, results, 1)
+		require.True(t, results[0].Replay)
+		require.Equal(t, "old", results[0].ReceiptID)
+	}
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE mode='active' AND resolver_variant='v9'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='old' AND json_extract(original_snapshot,'$.track_number')=2`))
+}
