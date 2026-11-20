@@ -338,3 +338,20 @@ func ParseArtists(artist string, title string, addlSeparators []*regexp.Regexp) 
 
 	return out
 }
+
+// ResolveListenTrack holds the shared association lock while mapping a receipt to a track.
+func ResolveListenTrack(ctx context.Context, store listenCatalogStore, opts SubmitListenOpts) (int32, error) {
+	if opts.Artist == "" || opts.TrackTitle == "" {
+		return 0, errors.New("track name and artist are required")
+	}
+	unlock, err := LockAssociations(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer unlock()
+	association, err := resolveListenAssociation(db.WithoutProfile(ctx), store, opts)
+	if err != nil {
+		return 0, err
+	}
+	return association.track.ID, nil
+}

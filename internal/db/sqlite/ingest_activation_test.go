@@ -1,8 +1,12 @@
 package sqlite
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -84,4 +88,32 @@ func TestIngestActivationUpgrade(t *testing.T) {
 		SELECT 'o',1,'source',event_id,'listen','key',1,'discarded',1,'{"reason":"pre_082_best_effort"}' FROM listens WHERE rowid=10`)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM (`+queue+`)`))
 	require.NoError(t, checkIntegrity(conn))
+}
+
+// TestResolveIngestLegacyCollision covers both review and the legacy fallback.
+func TestResolveIngestLegacyCollision(t *testing.T) {
+	for _, review := range []bool{false, true} {
+		t.Run(fmt.Sprint(review), func(t *testing.T) {
+			s, _, _ := migrationDB(t, 9)
+			seedIdentityHistory(t, s)
+			execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,review) VALUES(1,?)`, review)
+			execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+				item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,lease_owner,lease_until)
+				VALUES('active',1,'source',1,'test','1','batch',0,'submit',0,'second','start','{}','digest','1','active','worker',?)`, time.Now().Add(time.Minute).Unix())
+			receipt := claimedReceipt{id: "active", lease: "worker", profile: 1, track: 1, unix: 42}
+			require.NoError(t, s.finishIngest(context.Background(), receipt))
+			require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens`))
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id='active'`))
+			var state, reason string
+			require.NoError(t, s.db.QueryRow(`SELECT state,json_extract(reason_codes,'$[0]') FROM ingest_events WHERE receipt_id='active'`).Scan(&state, &reason))
+			if review {
+				require.Equal(t, "pending_duplicate", state)
+				require.Equal(t, "legacy_identity_collision", reason)
+			} else {
+				require.Equal(t, "duplicate", state)
+				require.Equal(t, "review_deferred", reason)
+			}
+			require.ErrorIs(t, s.finishIngest(context.Background(), receipt), sql.ErrNoRows)
+		})
+	}
 }
