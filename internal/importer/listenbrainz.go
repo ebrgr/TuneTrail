@@ -232,11 +232,12 @@ func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.Mus
 			SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 		}
 		var observedAt time.Time
-		if payload.ListenedAt != 0 {
+		if payload.ListenedAt != 0 || payload.OriginalListenedAt != "" {
 			observedAt = time.Unix(int64(payload.ListenedAt), 0)
 		}
 		// Active files write only through durable receipt admission.
 		snapshot := ingest.ListenBrainzSnapshot(payload.TrackMeta)
+		snapshot.OriginalTime = payload.OriginalListenedAt
 		snapshot.SkipCacheImage = opts.SkipCacheImage
 		err = captureFileListen(ctx, snapshot, observedAt)
 		if err == nil && !activeFileIngest(ctx) {
