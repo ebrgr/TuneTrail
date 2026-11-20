@@ -91,7 +91,9 @@ func (h *Pages) searchFragment(ctx context.Context, slug, q string) (SearchFragm
 
 // serveSearchFragment renders only the results list, after the profile was resolved.
 func (h *Pages) serveSearchFragment(w http.ResponseWriter, r *http.Request, p LivePage) {
-	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.Header().Add("Vary", "Cookie")
+	w.Header().Add("Vary", "X-TuneTrail-Partial")
 	if !adminweb.FragmentRequested(r) {
 		q := r.URL.Query()
 		q.Del("partial")
@@ -118,13 +120,10 @@ func (h *Pages) serveSearchFragment(w http.ResponseWriter, r *http.Request, p Li
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// Protected fragments must be fetched again after any session or visibility change.
-	w.Header().Set("Cache-Control", "private, no-cache")
-	if p.Profile.RequireLogin {
-		w.Header().Set("Cache-Control", "private, no-store")
+	// Cache only the anonymous view of public search results.
+	if !p.Profile.RequireLogin && p.identity.User == nil {
+		w.Header().Set("Cache-Control", "private, no-cache")
 	}
-	w.Header().Add("Vary", "Cookie")
-	w.Header().Add("Vary", "X-TuneTrail-Partial")
 	w.Header().Set("X-Robots-Tag", "noindex")
 	_, _ = b.WriteTo(w)
 }

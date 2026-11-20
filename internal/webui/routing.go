@@ -45,8 +45,10 @@ func (h *Pages) RedirectLegacy(w http.ResponseWriter, r *http.Request) bool {
 	if destination == "" {
 		return false
 	}
+	w.Header().Set("Cache-Control", "private, no-store")
 	profiles, e := h.store.ListListeningProfiles(r.Context())
 	if e != nil {
+		w.Header().Add("Vary", "Cookie")
 		http.Error(w, "Unable to resolve profile", 500)
 		return true
 	}
@@ -54,12 +56,12 @@ func (h *Pages) RedirectLegacy(w http.ResponseWriter, r *http.Request) bool {
 	if len(profiles) == 1 {
 		// The transitional entry point follows the same policy as the scoped document.
 		if !adminweb.CanReadListening(r, h.options.Sessions, &profiles[0]) {
-			w.Header().Set("Cache-Control", "private, no-store")
-			http.NotFound(w, r)
+			h.NotFound(w, r)
 			return true
 		}
 		target = "/" + url.PathEscape(profiles[0].Slug) + destination
 	}
+	w.Header().Add("Vary", "Cookie")
 	http.Redirect(w, r, target, http.StatusFound)
 	return true
 }

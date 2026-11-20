@@ -6,6 +6,8 @@
 
 - The profile protection form explains that a configured relay continues sending listens to the external service (ISSUE-163).
 
+- Legacy listening links use the same unavailable page as missing profiles. The directory announces which profiles are protected to screen readers (ISSUE-163).
+
 ## [0.44] - 2026-11-20
 
 - Active ingestion of ListenBrainz submissions and imports requires the master switch plus per-profile activation, with a preview and a shadow purge confirmed by the root administrator. The Review option stays blocked until the review queue exists (ISSUE-081).

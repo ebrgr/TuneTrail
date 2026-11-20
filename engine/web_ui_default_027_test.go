@@ -39,8 +39,8 @@ func TestDocumentCachePrivacy(t *testing.T) {
 		{"/", "private, no-cache", 200},
 		{"/default", "private, no-cache", 200},
 		{"/default/search?q=example", "private, no-cache", 200},
-		{"/missing", "no-store", 404},
-		{"/default/unknown", "no-store", 404},
+		{"/missing", "private, no-store", 404},
+		{"/default/unknown", "private, no-store", 404},
 		{"/admin", "no-store", 200},
 		{"/admin/settings", "no-store", 200},
 	} {
