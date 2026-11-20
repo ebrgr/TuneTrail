@@ -244,3 +244,9 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - Feito — Registra limites da revisão E3 no plano. Pendente — concluir make check e registrar a parada no Backlog.
 
 - Feito — Registra verificação das correções do Reviewer. Pendente — releitura do Reviewer antes da E4.
+
+## ESTADO DA E4
+
+Rebase sobre v0.46. Ensaio somente em bancos descartáveis.
+
+- Feito — Verifica o rebase da E4 com make check e 13 jornadas. Pendente — carga no mesmo perfil, falhas, sobreposição, paridade e relatório.
