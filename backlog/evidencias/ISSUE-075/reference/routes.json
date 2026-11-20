@@ -40,6 +40,11 @@
     "Status": 200
   },
   {
+    "Name": "admin/sign-out",
+    "Route": "/admin/sign-out",
+    "Status": 200
+  },
+  {
     "Name": "admin/track",
     "Route": "/alpha/manage/track/1",
     "Status": 200

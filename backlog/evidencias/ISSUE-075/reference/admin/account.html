@@ -3,6 +3,8 @@
   <html lang="en" data-theme="yuu">
     <head>
       
+      
+      
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
       <title>Account — TuneTrail</title>
@@ -97,11 +99,9 @@
   </a>
 
           
-  <form method="post" action="/admin/logout">
-    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-    <button class="nav-button" type="submit">Sign out…</button>
-  </form>
+  <a class="nav-button" href="/admin/sign-out" >
+    <span class="nav-action-label">Sign out…</span>
+  </a>
 
         </section>
       
@@ -370,15 +370,13 @@
           
           
             
-  <form method="post" action="/admin/logout">
-    <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-    <button class="nav-button" type="submit">Sign out…</button>
-  </form>
-
-            
               <section>
                 <h2>Account</h2>
+                
+  <a class="nav-button" href="/admin/sign-out" >
+    <span class="nav-action-label">Sign out…</span>
+  </a>
+
                 <form method="post" action="/admin/account/username">
                   <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
                   
