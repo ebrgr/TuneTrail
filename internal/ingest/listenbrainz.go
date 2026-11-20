@@ -3,6 +3,8 @@ package ingest
 import (
 	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
 	"github.com/google/uuid"
+	"strconv"
+	"strings"
 )
 
 // ListenBrainzSnapshot excludes arbitrary extensions, raw headers and URLs.
@@ -11,6 +13,12 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 	s := Snapshot{Artist: meta.ArtistName, Title: meta.TrackName, Release: meta.ReleaseName,
 		ArtistNames: info.ArtistNames, DurationMS: int64(info.DurationMs), Client: info.SubmissionClient,
 		ClientVersion: info.SubmissionClientVersion}
+	s.DiscNumber = listenBrainzPosition(info.DiscNumber)
+	s.TrackNumber = listenBrainzPosition(info.TrackNumber)
+	if id, err := uuid.Parse(info.TrackMBID); err == nil && id != uuid.Nil {
+		s.TrackMBID = id.String()
+	}
+	s.MBIDSource, s.MBIDDeclaredAt = info.MBIDSource, info.MBIDDeclaredAt
 	s.ArtistMBIDs = validMBIDs(info.ArtistMBIDs)
 	s.MappedArtistMBIDs = validMBIDs(meta.MBIDMapping.ArtistMBIDs)
 	for _, credit := range meta.MBIDMapping.Artists {
@@ -51,4 +59,13 @@ func validMBIDs(values []string) []string {
 		}
 	}
 	return ids
+}
+
+// listenBrainzPosition accepts integer positions sent either as JSON strings or numbers.
+func listenBrainzPosition(raw []byte) int {
+	value, err := strconv.Atoi(strings.Trim(string(raw), `"`))
+	if err != nil || value < 1 {
+		return 0
+	}
+	return value
 }

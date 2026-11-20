@@ -173,3 +173,5 @@ Evidência consultada: [plano 081](../issue-081/PLANO.md), [ensaio C6](../issue-
 Retomada após rebase em v0.45.
 
 - Feito — Fixa modo e variante em cada job de importação. Pendente — adaptadores por fonte, digest, exclusão, MusicBrainz, ensaio e verificação.
+
+- Feito — Preserva metadados de ocorrência no ListenBrainz HTTP. Pendente — ListenBrainz ZIP e demais fontes, precisão do ledger, digest, exclusão, ensaio e verificações.
