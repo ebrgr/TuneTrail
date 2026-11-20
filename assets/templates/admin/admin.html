@@ -17,7 +17,15 @@
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>{{if .Login}}{{tr "ui.sign_in" "Sign in"}}{{else if .Error}}{{tr "ui.request_status" "Request status"}}{{else if eq .Section "account"}}{{tr "nav.my_account" "My account"}}{{else if .AccountsRoot}}{{tr "admin.text.administration" "Administration"}}{{else if .User}}{{tr "nav.my_profile" "My profile"}}{{else}}{{tr "admin.account.redeem" "Redeem account token"}}{{end}}</h1>
+          <h1>
+            {{- if .Login}}{{tr "ui.sign_in" "Sign in"}}
+            {{- else if .Error}}{{tr "ui.request_status" "Request status"}}
+            {{- else if eq .Section "account"}}{{tr "nav.my_account" "My account"}}
+            {{- else if .AccountsRoot}}{{tr "admin.text.administration" "Administration"}}
+            {{- else if .User}}{{tr "nav.my_profile" "My profile"}}
+            {{- else}}{{tr "admin.account.redeem" "Redeem account token"}}
+            {{- end -}}
+          </h1>
           {{if .Error}}
             <p role="alert">{{.Error}}</p>
           {{end}}
@@ -132,7 +140,14 @@
                       <input type="checkbox" name="require_login" value="1" aria-describedby="protected-relay-help" {{if .RequireLogin}}checked{{end}}>
                       {{tr "profiles.require_login" "Require login to view listens"}}
                     </label>
-                    <small id="protected-relay-help">{{if $.AccountsRoot}}{{tr "profiles.relay_help_root" "Only this profile’s owner and administrators can view protected listens. A configured relay continues sending listens to the external service."}}{{else}}{{tr "profiles.relay_help_owner" "Only you and administrators can view protected listens. A configured relay continues sending listens to the external service."}}{{end}}</small>
+                    <small id="protected-relay-help">
+                      {{- if $.AccountsRoot}}{{tr "profiles.relay_help_root"
+                        (print "Only this profile’s owner and administrators can view protected listens. "
+                          "A configured relay continues sending listens to the external service.")}}
+                      {{- else}}{{tr "profiles.relay_help_owner"
+                        "Only you and administrators can view protected listens. A configured relay continues sending listens to the external service."}}
+                      {{- end -}}
+                    </small>
                     <button>{{tr "admin.text.save_profile" "Save profile"}}</button>
                   </form>
                   <h3>{{tr "admin.text.avatar" "Avatar"}}</h3>

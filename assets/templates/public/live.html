@@ -120,7 +120,8 @@
           {{template "partial/avatar" .}}
           <div class="profile-identity">
             <strong>{{.Name}}</strong>
-            <span>/{{.Slug}}{{if .RequireLogin}} <span aria-hidden="true">🔒</span><span class="sr-only">{{tr "profiles.protected" "Protected"}}</span>{{end}}</span>
+            <span>/{{.Slug}}{{if .RequireLogin}} <span aria-hidden="true">🔒</span>
+              {{- /**/}}<span class="sr-only">{{tr "profiles.protected" "Protected"}}</span>{{end}}</span>
           </div>
         </a>
       {{else}}
