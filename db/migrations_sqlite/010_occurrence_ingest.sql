@@ -183,11 +183,12 @@ END;
 -- Check the event link on receipt insertion.
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_link_insert BEFORE INSERT ON ingest_events
-WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
+WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved'
+    OR NEW.occurrence_id IS NULL OR NEW.recording_id IS NULL OR NOT EXISTS (
     SELECT 1 FROM listens l JOIN occurrences o ON o.id=l.track_id
     WHERE (l.profile_id,l.event_id)=(NEW.profile_id,NEW.event_id)
-      AND (NEW.occurrence_id IS NULL OR NEW.occurrence_id=l.track_id)
-      AND (NEW.recording_id IS NULL OR NEW.recording_id=o.recording_id)))
+      AND NEW.occurrence_id=l.track_id
+      AND NEW.recording_id=o.recording_id))
 BEGIN
     SELECT RAISE(ABORT,'Inconsistent resolved ingest link');
 END;
@@ -196,7 +197,9 @@ END;
 -- A foreign-key SET NULL can precede deletion of the associated listen.
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_link_update BEFORE UPDATE OF state,identity_status,profile_id,event_id,occurrence_id,recording_id ON ingest_events
-WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
+WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved'
+    OR (OLD.state NOT IN ('accepted','duplicate') AND (NEW.occurrence_id IS NULL OR NEW.recording_id IS NULL))
+    OR NOT EXISTS (
     SELECT 1 FROM listens l LEFT JOIN occurrences o ON o.id=l.track_id
     WHERE (l.profile_id,l.event_id)=(NEW.profile_id,NEW.event_id)
       AND (NEW.occurrence_id IS NULL OR NEW.occurrence_id=l.track_id)

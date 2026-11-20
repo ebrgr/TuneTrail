@@ -151,6 +151,33 @@ func TestOccurrenceFlagRequiresActive(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM profile_ingest_flags WHERE profile_id=1 AND active=1 AND occurrence_write=1`))
 }
 
+// TestOccurrenceLinkRequiresIDs rejects incomplete links on insertion and first acceptance.
+func TestOccurrenceLinkRequiresIDs(t *testing.T) {
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	seedOccurrenceLinks(t, s)
+	const insert = `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,
+		batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
+		mode,state,identity_status,event_id,occurrence_id,recording_id,duplicate_decision,resolution_version)
+		SELECT ?,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,
+			operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
+			mode,?,'resolved',CASE WHEN ?='received' THEN NULL ELSE event_id END,?,?,duplicate_decision,1
+		FROM ingest_events WHERE receipt_id='linked-43'`
+	execSQL(t, s, insert, "candidate", "received", "received", nil, nil)
+	var recording int
+	require.NoError(t, s.db.QueryRow(`SELECT recording_id FROM occurrences WHERE id=70`).Scan(&recording))
+	for _, state := range []string{"accepted", "duplicate"} {
+		for _, ids := range [][2]any{{nil, recording}, {70, nil}} {
+			_, err := s.db.Exec(insert, "incomplete", state, state, ids[0], ids[1])
+			require.ErrorContains(t, err, "Inconsistent resolved ingest link")
+			_, err = s.db.Exec(`UPDATE ingest_events SET state=?,resolution_version=2,
+				event_id=(SELECT event_id FROM ingest_events WHERE receipt_id='linked-43'),occurrence_id=?,recording_id=?
+				WHERE receipt_id='candidate'`, state, ids[0], ids[1])
+			require.ErrorContains(t, err, "Inconsistent resolved ingest link")
+		}
+	}
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='candidate' AND state='received'`))
+}
+
 // TestOccurrenceGuardCascades covers the real foreign-key order for every legacy deletion root.
 func TestOccurrenceGuardCascades(t *testing.T) {
 	for _, deletion := range []struct{ name, sql string }{

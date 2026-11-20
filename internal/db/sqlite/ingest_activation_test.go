@@ -89,7 +89,9 @@ func TestIngestActivationUpgrade(t *testing.T) {
 
 	// Resolution and outbox writes succeed with admission still disabled.
 	execSQL(t, s, `UPDATE ingest_events SET state='accepted',identity_status='resolved',resolution_version=1,
-		event_id=(SELECT event_id FROM listens WHERE rowid=10),closed_at=1 WHERE receipt_id='admitted';
+		event_id=(SELECT event_id FROM listens WHERE rowid=10),occurrence_id=(SELECT track_id FROM listens WHERE rowid=10),
+		recording_id=(SELECT o.recording_id FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.rowid=10),
+		closed_at=1 WHERE receipt_id='admitted';
 		INSERT INTO ingest_revisions VALUES(1,'admitted',1,'fixture','different','["fixture"]','{}','1',1);
 		INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at,state,closed_at,result)
 		SELECT 'o',1,'source',event_id,'listen','key',1,'discarded',1,'{"reason":"pre_082_best_effort"}' FROM listens WHERE rowid=10`)
