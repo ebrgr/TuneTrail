@@ -7,6 +7,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/importer"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"io"
 	"net/http"
@@ -191,7 +192,13 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		}
 		if e != nil {
 			status := http.StatusInternalServerError
-			if errors.Is(e, importer.ErrInvalidFile) || errors.Is(e, db.ErrInvalidInput) {
+			// Active receipt storage failures can be retried after the writer recovers.
+			var unavailable *ingest.ErrUnavailable
+			switch {
+			case errors.As(e, &unavailable):
+				w.Header().Set("Retry-After", "1")
+				status = http.StatusServiceUnavailable
+			case errors.Is(e, importer.ErrInvalidFile), errors.Is(e, db.ErrInvalidInput):
 				status = http.StatusBadRequest
 			}
 			h.render(w, status, view{Error: adminText(i18n.ViewOf(w), "admin.import.failed", "Import failed; some records may already be saved.") + " " + adminFormat(i18n.ViewOf(w), summaryKey, importSummary, values), Profile: current})

@@ -72,4 +72,19 @@ func TestAdminUIImportExport(t *testing.T) {
 	out = httptest.NewRecorder()
 	h.ServeHTTP(out, req)
 	require.Equal(t, 401, out.Code, fmt.Sprint(out.Body))
+
+	// A deferred FK makes active admission fail specifically at commit.
+	require.NoError(t, a.store.Exec(`DELETE FROM ingest_events WHERE profile_id=2 AND mode='shadow';
+		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(2,1);
+		CREATE TABLE panel_test_fk(id INTEGER REFERENCES listening_profiles(id) DEFERRABLE INITIALLY DEFERRED);
+		CREATE TRIGGER panel_test_commit AFTER INSERT ON ingest_events
+		BEGIN INSERT INTO panel_test_fk VALUES(-1); END`))
+	m = regexp.MustCompile(`name="csrf_token" value="([^"]+)"`).FindStringSubmatch(page.Body.String())
+	require.Len(t, m, 2)
+	out = upload(m[1])
+	require.Equal(t, http.StatusServiceUnavailable, out.Code, out.Body.String())
+	require.Equal(t, "1", out.Header().Get("Retry-After"))
+	n, err := a.store.Count(`SELECT count(*) FROM ingest_events WHERE profile_id=2 AND mode='active'`)
+	require.NoError(t, err)
+	require.Zero(t, n)
 }
