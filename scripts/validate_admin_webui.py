@@ -139,8 +139,11 @@ def validate(server):
     assert server.request('GET',WEB+'/profiles/luna/stats')['listen_count']==5
     tracks=server.request('GET',WEB+'/profiles/mara/top/tracks?period=all_time')['items'];track=tracks[0]['item'];tid=track['id']
     manage=f'/mara/manage/track/{tid}'
-    # Task pages own their forms; the old address remains a link index.
-    index,_=f.request('GET',manage);assert b'name="csrf_token"' not in index
+    # The index links to tasks. Its only protected form belongs to the shared logout menu.
+    index, _ = f.request('GET', manage)
+    protected_forms = [form for form in re.findall(rb'<form\b.*?</form>', index, re.S)
+                       if b'name="csrf_token"' in form]
+    assert len(protected_forms) == 1 and b'action="/admin/logout"' in protected_forms[0]
     assert (manage+'/edit').encode() in index and (manage+'/image').encode() in index
     mt=f.token(manage+'/edit');mc={'csrf_token':mt,'profile_id':str(p['id']),'profile_slug':'mara'}
     f.request('HEAD',manage)
