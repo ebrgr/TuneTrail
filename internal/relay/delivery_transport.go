@@ -32,6 +32,8 @@ var reservedPrefixes = [...]netip.Prefix{
 	netip.MustParsePrefix("fe80::/10"),
 }
 
+// Block translated addresses outright. Public relays reached only through DNS64
+// are unavailable until the embedded IPv4 can be checked safely.
 var forbiddenPrefixes = [...]netip.Prefix{
 	netip.MustParsePrefix("169.254.169.254/32"),
 	netip.MustParsePrefix("169.254.170.2/32"),
@@ -41,6 +43,7 @@ var forbiddenPrefixes = [...]netip.Prefix{
 	netip.MustParsePrefix("192.0.0.192/32"),
 	netip.MustParsePrefix("fd00:ec2::254/128"),
 	netip.MustParsePrefix("64:ff9b::/96"),
+	netip.MustParsePrefix("64:ff9b:1::/48"),
 	netip.MustParsePrefix("2002::/16"),
 }
 
@@ -92,6 +95,7 @@ func newDeliveryTransport(allow Allowlist, resolver *net.Resolver, plainHTTP boo
 					return nil
 				},
 			}
+			// DialContext can report the first policy error when a later public address is unreachable.
 			return dialer.DialContext(ctx, network, hostPort)
 		},
 	}

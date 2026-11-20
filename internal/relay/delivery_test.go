@@ -159,7 +159,7 @@ func TestDialPolicy(t *testing.T) {
 	for _, raw := range []string{
 		"169.254.169.254", "::ffff:169.254.169.254", "fd00:ec2::254",
 		"169.254.170.2", "169.254.170.23", "fd00:ec2::23", "100.100.100.200", "192.0.0.192",
-		"64:ff9b::a9fe:a9fe", "2002:a9fe:a9fe::",
+		"64:ff9b::a9fe:a9fe", "64:ff9b:1::a00:1", "2002:a9fe:a9fe::",
 	} {
 		require.False(t, dialAllowed("relay.test:443", net.JoinHostPort(raw, "443"), allowAll, true), raw)
 	}
