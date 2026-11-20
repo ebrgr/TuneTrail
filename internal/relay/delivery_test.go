@@ -119,6 +119,22 @@ func TestDeliverTransportFailures(t *testing.T) {
 	require.NotContains(t, fmt.Sprintf("%+v", result), "private-body")
 }
 
+// TestDeliverInvalidAuthorization checks corrupt tokens fail before transport.
+func TestDeliverInvalidAuthorization(t *testing.T) {
+	delivery := NewDeliverer(nil, nil)
+	delivery.https.Transport = transportFunc(func(*http.Request) (*http.Response, error) {
+		t.Fatal("invalid authorization reached transport")
+		return nil, nil
+	})
+	for _, control := range []string{"\x00", "\x1f", "\x7f", "\r", "\n"} {
+		token := "secret" + control + "token"
+		result := delivery.Deliver(t.Context(), "https://relay.test/submit-listens", token, nil)
+		require.Equal(t, Result{Class: PolicyBlocked}, result)
+		require.NotContains(t, fmt.Sprintf("%+v", result), "secret")
+	}
+	require.True(t, validAuthorization("Token a\tb"))
+}
+
 // TestServerWait checks date parsing, hint precedence and saturation.
 func TestServerWait(t *testing.T) {
 	now := time.Date(2026, 11, 20, 12, 0, 0, 0, time.UTC)

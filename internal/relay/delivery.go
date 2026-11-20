@@ -76,7 +76,11 @@ func (d *Deliverer) Deliver(ctx context.Context, endpoint, token string, body []
 	if err != nil {
 		return Result{Class: PolicyBlocked}
 	}
-	req.Header.Set("Authorization", "Token "+token)
+	authorization := "Token " + token
+	if !validAuthorization(authorization) {
+		return Result{Class: PolicyBlocked}
+	}
+	req.Header.Set("Authorization", authorization)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -98,6 +102,17 @@ func (d *Deliverer) Deliver(ctx context.Context, endpoint, token string, body []
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, MaxResponse))
 	_ = resp.Body.Close() // A close error does not change the HTTP outcome.
 	return result
+}
+
+// validAuthorization rejects control bytes that net/http cannot send in a header value.
+func validAuthorization(value string) bool {
+	for i := range len(value) {
+		b := value[i]
+		if (b < 0x20 && b != '\t') || b == 0x7f {
+			return false
+		}
+	}
+	return true
 }
 
 // statusClass maps the HTTP status to a scheduling outcome.
