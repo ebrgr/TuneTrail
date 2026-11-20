@@ -133,11 +133,11 @@ func TestRecordingIdentityBridge(t *testing.T) {
 	require.ErrorContains(t, checkDatabase(s.db), "unexpected index unexpected_legacy_index")
 }
 
-// TestRecordingIdentityExactDeletion simulates the future schema cut in an isolated fixture.
+// TestRecordingIdentityExactDeletion simulates the identity cut from an isolated v8 fixture.
 func TestRecordingIdentityExactDeletion(t *testing.T) {
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)
-	_, err := provider.Up(context.Background())
+	_, err := provider.UpTo(context.Background(), 8)
 	require.NoError(t, err)
 	execSQL(t, s, `DROP INDEX idx_listens_legacy_identity;
 		DROP TRIGGER trg_identity_legacy_occurrence;
@@ -298,11 +298,11 @@ func TestRecordingIdentityAllocator(t *testing.T) {
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id IN (70,?)`, independent))
 }
 
-// TestRecordingIdentityReceiptGate keeps shadow decisions valid while rejecting resolution.
+// TestRecordingIdentityReceiptGate verifies the v8 guards before the activation migration.
 func TestRecordingIdentityReceiptGate(t *testing.T) {
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)
-	_, err := provider.Up(context.Background())
+	_, err := provider.UpTo(context.Background(), 8)
 	require.NoError(t, err)
 	execSQL(t, s, `UPDATE ingest_events SET duplicate_decision='same',state='pending_duplicate'`)
 	for _, q := range []string{

@@ -196,9 +196,9 @@ func TestBootstrapV3WALRestore(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// TestBootstrapIncompleteV4 catches removed tables, constraints, queue indexes and guards.
-func TestBootstrapIncompleteV4(t *testing.T) {
-	for _, damage := range []string{`DROP TABLE outbox_details`, `DROP INDEX idx_ingest_external_key`, `DROP TRIGGER trg_outbox_inactive`, `ALTER TABLE integrations ADD COLUMN unexpected TEXT`} {
+// TestBootstrapIncompleteIngestSchema catches removed tables, constraints, queue indexes and guards.
+func TestBootstrapIncompleteIngestSchema(t *testing.T) {
+	for _, damage := range []string{`DROP TABLE outbox_details`, `DROP INDEX idx_ingest_external_key`, `DROP TRIGGER trg_outbox_active_insert`, `ALTER TABLE integrations ADD COLUMN unexpected TEXT`} {
 		t.Run(damage, func(t *testing.T) {
 			dir := t.TempDir()
 			path, err := bootstrap(dir, true)
@@ -257,14 +257,14 @@ func TestIngestConcurrentTrustedReceipt(t *testing.T) {
 }
 
 // TestOutboxDetailRetention exercises the future queue shape without enabling a
-// production writer: only this isolated fixture removes the v4 activation guard.
+// production writer: only this isolated fixture removes the outbox receipt guard.
 func TestOutboxDetailRetention(t *testing.T) {
 	s := ingestFixture(t)
 	now := time.Unix(2000000000, 0)
 	cutoff := now.Unix() - 90*86400
 	seedMusic(t, s)
 	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1,'e1'),(1,1,2,'e2')`)
-	execSQL(t, s, `DROP TRIGGER trg_outbox_inactive`)
+	execSQL(t, s, `DROP TRIGGER trg_outbox_active_insert`)
 	execSQL(t, s, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at,state,closed_at) VALUES
  ('sent',1,'source','e1','listen','k1',0,'sent',1),('open',1,'source','e2','listen','k2',0,'failed',NULL)`)
 	execSQL(t, s, `INSERT INTO outbox_details(id,profile_id,outbox_id,payload,closed_at,protected) VALUES

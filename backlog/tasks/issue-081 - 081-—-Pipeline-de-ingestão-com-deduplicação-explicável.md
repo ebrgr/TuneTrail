@@ -1,16 +1,19 @@
 ---
 id: ISSUE-081
 title: '081 — Pipeline de ingestão com deduplicação explicável: ativação (parte 2)'
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-19T19:06:00Z'
+updated_date: '2026-11-20T02:14:00Z'
 labels:
   - ingestao
 milestone: m-11
 dependencies:
   - ISSUE-171
   - ISSUE-133
+references:
+  - backlog/evidencias/issue-081/PLANO.md
 documentation:
   - doc-039
   - doc-043
@@ -29,11 +32,11 @@ Escopo: internal/ingest (normalizar, gravar recibo, resolver, deduplicar, enfile
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 ListenBrainz e importações passam pelo pipeline ativo sem mudar o formato nem a compatibilidade com os clientes; a escrita direta em listens deixa de existir e o 500 em conflito vira resposta definida
-- [ ] #2 Cada decisão grava o motivo (reason_code, evidência e rule_version) em ingest_events e a intenção na outbox na mesma transação
-- [ ] #3 Testes de concorrência e de repetições legítimas, e comparação com o resultado do modo sombra da ISSUE-171 sem contagem duplicada na transição
-- [ ] #4 Modo Revisar atrás de flag por perfil desligada por padrão; ativação documentada junto da ISSUE-083
-- [ ] #5 Parecer do Advisor (effort high) sobre o diff da ativação registrado; plano já registrado no doc-043
+- [ ] #1 No modo ativo, ListenBrainz e importações passam pelo pipeline sem mudar o formato nem a compatibilidade com os clientes; com o interruptor desligado o comportamento é exatamente o da v0.43; a remoção do escritor legado e do interruptor fica para a ISSUE-172, depois do piloto
+- [ ] #2 Cada decisão grava o motivo (reason_code, evidência e rule_version) em ingest_events, com a coluna mode (shadow ou active), e a intenção na outbox na mesma transação; colisão com a tripla legada tratada sob BEGIN IMMEDIATE sem ON CONFLICT silencioso nem erro 500
+- [ ] #3 Testes de concorrência e de repetições legítimas, e comparação com o resultado do modo sombra da ISSUE-171 sem contagem duplicada na transição; troca da flag com importação em andamento; recuperação após crash entre recibo e resolução; exclusão restrita aos recibos de sombra; EXPLAIN da fila nova
+- [ ] #4 Modo Revisar por perfil desligado por padrão, com fallback legado explicável (evidência review_deferred) sem pendência invisível; ativação documentada junto da ISSUE-083
+- [ ] #5 Parecer do Advisor (effort high) sobre o diff da ativação registrado; o parecer do plano está no comentário da tarefa e em [PLANO ISSUE-081B] no ai-memory
 <!-- AC:END -->
 
 ## Comments
@@ -99,6 +102,55 @@ created: 2026-11-19T19:06:00Z
 ---
 
 Entrada obrigatória adicional da ISSUE-133: após a purga aprovada dos recibos de sombra sem evento e no corte coordenado com a 135, a migração de ativação remove trg_ingest_event_inactive (INSERT), trg_ingest_event_inactive_update, trg_ingest_revision_inactive e trg_outbox_inactive.
+
+---
+
+author: ebrgr
+created: 2026-11-19T19:21:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-081` na branch `feat/issue-081-pipeline-de-ingestao-com-deduplicacao` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-19T19:26:00Z
+
+---
+
+Fase 1 registrada em backlog/evidencias/issue-081/PLANO.md. Proposta: código dormente na v8, interruptor mestre desligado e opt-in por perfil, sombra em produção antes do corte, purga com prévia e migração coordenada com a ISSUE-135. O plano detalha AC1 por modo, Revisar, compatibilidade, reenvio, transações, relay e ensaio exclusivamente sintético. Nenhum AC marcado. Pausa obrigatória até parecer do Advisor effort high sobre o plano e aprovação explícita do usuário para Fase 2.
+
+---
+
+author: advisor
+created: 2026-11-19T19:31:00Z
+
+---
+
+Parecer do Advisor (Opus, effort high, Modo A+B, leitura estática na v0.43 4f9232e) sobre o PLANO.md da Fase 1: REPROVADO COM RESSALVAS. A direção está certa: interruptor desligado, adesão por perfil, sem dual write, sem vínculo heurístico e 200 só após o commit. Corrigir o plano antes da Fase 2.
+Falhas críticas: (1) "dormente na v8" (PLANO §5 l.73) não é ativável: os triggers 008:279-297, 221 e 254 abortam accepted/duplicate, event_id, revisões e outbox. Sem a 009, o modo ativo só roda em fixture e a 081 não fecha antes da 135. (2) O índice único completo da tripla (008:79) continua até a 135, mas o plano não diz o que o escritor ativo faz numa colisão de tripla. Ele precisa conferir a tripla sob BEGIN IMMEDIATE e mandar o caso para Revisar ou para o fallback, sem ON CONFLICT silencioso nem 500. (3) deleteListenReceipts (ingest_delete.go:37-63) apaga qualquer recibo no segundo por alias, inclusive recibos ativos pendentes ou vinculados. Restringir o critério à sombra; os vinculados saem pela cascata do event_id. (4) A fila não identifica a sombra positivamente: idx_ingest_queue (008:153) também cobre os pending_duplicate da sombra. (5) A outbox exige destination_id em integrations (008:244), e o relay mora no perfil (profile_store.go:111). (6) "Congelar" o trabalho em voo ao desligar (§2 l.49) deixaria escutas confirmadas com 200 sem contar.
+Correções: a 009 ganha ingest_events.mode TEXT NOT NULL DEFAULT 'shadow' CHECK(mode IN('shadow','active')), porque todas as linhas atuais são sombra. Criar um índice parcial da fila WHERE mode='active' AND closed_at IS NULL. Substituir os 4 triggers por guardas por linha (mode='active'), sem ler a flag mutável. Remover a "trilha de compatibilidade" (§2 l.48): no modo desligado, o comportamento fica idêntico à v0.43. O modo vale por lote da API e por job de importação inteiro, lido na transação de admissão. A flag controla só a admissão, e o resolvedor sempre drena os recibos ativos. A purga com prévia vira uma operação root por perfil no momento da ativação, fora do goose, com digest do conjunto conferido sob lock e exportação agregada da medição antes de purgar. Recibo de sombra com escuta equivalente: purgar, sem "Igual" retroativo. Relay até a 082: corpo bruto, como hoje, após o ACK. Gravar a intenção fechada (discarded com motivo pre_082_best_effort), para a 082 não drenar e não haver duplo envio. Mapear BUSY para 503 com Retry-After (ingest_receipts.go:33-35 não mapeia). Limites alinhados ao ListenBrainz: 10 KiB por escuta, 1000 escutas.
+Decisões do usuário (recomendação): (a) config mestre (restart) E flag por perfil no banco E schema>=9; reescrever o AC1 ("no modo ativo...") e abrir uma issue para remover o escritor legado. (b) Publicar a 009 com a 081b, mantendo a tripla e a ponte da 133, o que desacopla da 135; a alternativa é manter a 081 aberta até a 135. (c) Revisar desligado = fallback legado explicável: tripla existente vira duplicate do evento, senão o evento é criado, com evidência review_deferred, sem pendência invisível. (d) Origin 'legacy' até a 134. (e) Sem chave, reenvio segue a regra da tripla.
+Sequência: C1 costura sem mudança de comportamento → C2 migração 009 [parada: Advisor] → C3 resolvedor transacional → C4 ListenBrainz/importadores/exclusões → C5 operação root de purga e ativação [parada: Advisor high sobre o diff, depois Reviewer] → C6 ensaio sintético e CHANGELOG. Detalhes em ai-memory [PLANO ISSUE-081B].
+
+---
+
+author: claude
+created: 2026-11-19T19:58:00Z
+
+---
+
+Decisões do usuário em 2026-11-19, após o parecer do Advisor sobre o plano da Fase 1 (REPROVADO COM RESSALVAS, 6 falhas a corrigir no plano): o usuário ACEITOU TODAS as correções e recomendações (a) a (f), inclusive (b). (a) Interruptor mestre (config lida no restart) mais flag por perfil; o AC1 passa a valer 'no modo ativo' (reescrito); abrir tarefa para remover o escritor legado e o interruptor depois do piloto (ISSUE-172). (b) A migração 009 sai junto com a 081b, mantendo a tripla e a ponte da 133, o que desacopla a 081 da 135 e muda a ordem aprovada na 133; a segurança passa a depender da coluna mode por linha e da tripla como rede contra contagem dupla. (c) Revisar desligado: fallback legado explicável (se a tripla já existe, o recibo vira duplicate do evento existente; senão cria o evento; ambos com evidência review_deferred para a 083). (d) Origem permanece legacy até a 134 cadastrar as novas em event_origins. (e) Reenvio sem chave segue a regra da tripla: mesma faixa no mesmo segundo não aumenta a contagem em relação ao legado. (f) Algumas semanas de modo sombra em produção antes de ativar o primeiro perfil. Correções ao plano: 009 com ingest_events.mode, índice parcial de fila WHERE mode=active AND closed_at IS NULL, guardas por mode da própria linha, tabela de flags por perfil, tripla e ponte mantidas, bootstrap/backup/ingest_schema atualizados; modo efetivo lido na transação de admissão (lote da API ou job de importação inteiro); resolvedor (inline e laço de recuperação com lease e CAS) sempre termina recibos ativos, de modo que desligar volta ao legado sem perda; remover a trilha de compatibilidade (terceiro escritor); purga com prévia como operação do root por perfil, fora do goose, com digest conferido sob lock e exportação agregada da medição, sem Igual retroativo; relay legado (corpo bruto após o ACK) até a ISSUE-082, com a intenção na outbox já fechada (discarded, pre_082_best_effort) e integração de relay por perfil; validar o lote inteiro e responder 400 sem gravar, 503 com Retry-After para BUSY e armazenamento, 500 para erro interno inesperado, limites do ListenBrainz (10 KiB por escuta, 1000 escutas); exclusão restrita à sombra (ingest_delete.go:37-63); testes de colisão de tripla, troca da flag, crash entre recibo e resolução e EXPLAIN. Sequência da Fase 2: C1 separar resolução e gravação (sem mudar comportamento), C2 migração 009 [parada: Advisor], C3 resolvedor transacional, C4 ListenBrainz, importadores e exclusões, C5 purga e ativação do root [parada: Advisor high sobre o diff, depois Reviewer], C6 ensaio sintético, evidências e CHANGELOG. STAND BY por decisão do usuário: a Fase 2 só será liberada depois que o limite de uso do Codex renovar.
+
+---
+
+author: codex
+created: 2026-11-20T02:14:00Z
+
+---
+
+Fase 2, parada após C2 para parecer do Advisor. C1 (c53408f) separa a associação de catálogo da escrita legada e mantém o lock e o comportamento dos chamadores. C2 inclui a migração 009, modo imutável por recibo, fila parcial ativa, flags por perfil com padrão 0, guardas por linha e backup v8. O teste de upgrade confirma a preservação dos dados, o índice usado em EXPLAIN e a resolução de um recibo ativo com admissão desligada. go test passou em SQLite, dedup, catálogo, importadores, engine, handlers, middleware e administração com TUNETRAIL_WEB_DIR apontando para os assets da worktree. Nenhum AC marcado nesta parada.
 
 ---
 <!-- COMMENTS:END -->

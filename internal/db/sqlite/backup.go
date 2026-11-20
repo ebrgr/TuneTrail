@@ -63,6 +63,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 7 {
 		pattern = ".pre-recording-identity-*.bak"
 	}
+	// Preserve the v8 snapshot for rollback across ingestion activation.
+	if version == 8 {
+		pattern = ".pre-ingest-activation-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err
