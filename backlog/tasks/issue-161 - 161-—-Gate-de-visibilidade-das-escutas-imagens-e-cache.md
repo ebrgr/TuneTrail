@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T16:34:00Z'
+updated_date: '2026-11-20T20:34:00Z'
 labels:
   - api
   - ui
@@ -119,6 +119,15 @@ created: 2026-11-19T16:34:00Z
 ---
 
 Publicação: versão 0.40 (tag `v0.40`), branch `feat/issue-161-gate-de-visibilidade-das-escutas` integrada ao `main` por fast-forward.
+
+---
+
+author: codex
+created: 2026-11-20T20:34:00Z
+
+---
+
+Rastreabilidade da revisão. A ISSUE-163 retirou da lista de referências o arquivo REVIEWER.md, que continha a autoavaliação do implementador. O arquivo continua no repositório como registro histórico. PARECER-REVIEWER.md permanece como referência do parecer detalhado.
 
 ---
 <!-- COMMENTS:END -->
