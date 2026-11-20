@@ -34,6 +34,11 @@ var reservedPrefixes = [...]netip.Prefix{
 
 var forbiddenPrefixes = [...]netip.Prefix{
 	netip.MustParsePrefix("169.254.169.254/32"),
+	netip.MustParsePrefix("169.254.170.2/32"),
+	netip.MustParsePrefix("169.254.170.23/32"),
+	netip.MustParsePrefix("fd00:ec2::23/128"),
+	netip.MustParsePrefix("100.100.100.200/32"),
+	netip.MustParsePrefix("192.0.0.192/32"),
 	netip.MustParsePrefix("fd00:ec2::254/128"),
 	netip.MustParsePrefix("64:ff9b::/96"),
 	netip.MustParsePrefix("2002::/16"),
