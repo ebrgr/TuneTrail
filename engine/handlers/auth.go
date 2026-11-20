@@ -27,7 +27,7 @@ func LoginHandler(store db.UserStore) http.HandlerFunc {
 		}
 		session, err := admin.Login(r.Context(), store, body.Username, body.Password, body.RememberMe)
 		if err != nil {
-			logger.FromContext(r.Context()).Err(err).Msg("Login failed")
+			logger.FromContext(r.Context()).Warn().Int("status", adminweb.ErrorStatus(err)).Msg("Login failed")
 			message := adminweb.PublicError(err)
 			if adminweb.ErrorStatus(err) == 401 {
 				message = "invalid credentials"
@@ -59,7 +59,7 @@ func LogoutHandler(store db.UserStore) http.HandlerFunc {
 		if cookie, err := r.Cookie(adminweb.SessionCookie); err == nil {
 			if id, err := uuid.Parse(cookie.Value); err == nil {
 				if err := admin.Logout(r.Context(), store, id); err != nil {
-					logger.FromContext(r.Context()).Err(err).Msg("Administrative logout failed")
+					logger.FromContext(r.Context()).Error().Str("reason", "session revocation failed").Msg("Logout failed")
 					utils.WriteError(w, "operation failed", 500)
 					return
 				}
@@ -71,13 +71,13 @@ func LogoutHandler(store db.UserStore) http.HandlerFunc {
 	}
 }
 
-// MeHandler exposes only the administrator resolved by the session middleware.
+// MeHandler exposes only the account resolved by the session middleware.
 func MeHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		user := middleware.GetUserFromContext(r.Context())
 		if user == nil {
-			utils.WriteError(w, "administrator session required", 401)
+			utils.WriteError(w, "authenticated session required", 401)
 			return
 		}
 		utils.WriteJSON(w, 200, user)
