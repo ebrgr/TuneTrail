@@ -2,10 +2,12 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -73,7 +75,7 @@ func TestSharedLoginLimiter159(t *testing.T) {
 // TestUserHTMLLoginAndLogout159 prevents a non-admin cookie from trapping a browser at a forbidden page.
 func TestUserHTMLLoginAndLogout159(t *testing.T) {
 	a := taskApp139(t)
-	_, err := a.store.SaveUser(context.Background(), db.SaveUserOpts{Username: "listener", Password: "test-password", Role: models.UserRoleUser})
+	user, err := a.store.SaveUser(context.Background(), db.SaveUserOpts{Username: "listener", Password: "test-password", Role: models.UserRoleUser})
 	require.NoError(t, err)
 	loginPage := taskRequest139(a, "GET", "/admin", "", nil, nil)
 	form := url.Values{"csrf_token": {taskField139(t, loginPage, "csrf_token")}, "username": {"listener"}, "password": {"test-password"}}
@@ -93,6 +95,16 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 		}
 	}
 	require.NotEmpty(t, userCookie)
+	profiles, err := a.store.ListListeningProfiles(context.Background())
+	require.NoError(t, err)
+	var ownLink string
+	for _, profile := range profiles {
+		if profile.UserID == user.ID {
+			ownLink = fmt.Sprintf(`href="/admin?profile=%d"`, profile.ID)
+		}
+	}
+	require.NotEmpty(t, ownLink)
+	profileLinks := regexp.MustCompile(`href="/admin\?profile=[0-9]+"`)
 	for _, tc := range []struct{ locale, message, button string }{
 		{"en", "Your account does not have permission to access this page.", "Sign out"},
 		{"pt-BR", "Sua conta não tem permissão para acessar esta página.", "Sair"},
@@ -102,6 +114,7 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 		require.Contains(t, page.Body.String(), tc.message)
 		require.Contains(t, page.Body.String(), tc.button)
 		require.Contains(t, page.Body.String(), `action="/admin/logout"`)
+		require.Equal(t, []string{ownLink}, profileLinks.FindAllString(page.Body.String(), -1))
 		for _, secret := range []string{`href="/admin/settings"`, `action="/admin/profile/create"`, `action="/admin/account/password"`, "Source Track"} {
 			require.NotContains(t, page.Body.String(), secret)
 		}
