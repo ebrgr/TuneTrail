@@ -479,11 +479,74 @@ def fragmentation(binary, root):
             "proven_ab_listens_recordings_releases": count_b, "one_way_flag": True, "master_off_503": True}
 
 
+def faults(binary, root):
+    directory = root / "faults"
+    release = fix_id(20)
+    album, title, recording = "Crash album", "Crash song", fix_id(99)
+
+    class Stub(MusicBrainzFixture):
+        fixtures = {release: (album, title, recording, "hold")}
+        entered, unblock = threading.Event(), threading.Event()
+
+    stamp = 1783020000
+    with loopback(Stub) as url:
+        server = occurrence_fixture(binary, directory, **mbz_env(url))
+        try:
+            assert submit_identity(server, stamp, "crash", album, title, release, recording)[0] == 200
+            assert Stub.entered.wait(15)
+            state, attempts, lease, event, _ = receipt_state(directory, stamp)
+            assert (state, attempts, event) == ("received", 1, None)
+            server.process.kill()
+            server.process.wait()
+            assert server.process.returncode == -9
+            killed_at = time.monotonic()
+            lease_left = lease - time.time()
+        finally:
+            Stub.unblock.set()
+            server.stop()
+    with database(directory) as conn:
+        assert conn.execute("SELECT count(*) FROM tracks").fetchone() == (0,)
+    server = boot(binary, directory, False)
+    try:
+        assert receipt_state(directory, stamp)[:2] == ("received", 1)
+        resumed = wait_state(directory, stamp, "accepted")
+        assert resumed[1] == 2 and resumed[3]
+        crash_recovery = time.monotonic() - killed_at
+        assert crash_recovery >= lease_left - 1
+        assert event_count(directory, stamp) == 1
+    finally:
+        server.stop()
+
+    server = boot(binary, directory, True)
+    fault_stamp = stamp + 20
+    try:
+        with database(directory) as conn:
+            conn.executescript("""CREATE TABLE e4_commit_failure(id INTEGER REFERENCES listening_profiles(id) DEFERRABLE INITIALLY DEFERRED);
+                CREATE TRIGGER e4_commit_failure_inject AFTER INSERT ON ingest_revisions WHEN NEW.rule_version='occurrence-v1'
+                BEGIN INSERT INTO e4_commit_failure VALUES(-1); END;""")
+        assert submit_identity(server, fault_stamp, "commit", "Rollback album", "Rollback song")[0] == 200
+        failed = wait_state(directory, fault_stamp, "retryable")
+        assert failed[1] == 1 and failed[3] is None
+        with database(directory) as conn:
+            assert conn.execute("SELECT count(*) FROM track_aliases WHERE alias='Rollback song'").fetchone() == (0,)
+            assert conn.execute("SELECT count(*) FROM listens WHERE listened_at=?", (fault_stamp,)).fetchone() == (0,)
+            conn.execute("DROP TRIGGER e4_commit_failure_inject")
+            conn.execute("UPDATE ingest_events SET next_attempt_at=0 WHERE original_time=?", (str(fault_stamp),))
+        resumed_commit = wait_state(directory, fault_stamp, "accepted")
+        assert resumed_commit[1] == 2
+        assert event_count(directory, stamp) == 2
+    finally:
+        server.stop()
+    return {"sigkill": True, "lease_remaining_at_kill_s": round(lease_left, 2),
+            "crash_to_accepted_s": round(crash_recovery, 2), "attempts_after_crash": resumed[1],
+            "commit_rollback_without_catalog_residue": True, "commit_retry_attempts": resumed_commit[1]}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--baseline", type=Path, required=True)
-    parser.add_argument("--scenario", choices=("load", "parity", "overlap", "fragmentation"), default="load")
+    parser.add_argument("--scenario", choices=("load", "parity", "overlap", "fragmentation", "faults"), default="load")
     parser.add_argument("--duration", type=int, default=30)
     parser.add_argument("--rate", type=int, default=20)
     args = parser.parse_args()
@@ -496,8 +559,10 @@ def main():
             result = parity(binary, baseline, root)
         elif args.scenario == "overlap":
             result = overlap(binary, root)
-        else:
+        elif args.scenario == "fragmentation":
             result = fragmentation(binary, root)
+        else:
+            result = faults(binary, root)
         print(json.dumps(result), flush=True)
 
 

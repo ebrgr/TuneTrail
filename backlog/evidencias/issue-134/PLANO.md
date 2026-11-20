@@ -256,3 +256,5 @@ Rebase sobre v0.46. Ensaio somente em bancos descartáveis.
 - Feito — Acrescenta sobreposição de seis origens e relay de paridade. Pendente — executar paridade, sobreposição, fragmentação e falhas.
 
 - Feito — Exercita fragmentação com MusicBrainz sintético e corte A B. Pendente — executar cenários e injetar falhas no lease, commit e SQLite cheio.
+
+- Feito — Ensaia SIGKILL com lease real e rollback de commit. Pendente — aguardar expiração do lease, testar SQLite cheio e exclusão em trânsito, registrar resultados.
