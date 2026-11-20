@@ -1,10 +1,11 @@
 ---
 id: ISSUE-134
 title: 134 — Ingestão por ocorrência em todas as fontes
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T19:06:00Z'
+updated_date: '2026-11-20T18:30:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -13,6 +14,7 @@ dependencies:
   - ISSUE-081
 references:
   - backlog/decisions/decision-009
+  - backlog/evidencias/issue-134/PLANO.md
 documentation:
   - doc-036
   - doc-039
@@ -56,6 +58,24 @@ created: 2026-11-19T19:06:00Z
 ---
 
 Entradas obrigatórias da ISSUE-133: cadastrar por INSERT em event_origins as origens usadas no pipeline e validá-las no escritor. Validar a proveniência legacy_declared de recordings.musicbrainz_id antes da regra 3 do resolvedor. Garantir por trigger removível que recibo vinculado tem occurrence_id=listens.track_id e recording_id=occurrences.recording_id, identity_status coerente com accepted/duplicate e resolution_version monotônica. No corte, aposentar ou compatibilizar o alocador de tracks e occurrences para evitar colisão; definir como guardar título e créditos apresentados sem linha em tracks (doc-039 §Contrato de entidades).
+
+---
+
+author: ebrgr
+created: 2026-11-20T18:27:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-134` na branch `feat/issue-134-ingestao-por-ocorrencia-em-todas` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-20T18:30:00Z
+
+---
+
+Fase 1: plano entregue. Mapeia as fontes e a cobertura herdada da 081, propõe testes para os sete ACs e migração 010 para identidade, origens e guardas, com paridade v0.44 na via desligada. Explicita os cortes com 135, 082, 083 e 173, inclusive R-b na 173. Aguarda parecer do Advisor antes de implementar. ACs continuam abertos.
 
 ---
 <!-- COMMENTS:END -->
