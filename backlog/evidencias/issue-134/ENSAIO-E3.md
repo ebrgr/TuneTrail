@@ -17,7 +17,7 @@ A primeira onda inclui dois envios HTTP concorrentes com a mesma chave e 20 iten
 
 Uma falha de COMMIT induzida por FK adiada deixou o recibo em retry e zero escutas para o item. O processo foi encerrado e, após remover a falha e liberar o agendamento, reiniciou com o mestre desligado. O worker aceitou o recibo restante sem arquivo de staging. Uma admissão nova recebeu HTTP 503. A base terminou com 102 aceitos, 20 pendências e os 300.000 recibos do perfil de sombra.
 
-O replay com controles desligados comparou 18 escutas, 18 recibos de sombra e exportação com a v0.44. O backup v9 abriu e repetiu o mesmo resultado no binário da tag.
+O replay com controles desligados comparou 18 escutas, 18 recibos de sombra e exportação com a v0.44. O backup v9 abriu e repetiu o mesmo resultado no binário da tag v0.44. Em uma verificação separada, o binário compilado da tag v0.45 recusou a base v11 com `unsupported schema version 11`.
 
 O `EXPLAIN QUERY PLAN` da seleção de ocorrências reportou `MULTI-INDEX OR`, com dois ramos usando `idx_occurrences_release` e um ramo usando o índice único de `track_mbid`. A gravação foi buscada pela chave primária. A comparação de créditos usou os índices de aliases e vínculos, e a ordenação usou uma B-tree temporária. A busca textual de lançamento começa pelo alias.
 

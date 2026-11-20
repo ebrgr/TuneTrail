@@ -88,5 +88,4 @@ admissions while already accepted batches continue resolving. Ambiguous items
 remain pending and are excluded from listening counts.
 
 Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
-An existing v10 database receives a `.pre-occurrence-writer-*.bak` backup.
-TuneTrail 0.44 cannot open a v11 database.
+TuneTrail 0.45 and earlier cannot open a v11 database.

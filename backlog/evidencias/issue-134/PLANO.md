@@ -105,7 +105,7 @@ A medição separada executou o SQL da 010 em transação com SQLite do Python. 
 
 ## Evidência da E2
 
-A 011 protege no SQL a admissão, a origem de eventos aceitos, o release dos vínculos por ocorrência, o corte com recibos v9 abertos ou sombra sem vínculo e a configuração de relay. Duplicate conserva a origem do evento existente, inclusive legacy ou de outro adaptador. A 010 permanece fechada. Backups de uma base já v10 recebem o sufixo `.pre-occurrence-writer-*.bak`. A admissão no mestre desligado pausa perfis convertidos e o worker segue resolvendo recibos já admitidos. A entrada de jobs de arquivo usa o gate central para pausar perfis convertidos até a E3. Os testes de sobreposição entram diretamente pelo envelope persistente, usando os formatos definidos pela E1.
+A 011 protege no SQL a admissão, a origem de eventos aceitos, o release dos vínculos por ocorrência, o corte com recibos v9 abertos ou sombra sem vínculo e a configuração de relay. Duplicate conserva a origem do evento existente, inclusive legacy ou de outro adaptador. A 010 permanece fechada. O sufixo `.pre-occurrence-writer-*.bak` atende apenas bancos v10 de desenvolvimento. O binário compilado da tag v0.45 recusou v11 com `unsupported schema version 11`. A admissão no mestre desligado pausa perfis convertidos e o worker segue resolvendo recibos já admitidos. A entrada de jobs de arquivo usa o gate central para pausar perfis convertidos até a E3. Os testes de sobreposição entram diretamente pelo envelope persistente, usando os formatos definidos pela E1.
 
 O resolvedor `occurrence-v1` valida evidência de release-track tipada fora da reserva e revalida o lease, as versões, o perfil e o catálogo depois de BEGIN IMMEDIATE. O caso verificado com relay inelegível persiste escuta e decisão/revisão sem intenção de entrega. A/B mantém uma gravação e duas pontes consultáveis, inclusive no mesmo segundo. A ponte secundária descarta a gravação provisória órfã. O modo de ensaio sem álbum foi exercitado em bancos descartáveis pelo fixture interno.
 
@@ -154,7 +154,7 @@ Com o mestre desligado, o início de importação consulta a flag sem reservar o
 3. Manter os campos novos com `omitempty`. Testar que replay de chave antiga com snapshot ampliado gera uma observação e reutiliza o recibo original.
 4. Verificar exclusão e reimportação do AC5 em conjunto com os triggers corrigidos de origem, incluindo duplicados de outra fonte.
 5. Implementar cache por release MBID e timeout abaixo do lease de 120 s antes do ensaio de 300 mil. Registrar contador de tentativas e log para retry sem teto até a ISSUE-173.
-6. Escrever CHANGELOG em inglês para o upgrade v9→v11. Incluir `.pre-occurrence-ingest-*.bak`, `.pre-occurrence-writer-*.bak` e recusa do banco v11 pela v0.44.
+6. Escrever CHANGELOG em inglês para o upgrade v9→v11. Incluir `.pre-occurrence-ingest-*.bak` e a recusa do banco v11 pela v0.45 e anteriores.
 7. Encerrar a E3 no Reviewer. Iniciar a E4 depois da revisão.
 
 **Parada após a E2.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala guardas de variante, origem, conversão, relay e release vinculado. A emenda da E2 encerrou a revisão do resolvedor. A E3 foi implementada após o rebase sobre v0.45.
@@ -223,3 +223,5 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - Feito — Preserva o instante estimado no ListenBrainz com zero segundos. Pendente — corrigir documentação de downgrade, exclusão v9 e ressalvas.
 
 - Feito — Mantém as chaves encerradas na exclusão compatível v9. Pendente — confirmar recusa pela v0.45, ajustar documentação e ressalvas.
+
+- Feito — Documenta recusa do schema v11 pela versão publicada v0.45. Pendente — ressalvas de ensaio, proveniência e testes finais.
