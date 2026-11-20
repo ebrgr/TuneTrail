@@ -14,6 +14,7 @@ CREATE TABLE occurrence_credits (
     artist_id INTEGER REFERENCES artists(id) ON DELETE SET NULL,
     PRIMARY KEY(occurrence_id,position)
 );
+CREATE INDEX idx_occurrence_credits_artist ON occurrence_credits(artist_id);
 
 INSERT INTO event_origins(origin,description) VALUES
     ('listenbrainz_api','ListenBrainz HTTP submission'),
