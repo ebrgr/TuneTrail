@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T17:40:00Z'
+updated_date: '2026-11-20T17:57:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -179,6 +179,15 @@ created: 2026-11-20T17:40:00Z
 ---
 
 Ressalvas do Advisor high sobre C3–C5 tratadas em commits separados: d1487bd admite os recibos do Koito; b02dffa persiste metadados de associação e compara retries v1 com a projeção v1; 9953dee rejeita identidade incompleta e refaz a associação após remoção da faixa fixada; 3208627 rejeita review=true até existir fila de revisão; f7c9590 fecha recibos ativos received/retryable do perfil no mesmo commit da exclusão de histórico e invalida o lease anterior; 446bde4 devolve 403 quando a sessão root não é válida; 017f0ae exibe Pendentes e Duplicadas na importação ativa; 06253e1 cobre Koito, ListenBrainz com mbid_mapping, faixa apagada, lease vencido com disputa entre conexões, intenção relay:<id>, 400 sem escrita do prefixo e 503 com Retry-After em BUSY ou falha de COMMIT. A inclusão manual permanece no escritor legado e está fora do escopo da ISSUE-081b. R1–R5 e R7 estão documentadas na evidência vinculada, incluindo o ensaio de 300 mil recibos e a janela de manutenção. go test passou nos pacotes SQLite/DB, ingest, dedup, importadores, catálogo, admin, adminweb, adminui, i18n e engine com TUNETRAIL_WEB_DIR apontando para os assets da worktree. Graphify AST atualizado. Parada para o Reviewer. C6, CHANGELOG e make check ficam pendentes.
+
+---
+
+author: codex
+created: 2026-11-20T17:57:00Z
+
+---
+
+Correção do obrigatório do Reviewer em 95b4a83: ApplyProfileDelete fecha recibos ativos abertos somente quando a faixa fixada pertence à seleção excluída ou, sem faixa fixada, quando artista e título correspondem aos aliases da mesma faixa selecionada. O teste prova que o recibo relacionado perde o lease e que o recibo sem relação permanece aberto e resolve em seguida. R-c em 80f7ef0 mapeia ErrUnavailable para 503 com Retry-After no painel, com falha de COMMIT injetada. R-d em f69946b exclui CatalogTrackID do digest v1. R-e em 0be535a verifica a validação prévia já existente do lote Koito, incluindo ausência de efeitos no catálogo quando o segundo item é inválido. R-a e R-b estão documentadas para medir e decidir na C6. go test passou nos pacotes afetados com os assets da worktree. Graphify AST atualizado. Parada para releitura do diff. C6, CHANGELOG e make check continuam pendentes.
 
 ---
 <!-- COMMENTS:END -->
