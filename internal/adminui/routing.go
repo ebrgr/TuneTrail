@@ -14,7 +14,7 @@ func IsPage(path string) bool {
 	if !strings.HasPrefix(path, "/") || strings.HasPrefix(path, "//") {
 		return false
 	}
-	if path == "/admin" || path == "/admin/settings" || path == "/admin/redeem" {
+	if path == "/admin" || path == "/admin/settings" || path == "/admin/redeem" || path == "/admin/sign-out" {
 		return true
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")

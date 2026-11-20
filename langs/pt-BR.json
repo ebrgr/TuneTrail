@@ -1,4 +1,8 @@
 {
+  "admin.sign_out.title": "Encerrar esta sessão neste navegador",
+  "admin.sign_out.description": "Você pode entrar novamente pelo diretório.",
+  "admin.sign_out.confirm": "Sair",
+  "admin.sign_out.cancel": "Cancelar",
   "nav.my_account": "Minha conta",
   "nav.my_profile": "Meu perfil",
   "nav.profile_settings": "Configurar perfil",

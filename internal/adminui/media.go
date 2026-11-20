@@ -533,9 +533,6 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	if v.Section == "" {
 		v.Nav = h.navigation(r.Context(), identity, profile, "")
 	}
-	if v.Submission != "" && v.Nav.Kind != "" {
-		v.Nav.Logout = &webassets.LogoutForm{CSRF: v.CSRF, Submission: v.Submission}
-	}
 	h.renderMedia(w, status, v)
 }
 

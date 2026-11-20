@@ -9,22 +9,6 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
-// LogoutForm shares the existing CSRF and logout submission contract with public pages.
-func (h *Handler) LogoutForm(identity admin.Identity) (*webassets.LogoutForm, error) {
-	if err := admin.AuthorizeAction(identity.User, admin.ManageAccount, nil); err != nil {
-		return nil, err
-	}
-	csrf, err := h.csrf.SessionToken(identity)
-	if err != nil {
-		return nil, err
-	}
-	ticket, err := h.issueSubmission(identity.SessionID, true)
-	if err != nil {
-		return nil, err
-	}
-	return &webassets.LogoutForm{CSRF: csrf, Submission: ticket}, nil
-}
-
 // navigation resolves the own profile independently of the selected profile.
 func (h *Handler) navigation(ctx context.Context, identity admin.Identity, profile *models.ListeningProfile, section string) webassets.Nav {
 	nav := webassets.Nav{Kind: "admin", Version: version.Current}
@@ -46,10 +30,6 @@ func (h *Handler) navigation(ctx context.Context, identity admin.Identity, profi
 		// A failure to load optional navigation does not replace the page response.
 	}
 	nav.NavAccess = webassets.AccessNavigation(identity.User, own, profile, section)
-	if nav.Account != nil {
-		// Ticket exhaustion leaves the other links and the existing account form available.
-		nav.Logout, _ = h.LogoutForm(identity)
-	}
 	nav.PeriodLinks = nav.DefaultPeriods()
 	return nav
 }

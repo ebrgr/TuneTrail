@@ -69,7 +69,10 @@ func TestNavigationByPermission163(t *testing.T) {
 	page = taskRequest139(a, "GET", account, owner, nil, nil)
 	require.Regexp(t, `href="/admin\?section=account"\s+aria-current="page"`, page.Body.String())
 	menu := taskRequest139(a, "GET", scope, owner, nil, nil)
-	form := url.Values{"csrf_token": {taskField139(t, menu, "csrf_token")}, "submission_token": {taskField139(t, menu, "submission_token")}}
+	require.Contains(t, menu.Body.String(), `href="/admin/sign-out?return=`)
+	require.NotContains(t, menu.Body.String(), `name="submission_token"`)
+	confirm := taskRequest139(a, "GET", "/admin/sign-out", owner, nil, nil)
+	form := url.Values{"csrf_token": {taskField139(t, confirm, "csrf_token")}, "submission_token": {taskField139(t, confirm, "submission_token")}}
 	form.Set("username", "must-not-change")
 	require.Equal(t, 409, taskRequest139(a, "POST", "/admin/account/username", owner, form, nil).Code)
 	form.Del("username")

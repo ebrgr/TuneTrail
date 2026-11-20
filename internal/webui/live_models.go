@@ -42,7 +42,6 @@ type LivePage struct {
 	CurrentURL string
 	identity   admin.Identity
 	access     webassets.NavAccess
-	logout     *webassets.LogoutForm
 	// Prefetch is limited to anonymous public documents (ISSUE-075).
 	Prefetch bool
 	// Admin is true only for a valid administrator session cookie (ISSUE-109).

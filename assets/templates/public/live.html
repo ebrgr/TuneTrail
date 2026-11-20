@@ -136,7 +136,7 @@
     {{with .Nav.Login}}{{template "partial/nav-link" .}}{{end}}
     {{with .Nav.Account}}{{template "partial/nav-link" .}}{{end}}
     {{range .Nav.RootLinks}}{{template "partial/nav-link" .}}{{end}}
-    {{with .Nav.Logout}}{{template "partial/logout" .}}{{end}}
+    {{with .Nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
   </main>
 {{end}}
 

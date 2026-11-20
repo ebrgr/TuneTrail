@@ -191,7 +191,7 @@ func bindRoutes(
 		if err != nil {
 			panic(fmt.Errorf("initialize Go administration: %w", err))
 		}
-		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil, Sessions: db, LogoutForm: administration.LogoutForm})
+		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil, Sessions: db})
 		if err != nil {
 			panic(fmt.Errorf("initialize Go pages: %w", err))
 		}

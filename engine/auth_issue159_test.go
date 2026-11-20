@@ -113,23 +113,23 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 		require.Equal(t, 403, page.Code)
 		require.Contains(t, page.Body.String(), tc.message)
 		require.Contains(t, page.Body.String(), tc.button)
-		require.Contains(t, page.Body.String(), `action="/admin/logout"`)
+		require.Contains(t, page.Body.String(), `href="/admin/sign-out"`)
 		require.Equal(t, []string{ownLink}, profileLinks.FindAllString(page.Body.String(), -1))
 		for _, secret := range []string{`href="/admin/settings"`, `action="/admin/profile/create"`, `action="/admin/account/password"`, "Source Track"} {
 			require.NotContains(t, page.Body.String(), secret)
 		}
 	}
-	page := taskRequest139(a, "GET", "/admin", userCookie, nil, nil)
+	page := taskRequest139(a, "GET", "/admin/sign-out", userCookie, nil, nil)
 	logout := url.Values{"csrf_token": {taskField139(t, page, "csrf_token")}, "submission_token": {taskField139(t, page, "submission_token")}}
 	require.Equal(t, 403, taskRequest139(a, "POST", "/admin/logout", userCookie, url.Values{}, nil).Code)
-	other := taskRequest139(a, "GET", "/admin", a.cookie, nil, nil)
+	other := taskRequest139(a, "GET", "/admin/sign-out", a.cookie, nil, nil)
 	wrong := url.Values{"csrf_token": {taskField139(t, other, "csrf_token")}, "submission_token": {logout.Get("submission_token")}}
 	require.Equal(t, 403, taskRequest139(a, "POST", "/admin/logout", userCookie, wrong, nil).Code)
 	require.Equal(t, 403, taskRequest139(a, "POST", "/admin/logout", userCookie, logout, map[string]string{"Origin": "http://evil.test"}).Code)
 	require.Equal(t, 404, taskRequest139(a, "GET", "/admin/logout", userCookie, nil, nil).Code)
 	out := taskRequest139(a, "POST", "/admin/logout", userCookie, logout, nil)
 	require.Equal(t, 303, out.Code)
-	require.Equal(t, "/admin", out.Header().Get("Location"))
+	require.Equal(t, "/", out.Header().Get("Location"))
 	userID, err := uuid.Parse(userCookie)
 	require.NoError(t, err)
 	_, err = admin.Authenticate(context.Background(), a.store, userID)
@@ -173,12 +173,12 @@ func TestUserTicketFloodKeepsAdminFormUsable159(t *testing.T) {
 	for i := 0; i < 500; i++ {
 		forbidden := taskRequest139(a, "GET", "/admin", session.ID.String(), nil, nil)
 		require.Equal(t, 403, forbidden.Code)
-		require.Contains(t, forbidden.Body.String(), `action="/admin/logout"`)
+		require.Contains(t, forbidden.Body.String(), `href="/admin/sign-out"`)
 	}
 	// The administrator can still submit the form issued before the repeated user requests.
 	require.Equal(t, 303, taskRequest139(a, "POST", "/admin/account/username", a.cookie, form, nil).Code)
 	// Quota rotation does not change the ordinary account's approved logout flow.
-	forbidden := taskRequest139(a, "GET", "/admin", session.ID.String(), nil, nil)
-	logout := url.Values{"csrf_token": {taskField139(t, forbidden, "csrf_token")}, "submission_token": {taskField139(t, forbidden, "submission_token")}}
+	confirm := taskRequest139(a, "GET", "/admin/sign-out", session.ID.String(), nil, nil)
+	logout := url.Values{"csrf_token": {taskField139(t, confirm, "csrf_token")}, "submission_token": {taskField139(t, confirm, "submission_token")}}
 	require.Equal(t, 303, taskRequest139(a, "POST", "/admin/logout", session.ID.String(), logout, nil).Code)
 }

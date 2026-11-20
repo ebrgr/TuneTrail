@@ -1,4 +1,8 @@
 {
+  "admin.sign_out.title": "End this session in this browser",
+  "admin.sign_out.description": "You can sign in again from the directory.",
+  "admin.sign_out.confirm": "Sign out",
+  "admin.sign_out.cancel": "Cancel",
   "nav.my_account": "My account",
   "nav.my_profile": "My profile",
   "nav.profile_settings": "Profile settings",

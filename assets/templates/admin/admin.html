@@ -17,8 +17,8 @@
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>
-            {{- if .Login}}{{tr "ui.sign_in" "Sign in"}}
+          <h1>{{- if .SignOut}}{{tr "admin.sign_out.title" "End this session in this browser"}}
+            {{- else if .Login}}{{tr "ui.sign_in" "Sign in"}}
             {{- else if .Error}}{{tr "ui.request_status" "Request status"}}
             {{- else if eq .Section "account"}}{{tr "nav.my_account" "My account"}}
             {{- else if .AccountsRoot}}{{tr "admin.text.administration" "Administration"}}
@@ -58,15 +58,23 @@
               <button>{{tr "admin.text.sign_in" "Sign in"}}</button>
             </form>
             <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
+          {{else if .SignOut}}
+            <p id="sign-out-description">{{tr "admin.sign_out.description" "You can sign in again from the directory."}}</p>
+            <form method="post" action="/admin/logout">
+              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+              <input type="hidden" name="submission_token" value="{{.Submission}}">
+              <button type="submit" autofocus aria-describedby="sign-out-description">{{tr "admin.sign_out.confirm" "Sign out"}}</button>
+              <a href="{{.Next}}" aria-describedby="sign-out-description">{{tr "admin.sign_out.cancel" "Cancel"}}</a>
+            </form>
           {{else if .LogoutOnly}}
             {{with $nav.Account}}<p>{{template "partial/nav-link" .}}</p>{{end}}
             <p><a href="/">{{tr "nav.directory" "Directory"}}</a></p>
-            {{with $nav.Logout}}{{template "partial/logout" .}}{{end}}
+            {{with $nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
           {{else if .User}}
-            {{with $nav.Logout}}{{template "partial/logout" .}}{{end}}
             {{if eq .Section "account"}}
               <section>
                 <h2>{{tr "admin.text.account" "Account"}}</h2>
+                {{with $nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
                 <form method="post" action="/admin/account/username">
                   <input type="hidden" name="csrf_token" value="{{.CSRF}}">
                   {{if .Submission}}

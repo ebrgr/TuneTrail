@@ -120,7 +120,7 @@
         <section class="nav-admin-actions" aria-labelledby="nav-account-title">
           <h2 class="nav-group-title" id="nav-account-title">{{tr "ui.account" "Account"}}</h2>
           {{range .AccountLinks}}{{template "partial/nav-link" .}}{{end}}
-          {{with .Logout}}{{template "partial/logout" .}}{{end}}
+          {{with .SignOut}}{{template "partial/nav-link" .}}{{end}}
         </section>
       {{end}}
       {{if .RootLinks}}
@@ -144,14 +144,6 @@
   <a class="nav-button" href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>
     {{icon .Icon}}<span class="nav-action-label">{{tr .Label .Fallback}}</span>
   </a>
-{{end}}
-
-{{define "partial/logout"}}
-  <form method="post" action="/admin/logout">
-    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-    <input type="hidden" name="submission_token" value="{{.Submission}}">
-    <button class="nav-button" type="submit">{{tr "nav.sign_out" "Sign out…"}}</button>
-  </form>
 {{end}}
 
 {{/* Theme and language only, without tabs (ISSUE-110). Called with the page locale, which may be nil. */}}

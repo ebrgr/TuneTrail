@@ -17,16 +17,11 @@ type NavLink struct {
 	Current                    bool
 }
 
-// LogoutForm carries the CSRF token and submission ticket for the logout POST.
-type LogoutForm struct {
-	CSRF, Submission string
-}
-
 // NavAccess is the permission-dependent part of the shared page navigation.
 type NavAccess struct {
 	Login, Account, ProfileSettings *NavLink
 	AccountLinks, RootLinks         []NavLink
-	Logout                          *LogoutForm
+	SignOut                         *NavLink
 	ManageListening, ManageCatalog  bool
 	AdminBadge                      bool
 }
@@ -40,6 +35,8 @@ func AccessNavigation(actor *models.User, own, visited *models.ListeningProfile,
 	}
 	nav.Account = &NavLink{AccountDestination, "nav.my_account", "My account", "LockKeyhole", section == "account"}
 	nav.AccountLinks = append(nav.AccountLinks, *nav.Account)
+	// The confirmation page validates any requested return for the current actor.
+	nav.SignOut = &NavLink{"/admin/sign-out", "nav.sign_out", "Sign out…", "LogOut", section == "sign-out"}
 	if admin.AuthorizeAction(actor, admin.ManageProfile, own) == nil {
 		nav.AccountLinks = append(nav.AccountLinks, NavLink{fmt.Sprintf("/admin?profile=%d", own.ID), "nav.my_profile", "My profile", "UserRoundCog", section == "profiles" && visited != nil && own.ID == visited.ID})
 	}

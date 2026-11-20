@@ -109,7 +109,7 @@ type view struct {
 	Profile                                         *models.ListeningProfile
 	Keys                                            []models.ApiKey
 	RelayURL, RelayToken, CSRF, Next, Notice, Error string
-	Login, LogoutOnly                               bool
+	Login, LogoutOnly, SignOut                      bool
 	Section                                         string
 	Submission                                      string
 	AccountsRoot, CanIssueToken, Redeem             bool
@@ -199,6 +199,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Vary", "Cookie")
 	w = h.languages.Wrap(w, r)
 	if r.Method == http.MethodHead {
+		// Confirmation HEAD requests must not allocate a submission ticket.
+		if r.URL.Path == "/admin/sign-out" {
+			h.entry.ServeHTTP(headWriter{w}, r)
+			return
+		}
 		copy := r.Clone(r.Context())
 		copy.Method = http.MethodGet
 		h.entry.ServeHTTP(headWriter{w}, copy)
@@ -216,6 +221,10 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	// Redemption uses preauthentication CSRF and only hashes a password after claiming a valid token.
 	if r.URL.Path == "/admin/redeem" {
 		h.redeemAccount(w, r)
+		return
+	}
+	if r.URL.Path == "/admin/sign-out" {
+		h.signOutPage(w, r)
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -313,6 +322,10 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		err = h.authorizeAction(r, identity)
 	}
+	if r.URL.Path == "/admin/logout" && errors.Is(err, admin.ErrUnauthorized) {
+		h.renderLogin(w, r, http.StatusUnauthorized, "Sign in to continue.")
+		return
+	}
 	if err != nil {
 		h.failForSession(w, r, identity, err)
 		return
@@ -384,6 +397,11 @@ func (h *Handler) fail(w http.ResponseWriter, err error) {
 
 // loginPage binds a new or existing preauthentication nonce without revealing its cookie.
 func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request, message string) {
+	h.renderLogin(w, r, http.StatusOK, message)
+}
+
+// renderLogin gives an absent or expired session a usable sign-in form.
+func (h *Handler) renderLogin(w http.ResponseWriter, r *http.Request, status int, message string) {
 	token, err := h.csrf.LoginToken(w, r)
 	if err != nil {
 		h.fail(w, err)
@@ -394,7 +412,7 @@ func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request, message stri
 	if next == "" && query.Get("next") == "" {
 		next = adminweb.SafeReturn(r.URL.RequestURI())
 	}
-	h.render(w, 200, view{Login: true, CSRF: token, Next: next, Error: message})
+	h.render(w, status, view{Login: true, CSRF: token, Next: next, Error: message})
 }
 
 // postLogin validates preauthentication CSRF before checking credentials.
@@ -524,7 +542,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
 	}
 	v.Nav = h.navigation(r.Context(), id, v.Profile, navSection(section))
-	v.Nav.Logout = &webassets.LogoutForm{CSRF: token, Submission: ticket}
+
 	h.render(w, 200, v)
 }
 

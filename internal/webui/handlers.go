@@ -32,8 +32,8 @@ type ReadStore interface {
 }
 type Options struct {
 	// Sessions resolves account cookies independently of role.
-	Sessions       admin.SessionReader
-	LogoutForm     func(admin.Identity) (*webassets.LogoutForm, error)
+	Sessions admin.SessionReader
+
 	Languages      *i18n.Catalog
 	ForcedTimezone bool
 	DefaultTheme   string
@@ -117,8 +117,13 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.access = webassets.AccessNavigation(p.identity.User, webassets.OwnProfile(p.identity.User, all), visited, "")
-	p.access.Logout = p.logout
-	p.access.LoginFor(adminweb.SafeReturn(p.CurrentURL))
+
+	// Both entry links use only destinations allowed by the read-route policy.
+	destination := adminweb.SafeReturn(p.CurrentURL)
+	p.access.LoginFor(destination)
+	if p.access.SignOut != nil && destination != "" {
+		p.access.SignOut.URL += "?return=" + url.QueryEscape(destination)
+	}
 	for _, profile := range all {
 		p.Profiles = append(p.Profiles, publicProfile(profile))
 		p.SwitchLinks[profile.Slug] = switchURL(profile.Slug, r.URL.Path, r.URL.Query())
@@ -260,10 +265,6 @@ func (h *Pages) basePage(w http.ResponseWriter, r *http.Request) LivePage {
 	}
 	p.access = webassets.AccessNavigation(p.identity.User, nil, nil, "")
 	p.Admin = p.access.ManageCatalog
-	if r.Method == http.MethodGet && p.access.Account != nil && h.options.LogoutForm != nil && !strings.Contains(r.Header.Get("Sec-Purpose"), "prefetch") {
-		p.logout, _ = h.options.LogoutForm(p.identity)
-		p.access.Logout = p.logout
-	}
 	return p
 }
 
@@ -331,7 +332,7 @@ func (h *Pages) fail(w http.ResponseWriter, p LivePage, status int) {
 		p.Media = nil
 		p.Section, p.Timezone, p.WeekStart = "profiles", "", 0
 		p.access = webassets.AccessNavigation(p.identity.User, nil, nil, "")
-		p.access.Logout = p.logout
+
 		if p.Locale != nil {
 			p.Locale.Return = "/"
 		}

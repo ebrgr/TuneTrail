@@ -70,7 +70,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		}
 		adminweb.ClearSessionCookie(w, r)
 		adminweb.ClearPreauth(w, r)
-		http.Redirect(w, r, "/admin", 303)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	case "account/username", "account/password":
 		if (path == "account/username" && !fields(f, "username")) || (path == "account/password" && !fields(f, "password", "confirm_password")) {

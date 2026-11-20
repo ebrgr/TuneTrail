@@ -67,9 +67,9 @@ func (h *Handler) consumeSubmission(session uuid.UUID, raw string) error {
 	return h.consumeTicket(session, raw, false)
 }
 
-// consumeTicket permits existing page tickets for logout and reserves logout tickets for logout.
+// consumeTicket binds each ticket to the session and the purpose that issued it.
 func (h *Handler) consumeTicket(session uuid.UUID, raw string, logout bool) error {
-	if raw == "" && !h.requireSubmission {
+	if raw == "" && !h.requireSubmission && !logout {
 		return nil
 	}
 	token, err := uuid.Parse(raw)
@@ -79,7 +79,7 @@ func (h *Handler) consumeTicket(session uuid.UUID, raw string, logout bool) erro
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	ticket, ok := h.submissions[token]
-	if !ok || ticket.Session != session || ticket.Logout && !logout || time.Now().After(ticket.Expires) {
+	if !ok || ticket.Session != session || ticket.Logout != logout || time.Now().After(ticket.Expires) {
 		return db.ErrConflict
 	}
 	delete(h.submissions, token)

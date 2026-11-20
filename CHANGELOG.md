@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Signing out now asks for confirmation (ISSUE-157).
+
 ## [0.45] - 2026-11-20
 
 - Navigation follows account and profile permissions. Listeners can open their own account, manage their own listens, and sign out from the menu. Sign-in returns to an authorized page or the account’s default destination. Opening a new page refreshes the sign-out form’s validity (ISSUE-163).

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -127,27 +128,36 @@ func TestLogoutSubmissionRenewsExpiry(t *testing.T) {
 	require.NoError(t, err)
 	session, err := admin.Login(ctx, store, "listener", "test-password", false)
 	require.NoError(t, err)
-	identity, err := admin.Authenticate(ctx, store, session.ID)
-	require.NoError(t, err)
 	h, err := New(store, Options{RequireSubmissionToken: true})
 	require.NoError(t, err)
 
-	first, err := h.LogoutForm(identity)
-	require.NoError(t, err)
-	id := uuid.MustParse(first.Submission)
+	get := func() (string, string) {
+		r := httptest.NewRequest(http.MethodGet, "/admin/sign-out", nil)
+		r.AddCookie(&http.Cookie{Name: adminweb.SessionCookie, Value: session.ID.String()})
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		require.Equal(t, http.StatusOK, w.Code)
+		field := func(name string) string {
+			match := regexp.MustCompile(`name="` + name + `" value="([^"]+)"`).FindStringSubmatch(w.Body.String())
+			require.Len(t, match, 2)
+			return match[1]
+		}
+		return field("csrf_token"), field("submission_token")
+	}
+	_, first := get()
+	id := uuid.MustParse(first)
 	now := time.Now()
 	h.submissions[id] = submissionTicket{session.ID, now.Add(time.Minute), true}
 	expired := uuid.New()
 	h.submissions[expired] = submissionTicket{uuid.New(), now.Add(-time.Minute), false}
 
-	renewed, err := h.LogoutForm(identity)
-	require.NoError(t, err)
-	require.Equal(t, first.Submission, renewed.Submission)
+	csrf, renewed := get()
+	require.Equal(t, first, renewed)
 	require.False(t, h.submissions[id].Expires.Before(now.Add(30*time.Minute)))
 	require.False(t, h.submissions[id].Expires.After(time.Now().Add(30*time.Minute)))
 	require.NotContains(t, h.submissions, expired)
 
-	form := url.Values{"csrf_token": {renewed.CSRF}, "submission_token": {renewed.Submission}}
+	form := url.Values{"csrf_token": {csrf}, "submission_token": {renewed}}
 	post := func(path string) *httptest.ResponseRecorder {
 		r := httptest.NewRequest(http.MethodPost, path, strings.NewReader(form.Encode()))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
