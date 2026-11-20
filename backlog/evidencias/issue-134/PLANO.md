@@ -205,3 +205,5 @@ Retomada após rebase em v0.45.
 - Feito — Cobre a cascata de duplicados vinculados no replay parcial. Pendente — validação final com ensaio, suíte e revisão.
 
 - Feito — Separa os parâmetros do recibo e da revisão na fixture de cascata. Pendente — repetir testes dos pacotes e make check.
+
+- Feito — Registra ensaio E3 com retenção, rollback e EXPLAIN. Pendente — verificar suíte final, ACs e Backlog.
