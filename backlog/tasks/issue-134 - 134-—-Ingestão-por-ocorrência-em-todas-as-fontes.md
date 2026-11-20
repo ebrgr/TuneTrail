@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T21:11:00Z'
+updated_date: '2026-11-20T21:26:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -131,6 +131,15 @@ created: 2026-11-20T21:11:00Z
 ---
 
 E3 concluída sobre v0.45, com commits por fatia e estado de retomada no PLANO. As seis origens foram verificadas, com modo e variante fixados no job, metadados e precisão preservados, replay de chave antiga com observação, exclusão e reimportação total/parcial, leases revogados e retomada sem staging. ACs 1–7 verificados por testes ou ensaio. O perfil separado conservou 300 mil recibos de sombra durante a resolução. Onda inicial de 101 escutas, 20 pendências na sobreposição, rollback seguido de recuperação após reinício e paridade v0.44 com controles desligados. Testes dos pacotes afetados, make check 13/13, sintaxe do ensaio e graphify AST concluídos. Aguarda Reviewer antes da E4. Status Em andamento.
+
+---
+
+author: codex
+created: 2026-11-20T21:26:00Z
+
+---
+
+Correções do Reviewer da E3 concluídas. ListenBrainz HTTP e ZIP preservam zero segundos como instante ausente nos recibos. Exclusão v9 mantém a chave encerrada e a revisão profile_history_deleted; occurrence remove o recibo selecionado e permite novo evento no replay. Documentação agora usa a versão publicada v0.45, cujo binário recusou v11. Proveniência usa marcadores reservados, imports foram agrupados e o ensaio distingue retenção em outro perfil de contenção no mesmo perfil. O EXPLAIN conferiu o índice de alias. Testes dos pacotes afetados e make check 13/13 passaram. Pendências da E4/135/083 registradas no PLANO. Status Em andamento, aguarda releitura do Reviewer.
 
 ---
 <!-- COMMENTS:END -->

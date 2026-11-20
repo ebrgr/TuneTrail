@@ -242,3 +242,5 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - **135.** A exportação nativa ainda não emite track_mbid, disco ou faixa. A migração do merge legado para BEGIN IMMEDIATE também permanece na 135.
 
 - Feito — Registra limites da revisão E3 no plano. Pendente — concluir make check e registrar a parada no Backlog.
+
+- Feito — Registra verificação das correções do Reviewer. Pendente — releitura do Reviewer antes da E4.
