@@ -17,6 +17,7 @@ type NavLink struct {
 	Current                    bool
 }
 
+// LogoutForm carries the CSRF token and submission ticket for the logout POST.
 type LogoutForm struct {
 	CSRF, Submission string
 }
