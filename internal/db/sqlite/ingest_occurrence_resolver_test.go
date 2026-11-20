@@ -370,3 +370,24 @@ func TestOccurrenceProofRedirects(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM release_aliases a JOIN releases r ON r.id=a.release_id
 		WHERE a.alias='Presented album' AND r.musicbrainz_id IS NULL`))
 }
+
+// TestOccurrenceExternalRecordingClaim preserves the validated recording on a conflicting service hint.
+func TestOccurrenceExternalRecordingClaim(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `INSERT INTO release_aliases VALUES(1,'Album','Fixture',1);
+		UPDATE recordings SET musicbrainz_id=?,mbid_source='validated' WHERE id=(SELECT recording_id FROM occurrences WHERE id=1);
+		UPDATE track_aliases SET alias='Single song' WHERE track_id=1 AND is_primary=1`, fixtureRecording)
+	item := ingest.Snapshot{Title: "Single song", Artist: "Artist", Release: "Album", Recording: uuid.NewString(),
+		MBIDSource: "external-service", MBIDDeclaredAt: "2026-11-20T00:00:00Z"}
+	id := admitOccurrenceFixture(t, s, item, 1400, "external-hint")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "accepted")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN recordings r ON r.id=e.recording_id
+		WHERE e.receipt_id=? AND e.occurrence_id=1 AND r.musicbrainz_id=?
+		AND json_extract(e.original_snapshot,'$.mbid_source')='external-service'`, id, fixtureRecording))
+	item.MBIDSource = ""
+	id = admitOccurrenceFixture(t, s, item, 1410, "source-contradiction")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "pending_identity")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND json_extract(evidence,'$.candidates[0]')='occurrence:1'`, id))
+}
