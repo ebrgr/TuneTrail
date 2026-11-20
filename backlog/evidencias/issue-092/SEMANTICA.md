@@ -7,7 +7,11 @@ O [doc-044](../../docs/estudos/doc-044%20-%20ISSUE-092-—-Semântica-das-estat�
 - **Ranking da ISSUE-135:** padrão por gravação com alternância para faixas do lançamento, como já registrado na tarefa. Preferência persistente por perfil é uma decisão independente.
 - **Eventos aceitos:** uma escuta por evento vivo do perfil, incluindo ocorrências autônomas. Usar «Sem lançamento» para reconciliar os totais. Recibos pendentes ou repetidos não acrescentam escutas. A v0.47 já soma o evento autônomo em reproduções, mas as junções legadas podem omiti-lo do histórico e do top de faixas.
 
+## Decisão do usuário (20/11/2026)
+
+Semântica e tarefas aprovadas, com um ajuste: **o fuso não aparece na interface**. Ele continua sendo o fuso IANA único da consulta (do perfil ou do navegador) usado internamente no recorte e na data de hoje, mas não é exibido nem rotulado ao usuário; o rótulo visível é só «até agora». Tarefas abertas: ISSUE-176 (alinhar a média diária ao período) e ISSUE-177 (reduzir leituras históricas repetidas, depois da ISSUE-135).
+
 ## ESTADO
 
 - Feito: inventário e recomendação no doc-044.
-- Pendente: aceite do usuário para o AC1. Medições e propostas de correção em BENCHMARK.md.
+- Feito: aceite do usuário (AC1) e aprovação das tarefas (AC3). Medições e propostas de correção em BENCHMARK.md.
