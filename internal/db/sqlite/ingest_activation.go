@@ -42,6 +42,10 @@ func (s *Sqlite) SetIngestActivation(ctx context.Context, session uuid.UUID, pro
 		if err := checkIngestRoot(ctx, tx, session); err != nil {
 			return err
 		}
+		// Keep review disabled until the operator queue is available.
+		if review {
+			return db.ErrIngestReviewUnavailable
+		}
 		current, err := ingestActivationFlags(ctx, tx, profile)
 		if err != nil {
 			return err

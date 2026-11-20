@@ -47,6 +47,9 @@ func TestIngestActivationConfirmation(t *testing.T) {
 	require.Positive(t, preview.Groups[0].SnapshotBytes)
 	require.False(t, preview.Active)
 	require.False(t, preview.Review)
+	err = s.SetIngestActivation(ctx, session.ID, target.ID, true, true, preview.Digest)
+	require.ErrorIs(t, err, db.ErrInvalidInput)
+	require.ErrorContains(t, err, "review requires the ingestion review queue")
 
 	batch.Items[0].Snapshot.Title = "Conflicting variant"
 	_, err = s.ReceiveBatch(ctx, batch)
