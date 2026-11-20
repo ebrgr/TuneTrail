@@ -423,3 +423,20 @@ func TestOccurrenceWriteConflicts(t *testing.T) {
 	require.ErrorIs(t, err, db.ErrConflict)
 	require.ErrorContains(t, err, "recordings.musicbrainz_id")
 }
+
+// TestOccurrenceLinkedReleaseGuard rejects merge reassignment and permits release deletion.
+func TestOccurrenceLinkedReleaseGuard(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	item := ingest.Snapshot{Title: "Track", Artist: "Artist", Release: "Bound release"}
+	id := admitOccurrenceFixture(t, s, item, 1600, "release-guard")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "accepted")
+	release := scalar(t, s, `SELECT release_id FROM release_aliases WHERE alias='Bound release'`)
+	err := s.MergeAlbums(context.Background(), int32(release), 1, false)
+	require.ErrorIs(t, err, db.ErrConflict)
+	require.ErrorContains(t, err, "Cannot move release")
+	requireReceiptState(t, s, id, "accepted")
+	execSQL(t, s, `DELETE FROM releases WHERE id=?`, release)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, id))
+	require.NoError(t, checkIntegrity(s.db))
+}

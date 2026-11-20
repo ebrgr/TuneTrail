@@ -692,6 +692,10 @@ func mergeAlbumsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replaceI
 
 	if _, err := tx.ExecContext(ctx,
 		`UPDATE tracks SET release_id = ? WHERE release_id = ?`, toId, fromId); err != nil {
+		// A linked occurrence cannot be reassigned to a different release by the legacy merge.
+		if isOccurrenceGuard(err, "Cannot move release of a linked occurrence") {
+			return fmt.Errorf("MergeAlbums: %w: %w", db.ErrConflict, err)
+		}
 		return fmt.Errorf("MergeAlbums: move tracks: %w", err)
 	}
 

@@ -93,6 +93,17 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Preserve linked release identity while allowing a release deletion to clear its foreign key.
+-- +goose StatementBegin
+CREATE TRIGGER trg_occurrence_linked_release_guard BEFORE UPDATE OF release_id ON occurrences
+WHEN NEW.release_id IS NOT NULL AND NEW.release_id IS NOT OLD.release_id AND EXISTS (
+    SELECT 1 FROM listens l JOIN ingest_events e ON (e.profile_id,e.event_id)=(l.profile_id,l.event_id)
+    WHERE l.track_id=OLD.id AND e.resolver_variant='occurrence')
+BEGIN
+    SELECT RAISE(ABORT,'Cannot move release of a linked occurrence');
+END;
+-- +goose StatementEnd
+
 -- +goose Down
 -- Restore the pre-upgrade backup instead of removing the writer boundary.
 CREATE TEMP TABLE occurrence_writer_downgrade_guard (value INTEGER CHECK(value=0));
