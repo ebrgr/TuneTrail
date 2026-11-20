@@ -29,7 +29,7 @@ Origem: parecer do Advisor na ISSUE-155; confirmação de saída aprovada pelo u
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 Sair… aparece no menu (+) só com sessão administrativa válida e abre uma página de confirmação; o GET não revoga a sessão
-- [x] #2 O botão Sair faz o POST protegido existente, revoga só a sessão atual, limpa os cookies e redireciona para /admin; Cancelar volta a um destino interno validado
+- [x] #2 O botão Sair faz o POST protegido existente, revoga só a sessão atual, limpa os cookies e redireciona para o diretório público, que oferece Entrar (reescopo de 20/11/2026; antes: /admin); Cancelar volta a um destino interno validado, com Conta ou diretório como fallback
 - [x] #3 Provas de CSRF, sessão expirada, ticket reutilizado e duas abas; funciona sem JavaScript; ícone LogOut adicionado ao catálogo local
 - [ ] #4 Aceite visual do usuário
 - [x] #5 Sair… disponível a qualquer sessão válida (não só administrativa) e presente na Conta e na 403; Cancelar volta a destino validado
@@ -80,6 +80,15 @@ created: 2026-11-20T21:23:00Z
 ---
 
 Correções do Reviewer verificadas: ícone oficial Lucide log-out, retorno de Cancelar nas páginas administrativas e no diretório quando permitido, e comentários em inglês. Cancelar recebe o foco inicial e Tab chega a Sair sem JavaScript. A matriz de métodos e o CHANGELOG foram atualizados. Referência e oito capturas regeneradas. Testes Go dos pacotes afetados e make check passaram (13/13 jornadas). AC4 segue pendente para aceite visual.
+
+---
+
+author: claude
+created: 2026-11-20T21:23:00Z
+
+---
+
+Texto do AC2 ajustado: o destino após sair é o diretório público (que oferece Entrar), conforme o reescopo de 20/11/2026 e o comportamento verificado e revisado; o texto original dizia /admin.
 
 ---
 <!-- COMMENTS:END -->
