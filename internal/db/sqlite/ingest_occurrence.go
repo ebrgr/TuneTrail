@@ -18,8 +18,23 @@ import (
 const occurrenceRuleVersion = "occurrence-v1"
 
 type occurrenceProof struct {
-	release, recording, track string
-	conflict                  bool
+	release, recording, track         string
+	conflict, ignoreDeclaredRecording bool
+	evidence                          *occurrenceMBEvidence
+}
+
+type occurrenceMBEvidence struct {
+	ReleaseRequested     string `json:"release_requested"`
+	ReleaseReturned      string `json:"release_returned"`
+	ReleaseTitle         string `json:"release_title"`
+	DeclaredReleaseTitle string `json:"declared_release_title"`
+	ReleaseTitleDiffers  bool   `json:"release_title_differs,omitempty"`
+	RecordingDeclared    string `json:"recording_declared,omitempty"`
+	RecordingReturned    string `json:"recording_returned,omitempty"`
+	TrackRecording       string `json:"track_recording,omitempty"`
+	TrackDeclared        string `json:"track_declared,omitempty"`
+	TrackReturned        string `json:"track_returned,omitempty"`
+	TrackTitle           string `json:"track_title,omitempty"`
 }
 
 type occurrenceMatch struct {
@@ -45,10 +60,21 @@ func verifyOccurrence(ctx context.Context, snapshot ingest.Snapshot, client mbz.
 	if err != nil || release == nil {
 		return occurrenceProof{}
 	}
-	if release.ID != releaseID.String() || release.Title != snapshot.Release {
-		return occurrenceProof{conflict: true}
+	canonicalRelease := uuidFromSnapshot(release.ID)
+	if canonicalRelease == uuid.Nil {
+		return occurrenceProof{}
 	}
-	proof := occurrenceProof{release: release.ID}
+	evidence := &occurrenceMBEvidence{
+		ReleaseRequested: releaseID.String(), ReleaseReturned: canonicalRelease.String(),
+		ReleaseTitle: release.Title, DeclaredReleaseTitle: snapshot.Release, TrackDeclared: snapshot.TrackMBID,
+	}
+	if release.Title != snapshot.Release {
+		// Different presented titles leave identity to the catalog's metadata comparison.
+		evidence.ReleaseTitleDiffers = true
+		return occurrenceProof{evidence: evidence}
+	}
+	proof := occurrenceProof{release: canonicalRelease.String()}
+
 	var matches []mbz.MusicBrainzReleaseTrack
 	for _, medium := range release.Media {
 		for _, track := range medium.Tracks {
@@ -65,9 +91,22 @@ func verifyOccurrence(ctx context.Context, snapshot ingest.Snapshot, client mbz.
 	if len(matches) == 1 {
 		track := matches[0]
 		declared := uuidFromSnapshot(snapshot.Recording, snapshot.MappedRecording)
-		if declared != uuid.Nil && declared.String() != track.Recording.ID {
-			return occurrenceProof{conflict: true}
+		recording := uuidFromSnapshot(track.Recording.ID)
+		if snapshot.MBIDSource == "" && declared != uuid.Nil && recording != uuid.Nil && declared != recording {
+			evidence.RecordingDeclared, evidence.TrackRecording = declared.String(), recording.String()
+			evidence.TrackReturned, evidence.TrackTitle = track.ID, track.Title
+			found, err := client.GetTrack(ctx, declared)
+			if err != nil || found == nil || uuidFromSnapshot(found.ID) == uuid.Nil {
+				// A failed canonical lookup provides no evidence against the declaration.
+				return occurrenceProof{ignoreDeclaredRecording: true}
+			}
+			resolved := uuidFromSnapshot(found.ID)
+			evidence.RecordingReturned = resolved.String()
+			if resolved != recording {
+				return occurrenceProof{conflict: true, evidence: evidence}
+			}
 		}
+
 		if uuidFromSnapshot(track.Recording.ID) != uuid.Nil {
 			proof.recording = track.Recording.ID
 		}
@@ -115,30 +154,30 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		}
 		origin := occurrenceOrigin(r)
 		if proof.conflict {
-			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "contradictory_musicbrainz_identity", precision, nil, "")
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "contradictory_musicbrainz_identity", precision, nil, "", proof.evidence)
 		}
 		if r.snapshot.Release == "" && !s.allowStandaloneOccurrences {
-			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "release_missing", precision, nil, "")
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "release_missing", precision, nil, "", proof.evidence)
 		}
 		if origin == "" || strings.TrimSpace(r.snapshot.Title) == "" || len(observedCredits(r.snapshot)) == 0 || r.snapshot.DiscNumber < 0 || r.snapshot.TrackNumber < 0 {
-			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "unresolved_identity", precision, nil, "")
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "unresolved_identity", precision, nil, "", proof.evidence)
 		}
 		if admissionReason == "client_batch_conflict" {
-			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_duplicate", admissionReason, precision, nil, "")
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_duplicate", admissionReason, precision, nil, "", proof.evidence)
 		}
 		match, conflicts, err := resolveOccurrence(ctx, tx, r.snapshot, proof)
 		if err != nil {
 			return err
 		}
 		if len(conflicts) > 0 {
-			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_occurrence", precision, conflicts, "")
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_occurrence", precision, conflicts, "", proof.evidence)
 		}
 		candidates, reason, err := occurrenceListenCandidates(ctx, tx, r, match.id)
 		if err != nil {
 			return err
 		}
 		if len(candidates) > 0 {
-			return writeOccurrenceDecision(ctx, tx, r, match, "pending_duplicate", reason, precision, candidates, "")
+			return writeOccurrenceDecision(ctx, tx, r, match, "pending_duplicate", reason, precision, candidates, "", proof.evidence)
 		}
 		if match.id == 0 {
 			conflicts, err := occurrenceCreditConflicts(ctx, tx, observedCredits(r.snapshot))
@@ -146,7 +185,7 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 				return err
 			}
 			if len(conflicts) > 0 {
-				return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_artist_credit", precision, conflicts, "")
+				return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_artist_credit", precision, conflicts, "", proof.evidence)
 			}
 			match, err = createOccurrence(ctx, tx, r.snapshot, proof, match)
 			if err != nil {
@@ -170,12 +209,12 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			return fmt.Errorf("write occurrence listen: %w", err)
 		}
 		// Converted profiles cannot have relay configuration, so no intent is eligible.
-		return writeOccurrenceDecision(ctx, tx, r, match, "accepted", "distinct_occurrence_event", precision, nil, event)
+		return writeOccurrenceDecision(ctx, tx, r, match, "accepted", "distinct_occurrence_event", precision, nil, event, proof.evidence)
 	})
 }
 
 // writeOccurrenceDecision persists the final state and its revision in the same transaction.
-func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt, match occurrenceMatch, state, reason, precision string, candidates []string, event string) error {
+func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt, match occurrenceMatch, state, reason, precision string, candidates []string, event string, mbEvidence *occurrenceMBEvidence) error {
 	status, decision := "pending", "review"
 	var closed any
 	now := time.Now().Unix()
@@ -185,10 +224,11 @@ func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt
 		status = "resolved"
 	}
 	evidence, err := json.Marshal(struct {
-		Candidates []string `json:"candidates,omitempty"`
-		Precision  string   `json:"precision"`
-		Truncated  bool     `json:"truncated,omitempty"`
-	}{candidates[:min(len(candidates), 32)], precision, len(candidates) > 32})
+		Candidates  []string              `json:"candidates,omitempty"`
+		Precision   string                `json:"precision"`
+		Truncated   bool                  `json:"truncated,omitempty"`
+		MusicBrainz *occurrenceMBEvidence `json:"musicbrainz,omitempty"`
+	}{candidates[:min(len(candidates), 32)], precision, len(candidates) > 32, mbEvidence})
 	if err != nil {
 		return err
 	}

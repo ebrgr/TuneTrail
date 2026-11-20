@@ -8,6 +8,7 @@ import (
 )
 
 type MusicBrainzTrack struct {
+	ID       string `json:"id"`
 	Title    string `json:"title"`
 	LengthMs int    `json:"length"`
 }

@@ -17,11 +17,16 @@ const fixtureRecording = "fa000000-0000-4000-8000-000000000001"
 
 type occurrenceReleaseFixture struct {
 	mbz.MbzErrorCaller
-	releases map[uuid.UUID]*mbz.MusicBrainzRelease
+	releases   map[uuid.UUID]*mbz.MusicBrainzRelease
+	recordings map[uuid.UUID]*mbz.MusicBrainzTrack
 }
 
 func (m occurrenceReleaseFixture) GetRelease(_ context.Context, id uuid.UUID) (*mbz.MusicBrainzRelease, error) {
 	return m.releases[id], nil
+}
+
+func (m occurrenceReleaseFixture) GetTrack(_ context.Context, id uuid.UUID) (*mbz.MusicBrainzTrack, error) {
+	return m.recordings[id], nil
 }
 
 // convertedOccurrenceFixture installs an opt-in after legacy fixture setup.
@@ -320,4 +325,38 @@ func TestOccurrenceCutRequiresClearedShadow(t *testing.T) {
 	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow' AND event_id IS NULL`)
 	execSQL(t, s, convert)
 	require.Equal(t, 1, scalar(t, s, `SELECT occurrence_write FROM profile_ingest_flags WHERE profile_id=1`))
+}
+
+// TestOccurrenceProofRedirects distinguishes canonical IDs, missing proof and conflicting recordings.
+func TestOccurrenceProofRedirects(t *testing.T) {
+	request, canonical, recording := uuid.New(), uuid.New(), uuid.New()
+	track := mbz.MusicBrainzReleaseTrack{Title: "Song", ID: uuid.NewString(), Position: 1}
+	track.Recording.ID = fixtureRecording
+	release := &mbz.MusicBrainzRelease{ID: canonical.String(), Title: "Album", Media: []mbz.MusicBrainzMedium{{Position: 1, Tracks: []mbz.MusicBrainzReleaseTrack{track}}}}
+	client := &occurrenceReleaseFixture{releases: map[uuid.UUID]*mbz.MusicBrainzRelease{request: release},
+		recordings: map[uuid.UUID]*mbz.MusicBrainzTrack{recording: {ID: fixtureRecording}}}
+	item := ingest.Snapshot{Title: track.Title, Artist: "Artist", Release: release.Title, ReleaseMBID: request.String(), Recording: recording.String(), TrackMBID: track.ID}
+	proof := verifyOccurrence(context.Background(), item, client)
+	require.False(t, proof.conflict)
+	require.Equal(t, canonical.String(), proof.release)
+	require.Equal(t, fixtureRecording, proof.recording)
+	delete(client.recordings, recording)
+	proof = verifyOccurrence(context.Background(), item, client)
+	require.False(t, proof.conflict)
+	require.True(t, proof.ignoreDeclaredRecording)
+	require.Empty(t, proof.recording)
+	client.recordings[recording] = &mbz.MusicBrainzTrack{ID: recording.String()}
+	proof = verifyOccurrence(context.Background(), item, client)
+	require.True(t, proof.conflict)
+	require.Equal(t, recording.String(), proof.evidence.RecordingReturned)
+	item.Release = "Presented album"
+	s := convertedOccurrenceFixture(t)
+	id := admitOccurrenceFixture(t, s, item, 1300, "title-disagreement")
+	resolveOccurrenceFixture(t, s, client)
+	requireReceiptState(t, s, id, "accepted")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?
+		AND json_extract(evidence,'$.musicbrainz.release_title_differs')=1
+		AND json_extract(evidence,'$.musicbrainz.release_returned')=?`, id, canonical.String()))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM release_aliases a JOIN releases r ON r.id=a.release_id
+		WHERE a.alias='Presented album' AND r.musicbrainz_id IS NULL`))
 }

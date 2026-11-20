@@ -43,6 +43,9 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		}
 	}
 	declaredID := uuidFromSnapshot(snapshot.Recording, snapshot.MappedRecording)
+	if proof.ignoreDeclaredRecording {
+		declaredID = uuid.Nil
+	}
 	declared := declaredID.String()
 	if proof.recording != "" {
 		declared = proof.recording
@@ -91,7 +94,7 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		differentPosition := snapshot.DiscNumber > 0 && c.disc > 0 && snapshot.DiscNumber != c.disc ||
 			snapshot.TrackNumber > 0 && c.position > 0 && snapshot.TrackNumber != c.position
 		differentRecording := match.recording != 0 && match.recording != c.recording ||
-			c.validated && snapshot.Recording != "" && c.recordingMBID != declared ||
+			c.validated && declaredID != uuid.Nil && c.recordingMBID != declared ||
 			proof.recording != "" && c.recordingMBID != "" && c.recordingMBID != proof.recording
 		byTrack := track != "" && track == c.trackMBID
 		byPosition := snapshot.DiscNumber > 0 && snapshot.TrackNumber > 0 && c.disc == snapshot.DiscNumber && c.position == snapshot.TrackNumber
