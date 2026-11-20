@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T19:58:00Z'
+updated_date: '2026-11-20T20:13:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -103,6 +103,15 @@ created: 2026-11-20T19:58:00Z
 ---
 
 Emenda da E1 após parecer Advisor high (REPROVADO COM RESSALVAS). Corrigida a própria 010 em sete commits: flag ativa com chave fixa e cascata, título e ponte, aborto de merge sem revisão sob OR IGNORE, asserções de reparo, índice de artista, comentários em inglês e IDs obrigatórios no primeiro vínculo. Testes focados e make check (13/13 jornadas) passaram. Conforme pedido, preservadas as evidências anteriores de replay v0.44 e carga de 300 mil sem repetir os ensaios. Pendências registradas no plano: BEGIN IMMEDIATE para MergeTracks e guarda de release para MergeAlbums (E2 ou 135), risco de INSERT OR REPLACE nas flags, e CHANGELOG em inglês antes do Reviewer da E3. Orientações da E2 registradas no plano. E1 parada para nova revisão, com ACs abertos.
+
+---
+
+author: codex
+created: 2026-11-20T20:13:00Z
+
+---
+
+E2 concluída e parada para revisão do Advisor. Resolvedor occurrence-v1 com prova tipada fora do lock, decisões e catálogo atômicos, A/B e Intro, pendências conservadoras, recuperação por lease e COMMIT. 011 protege variante, origem, corte e relay no banco, com justificativa no plano e 010 intacta. Perfil convertido com mestre desligado retorna 503 e Retry-After, sem recibo nem escuta. Replay desligado v0.44 e restore passaram com 18 escutas e 18 recibos, e make check passou 13/13 jornadas. Fixture sobreposta: uma escuta, duas pendências, 0,91 ms até visibilidade no SQLite e 1,96 ms somados em três resoluções. Adaptadores na E3. BEGIN IMMEDIATE do merge legado e proteção de MergeAlbums ficam na 135. ACs abertos.
 
 ---
 <!-- COMMENTS:END -->

@@ -99,6 +99,18 @@ O replay de `scripts/rehearse_issue134_e1.py` usou binários compilados da tag v
 
 A medição separada executou o SQL da 010 em transação com SQLite do Python. O boot usou o binário Go e inclui backup, validações de integridade e inicialização. Neste ensaio, o DDL levou mais tempo que o backup isolado. Os testes Go cobrem upgrade com WAL, falhas antes e depois do reparo, segunda abertura, remoções de faixa, release e perfil, e merge legado de recibos v9 com e sem colisão. O ensaio de carga cobre um vínculo divergente. `make check` passou, com 13/13 jornadas de ponta a ponta, incluindo inicialização limpa e rotas de upgrade. Os testes Go de recuperação também verificam a recusa de versões futuras.
 
+## Evidência da E2
+
+A 011 protege no SQL a admissão, a origem do vínculo, o corte com recibos v9 em aberto e a configuração de relay. A 010 permanece fechada. Backups de uma base já v10 recebem o sufixo `.pre-occurrence-writer-*.bak`. A admissão no mestre desligado pausa perfis convertidos e o worker segue resolvendo recibos já admitidos. A entrada de jobs de arquivo usa o gate central para pausar perfis convertidos até a E3. Os testes de sobreposição entram diretamente pelo envelope persistente, usando os formatos definidos pela E1.
+
+O resolvedor `occurrence-v1` valida evidência de release-track tipada fora da reserva e revalida o lease, as versões, o perfil e o catálogo depois de BEGIN IMMEDIATE. O caso verificado com relay inelegível persiste escuta e decisão/revisão sem intenção de entrega. A/B mantém uma gravação e duas pontes consultáveis, inclusive no mesmo segundo. A ponte secundária descarta a gravação provisória órfã. O modo de ensaio sem álbum foi exercitado em bancos descartáveis pelo fixture interno.
+
+Em `go test ./internal/db/sqlite -run 'TestOccurrence' -count=1 -v`, a primeira escuta ficou visível no banco cerca de **0,91 ms** após a admissão, e três chamadas diretas ao resolvedor somaram **1,96 ms**. A fixture de três importações sobrepostas produziu uma escuta e duas pendências: uma colisão exata da tripla e um candidato na janela de ±2 s. A amostra usa SQLite local, sem rede e sem o tempo de espera do worker em uma fila operacional.
+
+A submissão ListenBrainz com mestre desligado em perfil convertido respondeu 503 com `Retry-After: 1` e deixou zero recibos e escutas. O replay desligado contra a tag v0.44 coincidiu em 18 escutas e 18 recibos em sombra, além da exportação. O exercício também abriu a cópia v9 restaurada com o binário da tag.
+
+Os testes verificam concorrência por duas conexões na admissão/resolução de A/B, ambiguidade por faixa ou posição, declarações de serviço, reaproveitamento da ponte após prova, remoção da faixa primária, conflito no merge, perda de lease e falha do COMMIT. `make check` passou com 13/13 jornadas. A migração para BEGIN IMMEDIATE no merge legado e a guarda de release de MergeAlbums ficaram para o corte de mutações da 135.
+
 ## Dependências e sequência
 
 - **135/172.** Histórico e exportação dependem de JOIN em tracks/releases (`listen.go:137–172`, `exports.go:22–23`), enquanto contagens em `listen.go:108–110,122–124` podem incluir ocorrências autônomas. Isso causa paginação incoerente e exportação incompleta. D1 conserva visibilidade por ponte e D2 contém a forma autônoma no ensaio. A 135 entrega leitores e mutações por ocorrência/evento, cursor e retirada da tripla. Coordenar retirada da ponte, alocador e flag com 135/172.
@@ -119,12 +131,12 @@ A medição separada executou o SQL da 010 em transação com SQLite do Python. 
 
 ### Pendências da E2, E3 e 135
 
-- **E2 ou 135.** `MergeTracks` (`track.go:684`) abre transação adiada e lê antes de escrever. A promoção da leitura para escrita pode retornar SQLITE_BUSY sem aguardar busy_timeout diante do worker com BEGIN IMMEDIATE. O merge também escreve no ledger desde a E1. Migrá-lo para BEGIN IMMEDIATE.
-- **E2 ou 135.** `MergeAlbums` (`album.go:694`) altera occurrences.release_id pela ponte, sem guarda para vínculos occurrence. Coordenar a proteção com as mutações por ocorrência.
+- **135.** `MergeTracks` (`track.go:684`) abre transação adiada e lê antes de escrever. A promoção da leitura para escrita pode retornar SQLITE_BUSY sem aguardar busy_timeout diante do worker com BEGIN IMMEDIATE. O merge também escreve no ledger desde a E1. Migrá-lo para BEGIN IMMEDIATE.
+- **135.** `MergeAlbums` (`album.go:694`) altera occurrences.release_id pela ponte, sem guarda para vínculos occurrence. Coordenar a proteção com as mutações por ocorrência.
 - **E2.** `INSERT OR REPLACE` pode contornar a guarda de remoção de flag quando recursive_triggers está desligado. Os fluxos atuais usam INSERT/UPDATE ou upsert. Documentar o risco ao introduzir escritores novos.
 - **E3, antes do Reviewer.** Registrar em inglês no CHANGELOG o upgrade v9→v10, o backup `.pre-occurrence-ingest-*.bak` e a recusa de v10 pela v0.44, seguindo o formato da entrada da v8.
 
-**E2 autorizada.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala exclusivamente guardas de variante, origem, conversão e relay. A E3 aguarda revisão do resolvedor.
+**Parada após a E2.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala exclusivamente guardas de variante, origem, conversão e relay. A E3 aguarda revisão do resolvedor.
 
 1. **E1.** Migração 010 e testes de upgrade, restore, cascatas e replay contra a tag v0.44. **Parada para Advisor high.**
 2. **E2.** Resolvedor, ACs 1–3 e 6, incluindo corrida de duas conexões. **Parada para Advisor.**
