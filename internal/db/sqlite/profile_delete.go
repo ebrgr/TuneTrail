@@ -155,6 +155,11 @@ func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDele
 	if current.Fingerprint != expected.Fingerprint || current.Count != expected.Count {
 		return 0, db.ErrConflict
 	}
+	if current.Count > 0 {
+		if err := closeSelectedActiveReceipts(ctx, tx, expected.ProfileID, selection, args); err != nil {
+			return 0, staleWriteConflict(err)
+		}
+	}
 	result, err := tx.ExecContext(ctx, `DELETE FROM listens WHERE profile_id=? AND rowid IN (SELECT rowid FROM (`+selection+`))`, append([]any{expected.ProfileID}, args...)...)
 	if err != nil {
 		return 0, staleWriteConflict(fmt.Errorf("delete profile listens: %w", err))
@@ -168,20 +173,6 @@ func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDele
 	}
 	// Shadow receipts have no stable event link for a bulk catalog deletion.
 	if count > 0 {
-		// Open receipts have no stable event link. Close them before releasing the
-		// writer so even a worker already holding a lease cannot recreate history.
-		const open = `profile_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')`
-		if _, err := tx.ExecContext(ctx, `INSERT INTO ingest_revisions
-			SELECT profile_id,receipt_id,resolution_version+1,'automatic','invalid','["profile_history_deleted"]','{}',?,unixepoch()
-			FROM ingest_events WHERE `+open, activeRuleVersion, expected.ProfileID); err != nil {
-			return 0, staleWriteConflict(err)
-		}
-		if _, err := tx.ExecContext(ctx, `UPDATE ingest_events SET state='invalid',identity_status='invalid',duplicate_decision=NULL,
-			reason_codes='["profile_history_deleted"]',evidence='{}',rule_version=?,resolution_version=resolution_version+1,
-			resolved_at=unixepoch(),closed_at=unixepoch(),lease_owner=NULL,lease_until=NULL,next_attempt_at=NULL
-			WHERE `+open, activeRuleVersion, expected.ProfileID); err != nil {
-			return 0, staleWriteConflict(err)
-		}
 		if _, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND mode='shadow'`, expected.ProfileID); err != nil {
 			return 0, staleWriteConflict(err)
 		}

@@ -201,34 +201,52 @@ func TestIngestDigestUpgrade(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='v1' AND digest_version=?`, ingest.DigestVersion))
 }
 
-// TestProfileDeleteClosesActiveIngest revokes claims in the affected profile atomically.
+// TestProfileDeleteClosesActiveIngest closes only work matching the deleted tracks.
 func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 	ctx := context.Background()
 	s, _, _ := migrationDB(t, 9)
 	seedIdentityHistory(t, s)
+	execSQL(t, s, `INSERT INTO tracks(id,release_id,duration) VALUES(71,1,100);
+		INSERT INTO track_aliases VALUES(71,'U','Canonical',1)`)
+	at := time.Unix(100, 0)
+	var related, unrelated string
 	for _, profile := range []int32{1, 2} {
 		batch := ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", ReceivedAt: time.Now(),
-			Items: []ingest.Item{{Ordinal: 0, Snapshot: ingest.Snapshot{Artist: "A", Title: "T"}},
-				{Ordinal: 1, Snapshot: ingest.Snapshot{Artist: "B", Title: "U"}}}}
+			Items: []ingest.Item{
+				{Ordinal: 0, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "different", Title: "different", CatalogTrackID: 70}},
+				{Ordinal: 1, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: " ARTIST ", Title: "opening"}},
+				{Ordinal: 2, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "B", Title: "U", CatalogTrackID: 71}},
+				{Ordinal: 3, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "other artist", Title: "Intro"}},
+			}}
 		pinned := true
 		_, results, err := s.AdmitIngest(ctx, batch, true, &pinned, nil)
 		require.NoError(t, err)
-		execSQL(t, s, `UPDATE ingest_events SET state='retryable',lease_owner='old',lease_until=unixepoch()+60
-			WHERE receipt_id=?`, results[1].ReceiptID)
+		if profile == 1 {
+			related, unrelated = results[0].ReceiptID, results[2].ReceiptID
+		}
 	}
-	var claimed string
-	require.NoError(t, s.db.QueryRow(`SELECT receipt_id FROM ingest_events WHERE profile_id=1 AND lease_owner='old'`).Scan(&claimed))
+	execSQL(t, s, `UPDATE ingest_events SET state='retryable',lease_owner='old',lease_until=unixepoch()+60
+		WHERE receipt_id=?`, related)
 	plan, err := s.PreviewProfileDelete(ctx, 1, "track", 1)
 	require.NoError(t, err)
-	require.Positive(t, plan.Count)
+	require.EqualValues(t, 2, plan.Count)
 	deleted, err := s.ApplyProfileDelete(ctx, plan)
 	require.NoError(t, err)
 	require.Equal(t, plan.Count, deleted)
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND state='invalid'
 		AND closed_at IS NOT NULL AND lease_owner IS NULL AND resolution_version=1`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1 AND decision='invalid'`))
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
-	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: claimed, profile: 1, track: 1, lease: "old", unix: 42}), sql.ErrNoRows)
+	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND closed_at IS NULL`))
+	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: related, profile: 1, track: 70, lease: "old", unix: 100}), sql.ErrNoRows)
+	// Leave only the unrelated native receipt eligible for this resolver pass.
+	execSQL(t, s, `UPDATE ingest_events SET next_attempt_at=unixepoch()+60
+		WHERE closed_at IS NULL AND receipt_id<>?`, unrelated)
+	found, err := s.ResolveNextIngest(ctx, nil)
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN listens l ON l.event_id=e.event_id
+		WHERE e.receipt_id=? AND e.state='accepted' AND l.track_id=71`, unrelated))
 }
 
 // TestExpiredIngestLeaseCanBeReclaimed checks CAS while the new claim is still open.
