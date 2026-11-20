@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-20T21:24:00Z'
+updated_date: '2026-11-20T21:25:00Z'
 labels:
   - admin
   - ui
@@ -98,6 +98,15 @@ created: 2026-11-20T21:24:00Z
 ---
 
 Aceite do usuário em 20/11/2026: AC4 (aceite visual da página de confirmação de saída, testada ao vivo em servidor isolado com contas fictícias, e capturas em Yuu e Pearl). Reviewer: 3 itens obrigatórios corrigidos pelo Codex (ícone LogOut oficial do Lucide, Cancelar preservando a página de origem, comentários em inglês) mais ressalvas (matriz de métodos, foco inicial em Cancelar, CHANGELOG). Observação: o texto do AC1 («só com sessão administrativa válida») é anterior ao reescopo de 20/11/2026 e vale para qualquer sessão válida, como o AC5 registra.
+
+---
+
+author: ebrgr
+created: 2026-11-20T21:25:00Z
+
+---
+
+Publicação: versão 0.46 (tag `v0.46`), branch `feat/issue-157-sair-da-sessao-pela-pagina` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
