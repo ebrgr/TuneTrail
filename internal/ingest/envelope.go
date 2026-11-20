@@ -23,6 +23,11 @@ const (
 
 // Snapshot only carries fields explicitly selected by an adapter.
 type Snapshot struct {
+	TrackMBID          string          `json:"track_mbid,omitempty"`
+	DiscNumber         int             `json:"disc_number,omitempty"`
+	TrackNumber        int             `json:"track_number,omitempty"`
+	MBIDSource         string          `json:"mbid_source,omitempty"`
+	MBIDDeclaredAt     string          `json:"mbid_declared_at,omitempty"`
 	CatalogTrackID     int32           `json:"catalog_track_id,omitempty"`
 	ArtistMBIDs        []string        `json:"artist_mbids,omitempty"`
 	MappedArtistMBIDs  []string        `json:"mapped_artist_mbids,omitempty"`

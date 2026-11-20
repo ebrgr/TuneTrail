@@ -21,10 +21,10 @@ const activeRuleVersion = "active-v1"
 var errIngestTrackMissing = errors.New("ingest track no longer exists")
 
 type claimedReceipt struct {
-	id, lease, client, source string
-	profile, track            int32
-	version, work, unix       int64
-	snapshot                  ingest.Snapshot
+	id, lease, client, source, variant, format string
+	profile, track                             int32
+	version, work, unix                        int64
+	snapshot                                   ingest.Snapshot
 }
 
 // ResolveNextIngest claims one active receipt independently of the admission flags.
@@ -42,6 +42,13 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 		return true, s.retryIngest(ctx, receipt, err)
 	}
 	receipt.client = receipt.snapshot.Client
+	if receipt.variant == "occurrence" {
+		proof := verifyOccurrence(ctx, receipt.snapshot, mbzc)
+		if err := s.finishOccurrence(ctx, receipt, proof); err != nil {
+			return true, s.retryIngest(ctx, receipt, err)
+		}
+		return true, nil
+	}
 	// Only the native file adapter can pin a locally associated track.
 	if receipt.source == ingest.ShadowSourceFile {
 		receipt.track = receipt.snapshot.CatalogTrackID
@@ -86,8 +93,8 @@ func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, s
 	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,attempt_count=attempt_count+1
 		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')
 		AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
-		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type`,
-		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source)
+		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,'')`,
+		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format)
 	if errors.Is(err, sql.ErrNoRows) {
 		return claimedReceipt{}, "", "", nil
 	}

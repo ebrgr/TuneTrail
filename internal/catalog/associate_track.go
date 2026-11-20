@@ -62,7 +62,12 @@ func matchTrackByMbzID(ctx context.Context, d db.TrackStore, opts AssociateTrack
 		}); err != nil {
 			return nil, fmt.Errorf("matchTrackByMbzID: fill recording ID: %w", err)
 		}
-		track.MbzID = &opts.TrackMbzID
+		// A protected recording may decline a legacy fill while still accepting the listen.
+		updated, err := d.GetTrack(ctx, db.GetTrackOpts{ID: track.ID})
+		if err != nil {
+			return nil, fmt.Errorf("matchTrackByMbzID: reload recording ID: %w", err)
+		}
+		track.MbzID = updated.MbzID
 	}
 	return track, nil
 }

@@ -174,17 +174,26 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 	}
 	defer tx.Rollback()
 
-	// Allocate past the occurrence high-water mark even after deleting the highest track.
-	res, err := tx.ExecContext(ctx,
-		`INSERT INTO tracks (id, musicbrainz_id, release_id, duration)
-		 VALUES (max(coalesce((SELECT seq FROM sqlite_sequence WHERE name='occurrences'),0),
-		             coalesce((SELECT max(id) FROM tracks),0))+1,?,?,?)`,
-		nullableUUID(&opts.RecordingMbzID), opts.AlbumID, opts.Duration,
-	)
-	if err != nil {
+	// A surviving recording can outlive the primary bridge that carried its MBID.
+	var recording, id64 int64
+	if opts.RecordingMbzID != uuid.Nil {
+		err = tx.QueryRowContext(ctx, `SELECT coalesce((SELECT id FROM recordings WHERE musicbrainz_id=? AND NOT EXISTS (SELECT 1 FROM tracks WHERE musicbrainz_id=recordings.musicbrainz_id)),0)`, opts.RecordingMbzID.String()).Scan(&recording)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var mbid any = nullableUUID(&opts.RecordingMbzID)
+	if recording != 0 {
+		mbid = nil
+	}
+	if err := tx.QueryRowContext(ctx, insertBridgedTrackSQL, mbid, opts.AlbumID, opts.Duration).Scan(&id64); err != nil {
 		return nil, fmt.Errorf("SaveTrack: insert: %w", err)
 	}
-	id64, _ := res.LastInsertId()
+	if recording != 0 {
+		if err := attachBridgedRecording(ctx, tx, id64, recording); err != nil {
+			return nil, err
+		}
+	}
 	id := int32(id64)
 
 	for i, artistID := range opts.ArtistIDs {
@@ -221,6 +230,29 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 		ret.MbzID = &u
 	}
 	return ret, nil
+}
+
+// Allocate past the occurrence high-water mark even after deleting the highest track.
+const insertBridgedTrackSQL = `INSERT INTO tracks (id,musicbrainz_id,release_id,duration)
+	VALUES (max(coalesce((SELECT seq FROM sqlite_sequence WHERE name='occurrences'),0),
+	            coalesce((SELECT max(id) FROM tracks),0))+1,?,?,?) RETURNING id`
+
+type bridgedTrackWriter interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+}
+
+// attachBridgedRecording replaces the provisional recording before the first receipt link.
+func attachBridgedRecording(ctx context.Context, tx bridgedTrackWriter, occurrence, recording int64) error {
+	var provisional int64
+	if err := tx.QueryRowContext(ctx, `SELECT recording_id FROM occurrences WHERE id=?`, occurrence).Scan(&provisional); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE occurrences SET recording_id=? WHERE id=?`, recording, occurrence); err != nil {
+		return err
+	}
+	_, err := tx.ExecContext(ctx, `DELETE FROM recordings WHERE id=? AND NOT EXISTS (SELECT 1 FROM occurrences WHERE recording_id=?)`, provisional, provisional)
+	return err
 }
 
 // SaveTrackAliases retains owner-import provenance for every alias.
@@ -324,7 +356,14 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 		if _, err := tx.ExecContext(ctx,
 			`UPDATE tracks SET musicbrainz_id = ? WHERE id = ?`,
 			opts.MusicBrainzID.String(), opts.ID); err != nil {
-			return fmt.Errorf("UpdateTrack: mbzid: %w", err)
+			if isOccurrenceGuard(err, "shared or validated") {
+				if !opts.OnlyFillMusicBrainzID {
+					return fmt.Errorf("UpdateTrack: MBID protected: %w", db.ErrConflict)
+				}
+				// Leave the shared identity intact and continue the legacy listen.
+			} else {
+				return fmt.Errorf("UpdateTrack: mbzid: %w", err)
+			}
 		}
 	}
 	if opts.Duration != 0 {
@@ -710,6 +749,9 @@ func mergeTracksIn(ctx context.Context, tx *sql.Tx, fromId, toId int32) error {
 	// redirect all listens (ignore conflicts — same timestamp already exists for toId)
 	if _, err := tx.ExecContext(ctx,
 		`UPDATE OR IGNORE listens SET track_id = ? WHERE track_id = ?`, toId, fromId); err != nil {
+		if isOccurrenceGuard(err, "Cannot move an occurrence-resolved listen") {
+			return fmt.Errorf("MergeTracks: occurrence resolved: %w", db.ErrConflict)
+		}
 		return fmt.Errorf("MergeTracks: redirect listens: %w", err)
 	}
 

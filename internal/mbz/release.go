@@ -14,7 +14,24 @@ type MusicBrainzReleaseGroup struct {
 	ArtistCredit []MusicBrainzArtistCredit `json:"artist-credit"`
 	Releases     []MusicBrainzRelease      `json:"releases"`
 }
+
+// MusicBrainzMedium exposes typed track identities within a release.
+type MusicBrainzMedium struct {
+	Position int                       `json:"position"`
+	Tracks   []MusicBrainzReleaseTrack `json:"tracks"`
+}
+
+type MusicBrainzReleaseTrack struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Position  int    `json:"position"`
+	Recording struct {
+		ID string `json:"id"`
+	} `json:"recording"`
+}
+
 type MusicBrainzRelease struct {
+	Media              []MusicBrainzMedium       `json:"media"`
 	Title              string                    `json:"title"`
 	ID                 string                    `json:"id"`
 	ArtistCredit       []MusicBrainzArtistCredit `json:"artist-credit"`
@@ -49,6 +66,15 @@ func (c *MusicBrainzClient) GetRelease(ctx context.Context, id uuid.UUID) (*Musi
 		return nil, fmt.Errorf("GetRelease: %w", err)
 	}
 	return mbzRelease, nil
+}
+
+// GetReleaseTracks fetches release membership without changing the legacy catalog lookup.
+func (c *MusicBrainzClient) GetReleaseTracks(ctx context.Context, id uuid.UUID) (*MusicBrainzRelease, error) {
+	var release MusicBrainzRelease
+	if err := c.getEntity(ctx, "%s/ws/2/release/%s?inc=artists+recordings", id, &release); err != nil {
+		return nil, fmt.Errorf("get release tracks: %w", err)
+	}
+	return &release, nil
 }
 
 func (c *MusicBrainzClient) GetReleaseTitles(ctx context.Context, RGID uuid.UUID) ([]string, error) {

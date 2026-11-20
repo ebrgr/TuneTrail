@@ -20,6 +20,8 @@ const defaultItemsPerPage = 20
 
 type Sqlite struct {
 	db *sql.DB
+	// Standalone occurrences are enabled only by disposable resolver fixtures.
+	allowStandaloneOccurrences bool
 }
 
 func New() (*Sqlite, error) {

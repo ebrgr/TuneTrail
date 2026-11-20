@@ -1,0 +1,261 @@
+package sqlite
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strconv"
+
+	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/google/uuid"
+)
+
+// resolveOccurrence ranks complete candidate sets under the same lock used to write.
+func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapshot, proof occurrenceProof) (occurrenceMatch, []string, error) {
+	var match occurrenceMatch
+	credits, err := json.Marshal(observedCredits(snapshot))
+	if err != nil {
+		return match, nil, err
+	}
+	releases, err := occurrenceReleaseCandidates(ctx, tx, snapshot.Release, proof.release, string(credits))
+	if err != nil {
+		return match, nil, err
+	}
+	if len(releases) > 1 {
+		return match, releases, nil
+	}
+	if len(releases) == 1 {
+		match.release, err = strconv.ParseInt(releases[0], 10, 64)
+		if err != nil {
+			return match, nil, err
+		}
+	}
+	declaredID := uuidFromSnapshot(snapshot.Recording, snapshot.MappedRecording)
+	declared := declaredID.String()
+	if proof.recording != "" {
+		declared = proof.recording
+	}
+	if declaredID != uuid.Nil || proof.recording != "" {
+		err = tx.QueryRowContext(ctx, `SELECT id FROM recordings WHERE musicbrainz_id=? AND (mbid_source='validated' OR ?<>'')`,
+			declared, proof.recording).Scan(&match.recording)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return match, nil, err
+		}
+	}
+
+	track := snapshot.TrackMBID
+	if proof.track != "" {
+		track = proof.track
+	}
+	rows, err := tx.QueryContext(ctx, `SELECT o.id,o.recording_id,coalesce(o.release_id,0),coalesce(o.track_mbid,''),
+		coalesce(r.musicbrainz_id,''),coalesce(o.disc_number,0),coalesce(o.track_number,0),r.mbid_source='validated',
+		(EXISTS (SELECT 1 FROM track_aliases t WHERE t.track_id=o.id AND t.alias=?)
+		 OR (o.legacy_track_id IS NULL AND o.presented_title=?))
+		AND NOT EXISTS (
+		  SELECT 1 FROM json_each(?) c WHERE NOT EXISTS (
+		    SELECT 1 FROM artist_tracks t JOIN artist_aliases a ON a.artist_id=t.artist_id
+		    WHERE t.track_id=o.id AND a.alias=c.value
+		    UNION ALL SELECT 1 FROM occurrence_credits oc WHERE oc.occurrence_id=o.id AND oc.name=c.value))
+		FROM occurrences o JOIN recordings r ON r.id=o.recording_id
+		WHERE (o.release_id=? OR (? AND o.release_id IS NULL)) OR o.track_mbid=?
+		ORDER BY o.id`, snapshot.Title, snapshot.Title, string(credits), match.release, snapshot.Release == "", track)
+	if err != nil {
+		return match, nil, err
+	}
+	defer rows.Close()
+	var tiers [4][]occurrenceMatch
+	var textConflicts []string
+	for rows.Next() {
+		var c occurrenceMatch
+		if err := rows.Scan(&c.id, &c.recording, &c.release, &c.trackMBID, &c.recordingMBID, &c.disc, &c.position, &c.validated, &c.text); err != nil {
+			return match, nil, err
+		}
+		differentPosition := snapshot.DiscNumber > 0 && c.disc > 0 && snapshot.DiscNumber != c.disc ||
+			snapshot.TrackNumber > 0 && c.position > 0 && snapshot.TrackNumber != c.position
+		differentRecording := match.recording != 0 && match.recording != c.recording ||
+			c.validated && snapshot.Recording != "" && c.recordingMBID != declared
+		byTrack := track != "" && track == c.trackMBID
+		byPosition := snapshot.DiscNumber > 0 && snapshot.TrackNumber > 0 && c.disc == snapshot.DiscNumber && c.position == snapshot.TrackNumber
+		switch {
+		case byTrack:
+			if c.release != match.release || differentPosition || differentRecording || !c.text {
+				return match, []string{strconv.FormatInt(c.id, 10)}, nil
+			}
+			tiers[0] = append(tiers[0], c)
+		case byPosition:
+			if differentRecording || (proof.track != "" && c.trackMBID != "" && c.trackMBID != proof.track) || !c.text {
+				return match, []string{strconv.FormatInt(c.id, 10)}, nil
+			}
+			tiers[1] = append(tiers[1], c)
+		case differentPosition || (proof.track != "" && c.trackMBID != "" && c.trackMBID != proof.track):
+			continue
+		case match.recording != 0 && match.recording == c.recording:
+			tiers[2] = append(tiers[2], c)
+		case c.text:
+			if differentRecording || (snapshot.TrackMBID != "" && c.trackMBID != "" && snapshot.TrackMBID != c.trackMBID) {
+				if len(textConflicts) < 33 {
+					textConflicts = append(textConflicts, strconv.FormatInt(c.id, 10))
+				}
+			} else {
+				tiers[3] = append(tiers[3], c)
+			}
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return match, nil, err
+	}
+	for i, tier := range tiers {
+		if i == 3 && len(textConflicts) > 0 {
+			return match, textConflicts, nil
+		}
+		switch len(tier) {
+		case 0:
+			continue
+		case 1:
+			return tier[0], nil, nil
+		default:
+			ids := make([]string, 0, min(len(tier), 33))
+			for _, candidate := range tier[:min(len(tier), 33)] {
+				ids = append(ids, strconv.FormatInt(candidate.id, 10))
+			}
+			return match, ids, nil
+		}
+	}
+	return match, nil, nil
+}
+
+// occurrenceReleaseCandidates keeps release identity separate from recording identity.
+func occurrenceReleaseCandidates(ctx context.Context, tx *sql.Conn, title, mbid, credits string) ([]string, error) {
+	if title == "" {
+		return nil, nil
+	}
+	if mbid != "" {
+		var id string
+		err := tx.QueryRowContext(ctx, `SELECT id FROM releases WHERE musicbrainz_id=?`, mbid).Scan(&id)
+		if err == nil {
+			return []string{id}, nil
+		}
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+	}
+	rows, err := tx.QueryContext(ctx, `SELECT r.id FROM releases r WHERE
+		(?='' OR r.musicbrainz_id IS NULL) AND EXISTS (
+			SELECT 1 FROM release_aliases a WHERE a.release_id=r.id AND a.alias=?)
+			AND EXISTS (SELECT 1 FROM json_each(?) c JOIN artist_aliases a ON a.alias=c.value WHERE
+				EXISTS (SELECT 1 FROM artist_releases ar WHERE ar.release_id=r.id AND ar.artist_id=a.artist_id)
+				OR EXISTS (SELECT 1 FROM tracks t JOIN artist_tracks at ON at.track_id=t.id WHERE t.release_id=r.id AND at.artist_id=a.artist_id))
+		ORDER BY r.id`, mbid, title, credits)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var releases []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		if len(releases) < 33 {
+			releases = append(releases, id)
+		}
+	}
+	return releases, rows.Err()
+}
+
+// createOccurrence installs presentation and the compatibility bridge before linking a listen.
+func createOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapshot, proof occurrenceProof, match occurrenceMatch) (occurrenceMatch, error) {
+	if snapshot.Release == "" {
+		if match.recording == 0 {
+			err := tx.QueryRowContext(ctx, `INSERT INTO recordings DEFAULT VALUES RETURNING id`).Scan(&match.recording)
+			if err != nil {
+				return match, err
+			}
+		}
+		err := tx.QueryRowContext(ctx, `INSERT INTO occurrences(recording_id,presented_title,disc_number,track_number)
+			VALUES(?,?,nullif(?,0),nullif(?,0)) RETURNING id`, match.recording, snapshot.Title, snapshot.DiscNumber, snapshot.TrackNumber).Scan(&match.id)
+		if err != nil {
+			return match, err
+		}
+		for position, name := range observedCredits(snapshot) {
+			if _, err := tx.ExecContext(ctx, `INSERT INTO occurrence_credits(occurrence_id,position,name) VALUES(?,?,?)`, match.id, position, name); err != nil {
+				return match, err
+			}
+		}
+		return match, nil
+	}
+	artists, err := ensureOccurrenceArtists(ctx, tx, observedCredits(snapshot))
+	if err != nil {
+		return match, err
+	}
+	if match.release == 0 {
+		err = tx.QueryRowContext(ctx, `INSERT INTO releases(musicbrainz_id) VALUES(nullif(?,'')) RETURNING id`, proof.release).Scan(&match.release)
+		if err != nil {
+			return match, err
+		}
+		if _, err = tx.ExecContext(ctx, `INSERT INTO release_aliases VALUES(?,?,'Canonical',1)`, match.release, snapshot.Release); err != nil {
+			return match, err
+		}
+		for i, id := range artists {
+			if _, err = tx.ExecContext(ctx, `INSERT INTO artist_releases VALUES(?,?,?)`, id, match.release, i == 0); err != nil {
+				return match, err
+			}
+		}
+	}
+	var primaryMBID any
+	if match.recording == 0 && proof.recording != "" {
+		primaryMBID = proof.recording
+	}
+	if err = tx.QueryRowContext(ctx, insertBridgedTrackSQL, primaryMBID, match.release, snapshot.DurationMS/1000).Scan(&match.id); err != nil {
+		return match, fmt.Errorf("insert occurrence bridge: %w", err)
+	}
+	if match.recording != 0 {
+		if err = attachBridgedRecording(ctx, tx, match.id, match.recording); err != nil {
+			return match, err
+		}
+	} else if err = tx.QueryRowContext(ctx, `SELECT recording_id FROM occurrences WHERE id=?`, match.id).Scan(&match.recording); err != nil {
+		return match, err
+	}
+	if proof.recording != "" {
+		if _, err = tx.ExecContext(ctx, `UPDATE recordings SET mbid_source='validated' WHERE id=? AND musicbrainz_id=?`, match.recording, proof.recording); err != nil {
+			return match, err
+		}
+	}
+	if _, err = tx.ExecContext(ctx, `UPDATE occurrences SET track_mbid=nullif(?,''),disc_number=nullif(?,0),track_number=nullif(?,0) WHERE id=?`,
+		proof.track, snapshot.DiscNumber, snapshot.TrackNumber, match.id); err != nil {
+		return match, err
+	}
+	if _, err = tx.ExecContext(ctx, `INSERT INTO track_aliases VALUES(?,?,'Canonical',1)`, match.id, snapshot.Title); err != nil {
+		return match, err
+	}
+	for i, id := range artists {
+		if _, err = tx.ExecContext(ctx, `INSERT INTO artist_tracks VALUES(?,?,?)`, id, match.id, i == 0); err != nil {
+			return match, err
+		}
+	}
+	return match, nil
+}
+
+// ensureOccurrenceArtists reuses exact known names and keeps the observed order.
+func ensureOccurrenceArtists(ctx context.Context, tx *sql.Conn, names []string) ([]int64, error) {
+	var result []int64
+	for _, name := range names {
+		var id int64
+		err := tx.QueryRowContext(ctx, `SELECT coalesce(min(artist_id),0) FROM artist_aliases WHERE alias=? COLLATE BINARY`, name).Scan(&id)
+		if err != nil {
+			return nil, err
+		}
+		if id == 0 {
+			if err = tx.QueryRowContext(ctx, `INSERT INTO artists DEFAULT VALUES RETURNING id`).Scan(&id); err != nil {
+				return nil, err
+			}
+			if _, err = tx.ExecContext(ctx, `INSERT INTO artist_aliases VALUES(?,?,'Canonical',1)`, id, name); err != nil {
+				return nil, err
+			}
+		}
+		result = append(result, id)
+	}
+	return result, nil
+}
