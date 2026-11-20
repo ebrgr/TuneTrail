@@ -36,7 +36,8 @@ func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bo
 	}
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		version, err := ingestSchemaVersion(ctx, tx)
-		if err != nil || version < 9 {
+		// Active import admission requires the occurrence-ready schema.
+		if err != nil || version < 10 {
 			return err
 		}
 		active, err = activeIngestMode(ctx, tx, profile)
@@ -89,9 +90,10 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 			return err
 		}
 		hasMode := version >= 9
+		// Older layouts can still receive historical shadow receipts.
 		if pinned != nil {
-			active = *pinned && hasMode
-		} else if master && hasMode {
+			active = *pinned && version >= 10
+		} else if master && version >= 10 {
 			var err error
 			active, err = activeIngestMode(ctx, tx, batch.ProfileID)
 			if err != nil {

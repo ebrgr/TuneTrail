@@ -43,7 +43,7 @@ func TestIngestActivationUpgrade(t *testing.T) {
 	require.NoError(t, checkDatabase(conn))
 	version, err = schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, 9, version)
+	require.Equal(t, currentSchemaVersion, version)
 	for name, digest := range before {
 		require.Equal(t, digest, digestTable(t, conn, name, digest.columns), name)
 	}
@@ -95,7 +95,7 @@ func TestIngestActivationUpgrade(t *testing.T) {
 func TestResolveIngestLegacyCollision(t *testing.T) {
 	for _, review := range []bool{false, true} {
 		t.Run(fmt.Sprint(review), func(t *testing.T) {
-			s, _, _ := migrationDB(t, 9)
+			s, _, _ := migrationDB(t, currentSchemaVersion)
 			seedIdentityHistory(t, s)
 			execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,review) VALUES(1,?)`, review)
 			execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
@@ -124,7 +124,7 @@ func TestIngestAdmissionModeReplay(t *testing.T) {
 	ctx := context.Background()
 	for _, key := range []string{"external", "client", "file"} {
 		t.Run(key, func(t *testing.T) {
-			s, _, _ := migrationDB(t, 9)
+			s, _, _ := migrationDB(t, currentSchemaVersion)
 			seedIdentityHistory(t, s)
 			batch := ingest.Batch{ProfileID: 1, Source: "adapter", Operation: "single", ReceivedAt: time.Now(),
 				Items: []ingest.Item{{Snapshot: ingest.Snapshot{Artist: "Artist", Title: "Track"}}}}
@@ -177,7 +177,7 @@ func TestIngestAdmissionModeReplay(t *testing.T) {
 // TestIngestDigestUpgrade preserves v1 keyed retries while detecting changes to v1 fields.
 func TestIngestDigestUpgrade(t *testing.T) {
 	ctx := context.Background()
-	s, _, _ := migrationDB(t, 9)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
 	// Store the v1 bytes and batch digest exactly as the old adapter wrote them.
 	legacySnapshot := `{"artist":"A","title":"T"}`
@@ -206,7 +206,7 @@ func TestIngestDigestUpgrade(t *testing.T) {
 // TestProfileDeleteClosesActiveIngest closes only work matching the deleted tracks.
 func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 	ctx := context.Background()
-	s, _, _ := migrationDB(t, 9)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `INSERT INTO tracks(id,release_id,duration) VALUES(71,1,100);
 		INSERT INTO track_aliases VALUES(71,'U','Canonical',1)`)
@@ -254,7 +254,7 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 // TestExpiredIngestLeaseCanBeReclaimed checks CAS while the new claim is still open.
 func TestExpiredIngestLeaseCanBeReclaimed(t *testing.T) {
 	ctx := context.Background()
-	s, _, path := migrationDB(t, 9)
+	s, _, path := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
 	pinned := true
 	_, results, err := s.AdmitIngest(ctx, ingest.Batch{
@@ -290,7 +290,7 @@ func TestExpiredIngestLeaseCanBeReclaimed(t *testing.T) {
 // TestIngestReclaimsShadowBatch verifies atomic replacement, preservation, and resolution.
 func TestIngestReclaimsShadowBatch(t *testing.T) {
 	ctx := context.Background()
-	s, _, _ := migrationDB(t, 9)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
 	at := time.Unix(900, 0)
 	snapshot := ingest.Snapshot{Artist: "Artist", Title: "Intro", CatalogTrackID: 1}

@@ -259,7 +259,7 @@ func TestRecordingIdentityBackupRestore(t *testing.T) {
 func TestRecordingIdentityReferenceOrigins(t *testing.T) {
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)
-	_, err := provider.Up(context.Background())
+	_, err := provider.UpTo(context.Background(), 8)
 	require.NoError(t, err)
 	require.Equal(t, 1, scalar(t, s, `PRAGMA foreign_keys`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM event_origins WHERE origin='legacy'`))
@@ -284,8 +284,8 @@ func TestRecordingIdentityAllocator(t *testing.T) {
 	seedIdentityHistory(t, s)
 	_, err := provider.Up(ctx)
 	require.NoError(t, err)
-	execSQL(t, s, `DELETE FROM tracks WHERE id=70; DROP TRIGGER trg_identity_legacy_occurrence;
-		INSERT INTO occurrences(recording_id,release_id) SELECT recording_id,1 FROM occurrences WHERE id=1`)
+	execSQL(t, s, `DELETE FROM tracks WHERE id=70;
+		INSERT INTO occurrences(recording_id) SELECT recording_id FROM occurrences WHERE id=1`)
 	independent := scalar(t, s, `SELECT id FROM occurrences WHERE legacy_track_id IS NULL`)
 	require.Greater(t, independent, 70)
 	_, err = s.db.Exec(`INSERT INTO tracks(id,release_id) VALUES(?,1)`, independent)

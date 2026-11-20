@@ -67,6 +67,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 8 {
 		pattern = ".pre-ingest-activation-*.bak"
 	}
+	// Keep a dedicated snapshot for rollback to the v9 writer.
+	if version == 9 {
+		pattern = ".pre-occurrence-ingest-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err
