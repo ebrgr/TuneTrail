@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T20:13:00Z'
+updated_date: '2026-11-20T20:50:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -112,6 +112,15 @@ created: 2026-11-20T20:13:00Z
 ---
 
 E2 concluída e parada para revisão do Advisor. Resolvedor occurrence-v1 com prova tipada fora do lock, decisões e catálogo atômicos, A/B e Intro, pendências conservadoras, recuperação por lease e COMMIT. 011 protege variante, origem, corte e relay no banco, com justificativa no plano e 010 intacta. Perfil convertido com mestre desligado retorna 503 e Retry-After, sem recibo nem escuta. Replay desligado v0.44 e restore passaram com 18 escutas e 18 recibos, e make check passou 13/13 jornadas. Fixture sobreposta: uma escuta, duas pendências, 0,91 ms até visibilidade no SQLite e 1,96 ms somados em três resoluções. Adaptadores na E3. BEGIN IMMEDIATE do merge legado e proteção de MergeAlbums ficam na 135. ACs abertos.
+
+---
+
+author: codex
+created: 2026-11-20T20:50:00Z
+
+---
+
+Emenda da E2 após parecer REPROVADO COM RESSALVAS. A 011 e occurrence-v1 incorporam dedup de créditos, Duplicate com origem original, corte com sombra limpa (D9), redirecionamentos e fallback textual auditável (D7), descarte de afirmação externa conflitante (D8), evidência tipada, HTTP 409 e guarda de release vinculado. Admissão desligada usa leitura sob contenção e duração mantém o MBID legado. Testes dos pacotes afetados e make check 13/13 passaram. Replay v0.44 e restore repetidos com paridade. Pendências registradas no plano: posições legadas e fusão provisória na 135, fragmentação em MB indisponível e compilação na E4, consulta por alias e EXPLAIN de ocorrências no ensaio, cache/timeout antes dos 300 mil e ordinais do mesmo lote LB na E3/135. O texto de conflito do listen-add segue como pendência de apresentação. E3 segue aguardando liberação, com sequência E3 → Reviewer → E4.
 
 ---
 <!-- COMMENTS:END -->

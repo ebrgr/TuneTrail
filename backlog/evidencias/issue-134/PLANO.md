@@ -1,6 +1,6 @@
 # ISSUE-134 — Ingestão por ocorrência em todas as fontes
 
-Fase 1, versão 2, base v0.44 (`e1db15d`), SQLite v9. Revisão do plano após parecer do Advisor **REPROVADO COM RESSALVAS** e decisões do usuário de 20/11/2026. O Advisor aprovou a execução da E1 sobre a versão 2 (`b57881c`), com orientações adicionais. O Advisor high devolveu a E1 como REPROVADO COM RESSALVAS. O usuário autorizou emendas na 010 e uma nova parada antes da E2. Contratos: doc-036 (estudo), doc-039 (identidade), doc-040 §§3–6 e 9–11 (ingestão) e decision-009. Os sete ACs permanecem abertos. As linhas abaixo apontam para a base examinada.
+Fase 1, versão 2, base v0.44 (`e1db15d`), SQLite v9. Revisão do plano após parecer do Advisor **REPROVADO COM RESSALVAS** e decisões do usuário de 20/11/2026. O Advisor aprovou a execução da E1 sobre a versão 2 (`b57881c`), com orientações adicionais. A emenda da E1 foi aceita. A E2 recebeu parecer REPROVADO COM RESSALVAS e o usuário autorizou as correções e D7–D9 na própria 011 e na regra `occurrence-v1`. Contratos: doc-036 (estudo), doc-039 (identidade), doc-040 §§3–6 e 9–11 (ingestão) e decision-009. Os sete ACs permanecem abertos. As linhas abaixo apontam para a base examinada.
 
 ## Caminhos de entrada na v0.44
 
@@ -47,6 +47,10 @@ As chamadas externas devem ocorrer fora da reserva de escritor. Rechecar sob `BE
 - **D4.** Relay aguarda revisão posterior. É vedado habilitar o modo novo em perfil com relay configurado até a 082. Aplicar a restrição também se for solicitado configurar relay depois de habilitar a flag, evitando que o perfil retorne à variante v9.
 - **D5.** Flag de escrita por ocorrência por perfil começa em 0 e só transita de 0 para 1 até a 135/172. Perfis opt-in da v0.44 continuam em v9. Fixar a variante em cada admissão/job e no recibo.
 - **D6.** Ordem das fontes de MBID de gravação: salvo ou recebido, API Subsonic do Navidrome (174), ListenBrainz (175), campo em branco se ausente ou serviço desligado/indisponível. Declarações de serviços externos carregam fonte e data. Elas não provam identidade nem sobrescrevem MBID salvo. A 134 aceita MBID vazio e declarações com proveniência, sem implementar buscas das 174/175. Resolver por metadados quando faltar MBID, sem pendência ou retry causados pela ausência em si.
+
+- **D7.** Usar o ID canônico devolvido pelo MusicBrainz em redirecionamentos. Se o título devolvido do lançamento diferir do álbum apresentado, resolver pelos metadados e conservar a divergência na evidência. Um recording declarado que difira do recording da faixa passa por lookup canônico fora da reserva. Se esse lookup falhar, continuar sem prova.
+- **D8.** Ignorar afirmação de recording de serviço externo que contradiga uma gravação validada. Só a afirmação da própria fonte serve como contradição declarada. A afirmação externa mantém fonte e data no snapshot.
+- **D9.** Converter apenas quando o perfil estiver sem recibos de sombra sem vínculo, além das condições de drenagem e relay. O fluxo futuro pode oferecer limpeza com confirmação por digest, seguindo o modelo da ativação. Não prometer deduplicação retroativa para chaves descartadas.
 
 ## Escrita, identidade e coexistência
 
@@ -101,7 +105,7 @@ A medição separada executou o SQL da 010 em transação com SQLite do Python. 
 
 ## Evidência da E2
 
-A 011 protege no SQL a admissão, a origem do vínculo, o corte com recibos v9 em aberto e a configuração de relay. A 010 permanece fechada. Backups de uma base já v10 recebem o sufixo `.pre-occurrence-writer-*.bak`. A admissão no mestre desligado pausa perfis convertidos e o worker segue resolvendo recibos já admitidos. A entrada de jobs de arquivo usa o gate central para pausar perfis convertidos até a E3. Os testes de sobreposição entram diretamente pelo envelope persistente, usando os formatos definidos pela E1.
+A 011 protege no SQL a admissão, a origem de eventos aceitos, o release dos vínculos por ocorrência, o corte com recibos v9 abertos ou sombra sem vínculo e a configuração de relay. Duplicate conserva a origem do evento existente, inclusive legacy ou de outro adaptador. A 010 permanece fechada. Backups de uma base já v10 recebem o sufixo `.pre-occurrence-writer-*.bak`. A admissão no mestre desligado pausa perfis convertidos e o worker segue resolvendo recibos já admitidos. A entrada de jobs de arquivo usa o gate central para pausar perfis convertidos até a E3. Os testes de sobreposição entram diretamente pelo envelope persistente, usando os formatos definidos pela E1.
 
 O resolvedor `occurrence-v1` valida evidência de release-track tipada fora da reserva e revalida o lease, as versões, o perfil e o catálogo depois de BEGIN IMMEDIATE. O caso verificado com relay inelegível persiste escuta e decisão/revisão sem intenção de entrega. A/B mantém uma gravação e duas pontes consultáveis, inclusive no mesmo segundo. A ponte secundária descarta a gravação provisória órfã. O modo de ensaio sem álbum foi exercitado em bancos descartáveis pelo fixture interno.
 
@@ -109,7 +113,7 @@ Em `go test ./internal/db/sqlite -run 'TestOccurrence' -count=1 -v`, a primeira 
 
 A submissão ListenBrainz com mestre desligado em perfil convertido respondeu 503 com `Retry-After: 1` e deixou zero recibos e escutas. O replay desligado contra a tag v0.44 coincidiu em 18 escutas e 18 recibos em sombra, além da exportação. O exercício também abriu a cópia v9 restaurada com o binário da tag.
 
-Os testes verificam concorrência por duas conexões na admissão/resolução de A/B, ambiguidade por faixa ou posição, declarações de serviço, reaproveitamento da ponte após prova, remoção da faixa primária, conflito no merge, perda de lease e falha do COMMIT. `make check` passou com 13/13 jornadas. A migração para BEGIN IMMEDIATE no merge legado e a guarda de release de MergeAlbums ficaram para o corte de mutações da 135.
+Os testes verificam concorrência por duas conexões na admissão/resolução de A/B, ambiguidade por faixa ou posição, declarações de serviço, reaproveitamento da ponte após prova, remoção da faixa primária, conflito no merge, perda de lease e falha do COMMIT. `make check` passou com 13/13 jornadas. A guarda de release de MergeAlbums foi incorporada na emenda da 011, com teste de rejeição do merge e de exclusão do release. O BEGIN IMMEDIATE no merge legado fica para a 135.
 
 ## Dependências e sequência
 
@@ -121,22 +125,39 @@ Os testes verificam concorrência por duas conexões na admissão/resolução de
 
 ### Orientações para a E2
 
-1. Proteger a D5 no SQL. No INSERT de `ingest_events`, a variante occurrence exige modo active e flag de ocorrência ligada; recusar active/v9 para perfil convertido. No INSERT de `listens`, recusar origin legacy em perfil convertido. A transição 0→1 exige ausência de recibos ativos v9 abertos e de relay configurado (D4). Proteger também INSERT/UPDATE em `profile_relays` para perfil convertido.
-2. Conferir variante e origem no vínculo. v9 exige legacy; occurrence exige origem cadastrada pelo adaptador conforme allowlist.
+1. Proteger a D5 no SQL. No INSERT de `ingest_events`, a variante occurrence exige modo active e flag de ocorrência ligada; recusar active/v9 para perfil convertido. No INSERT de `listens`, recusar origin legacy em perfil convertido. A transição 0→1 exige ausência de recibos ativos v9 abertos, sombra sem vínculo (D9) e relay configurado (D4). Proteger também INSERT/UPDATE em `profile_relays` para perfil convertido.
+2. Conferir variante e origem na aceitação. v9 exige legacy. occurrence exige origem cadastrada pelo adaptador conforme allowlist. Duplicate preserva a origem da escuta escolhida.
 3. Reassociar a ocorrência recém-criada antes do primeiro vínculo e apagar explicitamente a gravação provisória órfã na mesma transação. A limpeza automática existente executa em DELETE de occurrence, e o fixture de MBID da E1 deixa um órfão após UPDATE.
 4. Mapear os RAISE relativos a gravação compartilhada/validada, movimentação de escuta e desativação para erros tipados e HTTP 409. `UpdateTrack(OnlyFillMusicBrainzID)` precisa pular o preenchimento bloqueado e preservar a escuta.
 5. Com o mestre desligado em perfil convertido, pausar admissão em `AdmitIngest` e `BeginImportIngest` e preservar a drenagem pelo worker. Rechecar a flag dentro de `withIngestWriter`.
 6. Preservar `occurrence_write` no upsert de `ingest_activation.go:79` e incluí-la no digest da prévia (`:115`).
 7. Executar os escritores do modo novo com `BEGIN IMMEDIATE` e registrar `rule_version` próprio no resolvedor.
 
-### Pendências da E2, E3 e 135
+### Emenda da E2
 
-- **135.** `MergeTracks` (`track.go:684`) abre transação adiada e lê antes de escrever. A promoção da leitura para escrita pode retornar SQLITE_BUSY sem aguardar busy_timeout diante do worker com BEGIN IMMEDIATE. O merge também escreve no ledger desde a E1. Migrá-lo para BEGIN IMMEDIATE.
-- **135.** `MergeAlbums` (`album.go:694`) altera occurrences.release_id pela ponte, sem guarda para vínculos occurrence. Coordenar a proteção com as mutações por ocorrência.
-- **E2.** `INSERT OR REPLACE` pode contornar a guarda de remoção de flag quando recursive_triggers está desligado. Os fluxos atuais usam INSERT/UPDATE ou upsert. Documentar o risco ao introduzir escritores novos.
-- **E3, antes do Reviewer.** Registrar em inglês no CHANGELOG o upgrade v9→v10, o backup `.pre-occurrence-ingest-*.bak` e a recusa de v10 pela v0.44, seguindo o formato da entrada da v8.
+Os aliases de um mesmo artista convergem para um único crédito por ID, com a ordem da primeira ocorrência preservada. A evidência de revisão continua em `occurrence-v1`, com candidatos tipados por `release:`, `occurrence:`, `artist:` e `event:`, limite de 32 e indicador de truncamento. Uma contradição MusicBrainz registra os identificadores de consulta e retorno, título do catálogo e os pares declarados e verificados. Os conflitos SQL de relay, inserção manual legada e colisão de MBID da gravação são expostos como conflito administrativo, HTTP 409. A apresentação atual de listen-add vincula qualquer conflito ao texto de horário ambíguo. O mapeamento de status funciona e a discriminação da mensagem fica como pendência de apresentação.
 
-**Parada após a E2.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala exclusivamente guardas de variante, origem, conversão e relay. A E3 aguarda revisão do resolvedor.
+Com o mestre desligado, o início de importação consulta a flag sem reservar o escritor, inclusive sob contenção WAL. Os triggers continuam protegendo o corte se ele ocorrer depois da consulta. O MBID pedido continua disponível para o lookup legado de duração, mesmo quando o preenchimento foi pulado. O handler confirma com o envelope habitual e encaminha ao relay o corpo recebido. Os testes cobrem a consulta do modo sob um escritor concorrente e o MBID passado ao caminho de duração. Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. O replay desligado voltou a coincidir com v0.44 em 18 escutas, 18 recibos em sombra e exportação, incluindo restauração com o binário da tag.
+
+### Pendências para medir ou decidir
+
+- **135.** `MergeTracks` ainda usa transação adiada e pode receber SQLITE_BUSY ao promover a leitura para escrita. Migrar para BEGIN IMMEDIATE no corte de mutações por ocorrência.
+- **135.** O teste de caracterização mostra que uma faixa legada sem posição absorve Intro d1t1 e d2t1 por metadados. A separação retroativa cabe à 135, assim como a fusão controlada de identidade provisória para comprovada.
+- **E4.** Medir fragmentação de identidade quando o MB estiver indisponível na primeira escuta e em compilações sem release MBID. A promoção preserva a ponte selecionada, sem fundir automaticamente identidades provisórias já separadas.
+- **E3/E4.** Avaliar partir de `release_aliases(alias)` para reduzir a varredura em `occurrenceReleaseCandidates`. Coletar EXPLAIN do OR que seleciona ocorrências no ensaio de 300 mil recibos.
+- **E3/135.** A janela de duplicidade ainda inclui itens ListenBrainz do mesmo lote com chave de cliente e ordinais distintos. Medir a consequência conservadora antes de mudar a regra. `INSERT OR REPLACE` com recursive_triggers desligado pode contornar a guarda por remoção de flags. Os escritores atuais usam upsert.
+
+### Orientações para a E3
+
+1. Trocar `pinned *bool` por modo e variante fixados no job, devolvidos por BeginImportIngest. Retirar a pausa dos jobs de arquivo convertidos quando o adaptador estiver pronto.
+2. Preencher TrackMBID, disco e faixa (0 indica ausência), MBIDSource, MBIDDeclaredAt e ArtistNames ordenados. No adaptador nativo, admitir antes da associação e ignorar CatalogTrackID na variante occurrence.
+3. Manter os campos novos com `omitempty`. Testar que replay de chave antiga com snapshot ampliado gera uma observação e reutiliza o recibo original.
+4. Verificar exclusão e reimportação do AC5 em conjunto com os triggers corrigidos de origem, incluindo duplicados de outra fonte.
+5. Implementar cache por release MBID e timeout abaixo do lease de 120 s antes do ensaio de 300 mil. Registrar contador de tentativas e log para retry sem teto até a ISSUE-173.
+6. Escrever CHANGELOG em inglês para o upgrade v9→v11. Incluir `.pre-occurrence-ingest-*.bak`, `.pre-occurrence-writer-*.bak` e recusa do banco v11 pela v0.44.
+7. Encerrar a E3 no Reviewer. Iniciar a E4 depois da revisão.
+
+**Parada após a E2.** A releitura da emenda da E1 foi aceita. A 011 é necessária para proteger a transição entre escritores no próprio banco. A validação em Go não cobre INSERTs de outros escritores, jobs em voo ou alterações concorrentes de relay. Manter a 010 fechada. A 011 instala guardas de variante, origem, conversão, relay e release vinculado. A emenda da E2 encerra esta fase. A E3 aguarda liberação.
 
 1. **E1.** Migração 010 e testes de upgrade, restore, cascatas e replay contra a tag v0.44. **Parada para Advisor high.**
 2. **E2.** Resolvedor, ACs 1–3 e 6, incluindo corrida de duas conexões. **Parada para Advisor.**
