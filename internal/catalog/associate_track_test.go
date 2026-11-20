@@ -89,3 +89,24 @@ func TestAssociateTrackAmbiguousWithoutMBID(t *testing.T) {
 	require.Nil(t, track)
 	require.Zero(t, s.saves)
 }
+
+type skippedRecordingFill struct{ trackLookupStub }
+
+// UpdateTrack simulates an allowed listen whose legacy MBID fill is skipped.
+func (s *skippedRecordingFill) UpdateTrack(context.Context, db.UpdateTrackOpts) error { return nil }
+
+// TestAssociateTrackKeepsRequestedMBID keeps the input to the legacy duration lookup.
+func TestAssociateTrackKeepsRequestedMBID(t *testing.T) {
+	incoming := uuid.New()
+	s := &skippedRecordingFill{}
+	s.lookup = func(opts db.GetTrackOpts) (*models.Track, error) {
+		if opts.MusicBrainzID != uuid.Nil {
+			return nil, db.ErrNotFound
+		}
+		return &models.Track{ID: 1}, nil
+	}
+	track, err := catalog.AssociateTrack(context.Background(), s, catalog.AssociateTrackOpts{
+		TrackName: "Track", AlbumID: 1, ArtistIDs: []int32{1}, TrackMbzID: incoming})
+	require.NoError(t, err)
+	require.Equal(t, &incoming, track.MbzID)
+}

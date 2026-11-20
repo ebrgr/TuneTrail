@@ -31,6 +31,21 @@ func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]ingest
 
 // BeginImportIngest selects the mode once for the entire import job.
 func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bool) (active bool, err error) {
+	if !master {
+		// A disabled job only needs a committed flag snapshot. SQL guards still enforce a concurrent conversion.
+		version, err := ingestSchemaVersion(ctx, s.db)
+		if err != nil || version < 11 {
+			return false, err
+		}
+		converted, err := occurrenceWriteFlag(ctx, s.db, profile)
+		if err != nil {
+			return false, err
+		}
+		if converted {
+			return false, &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
+		}
+		return false, nil
+	}
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		version, err := ingestSchemaVersion(ctx, tx)
 		// Active import admission requires the occurrence-ready schema.
@@ -47,16 +62,18 @@ func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bo
 				return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
 			}
 		}
-		if master {
-			active, err = activeIngestMode(ctx, tx, profile)
-		}
+		active, err = activeIngestMode(ctx, tx, profile)
 		return err
 	})
 	return active, ingestStorageError(err, true)
 }
 
+type ingestModeReader interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
 // ingestSchemaVersion checks whether the mode column exists before choosing receipt SQL.
-func ingestSchemaVersion(ctx context.Context, tx *sql.Conn) (int, error) {
+func ingestSchemaVersion(ctx context.Context, tx ingestModeReader) (int, error) {
 	var version int
 	err := tx.QueryRowContext(ctx, `SELECT max(version_id) FROM goose_db_version WHERE is_applied=1`).Scan(&version)
 	return version, err
@@ -71,8 +88,8 @@ func activeIngestMode(ctx context.Context, tx *sql.Conn, profile int32) (bool, e
 
 var errOccurrenceAdmissionPaused = errors.New("occurrence admission is paused")
 
-// occurrenceWriteFlag reads the irreversible cut under the writer lock.
-func occurrenceWriteFlag(ctx context.Context, tx *sql.Conn, profile int32) (bool, error) {
+// occurrenceWriteFlag reads the irreversible cut from the caller’s connection.
+func occurrenceWriteFlag(ctx context.Context, tx ingestModeReader, profile int32) (bool, error) {
 	var converted bool
 	err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT occurrence_write FROM profile_ingest_flags WHERE profile_id=?),0)`, profile).Scan(&converted)
 	return converted, err

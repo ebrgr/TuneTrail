@@ -62,12 +62,8 @@ func matchTrackByMbzID(ctx context.Context, d db.TrackStore, opts AssociateTrack
 		}); err != nil {
 			return nil, fmt.Errorf("matchTrackByMbzID: fill recording ID: %w", err)
 		}
-		// A protected recording may decline a legacy fill while still accepting the listen.
-		updated, err := d.GetTrack(ctx, db.GetTrackOpts{ID: track.ID})
-		if err != nil {
-			return nil, fmt.Errorf("matchTrackByMbzID: reload recording ID: %w", err)
-		}
-		track.MbzID = updated.MbzID
+		// Keep the requested MBID available for legacy duration lookup even if the fill was skipped.
+		track.MbzID = &opts.TrackMbzID
 	}
 	return track, nil
 }

@@ -440,3 +440,25 @@ func TestOccurrenceLinkedReleaseGuard(t *testing.T) {
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, id))
 	require.NoError(t, checkIntegrity(s.db))
 }
+
+// TestOccurrenceImportMasterOffReadsUnderContention keeps the legacy import gate read-only.
+func TestOccurrenceImportMasterOffReadsUnderContention(t *testing.T) {
+	ctx := context.Background()
+	s, _, path := migrationDB(t, currentSchemaVersion)
+	seedIdentityHistory(t, s)
+	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow';
+		INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
+	other, err := sql.Open("sqlite", sqliteURI(path)+"?mode=rw")
+	require.NoError(t, err)
+	defer other.Close()
+	_, err = other.ExecContext(ctx, "BEGIN IMMEDIATE")
+	require.NoError(t, err)
+	defer func() { _, err := other.ExecContext(ctx, "ROLLBACK"); require.NoError(t, err) }()
+	active, err := s.BeginImportIngest(ctx, 2, false)
+	require.NoError(t, err)
+	require.False(t, active)
+	active, err = s.BeginImportIngest(ctx, 1, false)
+	var unavailable *ingest.ErrUnavailable
+	require.ErrorAs(t, err, &unavailable)
+	require.False(t, active)
+}
