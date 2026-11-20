@@ -493,17 +493,32 @@ def replay(binary, directory):
             conn.execute("DROP TRIGGER fixture_gap")
         server.stop()
         server = boot(binary, directory, True)
-        for stamp, key in ((old, "shadow-with-listen"), (gap, "shadow-without-listen")):
+        keys = ((old, "shadow-with-listen"), (gap, "shadow-without-listen"))
+        with database(directory) as conn:
+            conn.executescript("""CREATE TABLE replay_commit_fk(id INTEGER REFERENCES listening_profiles(id)
+                DEFERRABLE INITIALLY DEFERRED);
+                CREATE TRIGGER replay_commit_failure AFTER INSERT ON ingest_events WHEN NEW.mode='active'
+                BEGIN INSERT INTO replay_commit_fk VALUES(-1); END;""")
+        submit(server, gap, key=keys[1][1], expected=503)
+        with database(directory) as conn:
+            assert conn.execute("SELECT count(*) FROM ingest_events WHERE mode='shadow'").fetchone() == (2,)
+            assert conn.execute("SELECT count(*) FROM ingest_events WHERE mode='active'").fetchone() == (0,)
+            conn.execute("DROP TRIGGER replay_commit_failure")
+        for stamp, key in keys:
             submit(server, stamp, key=key)
-        # Another active receipt closes, proving the worker made progress after these ACKs.
         submit(server, gap+20, key="active-control")
+        wait_for(lambda: (r := receipt(directory, old)) and r[0] == "duplicate")
+        wait_for(lambda: (r := receipt(directory, gap)) and r[0] == "accepted")
         wait_for(lambda: (1, gap+20) in observed_events(directory, old))
         with database(directory) as conn:
             retained = conn.execute("SELECT count(*) FROM ingest_events WHERE mode='shadow' AND event_id IS NULL").fetchone()[0]
+            rows = conn.execute("SELECT count(*) FROM listens WHERE listened_at>=?", (old,)).fetchone()[0]
         heard = observed_events(directory, old)
-        assert retained == 2 and heard == {(1, old), (1, gap+20)}
-        result = {"active_replay_http_200": 2, "retained_shadow_without_link": retained,
-                  "legacy_events_for_replayed_keys": 1, "confirmed_without_event": 1, "active_control_events": 1}
+        assert retained == 0 and rows == 3 and heard == {(1, old), (1, gap), (1, gap+20)}
+        result = {"replacement_commit_failed_http_503": 1, "shadow_preserved_on_rollback": 2,
+                  "active_retry_http_200": 2, "retained_shadow_without_link": retained,
+                  "recovered_missing_listen": 1, "duplicates_without_extra_listen": 1,
+                  "confirmed_without_event": 0, "active_control_events": 1}
         set_flag(server, False)
         # Simulate a generic database error before the inactive profile flag can be read.
         with database(directory) as conn:
@@ -538,10 +553,18 @@ def pinned_shadow_replay(binary, directory):
                 WHERE mode='shadow' AND file_format=?""", (form,)).fetchone()[0]
         assert seen == len(stamps)
         server.upload(PROFILE + "/import", form, data)
+
+        def resolved_duplicates():
+            with database(directory) as conn:
+                return conn.execute("""SELECT count(*) FROM ingest_events
+                    WHERE mode='active' AND state='duplicate' AND file_format=?""", (form,)).fetchone()[0] == len(stamps)
+
+        wait_for(resolved_duplicates)
         assert observed_events(directory, stamps[0]) == {(1, t) for t in stamps}
         with database(directory) as conn:
-            assert conn.execute("SELECT count(*) FROM ingest_events WHERE mode='active'").fetchone()[0] == 0
-        return {"shadow_after_purge": seen, "replayed_ordinals": len(stamps),
+            assert conn.execute("SELECT count(*) FROM ingest_events WHERE mode='shadow'").fetchone() == (0,)
+            assert conn.execute("SELECT count(*) FROM listens").fetchone() == (len(stamps),)
+        return {"shadow_after_purge": seen, "replayed_ordinals": len(stamps), "active_duplicates": len(stamps),
                 "existing_events": len(stamps), "confirmed_without_event": 0}
     finally:
         server.stop()
