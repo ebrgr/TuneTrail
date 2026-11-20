@@ -436,6 +436,7 @@
   "admin.setting.SUBSONIC_PARAMS.description": "Query parameters used to access the server, such as u, t and s.",
   "admin.setting.FORCE_TZ.label": "Application time zone",
   "admin.setting.FORCE_TZ.description": "IANA time zone, for example America/Sao_Paulo. Leave empty for automatic selection.",
+  "admin.import.activeSummary": "Processed: {{.Processed}}. Pending: {{.Pending}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}.",
   "admin.import.summary": "Processed: {{.Processed}}. Imported: {{.Imported}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}.",
   "admin.import.failed": "Import failed; some records may already be saved.",
   "admin.invalid_option": "Invalid: {{.Value}}",

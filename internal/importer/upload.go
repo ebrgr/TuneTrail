@@ -16,6 +16,7 @@ import (
 
 // Result distinguishes newly stored listens from duplicates and skipped entries.
 type Result struct {
+	Active                                           bool `json:",omitempty"`
 	Processed, Imported, Duplicates, Ignored, Errors int
 	Pending                                          int // Active receipts awaiting a decision, or shadow reviews in legacy mode.
 }

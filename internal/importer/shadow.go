@@ -43,6 +43,9 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 			return ctx, err
 		}
 	}
+	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
+		result.Active = active
+	}
 	info, err := file.Stat()
 	if err != nil {
 		if active {

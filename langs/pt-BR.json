@@ -436,6 +436,7 @@
   "admin.setting.SUBSONIC_PARAMS.description": "Parâmetros de consulta para acesso ao servidor, como u, t e s.",
   "admin.setting.FORCE_TZ.label": "Fuso horário da aplicação",
   "admin.setting.FORCE_TZ.description": "Fuso IANA, por exemplo America/Sao_Paulo. Deixe vazio para seleção automática.",
+  "admin.import.activeSummary": "Processadas: {{.Processed}}. Pendentes: {{.Pending}}. Duplicadas: {{.Duplicates}}. Ignoradas: {{.Ignored}}. Erros: {{.Errors}}.",
   "admin.import.summary": "Processadas: {{.Processed}}. Importadas: {{.Imported}}. Duplicadas: {{.Duplicates}}. Ignoradas: {{.Ignored}}. Erros: {{.Errors}}.",
   "admin.import.failed": "A importação falhou; alguns registros podem já ter sido salvos.",
   "admin.invalid_option": "Inválido: {{.Value}}",

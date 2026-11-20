@@ -181,17 +181,23 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			break
 		}
 		result, e := admin.ImportHistory(r.Context(), h.store, identity.User, h.musicBrainz, id, f.SingleValue("format"), upload.Path)
-		const importSummary = "Processed: {{.Processed}}. Imported: {{.Imported}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}."
+		summaryKey, importSummary := "admin.import.summary", "Processed: {{.Processed}}. Imported: {{.Imported}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}."
 		values := map[string]any{"Processed": result.Processed, "Imported": result.Imported, "Duplicates": result.Duplicates, "Ignored": result.Ignored, "Errors": result.Errors}
+		// Active imports acknowledge durable receipts before the worker writes history.
+		if result.Active {
+			summaryKey = "admin.import.activeSummary"
+			importSummary = "Processed: {{.Processed}}. Pending: {{.Pending}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}."
+			values["Pending"] = result.Pending
+		}
 		if e != nil {
 			status := http.StatusInternalServerError
 			if errors.Is(e, importer.ErrInvalidFile) || errors.Is(e, db.ErrInvalidInput) {
 				status = http.StatusBadRequest
 			}
-			h.render(w, status, view{Error: adminText(i18n.ViewOf(w), "admin.import.failed", "Import failed; some records may already be saved.") + " " + adminFormat(i18n.ViewOf(w), "admin.import.summary", importSummary, values), Profile: current})
+			h.render(w, status, view{Error: adminText(i18n.ViewOf(w), "admin.import.failed", "Import failed; some records may already be saved.") + " " + adminFormat(i18n.ViewOf(w), summaryKey, importSummary, values), Profile: current})
 			return
 		}
-		h.putNoticeData(identity.SessionID, id, "admin.import.summary", importSummary, values)
+		h.putNoticeData(identity.SessionID, id, summaryKey, importSummary, values)
 		http.Redirect(w, r, target, http.StatusSeeOther)
 		return
 	case "delete":
