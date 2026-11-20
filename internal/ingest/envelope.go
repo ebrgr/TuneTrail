@@ -104,6 +104,8 @@ func (i Item) Encode() ([]byte, string) {
 
 // LegacyDigest reproduces the v1 projection for a keyed retry against a v1 receipt.
 func (i Item) LegacyDigest(source, fileFormat string) string {
+	// The v1 writer never admitted a native receipt with a fixed track ID.
+	i.Snapshot.CatalogTrackID = 0
 	i.Snapshot.ArtistMbidMappings = nil
 	i.Snapshot.SkipCacheImage = false
 	// Non-LBZ file adapters populated these association fields only from v2.
