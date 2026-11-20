@@ -193,3 +193,5 @@ Retomada após rebase em v0.45.
 - Feito — Verifica observação no replay de snapshot v9 ampliado. Pendente — cache, ensaio e verificação final.
 
 - Feito — Limita prova MusicBrainz e indexa busca por alias de release. Pendente — EXPLAIN, ensaio de 300 mil, CHANGELOG e verificações.
+
+- Feito — Documenta atualização SQLite e ingestão por ocorrência. Pendente — ensaio de carga, provas de recuperação e validação final.

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- The database upgrades from v9 to v11 and creates a `.pre-occurrence-ingest-*.bak` backup. Upgrading an existing v10 database creates a `.pre-occurrence-writer-*.bak` backup. TuneTrail 0.44 refuses a v11 database (ISSUE-134).
+- Occurrence-based ingestion can preserve separate album appearances of the same recording across ListenBrainz submissions and supported imports. It is opt-in per profile and available for testing on disposable databases. Profiles with a configured relay cannot use it until durable relay delivery is available (ISSUE-134, ISSUE-082).
+
 ## [0.46] - 2026-11-20
 
 - Signing out now asks for confirmation and returns you to the public directory. “Sign out…” is available on the account and 403 pages (ISSUE-157).

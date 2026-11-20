@@ -70,3 +70,23 @@ receipt, active ingestion takes over that submission. TuneTrail keeps the
 existing listen if it matches the same track and second, or saves the listen if
 it is missing. Shadow receipts already linked to a listen remain available for
 replay.
+
+
+## Occurrence-based ingestion
+
+The occurrence resolver preserves the album and track position supplied by the
+source when there is enough evidence to identify the occurrence. It supports
+ListenBrainz submissions and ZIP archives, Last.fm, Spotify, Maloja, and
+TuneTrail/Koito imports. Existing active profiles continue to use the
+compatibility resolver.
+
+The occurrence resolver is opt-in and currently restricted to disposable test
+databases. Profiles with a configured ListenBrainz relay cannot convert.
+Conversion requires clearing unlinked shadow receipts and draining compatible
+active receipts. After conversion, disabling the master switch pauses new
+admissions while already accepted batches continue resolving. Ambiguous items
+remain pending and are excluded from listening counts.
+
+Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
+An existing v10 database receives a `.pre-occurrence-writer-*.bak` backup.
+TuneTrail 0.44 cannot open a v11 database.
