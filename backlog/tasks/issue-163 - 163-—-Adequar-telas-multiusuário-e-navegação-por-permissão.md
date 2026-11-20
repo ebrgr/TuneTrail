@@ -1,11 +1,11 @@
 ---
 id: ISSUE-163
 title: 163 — Adequar telas multiusuário e navegação por permissão
-status: Planejada
+status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-20T20:27:00Z'
 labels:
   - ui
   - admin
@@ -18,6 +18,7 @@ dependencies:
 references:
   - backlog/decisions/decision-010
   - backlog/evidencias/issue-163/ESTUDO.md
+  - backlog/evidencias/issue-163/VERIFICACAO.md
 documentation:
   - doc-041
 type: enhancement
@@ -32,12 +33,12 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Telas de login, conta, gestão própria e gestão root conforme o papel; aviso do relay junto à opção de proteção
+- [x] #1 Telas de login, conta, gestão própria e gestão root conforme o papel; aviso do relay junto à opção de proteção
 - [ ] #2 Funciona sem JavaScript; foco, teclado e leitor de tela verificados
 - [ ] #3 Capturas responsivas e aceite visual do usuário
-- [ ] #4 Modelo de navegação montado no servidor a partir de AuthorizeAction: o HTML de visitante, comum, dono e root não traz links ou ações que o papel não pode usar; chamadas diretas continuam negadas
-- [ ] #5 Login válido segue para /account (comum) ou /admin (root), com retorno prioritário a leitura autorizada e validada; 403 definitivo oferece Minha conta, Diretório e Sair…
-- [ ] #6 Textos e logs sem «administrator session required» e «Administrative logout failed» para o comum; 404 legado com Vary: Cookie e política de cache; cadeado acessível; teste de tempo do login reexecutado
+- [x] #4 Modelo de navegação montado no servidor a partir de AuthorizeAction: o HTML de visitante, comum, dono e root não traz links ou ações que o papel não pode usar; chamadas diretas continuam negadas
+- [x] #5 Login válido segue para /account (comum) ou /admin (root), com retorno prioritário a leitura autorizada e validada; 403 definitivo oferece Minha conta, Diretório e Sair…
+- [x] #6 Textos e logs sem «administrator session required» e «Administrative logout failed» para o comum; 404 legado com Vary: Cookie e política de cache; cadeado acessível; teste de tempo do login reexecutado
 <!-- AC:END -->
 
 ## Comments
@@ -76,6 +77,24 @@ created: 2026-11-20T18:33:00Z
 ---
 
 Decisões do usuário em 20/11/2026 sobre o estudo (backlog/evidencias/issue-163/ESTUDO.md), as 4 aprovadas: (1) destino pós-login: comum em /account, root em /admin, com retorno prioritário a leitura autorizada; (2) entradas neutras /login, /account e «Meu perfil», com compatibilidade das rotas atuais; (3) as telas saem desta tarefa e vão para 125–128 e 157, e a 163 fica com integração, permissões, retorno do login e aceite (débitos de lock do resgate inválido e de CreateListeningProfile/DeleteListeningProfile vão para tarefas técnicas próprias; mudança de validade do token ao trocar papel exige decisão separada); (4) «Sair…» no menu (+), na Conta e na 403, com confirmação compartilhada. Ordem: 163 (modelo de navegação e retorno) → 157 e 125 → 126 e 128 → 164.
+
+---
+
+author: ebrgr
+created: 2026-11-20T20:06:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-163` na branch `feat/issue-163-adequar-telas-multiusuario-e-navegacao` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-20T20:27:00Z
+
+---
+
+Verificação da implementação. Navegação e ações renderizadas por permissão, retorno pós-login validado, Conta na rota funcional até a 125, saída protegida até a 157, 403/404 e cache verificados, aviso do relay e pendências da 161 cobertos. Testes Go, instrumentação de login, custo das fixtures migradas e make check passaram (13/13 jornadas E2E). Foram registradas 56 capturas em Yuu/Pearl e a jornada sem JavaScript com teclado e árvore de acessibilidade. O AC 2 segue aberto para validação com leitor de tela em execução e o AC 3 para o aceite visual do usuário. A tarefa permanece Em andamento para o Reviewer.
 
 ---
 <!-- COMMENTS:END -->
