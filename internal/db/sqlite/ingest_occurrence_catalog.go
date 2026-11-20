@@ -299,7 +299,10 @@ func ensureOccurrenceArtists(ctx context.Context, tx *sql.Conn, names []string) 
 				return nil, err
 			}
 		}
-		result = append(result, id)
+		// Distinct aliases can resolve to the same artist; the first credit stays primary.
+		if !slices.Contains(result, id) {
+			result = append(result, id)
+		}
 	}
 	return result, nil
 }

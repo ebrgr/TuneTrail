@@ -269,3 +269,22 @@ func TestOccurrenceProvisionalPromotion(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences o JOIN recordings r ON r.id=o.recording_id
 		WHERE o.track_mbid=? AND r.musicbrainz_id=? AND r.mbid_source='validated'`, track.ID, fixtureRecording))
 }
+
+// TestOccurrenceAliasCredits keeps the first artist primary when its aliases repeat.
+func TestOccurrenceAliasCredits(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `INSERT INTO artist_aliases VALUES(1,'Artist alias','Fixture',0);
+		INSERT INTO artists(id) VALUES(2);
+		INSERT INTO artist_aliases VALUES(2,'Guest','Fixture',1)`)
+	item := ingest.Snapshot{Title: "One", Release: "Alias album", ArtistNames: []string{"Artist", "Guest", "Artist alias"}}
+	for i, title := range []string{"One", "Two"} {
+		item.Title = title
+		id := admitOccurrenceFixture(t, s, item, int64(1200+i), "aliases-"+title)
+		resolveOccurrenceFixture(t, s, nil)
+		requireReceiptState(t, s, id, "accepted")
+	}
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM release_aliases WHERE alias='Alias album'`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM artist_tracks at JOIN track_aliases t ON t.track_id=at.track_id
+		WHERE t.alias IN ('One','Two') AND at.artist_id=1 AND at.is_primary=1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM artist_releases a JOIN release_aliases r USING(release_id) WHERE r.alias='Alias album'`))
+}
