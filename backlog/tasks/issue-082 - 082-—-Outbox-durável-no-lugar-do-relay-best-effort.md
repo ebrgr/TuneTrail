@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T23:08:00Z'
+updated_date: '2026-11-20T23:27:00Z'
 labels:
   - ingestao
   - api
@@ -78,6 +78,15 @@ created: 2026-11-20T23:08:00Z
 ---
 
 E1 concluída na base v0.48. Plano v3 em 4582311 registra condições para E2 e a decisão de semear a allowlist no upgrade. Transporte isolado em internal/relay no commit fe400da: resultado tipado, cabeçalhos de pausa, dialer SSRF e testes. Paridade legada confirmada com relay.go idêntico à v0.47 e golden via proxy de ambiente. Teste do pacote com race e make check passaram (13/13 E2E). Aguardando Reviewer antes da E2.
+
+---
+
+author: Codex
+created: 2026-11-20T23:27:00Z
+
+---
+
+E1, retorno ao Reviewer: corrigidos os três itens do parecer NÃO APROVADO, em ddad548 (metadados), 191b279 (NAT64 local) e e7f98fd (token com controle). 651d01e cobre faixas reservadas e host:porta canônico. Plano v4 incorpora a semeadura restrita, as orientações para E2 e os limites DNS conhecidos. Teste de internal/relay com race e make check passaram, com 13/13 jornadas E2E. E2 aguarda nova revisão.
 
 ---
 <!-- COMMENTS:END -->
