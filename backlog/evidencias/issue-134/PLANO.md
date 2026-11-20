@@ -252,3 +252,5 @@ Rebase sobre v0.46. Ensaio somente em bancos descartáveis.
 - Feito — Verifica o rebase da E4 com make check e 13 jornadas. Pendente — carga no mesmo perfil, falhas, sobreposição, paridade e relatório.
 
 - Feito — Prepara carga sustentada com recibos válidos e upgrade com WAL. Pendente — executar carga e registrar métricas, cenários de identidade e injeção de falhas.
+
+- Feito — Acrescenta sobreposição de seis origens e relay de paridade. Pendente — executar paridade, sobreposição, fragmentação e falhas.
