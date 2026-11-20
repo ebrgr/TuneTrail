@@ -101,7 +101,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			snapshot.OriginalTime = item.OriginalListenedAt
 			snapshot.TrackMBID = item.Track.TrackMBID
 			snapshot.DiscNumber, snapshot.TrackNumber = item.Track.DiscNumber, item.Track.TrackNumber
-			snapshot.MBIDSource, snapshot.MBIDDeclaredAt = item.Track.MBIDSource, item.Track.MBIDDeclaredAt
+			snapshot.MBIDSource, snapshot.MBIDDeclaredAt = ingest.DeclaredMBIDProvenance(item.Track.MBIDSource, item.Track.MBIDDeclaredAt)
 			if item.Track.MBID != nil && *item.Track.MBID != uuid.Nil {
 				snapshot.Recording = item.Track.MBID.String()
 			}

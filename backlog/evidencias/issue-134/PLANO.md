@@ -49,7 +49,7 @@ As chamadas externas devem ocorrer fora da reserva de escritor. Rechecar sob `BE
 - **D6.** Ordem das fontes de MBID de gravação: salvo ou recebido, API Subsonic do Navidrome (174), ListenBrainz (175), campo em branco se ausente ou serviço desligado/indisponível. Declarações de serviços externos carregam fonte e data. Elas não provam identidade nem sobrescrevem MBID salvo. A 134 aceita MBID vazio e declarações com proveniência, sem implementar buscas das 174/175. Resolver por metadados quando faltar MBID, sem pendência ou retry causados pela ausência em si.
 
 - **D7.** Usar o ID canônico devolvido pelo MusicBrainz em redirecionamentos. Se o título devolvido do lançamento diferir do álbum apresentado, resolver pelos metadados e conservar a divergência na evidência. Um recording declarado que difira do recording da faixa passa por lookup canônico fora da reserva. Se esse lookup falhar, continuar sem prova.
-- **D8.** Ignorar afirmação de recording de serviço externo que contradiga uma gravação validada. Só a afirmação da própria fonte serve como contradição declarada. A afirmação externa mantém fonte e data no snapshot.
+- **D8.** Ignorar afirmação de recording de serviço externo que contradiga uma gravação validada. Só a afirmação da própria fonte serve como contradição declarada. Os adaptadores aceitam somente `navidrome-subsonic` e `listenbrainz-lookup` como marcadores externos reservados às ISSUE-174/175. Descartam a fonte desconhecida e sua data, preservando o MBID recebido com a semântica da própria fonte. Para fonte reconhecida, guardam somente data RFC3339 válida.
 - **D9.** Converter apenas quando o perfil estiver sem recibos de sombra sem vínculo, além das condições de drenagem e relay. O fluxo futuro pode oferecer limpeza com confirmação por digest, seguindo o modelo da ativação. Não prometer deduplicação retroativa para chaves descartadas.
 
 ## Escrita, identidade e coexistência
@@ -225,3 +225,5 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - Feito — Mantém as chaves encerradas na exclusão compatível v9. Pendente — confirmar recusa pela v0.45, ajustar documentação e ressalvas.
 
 - Feito — Documenta recusa do schema v11 pela versão publicada v0.45. Pendente — ressalvas de ensaio, proveniência e testes finais.
+
+- Feito — Restringe marcadores de proveniência MBID aos valores reservados. Pendente — ajustar imports e evidência do ensaio e executar testes finais.

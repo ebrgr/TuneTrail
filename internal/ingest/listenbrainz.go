@@ -18,7 +18,7 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 	if id, err := uuid.Parse(info.TrackMBID); err == nil && id != uuid.Nil {
 		s.TrackMBID = id.String()
 	}
-	s.MBIDSource, s.MBIDDeclaredAt = info.MBIDSource, info.MBIDDeclaredAt
+	s.MBIDSource, s.MBIDDeclaredAt = DeclaredMBIDProvenance(info.MBIDSource, info.MBIDDeclaredAt)
 	s.ArtistMBIDs = validMBIDs(info.ArtistMBIDs)
 	s.MappedArtistMBIDs = validMBIDs(meta.MBIDMapping.ArtistMBIDs)
 	for _, credit := range meta.MBIDMapping.Artists {

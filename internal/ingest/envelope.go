@@ -50,6 +50,19 @@ type Snapshot struct {
 	SkipCacheImage     bool            `json:"skip_cache_image,omitempty"`
 }
 
+// DeclaredMBIDProvenance recognizes only the reserved external lookup sources.
+func DeclaredMBIDProvenance(source, at string) (string, string) {
+	switch source {
+	case "navidrome-subsonic", "listenbrainz-lookup":
+		if _, err := time.Parse(time.RFC3339Nano, at); err != nil {
+			at = ""
+		}
+		return source, at
+	default:
+		return "", ""
+	}
+}
+
 // ArtistMapping preserves a named artist credit and its typed identifier.
 type ArtistMapping struct {
 	Name string `json:"name"`
