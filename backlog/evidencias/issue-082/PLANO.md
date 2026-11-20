@@ -145,5 +145,7 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 
 ## ESTADO DA E1
 
-- Contrato v3 emendado. E1 autorizada e pendente de implementação e testes.
-- Escopo E1: API de tentativa tipada, transporte/dialer SSRF e testes em `internal/relay`. Integração com handler, validação e schema fica para as etapas seguintes.
+- Contrato v3 em `4582311`. Transporte e testes da E1 em `fe400da`. `relay.go` é idêntico ao arquivo da tag v0.47.
+- A API nova classifica o resultado de uma tentativa e aplica a allowlist no dial, com proxy desligado. O worker, os handlers, a configuração persistida, a migração e a ligação de `/validate-token` ficam para as etapas seguintes. O helper comum de backoff fica para quando houver um consumidor.
+- `go test -race -count=1 -timeout 45s ./internal/relay` e `make check` passaram. O E2E passou 13/13 jornadas. Cobertura da E1 inclui wire golden legado via proxy de ambiente, classes HTTP, falhas de TLS/transporte, resposta 2xx grande/truncada, cabeçalhos de limite, SSRF e mudança de DNS entre tentativas.
+- Parada para o Reviewer sobre `internal/relay` antes de E2. Os critérios de aceite da issue seguem pendentes.

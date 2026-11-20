@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T22:39:00Z'
+updated_date: '2026-11-20T23:08:00Z'
 labels:
   - ingestao
   - api
@@ -69,6 +69,15 @@ created: 2026-11-20T22:39:00Z
 ---
 
 E0: PLANO.md v2 e AC1 reescrito. Decisões do usuário (20/11/2026): D1 paridade byte a byte na via legada/sombra e playing_now, entrega por evento na ativa. D2 política durável obrigatória em novas admissões ativas. D3 payload determinístico sem alterar Snapshot/Encode, tabela de campos para validação final. D4 micro-lotes de até 100. D5 30 s, fator 2, full jitter, 1 h, oito tentativas por item e 30 dias, helper comum à 173 com parâmetros separados. D6 429 longo/401/403/3xx pausam o destino. D7 URL alterada gera falha reprocessável, troca só de token preserva linhas. D8 HTTP/relay privado somente pela lista do root, demais usuários veem classe HTTP. D9 pré-082 fechado, perda aceita dos envios brutos interrompidos pelo upgrade. D10 teto de 100 mil itens abertos elegíveis por destino sem impacto no ACK. D11 falhas retidas até ação do operador, texto e visibilidade com a 083. Próxima etapa condicionada à revisão curta do Advisor.
+
+---
+
+author: Codex
+created: 2026-11-20T23:08:00Z
+
+---
+
+E1 concluída na base v0.48. Plano v3 em 4582311 registra condições para E2 e a decisão de semear a allowlist no upgrade. Transporte isolado em internal/relay no commit fe400da: resultado tipado, cabeçalhos de pausa, dialer SSRF e testes. Paridade legada confirmada com relay.go idêntico à v0.47 e golden via proxy de ambiente. Teste do pacote com race e make check passaram (13/13 E2E). Aguardando Reviewer antes da E2.
 
 ---
 <!-- COMMENTS:END -->
