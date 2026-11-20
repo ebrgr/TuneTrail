@@ -58,10 +58,10 @@ BEGIN
 END;
 -- +goose StatementEnd
 
--- v9 can link only legacy events; the new writer must match its adapter's origin.
+-- Accepted events must match the writer's origin; duplicates preserve the original origin.
 -- +goose StatementBegin
 CREATE TRIGGER trg_occurrence_link_origin_insert BEFORE INSERT ON ingest_events
-WHEN NEW.mode='active' AND NEW.event_id IS NOT NULL AND NOT EXISTS (
+WHEN NEW.mode='active' AND NEW.state='accepted' AND NOT EXISTS (
     SELECT 1 FROM listens l WHERE (l.profile_id,l.event_id)=(NEW.profile_id,NEW.event_id)
       AND l.origin=CASE
         WHEN NEW.resolver_variant='v9' THEN 'legacy'
@@ -77,7 +77,7 @@ END;
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_occurrence_link_origin_update BEFORE UPDATE OF event_id,state ON ingest_events
-WHEN NEW.mode='active' AND NEW.event_id IS NOT NULL AND NOT EXISTS (
+WHEN NEW.mode='active' AND NEW.state='accepted' AND NOT EXISTS (
     SELECT 1 FROM listens l WHERE (l.profile_id,l.event_id)=(NEW.profile_id,NEW.event_id)
       AND l.origin=CASE
         WHEN NEW.resolver_variant='v9' THEN 'legacy'

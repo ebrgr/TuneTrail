@@ -288,3 +288,19 @@ func TestOccurrenceAliasCredits(t *testing.T) {
 		WHERE t.alias IN ('One','Two') AND at.artist_id=1 AND at.is_primary=1`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM artist_releases a JOIN release_aliases r USING(release_id) WHERE r.alias='Alias album'`))
 }
+
+// TestOccurrenceOriginGuard permits duplicates from other writers but rejects false origins on acceptance.
+func TestOccurrenceOriginGuard(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,event_id,origin) VALUES(1,1,1300,'file-event','lastfm_import')`)
+	item := ingest.Snapshot{Title: "Intro", Artist: "Artist", Release: "Album"}
+	for _, query := range []string{`SELECT event_id FROM listens WHERE rowid=10`, `SELECT event_id FROM listens WHERE event_id='file-event'`} {
+		id := admitOccurrenceFixture(t, s, item, 1301, uuid.NewString())
+		update := `UPDATE ingest_events SET state=?,identity_status='resolved',resolution_version=1,event_id=(` + query + `),
+			occurrence_id=1,recording_id=(SELECT recording_id FROM occurrences WHERE id=1),closed_at=1 WHERE receipt_id=?`
+		_, err := s.db.Exec(update, "accepted", id)
+		require.ErrorContains(t, err, "link origin conflicts")
+		execSQL(t, s, update, "duplicate", id)
+	}
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE resolver_variant='occurrence' AND state='duplicate'`))
+}
