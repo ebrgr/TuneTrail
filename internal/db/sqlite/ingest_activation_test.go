@@ -243,9 +243,8 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 	deleted, err := s.ApplyProfileDelete(ctx, plan)
 	require.NoError(t, err)
 	require.Equal(t, plan.Count, deleted)
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND state='invalid'
-		AND closed_at IS NOT NULL AND lease_owner IS NULL AND resolution_version=1`))
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1 AND decision='invalid'`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, related))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1`))
 	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND closed_at IS NULL`))
 	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: related, profile: 1, track: 70, lease: "old", unix: 100}), sql.ErrNoRows)

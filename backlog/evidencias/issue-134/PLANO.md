@@ -185,3 +185,5 @@ Retomada após rebase em v0.45.
 - Feito — Habilita o adaptador Maloja por ocorrência. Pendente — nativo, precisão, replay, exclusão e verificações.
 
 - Feito — Admite importação nativa antes da associação de catálogo. Pendente — precisão do ledger, replay, exclusão, MusicBrainz e verificações.
+
+- Feito — Remove recibos e chaves na exclusão para permitir reimportação. Pendente — precisão, replay de digest, cache, ensaio e verificações.

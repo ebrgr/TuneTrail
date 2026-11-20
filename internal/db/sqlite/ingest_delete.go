@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/dedup"
@@ -69,9 +70,16 @@ func deleteListenReceipts(ctx context.Context, tx *sql.Tx, profile, track int32,
 	return nil
 }
 
-// closeSelectedActiveReceipts matches unresolved work against the same track
+// deleteSelectedActiveReceipts matches unresolved work against the same track
 // selection as the history delete, while the selected listens are still present.
-func closeSelectedActiveReceipts(ctx context.Context, tx *sql.Tx, profile int32, selection string, args []any) error {
+func deleteSelectedActiveReceipts(ctx context.Context, tx *sql.Tx, profile int32, selection string, args []any) error {
+	// Occurrence receipts need an explicit resolved occurrence, never a title resemblance.
+	parameters := append(append([]any(nil), args...), profile)
+	if _, err := tx.ExecContext(ctx, `WITH selected AS (`+selection+`)
+		DELETE FROM ingest_events WHERE profile_id=? AND mode='active' AND resolver_variant='occurrence'
+		AND event_id IS NULL AND closed_at IS NULL AND occurrence_id IN (SELECT track_id FROM selected)`, parameters...); err != nil {
+		return err
+	}
 	rows, err := tx.QueryContext(ctx, `WITH selected AS (SELECT DISTINCT track_id FROM (`+selection+`))
 		SELECT s.track_id, 'title', a.alias FROM selected s JOIN track_aliases a ON a.track_id=s.track_id
 		UNION ALL SELECT s.track_id, 'artist', a.alias FROM selected s JOIN artist_tracks c ON c.track_id=s.track_id
@@ -119,7 +127,7 @@ func closeSelectedActiveReceipts(ctx context.Context, tx *sql.Tx, profile int32,
 	}
 	rows, err = tx.QueryContext(ctx, `SELECT receipt_id,coalesce(json_extract(original_snapshot,'$.catalog_track_id'),0),
 		json_extract(original_snapshot,'$.artist'),json_extract(original_snapshot,'$.title')
-		FROM ingest_events WHERE profile_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')`, profile)
+		FROM ingest_events WHERE profile_id=? AND mode='active' AND resolver_variant='v9' AND closed_at IS NULL AND state IN ('received','retryable')`, profile)
 	if err != nil {
 		return err
 	}
@@ -150,18 +158,32 @@ func closeSelectedActiveReceipts(ctx context.Context, tx *sql.Tx, profile int32,
 	if err != nil {
 		return err
 	}
-	// Close only matched receipts and revoke any lease in the same transaction.
-	const scope = `profile_id=? AND mode='active' AND receipt_id IN (SELECT value FROM json_each(?))`
-	if _, err := tx.ExecContext(ctx, `INSERT INTO ingest_revisions
-		SELECT profile_id,receipt_id,resolution_version+1,'automatic','invalid','["profile_history_deleted"]','{}',?,unixepoch()
-		FROM ingest_events WHERE `+scope, activeRuleVersion, profile, string(selected)); err != nil {
-		return err
-	}
-	_, err = tx.ExecContext(ctx, `UPDATE ingest_events SET state='invalid',identity_status='invalid',duplicate_decision=NULL,
-		reason_codes='["profile_history_deleted"]',evidence='{}',rule_version=?,resolution_version=resolution_version+1,
-		resolved_at=unixepoch(),closed_at=unixepoch(),lease_owner=NULL,lease_until=NULL,next_attempt_at=NULL
-		WHERE `+scope, activeRuleVersion, profile, string(selected))
+	// Delete the receipt, its idempotency key and its children atomically.
+	_, err = tx.ExecContext(ctx, `DELETE FROM ingest_events
+		WHERE profile_id=? AND mode='active' AND receipt_id IN (SELECT value FROM json_each(?))`, profile, string(selected))
 	return err
+}
+
+// DiscardIngestPending removes a profile's explicitly selected pending receipt without a tombstone.
+func (s *Sqlite) DiscardIngestPending(ctx context.Context, profile int32, receipt string) error {
+	if profile <= 0 || receipt == "" {
+		return db.ErrInvalidInput
+	}
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		result, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND receipt_id=? AND mode='active'
+			AND event_id IS NULL AND closed_at IS NULL AND state IN ('pending_identity','pending_duplicate','received','retryable')`, profile, receipt)
+		if err != nil {
+			return err
+		}
+		count, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if count == 0 {
+			return db.ErrNotFound
+		}
+		return nil
+	})
 }
 
 // receiptSourcePrefix keeps receipt creation and integration cleanup on the same identity format.

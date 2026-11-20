@@ -481,3 +481,62 @@ func TestOccurrenceLegacyUnpositionedCharacterization(t *testing.T) {
 	}
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences WHERE id=1 AND disc_number IS NULL AND track_number IS NULL`))
 }
+
+// TestOccurrenceReimportAfterDeletion recreates only missing ordinals in keyed API and file deliveries.
+func TestOccurrenceReimportAfterDeletion(t *testing.T) {
+	for _, source := range []string{ingest.ShadowSourceListenBrainz, ingest.ShadowSourceFile} {
+		t.Run(source, func(t *testing.T) {
+			ctx := context.Background()
+			s := convertedOccurrenceFixture(t)
+			batch := ingest.Batch{ProfileID: 1, Source: source, Operation: "import", ReceivedAt: time.Now(),
+				Items: []ingest.Item{
+					{Ordinal: 0, ListenedAt: time.Unix(1800, 0), Snapshot: ingest.Snapshot{Title: "A", Artist: "Artist", Release: "Album"}},
+					{Ordinal: 1, ListenedAt: time.Unix(1820, 0), Snapshot: ingest.Snapshot{Title: "B", Artist: "Artist", Release: "Album"}},
+				}}
+			if source == ingest.ShadowSourceFile {
+				batch.FileFormat, batch.FileDigest = "lastfm", ingest.Digest([]byte("file"))
+			} else {
+				batch.ClientKey = "batch"
+			}
+			_, first, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			require.NoError(t, err)
+			resolveOccurrenceFixture(t, s, nil)
+			resolveOccurrenceFixture(t, s, nil)
+			var track int32
+			var oldEvent string
+			require.NoError(t, s.db.QueryRow(`SELECT occurrence_id,event_id FROM ingest_events WHERE receipt_id=?`, first[0].ReceiptID).Scan(&track, &oldEvent))
+			require.NoError(t, s.DeleteListen(db.WithProfile(ctx, 1), track, time.Unix(1800, 0)))
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id=?`, first[0].ReceiptID))
+			_, partial, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			require.NoError(t, err)
+			require.NotEqual(t, first[0].ReceiptID, partial[0].ReceiptID)
+			require.Equal(t, first[1].ReceiptID, partial[1].ReceiptID)
+			resolveOccurrenceFixture(t, s, nil)
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE event_id=?`, oldEvent))
+			require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at IN (1800,1820)`))
+			execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND listened_at IN (1800,1820)`)
+			_, full, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			require.NoError(t, err)
+			require.NotEqual(t, partial[0].ReceiptID, full[0].ReceiptID)
+			require.NotEqual(t, partial[1].ReceiptID, full[1].ReceiptID)
+		})
+	}
+}
+
+// TestOccurrenceDiscardPending revokes an in-flight lease and releases the key.
+func TestOccurrenceDiscardPending(t *testing.T) {
+	ctx := context.Background()
+	s := convertedOccurrenceFixture(t)
+	snapshot := ingest.Snapshot{Title: "Discarded", Artist: "Artist", Release: "Album"}
+	id := admitOccurrenceFixture(t, s, snapshot, 1900, "discard")
+	lease, _, _, err := s.claimNextIngest(ctx)
+	require.NoError(t, err)
+	require.Equal(t, id, lease.id)
+	require.ErrorIs(t, s.DiscardIngestPending(ctx, 2, id), db.ErrNotFound)
+	require.NoError(t, s.DiscardIngestPending(ctx, 1, id))
+	lease.snapshot = snapshot
+	lease.unix = 1900
+	require.NoError(t, s.finishOccurrence(ctx, lease, occurrenceProof{}))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE listened_at=1900`))
+	require.NotEqual(t, id, admitOccurrenceFixture(t, s, snapshot, 1900, "discard"))
+}

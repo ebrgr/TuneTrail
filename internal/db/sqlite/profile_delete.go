@@ -156,7 +156,7 @@ func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDele
 		return 0, db.ErrConflict
 	}
 	if current.Count > 0 {
-		if err := closeSelectedActiveReceipts(ctx, tx, expected.ProfileID, selection, args); err != nil {
+		if err := deleteSelectedActiveReceipts(ctx, tx, expected.ProfileID, selection, args); err != nil {
 			return 0, staleWriteConflict(err)
 		}
 	}
