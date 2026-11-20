@@ -135,3 +135,16 @@ select:not([multiple]):not([size]) {
   select:not([multiple]):not([size]) { appearance: auto; background-image: none; }
 }
 }
+
+/* Keep the first keyboard shortcut visible above either navigation layout. */
+.skip-link {
+  position: fixed;
+  inset-inline-start: var(--space-4);
+  top: -100px;
+  z-index: 100;
+  padding: var(--space-3);
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+.skip-link:focus { top: var(--space-3); }
+html[data-theme="pearl"] .skip-link { color: var(--color-fg); }

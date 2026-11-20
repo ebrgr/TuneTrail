@@ -21,6 +21,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/version"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/ebrgr/TuneTrail/internal/webquery"
 )
 
@@ -30,8 +31,9 @@ type ReadStore interface {
 	db.ProfileStore
 }
 type Options struct {
-	// Sessions resolves the administrator session cookie; nil means no admin badge.
+	// Sessions resolves account cookies independently of role.
 	Sessions       admin.SessionReader
+	LogoutForm     func(admin.Identity) (*webassets.LogoutForm, error)
 	Languages      *i18n.Catalog
 	ForcedTimezone bool
 	DefaultTheme   string
@@ -66,8 +68,10 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w = h.options.Languages.Wrap(w, r)
-	p := LivePage{Page: Page{Locale: i18n.ViewOf(w), Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: r.URL.RequestURI(), Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}, Params: cloneQuery(r.URL.Query())}
-	p.Admin = h.adminSession(r)
+	p := h.basePage(w, r)
+	p.Params = cloneQuery(r.URL.Query())
+	p.CurrentURL = r.URL.RequestURI()
+	var visited *models.ListeningProfile
 	// Do not speculate on any account-specific document, including ordinary users.
 	_, sessionErr := r.Cookie(adminweb.SessionCookie)
 	p.Prefetch = sessionErr == http.ErrNoCookie
@@ -83,10 +87,11 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Authorize before dispatching any document or fragment read.
-		if !adminweb.CanReadListening(r, h.options.Sessions, profile) {
+		if admin.AuthorizeAction(p.identity.User, admin.ReadListening, profile) != nil {
 			h.fail(w, p, http.StatusNotFound)
 			return
 		}
+		visited = profile
 		p.Prefetch = p.Prefetch && !profile.RequireLogin
 		public := publicProfile(*profile)
 		p.Profile = &public
@@ -111,6 +116,9 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, p, 500)
 		return
 	}
+	p.access = webassets.AccessNavigation(p.identity.User, webassets.OwnProfile(p.identity.User, all), visited, "")
+	p.access.Logout = p.logout
+	p.access.LoginFor(adminweb.SafeReturn(p.CurrentURL))
 	for _, profile := range all {
 		p.Profiles = append(p.Profiles, publicProfile(profile))
 		p.SwitchLinks[profile.Slug] = switchURL(profile.Slug, r.URL.Path, r.URL.Query())
@@ -163,7 +171,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.CurrentURL = returnURL.RequestURI()
 	// Only filters supported by this list are accepted. Multiple media filters
 	// retain the store's established precedence, rather than implying intersection.
-	if p.Section == "chart/top/artists" && (p.Options.ArtistID > 0 || p.Options.AlbumID > 0 || p.Options.TrackID > 0) || p.Section == "chart/top/albums" && (p.Options.AlbumID > 0 || p.Options.TrackID > 0) || p.Section == "chart/top/tracks" && p.Options.TrackID > 0 {
+	if !webquery.RankingFiltersAllowed(p.Section, p.Options) {
 		h.fail(w, p, 400)
 		return
 	}
@@ -239,22 +247,36 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.render(w, p)
 }
 
-// adminSession reads the administrator cookie without creating or extending a session;
-// any error (missing, ambiguous, expired, non-admin or store failure) means a visitor.
-func (h *Pages) adminSession(r *http.Request) bool {
-	if h.options.Sessions == nil {
-		return false
+// basePage creates a neutral shell whose data never depends on a denied profile.
+func (h *Pages) basePage(w http.ResponseWriter, r *http.Request) LivePage {
+	p := LivePage{Page: Page{Locale: i18n.ViewOf(w), Theme: h.options.DefaultTheme, Version: version.Current, Live: true, ForcedTimezone: h.options.ForcedTimezone, SwitchLinks: map[string]string{}}, CurrentURL: "/", Title: "Listening profiles", Section: "profiles", Status: 200, Errors: map[string]bool{}}
+	if h.options.Sessions != nil {
+		identity, err := adminweb.SessionIdentity(r, h.options.Sessions)
+		if err == nil {
+			p.identity = identity
+		} else if !errors.Is(err, admin.ErrUnauthorized) {
+			log.Print("session lookup failed")
+		}
 	}
-	_, err := adminweb.AdminIdentity(r, h.options.Sessions)
-	if err != nil && !errors.Is(err, admin.ErrUnauthorized) && !errors.Is(err, admin.ErrForbidden) {
-		log.Printf("admin session lookup failed: %v", err)
+	p.access = webassets.AccessNavigation(p.identity.User, nil, nil, "")
+	p.Admin = p.access.ManageCatalog
+	if r.Method == http.MethodGet && p.access.Account != nil && h.options.LogoutForm != nil && !strings.Contains(r.Header.Get("Sec-Purpose"), "prefetch") {
+		p.logout, _ = h.options.LogoutForm(p.identity)
+		p.access.Logout = p.logout
 	}
-	return err == nil
+	return p
+}
+
+// NotFound serves the same neutral document for absent and unavailable HTML routes.
+func (h *Pages) NotFound(w http.ResponseWriter, r *http.Request) {
+	w = h.options.Languages.Wrap(w, r)
+	h.fail(w, h.basePage(w, r), http.StatusNotFound)
 }
 
 func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 	// Buffer localized documents and select cache policy by final status, never for admin forms.
-	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.Header().Add("Vary", "Cookie")
 	if p.Error != "" {
 		key := map[int]string{400: "error.bad_request", 404: "error.not_found", 500: "error.internal"}[p.Status]
 		if key != "" {
@@ -267,6 +289,7 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 			p.Title = translated(p.Locale, key, p.Title)
 		}
 	}
+	p.prepareActions()
 	var b bytes.Buffer
 	tmpl, err := localizedTemplates(h.templates, p.Locale)
 	if err == nil {
@@ -284,14 +307,14 @@ func (h *Pages) render(w http.ResponseWriter, p LivePage) {
 			http.Error(w, "Unable to render page", 500)
 			return
 		}
-		w.Header().Set("Cache-Control", "private, no-cache")
-		if p.Profile != nil && p.Profile.RequireLogin {
-			w.Header().Set("Cache-Control", "private, no-store")
+		if p.identity.User == nil && (p.Profile == nil || !p.Profile.RequireLogin) {
+			w.Header().Set("Cache-Control", "private, no-cache")
 		}
-		w.Header().Add("Vary", "Cookie")
 		w.Header().Set("X-TuneTrail-UI-Generation", generation)
 		// Lets a page restored from the back/forward cache detect a login or logout.
 		w.Header().Set("X-TuneTrail-Admin", strconv.FormatBool(p.Admin))
+		w.Header().Set("X-TuneTrail-Signed-In", strconv.FormatBool(p.access.Account != nil))
+		w.Header().Set("X-TuneTrail-Manage-Listening", strconv.FormatBool(p.access.ManageListening))
 		if p.Profile != nil {
 			w.Header().Set("X-TuneTrail-Timezone", p.Timezone)
 			w.Header().Set("X-TuneTrail-Week-Start", strconv.Itoa(p.WeekStart))
@@ -304,6 +327,11 @@ func (h *Pages) fail(w http.ResponseWriter, p LivePage, status int) {
 	// A generic 404 must not reflect profile or route data through the language form.
 	if status == http.StatusNotFound {
 		p.CurrentURL = "/"
+		p.Profile, p.Profiles, p.Next = nil, nil, ""
+		p.Media = nil
+		p.Section, p.Timezone, p.WeekStart = "profiles", "", 0
+		p.access = webassets.AccessNavigation(p.identity.User, nil, nil, "")
+		p.access.Logout = p.logout
 		if p.Locale != nil {
 			p.Locale.Return = "/"
 		}

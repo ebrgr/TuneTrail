@@ -8,7 +8,9 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/importer"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"io"
 	"net/http"
 	"strconv"
@@ -48,7 +50,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		return
 	}
 	defer f.Close()
-	if err = h.consumeSubmission(identity.SessionID, f.SingleValue("submission_token")); err != nil {
+	if err = h.consumeTicket(identity.SessionID, f.SingleValue("submission_token"), path == "logout"); err != nil {
 		h.fail(w, err)
 		return
 	}
@@ -62,6 +64,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			return
 		}
 		if err = admin.Logout(r.Context(), h.store, identity.SessionID); err != nil {
+			logger.FromContext(r.Context()).Error().Str("reason", "session revocation failed").Msg("Logout failed")
 			h.fail(w, err)
 			return
 		}
@@ -97,7 +100,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		} else {
 			h.putNotice(identity.SessionID, 0, "Account updated.")
 		}
-		http.Redirect(w, r, "/admin", 303)
+		http.Redirect(w, r, webassets.AccountDestination, 303)
 		return
 	case "profile/create":
 		if !fields(f, "display_name", "slug", "icon", "image") {

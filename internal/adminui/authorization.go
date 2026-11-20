@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-// authorizePage leaves the common user's landing destination to ISSUE-163 while
-// permitting explicit existing account and personal management documents.
+// authorizePage checks the requested document and any explicit profile selection.
 func (h *Handler) authorizePage(r *http.Request, id admin.Identity) error {
 	section := r.URL.Query().Get("section")
 	if section == "" && r.URL.Query().Get("profile") != "" {
@@ -16,7 +15,13 @@ func (h *Handler) authorizePage(r *http.Request, id admin.Identity) error {
 	}
 	switch section {
 	case "account":
-		return admin.AuthorizeAction(id.User, admin.ManageAccount, nil)
+		if err := admin.AuthorizeAction(id.User, admin.ManageAccount, nil); err != nil {
+			return err
+		}
+		if r.URL.Query().Get("profile") == "" {
+			return nil
+		}
+		fallthrough
 	case "profiles", "keys", "relay", "import", "export":
 		if raw := r.URL.Query().Get("profile"); raw != "" {
 			n, err := parseID(raw)
@@ -69,6 +74,14 @@ func (h *Handler) authorizeAction(r *http.Request, id admin.Identity) error {
 	}
 	_, err = admin.AuthorizeProfile(r.Context(), h.store, id.User, n)
 	return err
+}
+
+// mediaCapability gives page, action and return validation the same media scope.
+func mediaCapability(r *http.Request, parts []string) admin.Action {
+	if personalMediaRoute(r, parts) {
+		return admin.ManageProfile
+	}
+	return admin.ManageCatalog
 }
 
 // personalMediaRoute permits only the existing personal tasks and reviewed confirmations.

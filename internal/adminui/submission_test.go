@@ -57,11 +57,11 @@ func TestSubmissionQuotaEvictsOnlyOwnOldest159(t *testing.T) {
 	require.NoError(t, err)
 	otherID := uuid.MustParse(otherToken)
 	// The globally oldest ticket belongs to another session and must never be evicted.
-	h.submissions[otherID] = submissionTicket{other, time.Now().Add(time.Minute)}
+	h.submissions[otherID] = submissionTicket{other, time.Now().Add(time.Minute), false}
 	oldest, err := h.newSubmission(user)
 	require.NoError(t, err)
 	oldestID := uuid.MustParse(oldest)
-	h.submissions[oldestID] = submissionTicket{user, time.Now().Add(2 * time.Minute)}
+	h.submissions[oldestID] = submissionTicket{user, time.Now().Add(2 * time.Minute), false}
 	for i := 1; i < maxSessionSubmissions; i++ {
 		_, err = h.newSubmission(user)
 		require.NoError(t, err)
@@ -90,7 +90,7 @@ func TestSubmissionExpiryAndGlobalCeiling159(t *testing.T) {
 	require.NoError(t, err)
 	expiredID := uuid.MustParse(expired)
 	require.WithinDuration(t, time.Now().Add(30*time.Minute), h.submissions[expiredID].Expires, time.Second)
-	h.submissions[expiredID] = submissionTicket{session, time.Now().Add(-time.Second)}
+	h.submissions[expiredID] = submissionTicket{session, time.Now().Add(-time.Second), false}
 	require.ErrorIs(t, h.consumeSubmission(session, expired), db.ErrConflict)
 	_, err = h.newSubmission(session)
 	require.NoError(t, err)
@@ -101,7 +101,7 @@ func TestSubmissionExpiryAndGlobalCeiling159(t *testing.T) {
 	}
 	// Fill the pool with independent sessions so a new session cannot displace any of them.
 	for len(h.submissions) < 4096 {
-		h.submissions[uuid.New()] = submissionTicket{uuid.New(), time.Now().Add(30 * time.Minute)}
+		h.submissions[uuid.New()] = submissionTicket{uuid.New(), time.Now().Add(30 * time.Minute), false}
 	}
 	_, err = h.newSubmission(session)
 	require.NoError(t, err)

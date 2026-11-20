@@ -158,3 +158,17 @@ func ResolveTimeframe(tf db.Timeframe) db.Timeframe {
 	}
 	return tf
 }
+
+// RankingFiltersAllowed rejects filters that would select the ranked entity itself.
+func RankingFiltersAllowed(section string, opts db.GetItemsOpts) bool {
+	switch section {
+	case "chart/top/artists":
+		return opts.ArtistID == 0 && opts.AlbumID == 0 && opts.TrackID == 0
+	case "chart/top/albums":
+		return opts.AlbumID == 0 && opts.TrackID == 0
+	case "chart/top/tracks":
+		return opts.TrackID == 0
+	default:
+		return true
+	}
+}

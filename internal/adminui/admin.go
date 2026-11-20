@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/version"
+
 	"html/template"
 	"io"
 	"net/http"
@@ -27,6 +27,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/relay"
+	"github.com/ebrgr/TuneTrail/internal/version"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/go-chi/httprate"
 	"github.com/google/uuid"
@@ -101,6 +102,7 @@ type Handler struct {
 	catalogPlans      map[uuid.UUID]pendingCatalogPlan
 }
 type view struct {
+	Nav                                             webassets.Nav
 	Locale                                          *i18n.View
 	User                                            *models.User
 	Profiles                                        []models.ListeningProfile
@@ -135,7 +137,7 @@ func New(store Store, opts Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "nav": adminNav, "adminSection": navSection, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}
@@ -194,6 +196,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/admin/redeem" {
 		w.Header().Set("Referrer-Policy", "no-referrer")
 	}
+	w.Header().Add("Vary", "Cookie")
 	w = h.languages.Wrap(w, r)
 	if r.Method == http.MethodHead {
 		copy := r.Clone(r.Context())
@@ -227,13 +230,17 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/admin/settings" && r.Method == "GET" {
 		// Resolve an administrative session before reading any configuration.
-		identity, err := adminweb.AdminIdentity(r, h.store)
+		identity, err := adminweb.SessionIdentity(r, h.store)
 		if errors.Is(err, admin.ErrUnauthorized) && r.Header.Get("Authorization") == "" {
 			h.loginPage(w, r, "")
 			return
 		}
 		if err != nil {
 			h.fail(w, err)
+			return
+		}
+		if err := admin.AuthorizeAction(identity.User, admin.ManageServer, nil); err != nil {
+			h.failForSession(w, r, identity, err)
 			return
 		}
 		h.settingsPage(w, r, identity)
@@ -250,7 +257,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err := h.authorizePage(r, identity); err != nil {
-			h.logoutPage(w, r, identity)
+			h.failForSession(w, r, identity, err)
 			return
 		}
 		h.page(w, r, identity)
@@ -287,7 +294,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if _, err = admin.Profile(r.Context(), h.store, identity.User, id, profile.Slug); err != nil {
-			h.fail(w, err)
+			h.failForSession(w, r, identity, err)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -307,31 +314,36 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		err = h.authorizeAction(r, identity)
 	}
 	if err != nil {
-		h.fail(w, err)
+		h.failForSession(w, r, identity, err)
 		return
 	}
 
 	h.action(w, r, identity)
 }
 
-// logoutPage gives a non-admin actor a way to end the session without loading admin data.
-func (h *Handler) logoutPage(w http.ResponseWriter, r *http.Request, identity admin.Identity) {
-	token, err := h.csrf.SessionToken(identity)
-	if err != nil {
+// failForSession renders a forbidden document without loading its denied resource.
+func (h *Handler) failForSession(w http.ResponseWriter, r *http.Request, identity admin.Identity, err error) {
+	if identity.User == nil || adminweb.ErrorStatus(err) != http.StatusForbidden {
 		h.fail(w, err)
 		return
 	}
-	submission, err := h.newSubmission(identity.SessionID)
-	if err != nil {
-		h.fail(w, err)
-		return
-	}
-	h.render(w, http.StatusForbidden, view{LogoutOnly: true, CSRF: token, Submission: submission, Error: "This account cannot access administration. Sign out to use another account."})
+	nav := h.navigation(r.Context(), identity, nil, "")
+	h.render(w, http.StatusForbidden, view{Nav: nav, LogoutOnly: true, Error: "Your account does not have permission to access this page."})
 }
 
 // render buffers the complete template so errors do not leak secrets or partial HTML.
 func (h *Handler) render(w http.ResponseWriter, status int, data view) {
 	data.Locale = i18n.ViewOf(w)
+	if data.Locale != nil && (status == http.StatusForbidden || status == http.StatusNotFound) {
+		data.Locale.Return = "/"
+	}
+	if data.Nav.Kind == "" {
+		section := ""
+		if data.Login {
+			section = "login"
+		}
+		data.Nav = webassets.Nav{Kind: "admin", Version: version.Current, NavAccess: webassets.AccessNavigation(nil, nil, nil, section)}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder
 	data.Error = localMessage(data.Locale, data.Error)
@@ -354,6 +366,16 @@ func (h *Handler) fail(w http.ResponseWriter, err error) {
 		status = 502
 	}
 	message := adminweb.PublicError(err)
+	switch status {
+	case http.StatusUnauthorized:
+		message = "Sign in to continue."
+	case http.StatusForbidden:
+		if message == "request forbidden" {
+			message = "Your account does not have permission to access this page."
+		}
+	case http.StatusNotFound:
+		message = "This profile or page is unavailable."
+	}
 	if status == 502 {
 		message = "relay validation unavailable"
 	}
@@ -371,9 +393,6 @@ func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request, message stri
 	next := adminweb.SafeReturn(query.Get("next"))
 	if next == "" && query.Get("next") == "" {
 		next = adminweb.SafeReturn(r.URL.RequestURI())
-	}
-	if next == "" {
-		next = "/admin"
 	}
 	h.render(w, 200, view{Login: true, CSRF: token, Next: next, Error: message})
 }
@@ -397,6 +416,7 @@ func (h *Handler) postLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	session, err := admin.Login(r.Context(), h.store, f.SingleValue("username"), f.SingleValue("password"), remember == "1")
 	if err != nil {
+		logger.FromContext(r.Context()).Warn().Int("status", adminweb.ErrorStatus(err)).Msg("Login failed")
 		if errors.Is(err, admin.ErrUnauthorized) {
 			token, tokenErr := h.csrf.LoginToken(w, r)
 			if tokenErr != nil {
@@ -404,22 +424,21 @@ func (h *Handler) postLogin(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			next := adminweb.SafeReturn(f.SingleValue("next"))
-			if next == "" {
-				next = "/admin"
-			}
 			h.render(w, http.StatusUnauthorized, view{Login: true, CSRF: token, Next: next, Error: "Invalid username or password."})
 			return
 		}
 		h.fail(w, err)
 		return
 	}
+	// Resolve the committed session so fallback and return authorization use its current role.
+	identity, err := admin.Authenticate(r.Context(), h.store, session.ID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
 	adminweb.SetSessionCookie(w, r, session)
 	adminweb.ClearPreauth(w, r)
-	next := adminweb.SafeReturn(f.SingleValue("next"))
-	if next == "" {
-		next = "/admin"
-	}
-	http.Redirect(w, r, next, http.StatusSeeOther)
+	http.Redirect(w, r, h.loginDestination(r, identity.User, f.SingleValue("next")), http.StatusSeeOther)
 }
 
 // page renders only data belonging to the authenticated admin and explicitly selected profile.
@@ -504,6 +523,8 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 	} else {
 		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
 	}
+	v.Nav = h.navigation(r.Context(), id, v.Profile, navSection(section))
+	v.Nav.Logout = &webassets.LogoutForm{CSRF: token, Submission: ticket}
 	h.render(w, 200, v)
 }
 
@@ -583,23 +604,6 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 	return os.Open(u.Path)
 }
 
-// adminNav supplies profile, role and selected action to the shared More menu (ISSUE-156).
-func adminNav(p *models.ListeningProfile, signedIn bool, current string) webassets.Nav {
-	nav := webassets.Nav{Kind: "admin", Admin: signedIn, Current: current, Version: version.Current}
-	if p != nil {
-		nav.Profile = &webassets.NavProfile{ID: int64(p.ID), Name: p.DisplayName, Slug: p.Slug}
-		if p.AvatarImageID != nil {
-			nav.Profile.Image = *p.AvatarImageID
-		}
-		if p.AvatarIcon != nil {
-			nav.Profile.Icon = *p.AvatarIcon
-		}
-	}
-	// ISSUE-071: administration also exposes period navigation for its selected profile.
-	nav.PeriodLinks = nav.DefaultPeriods()
-	return nav
-}
-
 // navSection marks the administration action for the home page: the account
 // section or, for every other section, the profiles item (ISSUE-123).
 func navSection(section string) string {
@@ -608,7 +612,3 @@ func navSection(section string) string {
 	}
 	return "profiles"
 }
-
-// SignedIn is true only when the page was rendered for a valid session: User is set after
-// authentication, never on the login page or on errors raised before it (ISSUE-123).
-func (v view) SignedIn() bool { return v.User != nil }

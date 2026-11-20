@@ -24,10 +24,10 @@ func TestAdminSessionRejectsOrdinaryAccount159(t *testing.T) {
 		require.NoError(t, err)
 		r := httptest.NewRequest("GET", "http://koito.test/alpha/listens", nil)
 		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: session.ID.String()})
-		require.Equal(t, role == models.UserRoleAdmin, h.adminSession(r))
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
 		require.Equal(t, 200, w.Code)
+		require.Equal(t, role == models.UserRoleAdmin, w.Header().Get("X-TuneTrail-Admin") == "true")
 		if role == models.UserRoleUser {
 			require.NotContains(t, w.Body.String(), "/manage/")
 		} else {

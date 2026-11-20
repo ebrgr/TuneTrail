@@ -136,7 +136,7 @@
 
 {{- define "media/actions"}}
   {{- $media:=.Media}}
-  {{- if or .Admin $media.MusicBrainzURL}}
+  {{- if or .MediaActions $media.MusicBrainzURL}}
   <nav class="media-actions" aria-label="{{tr "media.actions" "Media actions"}}">
     {{- if $media.MusicBrainzURL}}
       <a href="{{$media.MusicBrainzURL}}" target="_blank" rel="noopener noreferrer"
@@ -144,31 +144,9 @@
         data-tip="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}"
         title="{{tr "ui.view_musicbrainz" "View on MusicBrainz"}}">{{icon "ExternalLink"}}</a>
     {{- end}}
-    {{- if .Admin}}
-      {{- if eq $media.Kind "track"}}
-        <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/add-listen"
-          aria-label="{{tr "media.action.add_listen" "Add listen"}}"
-        data-tip="{{tr "media.action.add_listen" "Add listen"}}"
-        title="{{tr "media.action.add_listen" "Add listen"}}">{{icon "Plus"}}</a>
-      {{- end}}
-      <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/edit"
-        aria-label="{{tr "media.action.edit" "Edit item"}}"
-        data-tip="{{tr "media.action.edit" "Edit item"}}"
-        title="{{tr "media.action.edit" "Edit item"}}">{{icon "Pencil"}}</a>
-      {{- if ne $media.Kind "track"}}
-        <a data-media-task data-artwork-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/image"
-          aria-label="{{tr "media.action.image" "Replace image"}}"
-        data-tip="{{tr "media.action.image" "Replace image"}}"
-        title="{{tr "media.action.image" "Replace image"}}">{{icon "Image"}}</a>
-      {{- end}}
-      <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/merge"
-        aria-label="{{tr "media.action.merge" "Merge items"}}"
-        data-tip="{{tr "media.action.merge" "Merge items"}}"
-        title="{{tr "media.action.merge" "Merge items"}}">{{icon "Merge"}}</a>
-      <a data-media-task href="/{{.Profile.Slug}}/manage/{{$media.Kind}}/{{$media.ID}}/delete"
-        aria-label="{{tr "media.action.delete" "Delete item"}}"
-        data-tip="{{tr "media.action.delete" "Delete item"}}"
-        title="{{tr "media.action.delete" "Delete item"}}">{{icon "Trash2"}}</a>
+    {{- range .MediaActions}}
+      <a data-media-task{{if .Artwork}} data-artwork-task{{end}} href="{{.URL}}"
+        aria-label="{{tr .Label .Fallback}}" data-tip="{{tr .Label .Fallback}}" title="{{tr .Label .Fallback}}">{{icon .Icon}}</a>
     {{- end}}
   </nav>
   {{- end}}

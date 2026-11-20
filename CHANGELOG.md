@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Navigation follows account and profile permissions. Listeners can open their own account, manage their own listens, and sign out from the menu. Sign-in returns to an authorized page or the account’s default destination (ISSUE-163).
+
+- The profile protection form explains that a configured relay continues sending listens to the external service (ISSUE-163).
+
 ## [0.44] - 2026-11-20
 
 - Active ingestion of ListenBrainz submissions and imports requires the master switch plus per-profile activation, with a preview and a shadow purge confirmed by the root administrator. The Review option stays blocked until the review queue exists (ISSUE-081).

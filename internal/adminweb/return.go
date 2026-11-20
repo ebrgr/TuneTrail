@@ -112,6 +112,10 @@ func SafeReturn(raw string) string {
 			if !trackManage || len(v) > 100 {
 				return ""
 			}
+		case "q":
+			if len(mediaParts) != 2 || mediaParts[1] != "search" || len([]rune(strings.TrimSpace(v))) > 200 {
+				return ""
+			}
 		case "period":
 			switch v {
 			case "day", "week", "month", "year", "all_time":

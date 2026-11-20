@@ -15,6 +15,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/ebrgr/TuneTrail/internal/webquery"
 	"github.com/google/uuid"
 )
@@ -28,6 +29,7 @@ type mergeCandidate struct {
 	Artists []models.SimpleArtist
 }
 type mediaView struct {
+	Nav                             webassets.Nav
 	Locale                          *i18n.View
 	Submission                      string
 	Profile                         *models.ListeningProfile
@@ -139,13 +141,9 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 		return
 	}
 	// Personal tasks require canonical ownership; all other editors require root.
-	if personalMediaRoute(r, parts) {
-		err = admin.AuthorizeAction(identity.User, admin.ManageProfile, profile)
-	} else {
-		err = admin.AuthorizeAction(identity.User, admin.ManageCatalog, nil)
-	}
+	err = admin.AuthorizeAction(identity.User, mediaCapability(r, parts), profile)
 	if err != nil {
-		h.fail(w, err)
+		h.failForSession(w, r, identity, err)
 		return
 	}
 	if len(parts) == 5 && parts[4] == "confirm" && r.Method == "POST" {
@@ -531,6 +529,13 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 		status = adminweb.ErrorStatus(actionErr)
 	}
 	v.Section = section
+	// Task fragments already carry their own form tokens and have no sidebar.
+	if v.Section == "" {
+		v.Nav = h.navigation(r.Context(), identity, profile, "")
+	}
+	if v.Submission != "" && v.Nav.Kind != "" {
+		v.Nav.Logout = &webassets.LogoutForm{CSRF: v.CSRF, Submission: v.Submission}
+	}
 	h.renderMedia(w, status, v)
 }
 
@@ -566,9 +571,25 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 	}
 	if returnTo != "" {
 		parsed, e := url.Parse(returnTo)
-		if e != nil || (parsed.Path != expected && !(strings.HasPrefix(parsed.Path, expected+"/") && adminweb.MediaTaskAllowed(kind, strings.TrimPrefix(parsed.Path, expected+"/"))) && !(action == "listen-delete" && adminweb.SafeHistoryReturn(returnTo, p.Slug) != "")) {
+		if e != nil {
 			h.fail(w, db.ErrInvalidInput)
 			return
+		}
+		destination := strings.Split(strings.TrimPrefix(parsed.Path, "/"), "/")
+		isTask := parsed.Path == expected || strings.HasPrefix(parsed.Path, expected+"/") && adminweb.MediaTaskAllowed(kind, strings.TrimPrefix(parsed.Path, expected+"/"))
+		isHistory := action == "listen-delete" && adminweb.SafeHistoryReturn(returnTo, p.Slug) != ""
+		if !isTask && !isHistory {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+		// The form's return context can also choose an editor to render after a mutation.
+		if isTask {
+			read := r.Clone(r.Context())
+			read.Method, read.URL = http.MethodGet, parsed
+			if err := admin.AuthorizeAction(identity.User, mediaCapability(read, destination), p); err != nil {
+				h.failForSession(w, r, identity, err)
+				return
+			}
 		}
 	}
 	f.Values.Del("return_to")

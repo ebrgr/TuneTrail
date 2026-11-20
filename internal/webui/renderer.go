@@ -3,6 +3,7 @@ package webui
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -171,4 +172,33 @@ func formatFuncs(locale *i18n.View) template.FuncMap {
 			return fmt.Sprintf("%d %s", count, word)
 		},
 	}
+}
+
+// prepareActions gives templates a URL only when the session can perform the action.
+func (p *LivePage) prepareActions() {
+	if !p.ManageListening() || p.Profile == nil {
+		return
+	}
+	for i := range p.Listens {
+		row := &p.Listens[i]
+		row.ManageURL = fmt.Sprintf("/%s/manage/track/%d/listen?listen_at=%d&tz=%s&history_return=%s",
+			p.Profile.Slug, row.Item.ID, row.Unix, url.QueryEscape(p.Timezone), url.QueryEscape(p.CurrentURL))
+	}
+	if p.Media == nil {
+		return
+	}
+	base := fmt.Sprintf("/%s/manage/%s/%d/", p.Profile.Slug, p.Media.Kind, p.Media.ID)
+	if p.Media.Kind == "track" {
+		p.MediaActions = append(p.MediaActions, mediaAction{base + "add-listen", "media.action.add_listen", "Add listen", "Plus", false})
+	}
+	if !p.access.ManageCatalog {
+		return
+	}
+	p.MediaActions = append(p.MediaActions, mediaAction{base + "edit", "media.action.edit", "Edit item", "Pencil", false})
+	if p.Media.Kind != "track" {
+		p.MediaActions = append(p.MediaActions, mediaAction{base + "image", "media.action.image", "Replace image", "Image", true})
+	}
+	p.MediaActions = append(p.MediaActions,
+		mediaAction{base + "merge", "media.action.merge", "Merge items", "Merge", false},
+		mediaAction{base + "delete", "media.action.delete", "Delete item", "Trash2", false})
 }

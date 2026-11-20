@@ -193,19 +193,6 @@
   text-align:center
 }
 
-/* Apply shared spacing and surface tokens at this size. */
-.skip-link {
-  position:fixed;
-  left:90px;
-  top:-100px;
-  background:var(--color-primary);
-  color:var(--color-bg);
-  padding:10px;
-  z-index:100
-}
-.skip-link:focus {
-  top:10px
-}
 .admin-main [data-drop-active] {
   outline:2px dashed var(--color-primary)
 }
@@ -215,7 +202,7 @@
 /* Apply shared spacing and surface tokens at this size. */
 .admin-sections{display:flex;flex-wrap:wrap;gap: var(--space-4);padding:14px 0}.admin-main :target{scroll-margin-top:24px}.admin-main h3{text-transform:none}
 /* Pearl's light background cannot be used as text on its blue primary colour. */
-html[data-theme="pearl"] .admin-main button,html[data-theme="pearl"] .admin-main .admin-button,html[data-theme="pearl"] .skip-link{color:var(--color-fg)}
+html[data-theme="pearl"] .admin-main button,html[data-theme="pearl"] .admin-main .admin-button{color:var(--color-fg)}
 html[data-theme="pearl"] .admin-main a{color:#00538a}
 html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 

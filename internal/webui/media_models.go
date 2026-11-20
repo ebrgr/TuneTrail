@@ -16,3 +16,9 @@ type MediaPage struct {
 	AlbumsMore                    bool
 	Interest                      *InterestGraph
 }
+
+// mediaAction carries the approved destination and its rendering metadata.
+type mediaAction struct {
+	URL, Label, Fallback, Icon string
+	Artwork                    bool
+}

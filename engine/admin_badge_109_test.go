@@ -21,7 +21,11 @@ func TestAdminBadgeOnlyForAdministratorSession(t *testing.T) {
 		w := httptest.NewRecorder()
 		a.router.ServeHTTP(w, r)
 		require.Equal(t, http.StatusOK, w.Code)
-		require.Equal(t, "private, no-cache", w.Header().Get("Cache-Control"))
+		cache := "private, no-cache"
+		if cookie == a.cookie {
+			cache = "private, no-store"
+		}
+		require.Equal(t, cache, w.Header().Get("Cache-Control"))
 		require.Contains(t, w.Header().Values("Vary"), "Cookie")
 		return w
 	}
@@ -52,7 +56,7 @@ func TestAdminBadgeHeadAndAmbiguousCookie(t *testing.T) {
 	head := a.request(http.MethodHead, "/default", "", "", true)
 	require.Equal(t, http.StatusOK, head.Code)
 	require.Equal(t, "true", head.Header().Get("X-TuneTrail-Admin"))
-	require.Equal(t, "private, no-cache", head.Header().Get("Cache-Control"))
+	require.Equal(t, "private, no-store", head.Header().Get("Cache-Control"))
 	require.Contains(t, head.Header().Values("Vary"), "Cookie")
 
 	r := httptest.NewRequest(http.MethodGet, "http://koito.test/default", nil)

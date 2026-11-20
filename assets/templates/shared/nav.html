@@ -20,16 +20,19 @@
     </div>
     <div class="nav-destinations">
       <a class="nav-button" href="{{if .Profile}}/{{.Profile.Slug}}{{.Query}}{{else}}/{{end}}"
+        {{if or (eq .Section "home") (eq .Section "profiles")}}aria-current="page"{{end}}
         aria-label="{{tr "ui.home" "Home"}}" data-tip="{{tr "ui.home" "Home"}}">
         {{icon "House"}}<span class="nav-label">{{tr "ui.home" "Home"}}</span>
       </a>
       {{if .Profile}}
         <a class="nav-button" href="{{if eq .Kind "preview"}}/{{.Profile.Slug}}{{.Query}}#rankings{{else}}/{{.Profile.Slug}}/chart/top/artists{{.Query}}{{end}}"
+          {{if or (eq .Section "chart/top/artists") (eq .Section "chart/top/albums") (eq .Section "chart/top/tracks")}}aria-current="true"{{end}}
           aria-label="{{tr "ui.rankings" "Rankings"}}" data-tip="{{tr "ui.rankings" "Rankings"}}">
           {{icon "Music2"}}<span class="nav-label">{{tr "ui.rankings" "Rankings"}}</span>
         </a>
         {{/* ISSUE-154: Rewind replaces History here; the listening history already sits on the home page. */}}
         <a class="nav-button" href="/{{.Profile.Slug}}/rewind"
+          {{if eq .Section "rewind"}}aria-current="page"{{end}}
           aria-label="{{tr "ui.rewind" "Rewind"}}" data-tip="{{tr "ui.rewind" "Rewind"}}">
           {{icon "History"}}<span class="nav-label">{{tr "ui.rewind" "Rewind"}}</span>
         </a>
@@ -40,6 +43,7 @@
           </button>
         {{else}}
           <a class="nav-button" href="/{{.Profile.Slug}}/search{{.Query}}"
+            {{if eq .Section "search"}}aria-current="page"{{end}}
             aria-label="{{tr "ui.search" "Search"}}" data-dialog="search-dialog" data-tip="{{tr "ui.search" "Search"}}">
             {{icon "Search"}}<span class="nav-label">{{tr "ui.search" "Search"}}</span>
           </a>
@@ -81,15 +85,15 @@
 {{define "partial/profile-header"}}
   {{if .Profile}}
     <header class="profile-header">
-      {{if .Admin}}
+      {{if .ProfileSettings}}
         <a
           class="admin-avatar-link"
-          href="/admin?profile={{.Profile.ID}}"
-          title="{{tr "ui.admin_signed_in" "Administrator signed in"}}"
+          href="{{.ProfileSettings.URL}}"
+          title="{{tr .ProfileSettings.Label .ProfileSettings.Fallback}}"
         >
           {{template "partial/avatar" .Profile}}
-          <span class="admin-badge">{{icon "ShieldCheck"}}</span>
-          <span class="sr-only">{{tr "ui.admin_signed_in" "Administrator signed in"}}</span>
+          {{if .AdminBadge}}<span class="admin-badge" aria-hidden="true">{{icon "ShieldCheck"}}</span>{{end}}
+          <span class="sr-only">{{tr .ProfileSettings.Label .ProfileSettings.Fallback}}</span>
         </a>
       {{else}}
         {{/* ISSUE-071: the compact mobile avatar remains a real profile-switching link. */}}
@@ -108,38 +112,24 @@
 
 {{/* ISSUE-156: ordinary links inside More preserve role and current-page semantics without scripts. */}}
 {{define "partial/admin-actions"}}
-    <section class="nav-admin-actions" aria-labelledby="nav-admin-title">
-      <h2 class="nav-group-title" id="nav-admin-title">{{tr "ui.administration" "Administration"}}</h2>
-      {{if eq .Kind "preview"}}
-        <p class="nav-preview-notice">{{tr "ui.preview_admin_unavailable" "Preview: administration unavailable"}}</p>
-      {{else if .Admin}}
-        <a
-          class="nav-button"
-          href="/admin?section=account{{with .Profile}}&profile={{.ID}}{{end}}"
-          {{if eq .Current "account"}}aria-current="page"{{end}}
-          aria-label="{{tr "ui.account" "Account"}}"
-        >{{icon "LockKeyhole"}}<span class="nav-action-label">{{tr "ui.account" "Account"}}</span></a>
-        <a
-          class="nav-button"
-          href="/admin?section=profiles{{with .Profile}}&profile={{.ID}}{{end}}"
-          {{if eq .Current "profiles"}}aria-current="page"{{end}}
-          aria-label="{{tr "ui.manage_profiles" "Manage profiles"}}"
-        >{{icon "UserRoundCog"}}<span class="nav-action-label">{{tr "ui.manage_profiles" "Manage profiles"}}</span></a>
-        <a
-          class="nav-button"
-          href="/admin/settings{{with .Profile}}?profile={{.ID}}{{end}}"
-          {{if eq .Current "settings"}}aria-current="page"{{end}}
-          aria-label="{{tr "ui.server_configuration" "Server configuration"}}"
-        >{{icon "Server"}}<span class="nav-action-label">{{tr "ui.server_configuration" "Server configuration"}}</span></a>
-      {{else}}
-        <a
-          class="nav-button"
-          href="/admin"
-          {{if eq .Kind "admin"}}aria-current="page"{{end}}
-          aria-label="{{tr "ui.sign_in" "Sign in"}}"
-        >{{icon "KeyRound"}}<span class="nav-action-label">{{tr "ui.sign_in" "Sign in"}}</span></a>
+    {{if eq .Kind "preview"}}
+      <p class="nav-preview-notice">{{tr "ui.preview_admin_unavailable" "Preview: administration unavailable"}}</p>
+    {{else}}
+      {{with .Login}}{{template "partial/nav-link" .}}{{end}}
+      {{if .AccountLinks}}
+        <section class="nav-admin-actions" aria-labelledby="nav-account-title">
+          <h2 class="nav-group-title" id="nav-account-title">{{tr "ui.account" "Account"}}</h2>
+          {{range .AccountLinks}}{{template "partial/nav-link" .}}{{end}}
+          {{with .Logout}}{{template "partial/logout" .}}{{end}}
+        </section>
       {{end}}
-    </section>
+      {{if .RootLinks}}
+        <section class="nav-admin-actions" aria-labelledby="nav-admin-title">
+          <h2 class="nav-group-title" id="nav-admin-title">{{tr "ui.administration" "Administration"}}</h2>
+          {{range .RootLinks}}{{template "partial/nav-link" .}}{{end}}
+        </section>
+      {{end}}
+    {{end}}
     <h2 class="nav-group-title">{{tr "ui.about" "About"}} TuneTrail</h2>
       <a
         class="nav-button"
@@ -148,6 +138,20 @@
         rel="noopener"
         aria-label="{{tr "ui.about" "About"}} TuneTrail {{.Version}} ({{tr "ui.opens_new_tab" "opens in a new tab"}})"
       >{{icon "Info"}}<span>{{tr "ui.about" "About"}} TuneTrail {{.Version}} ↗</span></a>
+{{end}}
+
+{{define "partial/nav-link"}}
+  <a class="nav-button" href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>
+    {{icon .Icon}}<span class="nav-action-label">{{tr .Label .Fallback}}</span>
+  </a>
+{{end}}
+
+{{define "partial/logout"}}
+  <form method="post" action="/admin/logout">
+    <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+    <input type="hidden" name="submission_token" value="{{.Submission}}">
+    <button class="nav-button" type="submit">{{tr "nav.sign_out" "Sign out…"}}</button>
+  </form>
 {{end}}
 
 {{/* Theme and language only, without tabs (ISSUE-110). Called with the page locale, which may be nil. */}}

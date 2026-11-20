@@ -14,14 +14,13 @@ type NavProfile struct {
 
 // Nav is the data for the shared "partial/sidebar" template (ISSUE-122).
 type Nav struct {
+	NavAccess
 	Period, Timezone string // ISSUE-071: carry the selection in navigation URLs, without browser storage.
 	PeriodLinks      []NavPeriod
+	Section          string // Current listening page, when rendered by the public handler.
 	Kind             string // live, preview or admin: selects dialogs or links for the same controls
 	Profile          *NavProfile
-	// ISSUE-156: More contains role-aware administration links and the current page.
-	Admin   bool
-	Current string // account, profiles or settings
-	Version string
+	Version          string
 }
 
 // Icon inlines a bundled, reviewed Lucide SVG; never catalog or user HTML.

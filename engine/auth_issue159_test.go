@@ -85,6 +85,7 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 	logged := httptest.NewRecorder()
 	a.router.ServeHTTP(logged, r)
 	require.Equal(t, 303, logged.Code)
+	require.Equal(t, "/admin?section=account", logged.Header().Get("Location"))
 	var userCookie string
 	for _, cookie := range logged.Result().Cookies() {
 		if cookie.Name == "tunetrail_session" {
@@ -93,15 +94,15 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 	}
 	require.NotEmpty(t, userCookie)
 	for _, tc := range []struct{ locale, message, button string }{
-		{"en", "This account cannot access administration. Sign out to use another account.", "Sign out"},
-		{"pt-BR", "Esta conta não pode acessar a administração. Saia para usar outra conta.", "Sair"},
+		{"en", "Your account does not have permission to access this page.", "Sign out"},
+		{"pt-BR", "Sua conta não tem permissão para acessar esta página.", "Sair"},
 	} {
 		page := taskRequest139(a, "GET", "/admin", userCookie, nil, map[string]string{"Cookie": "tunetrail_session=" + userCookie + "; tunetrail_language=" + tc.locale})
 		require.Equal(t, 403, page.Code)
 		require.Contains(t, page.Body.String(), tc.message)
 		require.Contains(t, page.Body.String(), tc.button)
 		require.Contains(t, page.Body.String(), `action="/admin/logout"`)
-		for _, secret := range []string{`href="/admin/settings"`, `action="/admin/profile/create"`, `action="/admin/account/password"`, `href="/admin?profile=`, "Source Track"} {
+		for _, secret := range []string{`href="/admin/settings"`, `action="/admin/profile/create"`, `action="/admin/account/password"`, "Source Track"} {
 			require.NotContains(t, page.Body.String(), secret)
 		}
 	}

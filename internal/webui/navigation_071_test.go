@@ -69,7 +69,7 @@ func TestMoreGroupsReplaceSecondSidebar(t *testing.T) {
 	start := strings.Index(body, `<div class="nav-options">`)
 	end := strings.Index(body[start:], `</details>`)
 	menu := body[start : start+end]
-	for _, want := range []string{`Listening</h2>`, `Appearance</h2>`, `Administration</h2>`, `About TuneTrail</h2>`, `href="/admin"`} {
+	for _, want := range []string{`Listening</h2>`, `Appearance</h2>`, `About TuneTrail</h2>`, `href="/admin?next=%2Falpha"`} {
 		if !strings.Contains(menu, want) {
 			t.Fatalf("More missing %s", want)
 		}

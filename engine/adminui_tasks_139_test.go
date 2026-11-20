@@ -71,9 +71,9 @@ func taskForm139(t *testing.T, a *profileTestApp, path string) url.Values {
 	t.Helper()
 	w := taskRequest139(a, "GET", path, a.cookie, nil, nil)
 	require.Equal(t, 200, w.Code, w.Body.String())
-	// Ignore the language picker: submit the actual administrative form's return target.
+	// Select the task form, which includes a return target.
 	for _, body := range regexp.MustCompile(`(?s)<form\b[^>]*>.*?</form>`).FindAllString(w.Body.String(), -1) {
-		if strings.Contains(body, `name="csrf_token"`) && strings.Contains(body, `name="submission_token"`) {
+		if strings.Contains(body, `name="csrf_token"`) && strings.Contains(body, `name="submission_token"`) && strings.Contains(body, `name="return_to"`) {
 			formPage := httptest.NewRecorder()
 			formPage.Body.WriteString(body)
 			w = formPage
@@ -95,7 +95,7 @@ func TestManagementTaskPages139(t *testing.T) {
 		base := "/second/manage/" + media.kind + "/" + media.id
 		index := taskRequest139(a, "GET", base, a.cookie, nil, nil)
 		require.Equal(t, 200, index.Code)
-		require.NotContains(t, index.Body.String(), `name="csrf_token"`)
+		require.Contains(t, index.Body.String(), `action="/admin/logout"`)
 		for _, anchor := range []string{"aliases", "metadata", "artists", "merge", "artwork", "delete"} {
 			require.Contains(t, index.Body.String(), `id="`+anchor+`"`)
 		}

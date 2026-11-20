@@ -11,14 +11,16 @@ const maxSessionSubmissions = 32
 type submissionTicket struct {
 	Session uuid.UUID
 	Expires time.Time
+	Logout  bool
 }
 
 // newSubmission bounds each session and replaces only its oldest ticket, preserving other sessions.
 func (h *Handler) newSubmission(session uuid.UUID) (string, error) {
-	token, err := uuid.NewRandom()
-	if err != nil {
-		return "", err
-	}
+	return h.issueSubmission(session, false)
+}
+
+// issueSubmission reuses one logout-only ticket so navigation cannot evict edit forms.
+func (h *Handler) issueSubmission(session uuid.UUID, logout bool) (string, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	now := time.Now()
@@ -30,7 +32,10 @@ func (h *Handler) newSubmission(session uuid.UUID) (string, error) {
 			delete(h.submissions, k)
 			continue
 		}
-		if v.Session == session {
+		if v.Session == session && v.Logout == logout {
+			if logout {
+				return k.String(), nil
+			}
 			if count == 0 || v.Expires.Before(oldestExpiry) {
 				oldest, oldestExpiry = k, v.Expires
 			}
@@ -44,12 +49,21 @@ func (h *Handler) newSubmission(session uuid.UUID) (string, error) {
 	if len(h.submissions) >= 4096 {
 		return "", db.ErrConflict
 	}
-	h.submissions[token] = submissionTicket{session, now.Add(30 * time.Minute)}
+	token, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+	h.submissions[token] = submissionTicket{session, now.Add(30 * time.Minute), logout}
 	return token.String(), nil
 }
 
 // consumeSubmission prevents duplicate mutations even when JavaScript is unavailable.
 func (h *Handler) consumeSubmission(session uuid.UUID, raw string) error {
+	return h.consumeTicket(session, raw, false)
+}
+
+// consumeTicket permits existing page tickets for logout and reserves logout tickets for logout.
+func (h *Handler) consumeTicket(session uuid.UUID, raw string, logout bool) error {
 	if raw == "" && !h.requireSubmission {
 		return nil
 	}
@@ -60,7 +74,7 @@ func (h *Handler) consumeSubmission(session uuid.UUID, raw string) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	ticket, ok := h.submissions[token]
-	if !ok || ticket.Session != session || time.Now().After(ticket.Expires) {
+	if !ok || ticket.Session != session || ticket.Logout && !logout || time.Now().After(ticket.Expires) {
 		return db.ErrConflict
 	}
 	delete(h.submissions, token)

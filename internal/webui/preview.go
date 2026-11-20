@@ -99,11 +99,14 @@ func (p Page) Nav() webassets.Nav {
 	return nav
 }
 
-// Nav adds the administrator session, which only live pages resolve (ISSUE-109, ISSUE-123).
+// Nav combines profile display data with the authorized session links.
 func (p LivePage) Nav() webassets.Nav {
 	nav := p.Page.Nav()
 	// ISSUE-071: reuse filtered period links on lists and keep the timezone across destinations.
-	nav.Admin = p.Admin
+	nav.NavAccess = p.access
+	if p.Error == "" {
+		nav.Section = p.Section
+	}
 	nav.Timezone = p.Timezone
 	nav.PeriodLinks = nav.DefaultPeriods()
 	if len(p.Periods) > 0 {

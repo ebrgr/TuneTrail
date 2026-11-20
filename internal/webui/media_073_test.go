@@ -52,7 +52,9 @@ func TestListenDisclosure073(t *testing.T) {
 	require.NoError(t, err)
 	for _, admin := range []bool{false, true} {
 		p := LivePage{Admin: admin, Page: Page{Profile: &Profile{Slug: "alpha"}}, Section: "listens", Timezone: "UTC", CurrentURL: "/alpha/listens?tz=UTC"}
+		p.access.ManageListening = admin
 		p.Listens = []ListenView{{Item: Item{ID: 1, URL: "/alpha/track/1", Title: "<script>long title</script>", Image: models.ImageList{Small: "/image/test/128x128.webp"}, Artists: []Link{{"Artist", "/alpha/artist/1"}}}, Unix: 123, Time: time.Unix(123, 0), Relative: "2 minutes ago"}}
+		p.prepareActions()
 		var out bytes.Buffer
 		require.NoError(t, tmpl.ExecuteTemplate(&out, "partial/listens", p))
 		body := out.String()

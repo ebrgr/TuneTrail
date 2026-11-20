@@ -54,7 +54,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	crossW := httptest.NewRecorder()
 	a.router.ServeHTTP(crossW, cross)
 	require.Equal(t, 403, crossW.Code)
-	require.Contains(t, crossW.Body.String(), "solicitação não permitida")
+	require.Contains(t, crossW.Body.String(), "Sua conta não tem permissão para acessar esta página.")
 	csrf := httptest.NewRequest("POST", "http://koito.test/admin/profile/1/save", strings.NewReader(""))
 	csrf.AddCookie(&http.Cookie{Name: "tunetrail_language", Value: "pt-BR"})
 	csrf.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
@@ -62,7 +62,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	csrfW := httptest.NewRecorder()
 	a.router.ServeHTTP(csrfW, csrf)
 	require.Equal(t, 403, csrfW.Code)
-	require.Contains(t, csrfW.Body.String(), "solicitação não permitida")
+	require.Contains(t, csrfW.Body.String(), "Sua conta não tem permissão para acessar esta página.")
 	// Save in English, then consume the one-use notice in Portuguese after redirect.
 	profile, err := a.store.GetListeningProfileByID(context.Background(), 1)
 	require.NoError(t, err)

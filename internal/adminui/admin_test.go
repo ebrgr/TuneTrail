@@ -72,7 +72,7 @@ func TestAdministrationJourney(t *testing.T) {
 	require.Equal(t, 403, bad.Code)
 	logged := call("POST", "/admin/login", url.Values{"csrf_token": {csrf(login)}, "username": {"admin"}, "password": {"original-password"}, "next": {"/admin?profile=123"}}, pre)
 	require.Equal(t, 303, logged.Code)
-	require.Equal(t, "/admin?profile=123", logged.Header().Get("Location"))
+	require.Equal(t, "/admin", logged.Header().Get("Location"))
 	var session *http.Cookie
 	for _, c := range logged.Result().Cookies() {
 		if c.MaxAge >= 0 && c.Value != "" {

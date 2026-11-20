@@ -7,7 +7,7 @@
       {{if and .Prefetch .Profile (eq .Status 200) (not .Error)}}
         {{template "partial/speculation" .Profile}}
       {{end}}
-      {{- if and .Admin (or .Media (eq .Section "home") (eq .Section "listens"))}}
+      {{- if and (or .Admin .ManageListening) (or .Media (eq .Section "home") (eq .Section "listens"))}}
       <link rel="stylesheet" href="{{asset "media-dialog.css"}}">
       <script defer src="{{asset "enhance.js"}}"></script>
       <script defer src="{{asset "media-dialog.js"}}"></script>
@@ -24,12 +24,15 @@
       data-force-timezone="{{.ForcedTimezone}}"
       data-section="{{.Section}}"
       {{if .Admin}}data-admin{{end}}
+      {{if .Nav.Account}}data-signed-in{{end}}
+      {{if .ManageListening}}data-manage-listening{{end}}
       {{if .Profile}}data-profile-id="{{.Profile.ID}}"
       data-profile-slug="{{.Profile.Slug}}"{{end}}
     >
+      <a class="skip-link" href="#live-content">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>
       <div class="app-shell">
         {{template "partial/sidebar" .Nav}}
-        <div class="app-content">
+        <div class="app-content" id="live-content" tabindex="-1">
           {{template "partial/profile-header" .Nav}}
           {{if .Error}}
             <main class="profile-selection">
@@ -37,7 +40,8 @@
               <p class="intro">{{if eq .Status 404}}{{tr "ui.this_profile_or_page_is_unavailable" "This profile or page is unavailable."}}
                 {{- else if eq .Status 400}}{{tr "ui.please_check_the_filters_in_this_address" "Please check the filters in this address."}}{{else}}
                 {{- tr "ui.unable_to_load_this_page_please_try_again" "Unable to load this page. Please try again."}}{{end}}</p>
-              {{if eq .Status 404}}<a href="/admin" class="text-link">{{tr "profiles.sign_in" "Sign in"}}</a>{{end}}
+              {{with .Nav.Login}}{{template "partial/nav-link" .}}{{end}}
+              {{with .Nav.Account}}{{template "partial/nav-link" .}}{{end}}
               <a href="/" class="text-link">{{tr "ui.choose_a_profile" "Choose a profile"}}</a>
             </main>
           {{else if .Selection}}
@@ -84,7 +88,7 @@
         </div>
       </div>
       {{template "partial/dialogs" .}}
-    {{- if and .Admin (or .Media (eq .Section "home") (eq .Section "listens"))}}
+    {{- if and (or .Admin .ManageListening) (or .Media (eq .Section "home") (eq .Section "listens"))}}
       <dialog id="media-task-dialog" class="media-task-dialog" aria-labelledby="media-task-title"
         data-search-error="{{tr "media.dialog.search_error" "Unable to search. Try again."}}"
         data-search-updated="{{tr "media.dialog.search_updated" "Search results updated."}}"
@@ -116,7 +120,7 @@
           {{template "partial/avatar" .}}
           <div class="profile-identity">
             <strong>{{.Name}}</strong>
-            <span>/{{.Slug}}{{if .RequireLogin}} <span aria-label="{{tr "profiles.require_login" "Require login to view listens"}}">🔒</span>{{end}}</span>
+            <span>/{{.Slug}}{{if .RequireLogin}} <span aria-hidden="true">🔒</span><span class="sr-only">{{tr "profiles.protected" "Protected"}}</span>{{end}}</span>
           </div>
         </a>
       {{else}}
@@ -128,7 +132,10 @@
         </div>
       {{end}}
     </div>
-    <a class="text-link admin-entry" href="/admin">{{if .Locale}}{{.Locale.T "nav.administration"}}{{else}}Administration{{end}}</a>
+    {{with .Nav.Login}}{{template "partial/nav-link" .}}{{end}}
+    {{with .Nav.Account}}{{template "partial/nav-link" .}}{{end}}
+    {{range .Nav.RootLinks}}{{template "partial/nav-link" .}}{{end}}
+    {{with .Nav.Logout}}{{template "partial/logout" .}}{{end}}
   </main>
 {{end}}
 
@@ -335,7 +342,6 @@
 {{end}}
 
 {{define "partial/listens"}}
-  {{$page:=.}}
   {{if or .Listens (and .Playing (ne .Section "home"))}}
     <table class="listens">
       <tbody>
@@ -358,13 +364,12 @@
             </td>
             <td class="listen-time">
               <time datetime="{{.Time.Format "2006-01-02T15:04:05Z07:00"}}" title="{{datetime .Time}}">{{.Relative}}</time>
-              {{if $page.Admin}}
+              {{if .ManageURL}}
                 <details class="listen-actions">
                   <summary aria-label="{{tr "ui.manage_this_listening_record" "Manage this listening record"}}"><span aria-hidden="true">⋯</span></summary>
                   <a
                     class="listen-manage"
-                    href="{{printf "/%s/manage/track/%d/listen?listen_at=%d&tz=%s&history_return=%s"
-                      $page.Profile.Slug .Item.ID .Unix (urlquery $page.Timezone) (urlquery $page.CurrentURL)}}"
+                    href="{{.ManageURL}}"
                     aria-label="{{tr "ui.manage_this_listening_record" "Manage this listening record"}}"
                   >{{tr "ui.manage_this_listening_record" "Manage this listening record"}}</a>
                 </details>

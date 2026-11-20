@@ -1,9 +1,11 @@
 package webui
 
 import (
+	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"net/url"
 	"time"
 )
@@ -19,10 +21,11 @@ type Item struct {
 	Various     bool
 }
 type ListenView struct {
-	Item     Item
-	Time     time.Time
-	Unix     int64
-	Relative string
+	Item      Item
+	Time      time.Time
+	Unix      int64
+	Relative  string
+	ManageURL string
 }
 type Card struct {
 	Kind       string
@@ -37,6 +40,9 @@ type Pager struct {
 }
 type LivePage struct {
 	CurrentURL string
+	identity   admin.Identity
+	access     webassets.NavAccess
+	logout     *webassets.LogoutForm
 	// Prefetch is limited to anonymous public documents (ISSUE-075).
 	Prefetch bool
 	// Admin is true only for a valid administrator session cookie (ISSUE-109).
@@ -62,9 +68,13 @@ type LivePage struct {
 	HistoryMore                                bool
 	WeekStart                                  int
 	Search                                     string
+	MediaActions                               []mediaAction
 	Media                                      *MediaPage
 	Rewind                                     *RewindPage
 }
+
+// ManageListening controls listen actions independently of catalog management.
+func (p LivePage) ManageListening() bool { return p.access.ManageListening }
 
 func publicProfile(p models.ListeningProfile) Profile {
 	v := Profile{RequireLogin: p.RequireLogin, ID: int(p.ID), Slug: p.Slug, Name: p.DisplayName}

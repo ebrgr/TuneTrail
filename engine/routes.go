@@ -179,10 +179,6 @@ func bindRoutes(
 			panic(fmt.Errorf("load language catalogs: %w", err))
 		}
 		r.With(adminweb.SameOrigin).Post("/language", catalog.SetLanguage)
-		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil, Sessions: db})
-		if err != nil {
-			panic(fmt.Errorf("initialize Go pages: %w", err))
-		}
 		adminStore, ok := db.(adminui.Store)
 		if !ok {
 			panic("Go administration requires result-aware SQLite store")
@@ -194,6 +190,10 @@ func bindRoutes(
 		administration, err = adminui.New(adminStore, adminui.Options{Languages: catalog, Settings: settingsStore, RequireSubmissionToken: true, MusicBrainz: mbz, LoginMiddleware: loginLimit, DisableRateLimit: cfg.RateLimitDisabled(), DefaultTheme: cfg.DefaultTheme()})
 		if err != nil {
 			panic(fmt.Errorf("initialize Go administration: %w", err))
+		}
+		pages, err = webui.NewHandler(db, webui.Options{Languages: catalog, DefaultTheme: cfg.DefaultTheme(), ForcedTimezone: cfg.ForceTZ() != nil, Sessions: db, LogoutForm: administration.LogoutForm})
+		if err != nil {
+			panic(fmt.Errorf("initialize Go pages: %w", err))
 		}
 		r.Post("/admin/*", administration.ServeHTTP)
 		r.Post("/{slug}/manage/{kind}/{id}/{action}", administration.ServeHTTP)
@@ -207,9 +207,12 @@ func bindRoutes(
 
 // goPageServer uses the shared task allowlist for GET and HEAD documents; POST contracts remain separate.
 func goPageServer(r chi.Router, pages *webui.Pages, administration *adminui.Handler) {
-	r.Get("/*", func(w http.ResponseWriter, req *http.Request) {
+	serve := func(w http.ResponseWriter, req *http.Request) {
+		if req.Method == http.MethodHead {
+			w = documentHeadWriter{w}
+		}
 		w.Header().Set("Cache-Control", "no-store")
-		if adminui.IsPage(req.URL.Path) || adminui.IsAction(req.URL.Path) {
+		if adminui.IsPage(req.URL.Path) {
 			administration.ServeHTTP(w, req)
 			return
 		}
@@ -220,9 +223,16 @@ func goPageServer(r chi.Router, pages *webui.Pages, administration *adminui.Hand
 			pages.ServeHTTP(w, req)
 			return
 		}
-		http.NotFound(w, req)
-	})
+		pages.NotFound(w, req)
+	}
+	r.Get("/*", serve)
 }
+
+// documentHeadWriter keeps the same status and headers as GET without a document body.
+type documentHeadWriter struct{ http.ResponseWriter }
+
+func (w documentHeadWriter) Write(p []byte) (int, error) { return len(p), nil }
+func (w documentHeadWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 
 // publicServer mounts revalidatable legacy assets without exposing the underlying filesystem.
 func publicServer(r chi.Router, path string, handler http.Handler) {

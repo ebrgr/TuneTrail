@@ -5,13 +5,16 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
 type profileReviewView struct {
+	Nav        webassets.Nav
 	Locale     *i18n.View
 	Submission string
 	Profile    *models.ListeningProfile
@@ -21,9 +24,13 @@ type profileReviewView struct {
 
 // reviewProfile shows the exact profile and listen count without modifying data.
 func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
-	identity, err := adminweb.AdminIdentity(r, h.store)
+	identity, err := adminweb.SessionIdentity(r, h.store)
 	if err != nil {
 		h.fail(w, err)
+		return
+	}
+	if err := admin.AuthorizeAction(identity.User, admin.ManageAccounts, nil); err != nil {
+		h.failForSession(w, r, identity, err)
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -61,7 +68,8 @@ func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var out strings.Builder
-	view := profileReviewView{Locale: i18n.ViewOf(w), Profile: p, Count: count, CSRF: token, Submission: ticket}
+	view := profileReviewView{Nav: h.navigation(r.Context(), identity, p, ""), Locale: i18n.ViewOf(w), Profile: p, Count: count, CSRF: token, Submission: ticket}
+	view.Nav.Logout = &webassets.LogoutForm{CSRF: token, Submission: ticket}
 	tmpl, err := h.adminTemplate(view.Locale)
 	if err == nil {
 		err = tmpl.ExecuteTemplate(&out, "admin/profile-review", view)

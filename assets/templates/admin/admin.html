@@ -2,7 +2,7 @@
   <!doctype html>
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
     <head>
-      {{template "partial/head" (head "admin" (tr "admin.shell.title" "Administration — TuneTrail"))}}
+      {{template "partial/head" (head "admin" (printf "%s — TuneTrail" (tr "ui.account" "Account")))}}
     </head>
     <body
       data-admin-ui="go"
@@ -11,16 +11,13 @@
       data-i18n-copy-manual="{{tr "admin.js.copy_manual" "Select and copy manually"}}"
     >
       <a class="skip-link" href="#admin-main">{{tr "admin.text.skip_to_content" "Skip to content"}}</a>
-      {{$nav := nav .Profile .SignedIn (adminSection .Section)}}
+      {{$nav := .Nav}}
       {{template "partial/sidebar" $nav}}
       {{template "partial/theme-panel" .Locale}}
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>{{tr "admin.text.administration" "Administration"}}</h1>
-          {{if .User}}
-            <p><a href="/admin/settings">{{tr "admin.text.server_configuration" "Server configuration"}}</a></p>
-          {{end}}
+          <h1>{{if .Login}}{{tr "ui.sign_in" "Sign in"}}{{else if .Error}}{{tr "ui.request_status" "Request status"}}{{else if eq .Section "account"}}{{tr "nav.my_account" "My account"}}{{else if .AccountsRoot}}{{tr "admin.text.administration" "Administration"}}{{else if .User}}{{tr "nav.my_profile" "My profile"}}{{else}}{{tr "admin.account.redeem" "Redeem account token"}}{{end}}</h1>
           {{if .Error}}
             <p role="alert">{{.Error}}</p>
           {{end}}
@@ -54,19 +51,11 @@
             </form>
             <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
           {{else if .LogoutOnly}}
-            <form method="post" action="/admin/logout">
-              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              <input type="hidden" name="submission_token" value="{{.Submission}}">
-              <button>{{tr "admin.text.sign_out" "Sign out"}}</button>
-            </form>
+            {{with $nav.Account}}<p>{{template "partial/nav-link" .}}</p>{{end}}
+            <p><a href="/">{{tr "nav.directory" "Directory"}}</a></p>
+            {{with $nav.Logout}}{{template "partial/logout" .}}{{end}}
           {{else if .User}}
-            <form method="post" action="/admin/logout">
-              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              {{if .Submission}}
-                <input type="hidden" name="submission_token" value="{{.Submission}}">
-              {{end}}
-              <button>{{tr "admin.text.sign_out" "Sign out"}}</button>
-            </form>
+            {{with $nav.Logout}}{{template "partial/logout" .}}{{end}}
             {{if eq .Section "account"}}
               <section>
                 <h2>{{tr "admin.text.account" "Account"}}</h2>
@@ -140,10 +129,10 @@
                     <label>{{tr "admin.text.slug" "Slug"}} <input name="slug" value="{{.Slug}}" required></label>
                     <input type="hidden" name="require_login_present" value="1">
                     <label>
-                      <input type="checkbox" name="require_login" value="1" {{if .RequireLogin}}checked{{end}}>
+                      <input type="checkbox" name="require_login" value="1" aria-describedby="protected-relay-help" {{if .RequireLogin}}checked{{end}}>
                       {{tr "profiles.require_login" "Require login to view listens"}}
                     </label>
-                    <small>{{tr "profiles.relay_continues" "Ingestion and configured relay continue when listening history is protected."}}</small>
+                    <small id="protected-relay-help">{{if $.AccountsRoot}}{{tr "profiles.relay_help_root" "Only this profile’s owner and administrators can view protected listens. A configured relay continues sending listens to the external service."}}{{else}}{{tr "profiles.relay_help_owner" "Only you and administrators can view protected listens. A configured relay continues sending listens to the external service."}}{{end}}</small>
                     <button>{{tr "admin.text.save_profile" "Save profile"}}</button>
                   </form>
                   <h3>{{tr "admin.text.avatar" "Avatar"}}</h3>
@@ -273,8 +262,9 @@
                 </section>
               {{end}}
             {{end}}
-          {{else}}
-            <p><a href="/admin{{with .Profile}}?profile={{.ID}}{{end}}">{{tr "admin.text.return_to_administration" "Return to administration"}}</a></p>
+          {{else if .Error}}
+            <p><a href="/">{{tr "nav.directory" "Directory"}}</a></p>
+            {{with $nav.Login}}<p>{{template "partial/nav-link" .}}</p>{{end}}
           {{end}}
         </main>
         <footer class="admin-footer">

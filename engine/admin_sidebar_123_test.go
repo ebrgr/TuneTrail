@@ -14,9 +14,9 @@ import (
 // adminActions returns the role-aware group inside More (ISSUE-156, migrated from ISSUE-123).
 func adminActions(t *testing.T, body string) string {
 	t.Helper()
-	start := strings.Index(body, `class="nav-admin-actions"`)
+	start := strings.Index(body, `<div class="nav-options">`)
 	require.GreaterOrEqual(t, start, 0, "administration actions missing")
-	return body[start : start+strings.Index(body[start:], "</section>")]
+	return body[start : start+strings.Index(body[start:], "</details>")]
 }
 
 // TestAdminActionsItemsByRole checks which administration links each audience receives.
@@ -26,13 +26,13 @@ func TestAdminActionsItemsByRole(t *testing.T) {
 	visitor := adminActions(t, body)
 	require.Contains(t, body, `href="https://github.com/ebrgr/TuneTrail"`)
 	require.Contains(t, body, `rel="noopener"`)
-	require.Contains(t, visitor, `href="/admin"`)
+	require.Contains(t, visitor, `href="/admin?next=%2Fdefault"`)
 	require.NotContains(t, visitor, "/admin/settings")
 	require.NotContains(t, visitor, "section=account")
 
 	admin := adminActions(t, a.request(http.MethodGet, "/default", "", "", true).Body.String())
-	// Administration links keep the current profile so its header stays in view.
-	for _, link := range []string{`href="/admin?section=account&profile=1"`, `href="/admin?section=profiles&profile=1"`,
+	// Account and profile management have independent destinations.
+	for _, link := range []string{`href="/admin?section=account"`, `href="/admin?section=profiles"`,
 		`href="/admin/settings?profile=1"`} {
 		require.Contains(t, admin, link)
 	}
@@ -83,7 +83,7 @@ func TestAdministrationPagesShowProfileHeader(t *testing.T) {
 		body := w.Body.String()
 		require.Contains(t, body, `<header class="profile-header">`, path)
 		require.Contains(t, body, "<strong>Second</strong>", path)
-		require.Contains(t, body, `class="admin-badge"`, path)
+		require.NotContains(t, body, `class="admin-badge"`, path)
 	}
 	require.Equal(t, http.StatusBadRequest, a.request(http.MethodGet, "/admin/settings?other=1", "", "", true).Code)
 	require.NotContains(t, a.request(http.MethodGet, "/admin/settings", "", "", true).Body.String(), `<header class="profile-header">`)

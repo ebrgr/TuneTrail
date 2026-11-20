@@ -15,10 +15,12 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/google/uuid"
 )
 
 type catalogReviewView struct {
+	Nav                           webassets.Nav
 	Locale                        *i18n.View
 	Profile                       *models.ListeningProfile
 	RouteID                       int32
@@ -114,7 +116,7 @@ func (h *Handler) reviewCatalog(w http.ResponseWriter, r *http.Request, identity
 	}
 	h.catalogPlans[token] = pendingCatalogPlan{Session: identity.SessionID, ProfileID: p.ID, ProfileSlug: p.Slug, RouteID: id, Kind: kind, Plan: plan, Expires: now.Add(10 * time.Minute)}
 	h.mu.Unlock()
-	view := catalogReviewView{Dialog: partial == "1", Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id) + "/" + request.Action}
+	view := catalogReviewView{Nav: h.navigation(r.Context(), identity, p, ""), Dialog: partial == "1", Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Plan: plan, ReturnPath: fmt.Sprintf("/%s/manage/%s/%d", url.PathEscape(p.Slug), kind, id) + "/" + request.Action}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder
 	tmpl, err := h.adminTemplate(view.Locale)
