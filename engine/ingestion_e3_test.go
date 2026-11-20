@@ -72,3 +72,11 @@ func TestOccurrenceSpotify(t *testing.T) {
 		require.EqualValues(t, 180125, s.DurationMS)
 	})
 }
+
+func TestOccurrenceMaloja(t *testing.T) {
+	data := []byte(`{"scrobbles":[{"time":1780000000,"track":{"artists":["First","Second"],"title":"Track","album":{"albumtitle":"Album"}}}]}`)
+	occurrenceFileFixture(t, "maloja", "maloja_import", data, func(s ingest.Snapshot) {
+		require.Equal(t, []string{"First", "Second"}, s.ArtistNames)
+		require.Equal(t, "1780000000", s.OriginalTime)
+	})
+}
