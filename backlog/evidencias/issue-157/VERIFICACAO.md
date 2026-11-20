@@ -12,7 +12,7 @@
 | Duas abas e expiração | Abrir a segunda aba mantém o formulário utilizável. Depois que uma aba encerrar a sessão, o envio da outra retorna 401 com formulário de login e a mensagem neutra. A expiração entre renderizar a página e enviar o formulário tem a mesma resposta. |
 | Sessão comum e root | Uma requisição com dois cookies de sessão é rejeitada antes de escolher o ator. A saída de root limpa os cookies da requisição e a sessão comum independente permanece válida. |
 | Cancelar | Um endereço interno autorizado é aceito. URL absoluta, destino iniciado por `//`, esquema arbitrário, rota de ação e leitura sem permissão caem no fallback. |
-| Idiomas e ícone | A confirmação foi verificada em pt-BR e en. O link usa o ícone LogOut do catálogo Lucide local. |
+| Idiomas e ícone | A confirmação foi verificada em pt-BR e en. O SVG anterior foi substituído pela geometria oficial do ícone `log-out` do Lucide (ISC) no catálogo local. |
 
 ## Navegador
 
