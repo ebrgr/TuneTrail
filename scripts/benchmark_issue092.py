@@ -99,8 +99,10 @@ def read_workload(server, repeats):
         "home_week": "/bench-fixture?period=week",
     }
     with sample_resources(server) as peaks:
-        latency = {name: measure(lambda: server.request("GET", route), repeats)
-                   for name, route in routes.items()}
+        latency = {}
+        for name, route in routes.items():
+            latency[name] = measure(lambda: server.request("GET", route), repeats)
+            print(f"  {name}: p50 {latency[name]['p50_ms']} ms", flush=True)
     return {"latency": latency, "peaks": peaks}
 
 
@@ -199,10 +201,12 @@ def main():
     parser.add_argument("--binary", type=lambda v: Path(v).resolve(), required=True, help="v0.47 binary")
     parser.add_argument("--baseline", type=lambda v: Path(v).resolve(), required=True, help="v0.42 binary")
     parser.add_argument("--listens", type=int, choices=(300_000, 1_000_000), required=True)
-    parser.add_argument("--repeats", type=int, default=100)
+    parser.add_argument("--repeats", type=int, help="samples per read (default: 100 at 300k, 40 at 1M)")
     parser.add_argument("--writes", type=int, default=100)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.repeats is None:
+        args.repeats = 100 if args.listens == 300_000 else 40
     if args.repeats < 1 or args.writes < 1 or args.writes > 1000:
         parser.error("require positive sample counts and at most 1000 writes")
     with tempfile.TemporaryDirectory(prefix="tunetrail-092-") as directory:
