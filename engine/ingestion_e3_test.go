@@ -131,3 +131,38 @@ func TestOccurrenceHTTPFixture(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, count)
 }
+
+// TestOccurrenceHTTPZeroTimestamp keeps estimated time and the missing-time digest across modes.
+func TestOccurrenceHTTPZeroTimestamp(t *testing.T) {
+	app := newProfileTestApp(t)
+	require.NoError(t, app.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,0),(2,1,1)`))
+	for _, tc := range []struct{ key, variant, stamp string }{
+		{"first-key", "v9", "0"}, {"second-key", "occurrence", "0"}, {"second-key", "occurrence", "0.25"},
+	} {
+		raw := `{"listen_type":"single","payload":[{"listened_at":` + tc.stamp + `,"track_metadata":{"artist_name":"Artist","track_name":"Track","release_name":"Album"}}]}`
+		resp := app.request(http.MethodPost, "/apis/listenbrainz/1/submit-listens", raw, tc.key, false)
+		require.Equal(t, http.StatusOK, resp.Code, resp.Body.String())
+	}
+	count, err := app.store.Count(`SELECT count(*) FROM ingest_events WHERE mode='active' AND resolver_variant IN ('v9','occurrence')
+		AND time_precision='estimated' AND original_time IS NULL AND json_extract(original_snapshot,'$.original_time') IS NULL
+		AND substr(listened_at,1,4)<>'1970'`)
+	require.NoError(t, err)
+	require.Equal(t, 3, count)
+	count, err = app.store.Count(`SELECT count(DISTINCT snapshot_digest) FROM ingest_events WHERE mode='active'`)
+	require.NoError(t, err)
+	require.Equal(t, 1, count)
+}
+
+// TestOccurrenceZIPZeroTimestamp leaves zero seconds absent in archive receipts.
+func TestOccurrenceZIPZeroTimestamp(t *testing.T) {
+	var archive bytes.Buffer
+	writer := zip.NewWriter(&archive)
+	entry, err := writer.Create("listens/history.jsonl")
+	require.NoError(t, err)
+	_, err = entry.Write([]byte(`{"listened_at":0,"track_metadata":{"artist_name":"Artist","track_name":"Song","release_name":"ZIP album"}}` + "\n"))
+	require.NoError(t, err)
+	require.NoError(t, writer.Close())
+	occurrenceFileFixture(t, "listenbrainz", "listenbrainz_import", archive.Bytes(), func(s ingest.Snapshot) {
+		require.Empty(t, s.OriginalTime)
+	})
+}

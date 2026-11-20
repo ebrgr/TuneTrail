@@ -219,3 +219,5 @@ Retomada após rebase em v0.45.
 Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A sintaxe do ensaio Python foi verificada, o graphify AST foi atualizado e o replay desligado coincidiu com a v0.44. Os números e limites do ensaio estão em [ENSAIO-E3.md](ENSAIO-E3.md).
 
 - Feito — Fecha a verificação da E3 e registra a parada para Reviewer. Pendente — Reviewer antes da E4.
+
+- Feito — Preserva o instante estimado no ListenBrainz com zero segundos. Pendente — corrigir documentação de downgrade, exclusão v9 e ressalvas.

@@ -406,8 +406,9 @@ func listenIngestBatch(profile int32, req LbzSubmitListenRequest, key string, re
 			return batch, errors.New("Artist name or track name are missing")
 		}
 		item := ingest.Item{Ordinal: ordinal, Snapshot: ingest.ListenBrainzSnapshot(meta)}
-		item.Snapshot.OriginalTime = payload.OriginalListenedAt
-		if payload.ListenedAt != 0 || payload.OriginalListenedAt != "" {
+		// Zero seconds use the receipt time, matching the legacy submission path.
+		if payload.ListenedAt != 0 {
+			item.Snapshot.OriginalTime = payload.OriginalListenedAt
 			item.ListenedAt = time.Unix(int64(payload.ListenedAt), 0)
 		}
 		batch.Items = append(batch.Items, item)
