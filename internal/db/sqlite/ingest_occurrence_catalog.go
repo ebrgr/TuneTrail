@@ -20,6 +20,10 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 	if err != nil {
 		return match, nil, err
 	}
+	track := snapshot.TrackMBID
+	if proof.track != "" {
+		track = proof.track
+	}
 	releases, err := occurrenceReleaseCandidates(ctx, tx, snapshot.Release, proof.release, string(credits))
 	if err != nil {
 		return match, nil, err
@@ -27,7 +31,7 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 	if len(releases) > 1 {
 		// A stored release-track identity can disambiguate identical release labels.
 		var trackRelease string
-		err := tx.QueryRowContext(ctx, `SELECT coalesce(release_id,0) FROM occurrences WHERE track_mbid=?`, snapshot.TrackMBID).Scan(&trackRelease)
+		err := tx.QueryRowContext(ctx, `SELECT coalesce(release_id,0) FROM occurrences WHERE track_mbid=?`, track).Scan(&trackRelease)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return match, nil, err
 		}
@@ -67,10 +71,6 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		}
 	}
 
-	track := snapshot.TrackMBID
-	if proof.track != "" {
-		track = proof.track
-	}
 	rows, err := tx.QueryContext(ctx, `SELECT o.id,o.recording_id,coalesce(o.release_id,0),coalesce(o.track_mbid,''),
 		coalesce(r.musicbrainz_id,''),coalesce(o.disc_number,0),coalesce(o.track_number,0),r.mbid_source='validated',
 		(EXISTS (SELECT 1 FROM track_aliases t WHERE t.track_id=o.id AND t.alias=?)

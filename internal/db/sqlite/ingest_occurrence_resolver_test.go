@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"sync"
 	"testing"
 	"time"
@@ -390,4 +391,23 @@ func TestOccurrenceExternalRecordingClaim(t *testing.T) {
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, id, "pending_identity")
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND json_extract(evidence,'$.candidates[0]')='occurrence:1'`, id))
+}
+
+// TestOccurrenceProvenTrackDisambiguatesRelease uses the proof before the raw track claim.
+func TestOccurrenceProvenTrackDisambiguatesRelease(t *testing.T) {
+	ctx := context.Background()
+	s := convertedOccurrenceFixture(t)
+	proven := uuid.NewString()
+	execSQL(t, s, `INSERT INTO releases(id) VALUES(2);
+		INSERT INTO release_aliases VALUES(1,'Same album','Fixture',1),(2,'Same album','Fixture',1);
+		INSERT INTO artist_releases VALUES(1,2,1);
+		UPDATE occurrences SET track_mbid=? WHERE id=1`, proven)
+	require.NoError(t, s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		match, candidates, err := resolveOccurrence(ctx, tx, ingest.Snapshot{Title: "Intro", Artist: "Artist", Release: "Same album", TrackMBID: uuid.NewString()},
+			occurrenceProof{track: proven})
+		require.NoError(t, err)
+		require.Empty(t, candidates)
+		require.EqualValues(t, 1, match.id)
+		return nil
+	}))
 }
