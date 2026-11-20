@@ -211,8 +211,8 @@ func TestIngestDigestUpgrade(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='v1' AND digest_version=?`, ingest.DigestVersion))
 }
 
-// TestProfileDeleteClosesActiveIngest closes only work matching the deleted tracks.
-func TestProfileDeleteClosesActiveIngest(t *testing.T) {
+// TestProfileDeleteClosesV9Ingest closes only work matching the deleted tracks.
+func TestProfileDeleteClosesV9Ingest(t *testing.T) {
 	ctx := context.Background()
 	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
@@ -220,8 +220,10 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 		INSERT INTO track_aliases VALUES(71,'U','Canonical',1)`)
 	at := time.Unix(100, 0)
 	var related, unrelated string
+	var original ingest.Batch
 	for _, profile := range []int32{1, 2} {
 		batch := ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", ReceivedAt: time.Now(),
+			FileDigest: ingest.Digest([]byte("delete-fixture")), FileFormat: "koito",
 			Items: []ingest.Item{
 				{Ordinal: 0, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "different", Title: "different", CatalogTrackID: 70}},
 				{Ordinal: 1, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: " ARTIST ", Title: "opening"}},
@@ -233,6 +235,7 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 		require.NoError(t, err)
 		if profile == 1 {
 			related, unrelated = results[0].ReceiptID, results[2].ReceiptID
+			original = batch
 		}
 	}
 	execSQL(t, s, `UPDATE ingest_events SET state='retryable',lease_owner='old',lease_until=unixepoch()+60
@@ -243,8 +246,17 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 	deleted, err := s.ApplyProfileDelete(ctx, plan)
 	require.NoError(t, err)
 	require.Equal(t, plan.Count, deleted)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, related))
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND resolver_variant='v9'
+		AND state='invalid' AND closed_at IS NOT NULL AND lease_owner IS NULL AND resolution_version=1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1 AND decision='invalid'
+		AND reason_codes='["profile_history_deleted"]'`))
+	pinned := ingest.JobMode{Active: true, Variant: "v9"}
+	_, replay, err := s.AdmitIngest(ctx, original, true, &pinned, nil)
+	require.NoError(t, err)
+	require.Equal(t, related, replay[0].ReceiptID)
+	require.True(t, replay[0].Replay)
+	require.False(t, replay[0].Pending)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=100`))
 	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND closed_at IS NULL`))
 	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: related, profile: 1, track: 70, lease: "old", unix: 100}), sql.ErrNoRows)

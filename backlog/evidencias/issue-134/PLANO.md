@@ -221,3 +221,5 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - Feito — Fecha a verificação da E3 e registra a parada para Reviewer. Pendente — Reviewer antes da E4.
 
 - Feito — Preserva o instante estimado no ListenBrainz com zero segundos. Pendente — corrigir documentação de downgrade, exclusão v9 e ressalvas.
+
+- Feito — Mantém as chaves encerradas na exclusão compatível v9. Pendente — confirmar recusa pela v0.45, ajustar documentação e ressalvas.

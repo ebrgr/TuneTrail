@@ -600,3 +600,28 @@ func TestOccurrenceReleaseProofCache(t *testing.T) {
 	}
 	require.Equal(t, 2, calls)
 }
+
+// TestProfileDeleteRemovesResolvedOccurrencePending releases the selected occurrence's pending key.
+func TestProfileDeleteRemovesResolvedOccurrencePending(t *testing.T) {
+	ctx := context.Background()
+	s := convertedOccurrenceFixture(t)
+	snapshot := ingest.Snapshot{Title: "Profile delete", Artist: "Artist", Release: "Album"}
+	accepted := admitOccurrenceFixture(t, s, snapshot, 2000, "accepted")
+	resolveOccurrenceFixture(t, s, nil)
+	pending := admitOccurrenceFixture(t, s, snapshot, 2000, "pending")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, pending, "pending_duplicate")
+	var track int32
+	var event string
+	require.NoError(t, s.db.QueryRow(`SELECT occurrence_id,event_id FROM ingest_events WHERE receipt_id=?`, accepted).Scan(&track, &event))
+	plan, err := s.PreviewProfileDelete(ctx, 1, "track", track)
+	require.NoError(t, err)
+	_, err = s.ApplyProfileDelete(ctx, plan)
+	require.NoError(t, err)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id IN (?,?)`, accepted, pending))
+	recreated := admitOccurrenceFixture(t, s, snapshot, 2000, "pending")
+	require.NotEqual(t, pending, recreated)
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, recreated, "accepted")
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE event_id=?`, event))
+}
