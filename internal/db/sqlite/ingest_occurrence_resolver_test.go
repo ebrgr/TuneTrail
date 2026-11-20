@@ -506,7 +506,15 @@ func TestOccurrenceReimportAfterDeletion(t *testing.T) {
 			var track int32
 			var oldEvent string
 			require.NoError(t, s.db.QueryRow(`SELECT occurrence_id,event_id FROM ingest_events WHERE receipt_id=?`, first[0].ReceiptID).Scan(&track, &oldEvent))
+			duplicate := admitOccurrenceFixture(t, s, batch.Items[0].Snapshot, 1800, "linked-duplicate")
+			execSQL(t, s, `UPDATE ingest_events SET state='duplicate',identity_status='resolved',resolution_version=1,
+				duplicate_decision='same',event_id=?,occurrence_id=?,recording_id=(SELECT recording_id FROM occurrences WHERE id=?),
+				closed_at=1 WHERE receipt_id=?;
+				INSERT INTO ingest_revisions VALUES(1,?,1,'fixture','same','["fixture"]','{}','occurrence-v1',0)`,
+				oldEvent, track, track, duplicate, duplicate)
 			require.NoError(t, s.DeleteListen(db.WithProfile(ctx, 1), track, time.Unix(1800, 0)))
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, duplicate))
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id=?`, duplicate))
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id=?`, first[0].ReceiptID))
 			_, partial, err := s.AdmitIngest(ctx, batch, true, nil, nil)
 			require.NoError(t, err)
