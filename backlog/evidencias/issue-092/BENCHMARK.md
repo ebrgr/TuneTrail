@@ -24,6 +24,65 @@ for n in 300000 1000000; do
 done
 ```
 
+## Resultados
+
+Contagens iniciais com 300 mil escutas por perfil: 100.001, 100.000, 99.999 e zero. Os pares base/com índice usam a mesma máquina e volume.
+
+### HTTP, p50 / p95 / p99 em ms
+
+| Carga | Consulta | Base | Com índice |
+| ---: | --- | ---: | ---: |
+| 300.000 | `stats_year` | 89.22 / 90.05 / 90.68 | 75.60 / 76.42 / 77.11 |
+| 300.000 | `stats_all` | 296.26 / 303.04 / 314.53 | 234.29 / 257.04 / 287.15 |
+| 300.000 | `top_tracks` | 15.46 / 15.94 / 16.44 | 12.82 / 15.33 / 16.84 |
+| 300.000 | `top_albums` | 15.42 / 16.47 / 16.78 | 10.60 / 11.35 / 11.74 |
+| 300.000 | `top_artists` | 21.16 / 31.13 / 36.05 | 15.11 / 16.65 / 22.55 |
+| 300.000 | `history_first` | 2.29 / 3.04 / 3.50 | 2.20 / 2.81 / 3.27 |
+| 300.000 | `history_page_400` | 18.83 / 19.54 / 19.95 | 19.22 / 19.60 / 19.89 |
+| 300.000 | `heatmap_data_recent` | 25.12 / 25.57 / 25.90 | 25.49 / 26.18 / 27.48 |
+| 300.000 | `heatmap_data_year` | 31.51 / 34.02 / 41.22 | 31.08 / 33.98 / 35.67 |
+| 300.000 | `rewind_api` | 394.07 / 406.40 / 420.77 | 373.27 / 387.01 / 409.53 |
+| 300.000 | `rewind_html` | 394.37 / 413.72 / 422.37 | 376.35 / 413.43 / 440.94 |
+| 300.000 | `home_all` | 762.74 / 819.44 / 834.60 | 604.97 / 624.67 / 654.19 |
+| 300.000 | `home_week` | 345.60 / 353.27 / 411.96 | 274.92 / 279.40 / 295.47 |
+
+### SQLite isolado, p50 / p95 / p99 em ms
+
+| Carga | Consulta | Base | Com índice |
+| ---: | --- | ---: | ---: |
+| 300.000 | `plays` | 0.21 / 0.22 / 0.22 | 0.21 / 0.21 / 0.21 |
+| 300.000 | `minutes` | 4.31 / 4.48 / 4.51 | 2.22 / 2.36 / 2.42 |
+| 300.000 | `unique_artists` | 8.94 / 9.23 / 9.29 | 7.12 / 7.26 / 7.30 |
+| 300.000 | `active_days` | 15.93 / 16.57 / 16.90 | 16.48 / 16.78 / 17.57 |
+| 300.000 | `longest_streak` | 2.78 / 2.82 / 2.84 | 2.81 / 2.87 / 2.89 |
+| 300.000 | `activity` | 3.69 / 3.74 / 3.76 | 3.68 / 3.72 / 3.79 |
+| 300.000 | `top_tracks` | 5.81 / 5.95 / 6.15 | 5.36 / 5.46 / 5.53 |
+| 300.000 | `top_albums` | 6.65 / 6.77 / 6.95 | 4.31 / 4.39 / 4.42 |
+| 300.000 | `top_artists` | 9.74 / 10.02 / 10.13 | 7.46 / 7.56 / 7.59 |
+| 300.000 | `history_page_400` | 7.89 / 8.28 / 8.34 | 5.32 / 5.79 / 6.82 |
+| 300.000 | `new_tracks` | 3.42 / 3.49 / 3.53 | 3.46 / 3.64 / 3.72 |
+| 300.000 | `profile_counts` | 5.46 / 5.55 / 5.64 | 5.50 / 5.61 / 5.64 |
+| 300.000 | `release_legacy` | 6.17 / 6.28 / 6.32 | 4.07 / 4.19 / 4.22 |
+| 300.000 | `release_occurrence` | 6.26 / 6.33 / 6.35 | 3.87 / 3.99 / 4.02 |
+| 300.000 | `recording_occurrence` | 7.88 / 8.09 / 8.17 | 5.72 / 5.80 / 5.84 |
+
+### Ingestão e recursos
+
+| Carga | Fase | POST p50 / p95 / p99 (ms) | DB (MB) | Pico RSS leitura / escrita (MiB) | Pico diretório leitura / escrita (MB) | Pico WAL leitura / escrita (MB) |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 300.000 | baseline | 66.00 / 72.25 / 105.80 | 201.83 | 77.88 / 76.81 | 339.51 / 343.76 | 0.00 / 4.13 |
+| 300.000 | indexed | 65.26 / 66.15 / 68.23 | 207.25 | 74.97 / 73.56 | 344.94 / 349.25 | 0.00 / 4.19 |
+
+## Planos de consulta
+
+- **Intervalos e dias ativos.** As contagens por período usam busca de faixa por perfil e instante, coberta por índice. Dias ativos usam busca por perfil com teto de tempo. Nesse último caso, o teto abrange todo o histórico do perfil e produz uma linha por segundo distinto para o agrupamento em Go. A atividade e o streak também agregam inicialmente por segundo; o índice experimental preserva os planos desses caminhos. O custo cresce com a quantidade de segundos ativos mesmo sem varredura da tabela inteira.
+- **Rankings.** Artistas e álbuns buscam escutas por perfil e instante e acessam créditos ou `tracks` por índice/chave primária. `GROUP BY` e `ORDER BY` usam B-trees temporárias, inclusive para `RANK()`, limite/paginação e ordenação final da projeção. Em 300 mil, o top de faixas base usou `idx_listens_legacy_identity(profile_id=?)` e percorreu o índice de todo o perfil. O índice experimental restringiu por perfil e intervalo e introduziu B-tree para agrupar por faixa. O CTE ranqueado ainda é percorrido depois.
+- **Novidades do Rewind e contagem global.** `new_tracks` busca por perfil sem restringir instante, pois a primeira escuta é calculada com MIN antes de filtrar o resultado. `profile_counts` é uma leitura diagnóstica de todos os perfis e faz `SCAN` integral de um índice de cobertura. Nenhum plano implica ler todos os perfis para um ranking individual.
+- **Histórico paginado.** Base: busca por faixa no índice perfil/instante, junção de título/alias e B-tree para o último termo do `ORDER BY`. O índice experimental cobre a ordem atual por instante/faixa e elimina essa B-tree, mas o `OFFSET` e a contagem total permanecem. A consulta isolada da página 400 melhora, enquanto o HTTP inclui a contagem e o enriquecimento dos itens. A ISSUE-135 muda a chave de navegação para instante/evento. O índice de cursor `idx_listens_event_cursor` já existe no schema.
+- **Ponte de identidade.** Álbuns, duração, histórico e alguns filtros usam `tracks` ou suas views. O comparativo isolado troca a junção de lançamentos pela PK de `occurrences` e confere igualdade da lista agrupada. O índice experimental cobre o lado de `listens` em ambas as consultas. A troca da PK de catálogo mantém as B-trees de agrupamento e ordenação. `recording_occurrence` agrupa pela gravação com cardinalidade diferente; a fixture da 133 cria uma gravação por faixa, portanto esse tempo não representa um catálogo reconciliado com várias edições por gravação.
+
+Os planos completos, incluindo os aliases, buscas de PK e ordenações temporárias, estão nos JSON ao lado deste relatório.
+
 ## Denominadores confirmados no binário
 
 Em janeiro de 2023 UTC, o perfil sintético ouviu 20 vezes por dia nos dias 1, 2 e 3. O histórico acrescentou uma escuta em cada uma de 117 datas posteriores a janeiro. A faixa tinha 180 s. `/stats?year=2023&month=1` devolveu 60 escutas, 120 dias ativos e 0,50 por dia. `/summary?year=2023&month=1` devolveu 60 escutas, 1,9354838 por dia e 5 minutos por dia. Os dois endpoints receberam o mesmo intervalo e perfil.
@@ -52,5 +111,5 @@ A inserção SQL verifica o leitor num estado que o schema permite. A admissão 
 
 ## ESTADO
 
-- Feito: método, ensaio HTTP preliminar, reprodução dos denominadores e da projeção autônoma. Script versionado.
-- Pendente: resultados de 300 mil e 1 milhão, análise de planos e custo de escrita, propostas e registro no Backlog. AC1 depende do usuário.
+- Feito: método, script, rodada de 300 mil com duas fases, reprodução dos denominadores e da projeção autônoma.
+- Pendente: rodada de 1 milhão, consolidação de planos e custo de escrita, propostas e registro no Backlog. AC1 depende do usuário.
