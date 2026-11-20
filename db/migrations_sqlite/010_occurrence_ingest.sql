@@ -66,6 +66,7 @@ VALUES ('after repair',1,NOT EXISTS (
 DROP TABLE occurrence_repair_assertion;
 DROP TABLE occurrence_link_repairs;
 
+-- Keep converted profiles active and attached to the same flag.
 -- +goose StatementBegin
 CREATE TRIGGER trg_occurrence_flag_one_way BEFORE UPDATE OF occurrence_write,active,profile_id ON profile_ingest_flags
 WHEN (OLD.occurrence_write=1 AND (NEW.occurrence_write=0 OR NEW.active=0 OR NEW.profile_id IS NOT OLD.profile_id))
@@ -75,6 +76,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Conversion requires active ingestion.
 -- +goose StatementBegin
 CREATE TRIGGER trg_occurrence_flag_insert BEFORE INSERT ON profile_ingest_flags
 WHEN NEW.occurrence_write=1 AND NEW.active=0
@@ -83,6 +85,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Allow the profile cascade to delete its flag.
 -- +goose StatementBegin
 CREATE TRIGGER trg_occurrence_flag_delete BEFORE DELETE ON profile_ingest_flags
 WHEN OLD.occurrence_write=1 AND EXISTS (SELECT 1 FROM listening_profiles WHERE id=OLD.profile_id)
@@ -91,6 +94,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Keep the resolver selected at admission.
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_resolver_variant_immutable BEFORE UPDATE OF resolver_variant ON ingest_events
 WHEN NEW.resolver_variant IS NOT OLD.resolver_variant
@@ -100,6 +104,7 @@ END;
 -- +goose StatementEnd
 
 DROP TRIGGER trg_identity_legacy_occurrence;
+-- Require either a matching legacy track or a titled standalone occurrence.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_occurrence_insert BEFORE INSERT ON occurrences
 WHEN (NEW.legacy_track_id IS NULL AND
@@ -111,6 +116,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Keep the bridge fixed and allow release deletion to clear the release.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_occurrence_bridge_update BEFORE UPDATE OF legacy_track_id,release_id ON occurrences
 WHEN NEW.legacy_track_id IS NOT OLD.legacy_track_id
@@ -121,6 +127,7 @@ END;
 -- +goose StatementEnd
 
 DROP TRIGGER trg_identity_legacy_listen_insert;
+-- Accept only registered event origins.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_listen_origin_insert BEFORE INSERT ON listens
 WHEN NOT EXISTS (SELECT 1 FROM event_origins WHERE origin=NEW.origin)
@@ -130,6 +137,7 @@ END;
 -- +goose StatementEnd
 
 DROP TRIGGER trg_identity_legacy_listen_update;
+-- Keep the origin recorded by the first writer.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_listen_origin_immutable BEFORE UPDATE OF origin ON listens
 WHEN NEW.origin IS NOT OLD.origin
@@ -138,6 +146,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Protect a shared or validated recording from legacy MBID edits.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_track_recording_mbid BEFORE UPDATE OF musicbrainz_id ON tracks
 WHEN NEW.musicbrainz_id IS NOT OLD.musicbrainz_id AND EXISTS (
@@ -150,6 +159,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Prevent legacy moves of occurrence-resolved listens.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_listen_occurrence_guard BEFORE UPDATE OF track_id ON listens
 WHEN NEW.track_id IS NOT OLD.track_id AND EXISTS (
@@ -159,6 +169,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Allow reassignment only before the first occurrence-variant link.
 -- +goose StatementBegin
 CREATE TRIGGER trg_identity_occurrence_recording_guard BEFORE UPDATE OF recording_id ON occurrences
 WHEN NEW.recording_id IS NOT OLD.recording_id AND EXISTS (
@@ -169,7 +180,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
--- A foreign-key SET NULL can precede the deletion of the associated listen.
+-- Check the event link on receipt insertion.
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_link_insert BEFORE INSERT ON ingest_events
 WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
@@ -182,6 +193,7 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- A foreign-key SET NULL can precede deletion of the associated listen.
 -- +goose StatementBegin
 CREATE TRIGGER trg_ingest_link_update BEFORE UPDATE OF state,identity_status,profile_id,event_id,occurrence_id,recording_id ON ingest_events
 WHEN NEW.mode='active' AND NEW.state IN ('accepted','duplicate') AND (NEW.identity_status IS NOT 'resolved' OR NOT EXISTS (
