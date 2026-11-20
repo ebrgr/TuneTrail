@@ -302,11 +302,188 @@ def overlap(binary, root):
         server.stop()
 
 
+class MusicBrainzFixture(BaseHTTPRequestHandler):
+    """Serve typed MusicBrainz release proofs with per-release fault controls."""
+
+    fixtures = {}
+    entered = threading.Event()
+    unblock = threading.Event()
+
+    def log_message(self, *_):
+        pass
+
+    def do_GET(self):
+        identity = self.path.split("?", 1)[0].rsplit("/", 1)[-1]
+        case = self.fixtures.get(identity)
+        if case is None:
+            self.send_response(404)
+            self.end_headers()
+            return
+        album, title, recording, mode = case
+        if mode == "failure":
+            self.send_response(503)
+            self.end_headers()
+            return
+        if mode == "slow":
+            time.sleep(.6)
+        if mode == "hold":
+            self.entered.set()
+            self.unblock.wait(35)
+        data = {"id": identity, "title": album, "media": [{"position": 1, "tracks": [
+            {"id": fix_id(int(identity[-3:], 16) + 100), "title": title, "position": 1,
+             "recording": {"id": recording}}]}]}
+        self.send_response(200)
+        self.end_headers()
+        with suppress(OSError):
+            self.wfile.write(json.dumps(data).encode())
+
+
+def fix_id(number):
+    return f"fa000000-0000-4000-8000-{number:012x}"
+
+
+def submit_identity(server, stamp, key, album, title, release=None, recording=None, artist="Fixture Artist"):
+    payload = scrobble(stamp)
+    meta = payload["payload"][0]["track_metadata"]
+    meta.update(track_name=title, release_name=album, artist_name=artist)
+    info = meta["additional_info"]
+    info.update(discnumber=1, tracknumber=1)
+    if release:
+        info["release_mbid"] = release
+    if recording:
+        info["recording_mbid"] = recording
+    return post(server, payload, key)
+
+
+def receipt_state(directory, stamp):
+    with database(directory) as conn:
+        return conn.execute("""SELECT state,attempt_count,lease_until,event_id,reason_codes FROM ingest_events
+            WHERE profile_id=1 AND original_time=? ORDER BY received_at DESC,receipt_id LIMIT 1""", (str(stamp),)).fetchone()
+
+
+def wait_state(directory, stamp, state, timeout=150):
+    return wait_for(lambda: (row := receipt_state(directory, stamp)) and row[0] == state and row, timeout=timeout)
+
+
+def mbz_env(url):
+    return {"TUNETRAIL_DISABLE_MUSICBRAINZ": "false", "TUNETRAIL_MUSICBRAINZ_URL": url}
+
+
+def fragmentation(binary, root):
+    directory = root / "fragmentation"
+    title = "Fragmented song"
+    common = fix_id(90)
+    fixtures = {
+        fix_id(1): ("Album A", title, common, "failure"),
+        fix_id(2): ("Album B", title, common, "failure"),
+        fix_id(3): ("Slow Album", "Slow song", fix_id(91), "slow"),
+        fix_id(4): ("Timeout Album", "Timeout song", fix_id(92), "hold"),
+        fix_id(5): ("Proven A", "Proven song", fix_id(93), "proof"),
+        fix_id(6): ("Proven B", "Proven song", fix_id(93), "proof"),
+    }
+
+    class Stub(MusicBrainzFixture):
+        pass
+
+    Stub.fixtures = fixtures
+    Stub.entered, Stub.unblock = threading.Event(), threading.Event()
+    with loopback(Stub) as url:
+        server = occurrence_fixture(binary, directory, **mbz_env(url))
+        stamp = 1783010000
+
+        def send(i, key, state="accepted"):
+            nonlocal stamp
+            stamp += 10
+            release = fix_id(i)
+            album, song, recording, _ = fixtures[release]
+            start = time.monotonic()
+            assert submit_identity(server, stamp, key, album, song, release, recording)[0] == 200
+            row = wait_state(directory, stamp, state, 40)
+            return round(time.monotonic() - start, 3), row
+
+        try:
+            send(1, "fail-a")
+            send(2, "fail-b")
+            with database(directory) as conn:
+                provisional = conn.execute("""SELECT count(DISTINCT r.id),count(o.id)
+                    FROM recordings r JOIN occurrences o ON o.recording_id=r.id
+                    JOIN track_aliases t ON t.track_id=o.id WHERE t.alias=? AND r.musicbrainz_id IS NULL""",
+                    (title,)).fetchone()
+                assert provisional == (2, 2)
+            for i in (1, 2):
+                fixtures[fix_id(i)] = (*fixtures[fix_id(i)][:3], "proof")
+            send(2, "recover-b")
+            _, conflict = send(1, "recover-a", "pending_identity")
+            delay, slow = send(3, "slow")
+            timeout, timed_out = send(4, "timeout")
+            Stub.unblock.set()
+            with database(directory) as conn:
+                timeout_provisional = conn.execute("""SELECT r.musicbrainz_id IS NULL FROM ingest_events e
+                    JOIN recordings r ON r.id=e.recording_id WHERE e.original_time=?""", (str(stamp),)).fetchone()[0]
+                assert timeout_provisional == 1
+
+            for artist in ("Performer One", "Performer Two"):
+                stamp += 10
+                assert submit_identity(server, stamp, str(stamp), "Compilation", "Intro", artist=artist)[0] == 200
+                wait_state(directory, stamp, "accepted")
+            for album in ("Night Sessions", "Night Sessions Deluxe"):
+                stamp += 10
+                assert submit_identity(server, stamp, str(stamp), album, "Intro")[0] == 200
+                wait_state(directory, stamp, "accepted")
+            with database(directory) as conn:
+                compilation = conn.execute("SELECT count(DISTINCT release_id) FROM release_aliases WHERE alias='Compilation'").fetchone()[0]
+                similar = conn.execute("""SELECT count(DISTINCT release_id) FROM release_aliases
+                    WHERE alias IN ('Night Sessions','Night Sessions Deluxe')""").fetchone()[0]
+                assert (compilation, similar) == (2, 2)
+                conn.execute("""INSERT INTO release_aliases SELECT release_id,'Shared alias','Fixture',0
+                    FROM release_aliases WHERE alias IN ('Night Sessions','Night Sessions Deluxe')""")
+
+            stamp += 10
+            assert submit_identity(server, stamp, "alias", "Shared alias", "Intro")[0] == 200
+            wait_state(directory, stamp, "pending_identity")
+            with database(directory) as conn:
+                alias_evidence = conn.execute("""SELECT reason_codes,json_extract(evidence,'$.candidates')
+                    FROM ingest_events WHERE original_time=?""", (str(stamp),)).fetchone()
+            send(5, "proven-a")
+            send(6, "proven-b")
+            stamp_b = stamp
+            with database(directory) as conn:
+                count_b = conn.execute("""SELECT count(*),count(DISTINCT o.recording_id),count(DISTINCT o.release_id)
+                    FROM listens l JOIN occurrences o ON o.id=l.track_id JOIN track_aliases t ON t.track_id=o.id
+                    WHERE t.alias='Proven song'""").fetchone()
+                assert count_b == (2, 1, 2)
+                try:
+                    conn.execute("UPDATE profile_ingest_flags SET occurrence_write=0 WHERE profile_id=1")
+                except sqlite3.IntegrityError as error:
+                    assert "cannot be disabled" in str(error)
+                else:
+                    raise AssertionError("converted profile opted out")
+        finally:
+            Stub.unblock.set()
+            server.stop()
+        disabled = boot(binary, directory, False)
+        try:
+            status, retry, _ = submit_identity(disabled, stamp_b, "proven-b", "Proven B", "Proven song", fix_id(6), fix_id(93))
+            assert (status, retry) == (503, "1")
+            with database(directory) as conn:
+                assert conn.execute("SELECT count(*) FROM listens WHERE listened_at=?", (stamp_b,)).fetchone() == (1,)
+                assert conn.execute("SELECT count(*) FROM ingest_events WHERE original_time=?", (str(stamp_b),)).fetchone() == (1,)
+        finally:
+            disabled.stop()
+    return {"unavailable_provisional_recordings": provisional[0], "unavailable_occurrences": provisional[1],
+            "recovery_a_state": conflict[0], "recovery_a_reason": conflict[4],
+            "slow_s_including_queue": delay, "slow_attempts": slow[1],
+            "timeout_s_including_queue": timeout, "timeout_attempts": timed_out[1],
+            "timeout_provisional": bool(timeout_provisional), "compilation_releases": compilation,
+            "similar_titles_releases": similar, "shared_alias_evidence": alias_evidence,
+            "proven_ab_listens_recordings_releases": count_b, "one_way_flag": True, "master_off_503": True}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, required=True)
     parser.add_argument("--baseline", type=Path, required=True)
-    parser.add_argument("--scenario", choices=("load", "parity", "overlap"), default="load")
+    parser.add_argument("--scenario", choices=("load", "parity", "overlap", "fragmentation"), default="load")
     parser.add_argument("--duration", type=int, default=30)
     parser.add_argument("--rate", type=int, default=20)
     args = parser.parse_args()
@@ -317,8 +494,10 @@ def main():
             result = sustained(binary, baseline, root, args.duration, args.rate)
         elif args.scenario == "parity":
             result = parity(binary, baseline, root)
-        else:
+        elif args.scenario == "overlap":
             result = overlap(binary, root)
+        else:
+            result = fragmentation(binary, root)
         print(json.dumps(result), flush=True)
 
 
