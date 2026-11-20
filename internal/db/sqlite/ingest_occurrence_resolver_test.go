@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -569,4 +570,26 @@ func TestExpandedV9SnapshotReplay(t *testing.T) {
 	}
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE mode='active' AND resolver_variant='v9'`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='old' AND json_extract(original_snapshot,'$.track_number')=2`))
+}
+
+// TestOccurrenceReleaseProofCache reuses successful evidence and retries unavailable evidence.
+func TestOccurrenceReleaseProofCache(t *testing.T) {
+	var cache occurrenceReleaseCache
+	id := uuid.New()
+	calls := 0
+	lookup := func(context.Context, uuid.UUID) (*mbz.MusicBrainzRelease, error) {
+		calls++
+		if calls == 1 {
+			return nil, errors.New("fixture unavailable")
+		}
+		return &mbz.MusicBrainzRelease{ID: id.String()}, nil
+	}
+	_, err := cache.occurrenceReleaseLookup(context.Background(), id, lookup)
+	require.Error(t, err)
+	for range 2 {
+		release, err := cache.occurrenceReleaseLookup(context.Background(), id, lookup)
+		require.NoError(t, err)
+		require.Equal(t, id.String(), release.ID)
+	}
+	require.Equal(t, 2, calls)
 }

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,6 +25,11 @@ func occurrenceFileFixture(t *testing.T, format, origin string, data []byte, ver
 	result, err := importer.Upload(ctx, app.store, nil, 2, format, path)
 	require.NoError(t, err)
 	require.Equal(t, 1, result.Pending)
+	require.Equal(t, 1, result.Processed)
+	require.Zero(t, result.Imported)
+	require.Zero(t, result.Duplicates)
+	require.Zero(t, result.Ignored)
+	require.Zero(t, result.Errors)
 	count, err := app.store.Count(`SELECT count(*) FROM tracks`)
 	require.NoError(t, err)
 	require.Zero(t, count)
@@ -38,6 +44,15 @@ func occurrenceFileFixture(t *testing.T, format, origin string, data []byte, ver
 	var actual string
 	require.NoError(t, app.store.QueryRow(`SELECT origin FROM listens WHERE profile_id=2`).Scan(&actual))
 	require.Equal(t, origin, actual)
+	// Replaying the same bytes under a different filename reports a duplicate.
+	renamed := filepath.Join(t.TempDir(), "renamed")
+	require.NoError(t, os.WriteFile(renamed, data, 0600))
+	replay, err := importer.Upload(ctx, app.store, nil, 2, format, renamed)
+	require.NoError(t, err)
+	require.Equal(t, 1, replay.Processed)
+	require.Equal(t, 1, replay.Duplicates)
+	require.Zero(t, replay.Imported)
+	require.Zero(t, replay.Pending)
 }
 
 func TestOccurrenceListenBrainzZIP(t *testing.T) {
@@ -93,4 +108,26 @@ func TestOccurrenceNative(t *testing.T) {
 		require.Equal(t, []string{"First", "Second"}, s.ArtistNames)
 		require.Equal(t, "2026-05-29T00:00:00.010Z", s.OriginalTime)
 	})
+}
+
+// TestOccurrenceHTTPFixture covers both historical operations and ephemeral playing now.
+func TestOccurrenceHTTPFixture(t *testing.T) {
+	app := newProfileTestApp(t)
+	require.NoError(t, app.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(2,1,1)`))
+	const path = "/apis/listenbrainz/1/submit-listens"
+	now := app.request(http.MethodPost, path, listenBody("playing_now", "Now", 1780000000), "second-key", false)
+	require.Equal(t, http.StatusOK, now.Code, now.Body.String())
+	count, err := app.store.Count(`SELECT count(*) FROM ingest_events`)
+	require.NoError(t, err)
+	require.Zero(t, count)
+	for _, kind := range []string{"single", "import"} {
+		resp := app.request(http.MethodPost, path, listenBody(kind, "Track "+kind, 1780000020), "second-key", false)
+		require.Equal(t, http.StatusOK, resp.Code, resp.Body.String())
+		found, err := app.store.ResolveNextIngest(context.Background(), nil)
+		require.NoError(t, err)
+		require.True(t, found)
+	}
+	count, err = app.store.Count(`SELECT count(*) FROM listens WHERE origin='listenbrainz_api' AND profile_id=2`)
+	require.NoError(t, err)
+	require.Equal(t, 2, count)
 }

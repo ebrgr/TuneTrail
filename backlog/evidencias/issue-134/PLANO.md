@@ -197,3 +197,5 @@ Retomada após rebase em v0.45.
 - Feito — Documenta atualização SQLite e ingestão por ocorrência. Pendente — ensaio de carga, provas de recuperação e validação final.
 
 - Feito — Adiciona ensaio de carga e retomada da E3. Pendente — executar ensaio, registrar evidências, make check e Backlog.
+
+- Feito — Verifica contadores, replay renomeado e playing now. Pendente — reexecutar ensaio e make check, registrar evidências e Backlog.
