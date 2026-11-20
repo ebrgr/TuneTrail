@@ -67,11 +67,21 @@ const (
 	ImageSourceUserUpload = "User Upload"
 )
 
-type submitListenStore interface {
+type listenCatalogStore interface {
 	db.ArtistStore
 	db.AlbumStore
 	db.TrackStore
+}
+
+type submitListenStore interface {
+	listenCatalogStore
 	db.ListenStore
+}
+
+type listenAssociation struct {
+	track      *models.Track
+	artists    []*models.Artist
+	albumTitle string
 }
 
 var submitListenGate = make(chan struct{}, 1)
@@ -112,6 +122,40 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 	// bandaid to ensure new activity does not have sub-second precision
 	opts.Time = opts.Time.Truncate(time.Second)
 
+	association, err := resolveListenAssociation(ctx, store, opts)
+	if err != nil {
+		return err
+	}
+	track := association.track
+
+	if opts.IsNowPlaying {
+		if track.Duration == 0 {
+			memkv.Store.Set(fmt.Sprintf("now-playing:%d", opts.ProfileID), track.ID)
+		} else {
+			memkv.Store.Set(fmt.Sprintf("now-playing:%d", opts.ProfileID), track.ID, time.Duration(track.Duration)*time.Second)
+		}
+	}
+
+	if opts.SkipSaveListen {
+		return nil
+	}
+
+	l.Info().Msgf("Received listen: '%s' by %s, from release '%s'", track.Title, buildArtistStr(association.artists), association.albumTitle)
+
+	return store.SaveListen(ctx, db.SaveListenOpts{
+		TrackID:   track.ID,
+		Time:      opts.Time,
+		UserID:    opts.UserID,
+		ProfileID: opts.ProfileID,
+		Client:    opts.Client,
+	})
+}
+
+// resolveListenAssociation resolves shared catalog identity under the caller's
+// association lock. The caller owns validation and any listen or now-playing write.
+func resolveListenAssociation(ctx context.Context, store listenCatalogStore, opts SubmitListenOpts) (listenAssociation, error) {
+	l := logger.FromContext(ctx)
+
 	artists, err := AssociateArtists(
 		ctx,
 		store,
@@ -126,7 +170,7 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 		})
 	if err != nil {
 		l.Err(err).Msg("Failed to associate artists to listen")
-		return fmt.Errorf("SubmitListen: %w", err)
+		return listenAssociation{}, fmt.Errorf("SubmitListen: %w", err)
 	} else if len(artists) < 1 {
 		l.Debug().Msg("Failed to associate any artists to release")
 	}
@@ -148,7 +192,7 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 	})
 	if err != nil {
 		l.Error().Err(err).Msg("Failed to associate release group to listen")
-		return fmt.Errorf("SubmitListen: %w", err)
+		return listenAssociation{}, fmt.Errorf("SubmitListen: %w", err)
 	}
 	l.Debug().Any("album", rg).Msg("Matched listen to release")
 
@@ -158,7 +202,7 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 		ArtistIDs: artistIDs,
 		AlbumID:   rg.ID,
 	}); err != nil {
-		return fmt.Errorf("SubmitListen: associate album artists: %w", err)
+		return listenAssociation{}, fmt.Errorf("SubmitListen: associate album artists: %w", err)
 	}
 
 	track, err := AssociateTrack(ctx, store, AssociateTrackOpts{
@@ -171,7 +215,7 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 	})
 	if err != nil {
 		l.Error().Err(err).Msg("Failed to associate track to listen")
-		return fmt.Errorf("SubmitListen: %w", err)
+		return listenAssociation{}, fmt.Errorf("SubmitListen: %w", err)
 	}
 	l.Debug().Any("track", track).Msg("Matched listen to track")
 
@@ -206,27 +250,7 @@ func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListe
 		}
 	}
 
-	if opts.IsNowPlaying {
-		if track.Duration == 0 {
-			memkv.Store.Set(fmt.Sprintf("now-playing:%d", opts.ProfileID), track.ID)
-		} else {
-			memkv.Store.Set(fmt.Sprintf("now-playing:%d", opts.ProfileID), track.ID, time.Duration(track.Duration)*time.Second)
-		}
-	}
-
-	if opts.SkipSaveListen {
-		return nil
-	}
-
-	l.Info().Msgf("Received listen: '%s' by %s, from release '%s'", track.Title, buildArtistStr(artists), rg.Title)
-
-	return store.SaveListen(ctx, db.SaveListenOpts{
-		TrackID:   track.ID,
-		Time:      opts.Time,
-		UserID:    opts.UserID,
-		ProfileID: opts.ProfileID,
-		Client:    opts.Client,
-	})
+	return listenAssociation{track: track, artists: artists, albumTitle: rg.Title}, nil
 }
 
 func buildArtistStr(artists []*models.Artist) string {
