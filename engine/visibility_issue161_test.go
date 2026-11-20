@@ -107,7 +107,9 @@ func TestListeningVisibility161(t *testing.T) {
 		avatar := json160(a, "GET", avatarPath, "", "", "")
 		require.Equal(t, 200, avatar.Code)
 		require.Equal(t, publicCache, avatar.Header().Get("Cache-Control"))
-		require.Equal(t, protected, bytes.Contains(directory.Body.Bytes(), []byte("🔒")))
+		// The protected marker is the bundled SVG icon, not an emoji.
+		require.Equal(t, protected, bytes.Contains(directory.Body.Bytes(), []byte(`class="profile-lock"`)))
+		require.NotContains(t, directory.Body.String(), "🔒")
 
 		for _, actor := range []struct{ name, cookie string }{
 			{"visitor", ""}, {"other", other}, {"owner", owner}, {"root", a.cookie},
