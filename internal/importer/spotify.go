@@ -2,6 +2,7 @@ package importer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -9,17 +10,39 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	mbz "github.com/ebrgr/TuneTrail/internal/mbz"
 )
 
 type SpotifyExportItem struct {
-	Timestamp  time.Time `json:"ts"`
-	TrackName  string    `json:"master_metadata_track_name"`
-	ArtistName string    `json:"master_metadata_album_artist_name"`
-	AlbumName  string    `json:"master_metadata_album_album_name"`
-	ReasonEnd  string    `json:"reason_end"`
-	MsPlayed   int32     `json:"ms_played"`
+	rawTimestamp string
+	Timestamp    time.Time `json:"ts"`
+	TrackName    string    `json:"master_metadata_track_name"`
+	ArtistName   string    `json:"master_metadata_album_artist_name"`
+	AlbumName    string    `json:"master_metadata_album_album_name"`
+	ReasonEnd    string    `json:"reason_end"`
+	MsPlayed     int32     `json:"ms_played"`
+}
+
+// UnmarshalJSON captures the source timestamp before time.Time normalizes its spelling.
+func (item *SpotifyExportItem) UnmarshalJSON(data []byte) error {
+	type row SpotifyExportItem
+	var observed struct {
+		*row
+		Timestamp string `json:"ts"`
+	}
+	observed.row = (*row)(item)
+	if err := json.Unmarshal(data, &observed); err != nil {
+		return err
+	}
+	item.rawTimestamp = observed.Timestamp
+	if observed.Timestamp == "" {
+		return nil
+	}
+	at, err := time.Parse(time.RFC3339Nano, observed.Timestamp)
+	item.Timestamp = at
+	return err
 }
 
 func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBrainzCaller, filename string) error {
@@ -80,7 +103,12 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			ProfileID:      db.ProfileID(ctx),
 			SkipCacheImage: !cfg.FetchImagesDuringImport(),
 		}
-		err = submitFileListen(ctx, store, opts, item.Timestamp.Format(time.RFC3339Nano))
+		err = submitFileListen(ctx, store, opts, item.Timestamp.Format(time.RFC3339Nano), func(snapshot *ingest.Snapshot) {
+			snapshot.ArtistNames = []string{item.ArtistName}
+			snapshot.OriginalTime = item.rawTimestamp
+			snapshot.DurationMS = int64(item.MsPlayed)
+			snapshot.TimeSemantics = "end"
+		})
 		if err != nil {
 			l.Err(err).Msg("Failed to import spotify playback item")
 			return fmt.Errorf("ImportSpotifyFile: %w", err)

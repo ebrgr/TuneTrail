@@ -63,3 +63,12 @@ func TestOccurrenceLastFM(t *testing.T) {
 		require.Empty(t, s.Recording)
 	})
 }
+
+func TestOccurrenceSpotify(t *testing.T) {
+	data := []byte(`[{"ts":"2026-05-28T21:46:40.2500-03:00","master_metadata_track_name":"Track","master_metadata_album_artist_name":"Artist","master_metadata_album_album_name":"Album","reason_end":"trackdone","ms_played":180125}]`)
+	occurrenceFileFixture(t, "spotify", "spotify_import", data, func(s ingest.Snapshot) {
+		require.Equal(t, "2026-05-28T21:46:40.2500-03:00", s.OriginalTime)
+		require.Equal(t, "end", s.TimeSemantics)
+		require.EqualValues(t, 180125, s.DurationMS)
+	})
+}

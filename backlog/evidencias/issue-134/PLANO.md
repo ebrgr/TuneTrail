@@ -179,3 +179,5 @@ Retomada após rebase em v0.45.
 - Feito — Habilita o adaptador ListenBrainz ZIP por ocorrência. Pendente — Last.fm, Spotify, Maloja, nativo e verificações.
 
 - Feito — Habilita o adaptador Last.fm por ocorrência. Pendente — Spotify, Maloja, nativo e verificações.
+
+- Feito — Habilita o adaptador Spotify por ocorrência. Pendente — Maloja, nativo e verificações.

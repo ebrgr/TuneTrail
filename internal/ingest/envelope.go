@@ -43,6 +43,7 @@ type Snapshot struct {
 	Release            string          `json:"release,omitempty"`
 	Recording          string          `json:"recording_mbid,omitempty"`
 	DurationMS         int64           `json:"duration_ms,omitempty"`
+	TimeSemantics      string          `json:"time_semantics,omitempty"`
 	OriginalTime       string          `json:"original_time,omitempty"`
 	ArtistMbidMappings []ArtistMapping `json:"artist_mbid_mappings,omitempty"`
 	SkipCacheImage     bool            `json:"skip_cache_image,omitempty"`
