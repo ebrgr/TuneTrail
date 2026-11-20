@@ -133,6 +133,18 @@ def event_count(directory, first):
         return conn.execute("SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at>=?", (first,)).fetchone()[0]
 
 
+def claim_query_plans(conn):
+    code = (ROOT / "internal/db/sqlite/ingest_resolve.go").read_text()
+    selection = code.split("const nextReceipt = `", 1)[1].split("`", 1)[0]
+    claim_prefix = "UPDATE ingest_events SET lease_owner"
+    claim = claim_prefix + code.split("`" + claim_prefix, 1)[1].split("`", 1)[0]
+    return {
+        "queue_query_plan": [row[3] for row in conn.execute("EXPLAIN QUERY PLAN " + selection, (0, 0))],
+        "claim_update_query_plan": [row[3] for row in conn.execute("EXPLAIN QUERY PLAN " + claim,
+                                      ("fixture", 120, "receipt", 0, 0))],
+    }
+
+
 def sustained(binary, baseline, root, duration, rate):
     directory = root / "load"
     init(baseline, directory)
@@ -150,9 +162,7 @@ def sustained(binary, baseline, root, duration, rate):
             assert conn.execute("SELECT count(*) FROM ingest_events WHERE profile_id=1").fetchone() == (300000,)
             conn.execute("INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)")
             plans = catalog_query_plans(conn)
-            code = (ROOT / "internal/db/sqlite/ingest_resolve.go").read_text()
-            claim = code.split("const nextReceipt = `", 1)[1].split("`", 1)[0]
-            plans["claim_query_plan"] = [row[3] for row in conn.execute("EXPLAIN QUERY PLAN " + claim, (0, 0))]
+            plans.update(claim_query_plans(conn))
         workload = benchmark_load(server, directory, duration, rate)
     finally:
         server.stop()

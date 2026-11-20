@@ -42,7 +42,7 @@ O backup abriu com a tag v0.46, conservou os 300.000 recibos e passou em `foreig
 
 - Ocorrência por release, release ausente ou track MBID usou `MULTI-INDEX OR`, com dois ramos em `idx_occurrences_release` e um no índice UNIQUE de track MBID. A ordem usa B-tree temporária.
 - Release por texto usou `idx_release_aliases_alias` para o alias e chave primária para release. A distinção usa B-tree temporária.
-- Seleção de claim/lease usou `idx_ingest_active_queue` por estado e B-tree temporária para ordenar. Os 300.000 recibos retidos estavam encerrados, fora da fila de admissão. Uma fila com 300.000 recibos elegíveis ou a expirar merece medição própria.
+- Seleção de claim/lease usou `idx_ingest_active_queue` por estado e B-tree temporária para ordenar. O EXPLAIN separado do UPDATE de claim buscou receipt_id pelo índice único da chave do recibo e aplicou as condições de lease sobre essa linha. Os 300.000 recibos retidos estavam encerrados, fora da fila de admissão. Uma fila com 300.000 recibos elegíveis ou a expirar merece medição própria.
 
 ## Paridade, sobreposição e troca de modo
 
@@ -60,6 +60,10 @@ O caso A/B comprovado gerou duas escutas, uma gravação e dois lançamentos. A 
 - A exclusão de histórico removeu a escuta vinculada. Uma entrega já reclamada, com occurrence_id ainda nulo, ficou em voo e criou um evento novo após concluir. O teste evita inferir seleção pelo título. Uma política diferente exige decisão sobre o escopo da exclusão de trabalho em trânsito.
 
 ## Falhas
+
+O processo recebeu SIGKILL enquanto a prova do MusicBrainz estava bloqueada, após o ACK e antes de persistir catálogo ou escuta. Restavam 119,18 s de lease; o worker reiniciado com o mestre desligado aceitou a escuta única em 119,70 s após a morte, na tentativa 2. O lease venceu naturalmente.
+
+Uma FK adiada injetada no COMMIT fez um segundo recibo ir para retryable, sem faixa, escuta ou vínculo do evento. Após remover o trigger sintético e antecipar next_attempt_at, a segunda tentativa aceitou uma escuta. O ensaio mede a recuperação do estado, com o agendamento adiantado deliberadamente nesse cenário.
 
 A simulação de SQLite cheio limitou páginas na conexão de teste do escritor ativo. O lote de 70 itens devolveu `ErrUnavailable` e a transação deixou zero recibos e integração dessa entrega. Ao aumentar o limite, as mesmas chaves produziram os 70 recibos. O teste não ocupou o disco do sistema nem mediu falha de I/O do host.
 
