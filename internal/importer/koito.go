@@ -254,6 +254,12 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		if err != nil {
 			return err
 		}
+		// Admit the resolved native track after releasing the catalog lock.
+		if snapshot.CatalogTrackID != 0 {
+			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
+				return err
+			}
+		}
 	}
 
 	if err := flushFileShadow(ctx); err != nil {
