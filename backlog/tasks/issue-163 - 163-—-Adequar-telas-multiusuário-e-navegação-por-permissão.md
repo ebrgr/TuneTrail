@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-20T20:51:00Z'
+updated_date: '2026-11-20T20:54:00Z'
 labels:
   - ui
   - admin
@@ -113,6 +113,15 @@ created: 2026-11-20T20:51:00Z
 ---
 
 Aceite do usuário em 20/11/2026: AC2 (sem JavaScript, foco, teclado e leitor de tela, testados ao vivo em servidor isolado com contas fictícias) e AC3 (capturas responsivas e aceite visual). Durante o aceite o usuário pediu trocar o cadeado emoji pelo ícone LockKeyhole do catálogo do sistema (commit 9310342); as capturas dos diretórios em backlog/evidencias/issue-163/capturas anteriores a esse commit ainda mostram o emoji e não foram regeneradas. Pendências conhecidas e aceitas: «Sair…» envia direto até a confirmação da ISSUE-157; /account e a página Conta própria são da ISSUE-125 (o destino do comum segue /admin?section=account numa constante isolada).
+
+---
+
+author: ebrgr
+created: 2026-11-20T20:54:00Z
+
+---
+
+Publicação: versão 0.45 (tag `v0.45`), branch `feat/issue-163-adequar-telas-multiusuario-e-navegacao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
