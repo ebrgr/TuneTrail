@@ -1,11 +1,11 @@
 ---
 id: ISSUE-134
 title: 134 — Ingestão por ocorrência em todas as fontes
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T21:39:00Z'
+updated_date: '2026-11-20T21:55:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -150,6 +150,15 @@ created: 2026-11-20T21:39:00Z
 ---
 
 Verificação E4 concluída em bases descartáveis. Após rebase v0.46 e no final, make check passou 13/13 jornadas e 170 arquivos de referência visual sem diferenças. Go test dos pacotes afetados passou. Com 300 mil recibos no mesmo perfil, 600 escutas resolveram a 19,39/s, ACK p95 8,29 ms e visibilidade após ACK p95 958,77 ms. Sobreposição das seis origens preservou 20 escutas e 100 pendências. Paridade, relay legado, upgrade com WAL, restore e recusa pela tag v0.46 foram conferidos. SIGKILL recuperou pela expiração natural do lease, rollback de COMMIT e SQLite cheio passaram. ACs 1–7 reverificados conforme o relatório. Aguardando releitura do Reviewer e aceite explícito antes de Done. Nenhum perfil real habilitado.
+
+---
+
+author: claude
+created: 2026-11-20T21:55:00Z
+
+---
+
+Aceite do usuário em 20/11/2026, após o Reviewer (E3 releitura e E4: APROVADO, sem itens obrigatórios). O aceite cobre as migrações 010 e 011, os adaptadores das seis fontes por ocorrência, o resolvedor occurrence-v1, o ensaio da E4 e a documentação; NÃO cobre ligar o modo novo em perfil real (restrito a bancos descartáveis e perfis sem relay até a 135, 083 e 082). Ressalvas registradas: (1) o AC5 não cobre trabalho em trânsito: uma entrega já reclamada, sem occurrence_id, conclui depois da exclusão de histórico e cria escuta nova da faixa excluída (decisão do usuário em aberto, encaminhada à 083); (2) o AC5 vale só para a variante occurrence: no v9 a reimportação depois da exclusão faz replay sem gerar evento, por compatibilidade com a v0.46; (3) a tarefa foi a Aguardando aceite antes da releitura do Reviewer; (4) números do ensaio de um único hardware em loopback, numa rajada de 30 s. Adicionada a nota de upgrade (espaço livre de três vezes o banco, cerca de 21 s com 300 mil recibos, backup .pre-occurrence-ingest-*.bak, recusa do v11 pela 0.46 e anteriores) ao CHANGELOG e ao DEPLOYMENT.md.
 
 ---
 <!-- COMMENTS:END -->

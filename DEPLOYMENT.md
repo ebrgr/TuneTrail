@@ -148,6 +148,22 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml stop
 The image includes a healthcheck. Compose gives the application up to 30 seconds
 to shut down gracefully. `stop` and `down` preserve the host data directory.
 
+## Upgrade to schema v11 (TuneTrail 0.47)
+
+Stop the service in a maintenance window before upgrading from a v9 database
+(TuneTrail 0.44 to 0.46). Keep free disk space of at least three times the
+database size in the data directory and in the SQLite temporary directory
+(`TMPDIR`). On first start TuneTrail writes a verified
+`.pre-occurrence-ingest-*.bak` backup next to the database, then migrates it to
+v11. On the test hardware a database with 300,000 receipts needed about 21
+seconds before the health endpoint answered and a backup of about 260 MB.
+
+The migration runs on every installation, even though the occurrence mode stays
+off until a profile is converted. Versions 0.46 and earlier refuse a v11
+database. To go back, stop the service and restore the backup; writes made
+after the upgrade are lost, and relay deliveries already made stay at the
+destination (ISSUE-134).
+
 ## Rollback
 
 The migration intentionally does not offer a destructive SQL downgrade.
