@@ -16,6 +16,10 @@ import (
 // resolveOccurrence ranks complete candidate sets under the same lock used to write.
 func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapshot, proof occurrenceProof) (occurrenceMatch, []string, error) {
 	var match occurrenceMatch
+	if proof.evidence != nil && proof.evidence.ReleaseTitleDiffers {
+		// Match the presented metadata without reusing IDs from the mismatched release.
+		snapshot.TrackMBID, snapshot.Recording, snapshot.MappedRecording = "", "", ""
+	}
 	credits, err := json.Marshal(observedCredits(snapshot))
 	if err != nil {
 		return match, nil, err

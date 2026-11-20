@@ -362,6 +362,8 @@ func TestOccurrenceProofRedirects(t *testing.T) {
 		conflictID, request.String(), canonical.String(), release.Title, recording.String(), recording.String(), fixtureRecording, track.ID, track.ID))
 	item.Release = "Presented album"
 	s := convertedOccurrenceFixture(t)
+	// The raw track ID already exists under a different album and must not steer metadata fallback.
+	execSQL(t, s, `UPDATE occurrences SET track_mbid=? WHERE id=1`, track.ID)
 	id := admitOccurrenceFixture(t, s, item, 1300, "title-disagreement")
 	resolveOccurrenceFixture(t, s, client)
 	requireReceiptState(t, s, id, "accepted")
