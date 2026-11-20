@@ -187,3 +187,5 @@ Retomada após rebase em v0.45.
 - Feito — Admite importação nativa antes da associação de catálogo. Pendente — precisão do ledger, replay, exclusão, MusicBrainz e verificações.
 
 - Feito — Remove recibos e chaves na exclusão para permitir reimportação. Pendente — precisão, replay de digest, cache, ensaio e verificações.
+
+- Feito — Persiste instante, precisão, offset e semântica observados. Pendente — replay ampliado, cache, ensaio e verificações.

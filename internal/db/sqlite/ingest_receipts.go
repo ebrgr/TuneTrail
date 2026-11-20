@@ -431,6 +431,10 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 	}
 	id := uuid.NewString()
 	at, precision := i.ListenedAt, "second"
+	offset, semantics := "", "unknown"
+	if variant == "occurrence" {
+		at, precision, offset, semantics = i.Item.OccurrenceTime()
+	}
 	if at.IsZero() {
 		at, precision = b.ReceivedAt, "estimated"
 		// Reuse the original estimate for a keyed retry without a timestamp.
@@ -454,11 +458,11 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 	_, err = tx.ExecContext(ctx, `INSERT INTO ingest_events
 		(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
 		external_namespace,external_event_id,external_id_trusted,client_idempotency_key,batch_digest,file_digest,file_format,format_version,
-		listened_at,original_time,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant)
+		listened_at,original_time,time_precision,time_semantics,original_offset,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant)
 		VALUES(?,?,?,1,?,'1',?,?,?,?,nullif(?,''),nullif(?,''),?,nullif(?,''),nullif(?,''),nullif(?,''),nullif(?,''),CASE WHEN ?!='' THEN '1' END,
-		?,nullif(?,''),?,'unknown',?,?,?,'active',?,?,?,?)`,
+		?,nullif(?,''),?,?,nullif(?,''),?,?,?,'active',?,?,?,?)`,
 		id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
-		b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, at.UTC().Format(receiptTime), i.OriginalTime(), precision,
+		b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, at.UTC().Format(receiptTime), i.OriginalTime(), precision, semantics, offset,
 		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion, variant)
 	return ingest.Result{ReceiptID: id, Pending: true}, err
 }

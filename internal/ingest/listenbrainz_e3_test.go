@@ -3,6 +3,7 @@ package ingest
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
 	"github.com/stretchr/testify/require"
@@ -20,4 +21,21 @@ func TestListenBrainzOccurrenceFixture(t *testing.T) {
 	require.NotEmpty(t, snapshot.TrackMBID)
 	require.Equal(t, "fixture", snapshot.MBIDSource)
 	require.Empty(t, snapshot.Recording)
+}
+
+// TestOccurrenceTimestamp covers exact decimal time and a declared offset.
+func TestOccurrenceTimestamp(t *testing.T) {
+	item := Item{ListenedAt: time.Unix(1780000000, 0), Snapshot: Snapshot{OriginalTime: "1780000000.250"}}
+	at, precision, offset, semantics := item.OccurrenceTime()
+	require.EqualValues(t, 250000000, at.Nanosecond())
+	require.Equal(t, "millisecond", precision)
+	require.Empty(t, offset)
+	require.Equal(t, "unknown", semantics)
+	item.Snapshot.OriginalTime = "2026-05-28T21:46:40.2500-03:00"
+	item.Snapshot.TimeSemantics = "end"
+	at, precision, offset, semantics = item.OccurrenceTime()
+	require.EqualValues(t, 250000000, at.Nanosecond())
+	require.Equal(t, "microsecond", precision)
+	require.Equal(t, "-03:00", offset)
+	require.Equal(t, "end", semantics)
 }

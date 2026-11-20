@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -136,6 +137,60 @@ func (i Item) OriginalTime() string {
 		return i.Snapshot.OriginalTime
 	}
 	return strconv.FormatInt(i.ListenedAt.Unix(), 10)
+}
+
+// OccurrenceTime keeps source precision and offset while normalizing the recorded instant.
+func (i Item) OccurrenceTime() (at time.Time, precision, offset, semantics string) {
+	at, precision, semantics = i.ListenedAt, "second", "unknown"
+	switch i.Snapshot.TimeSemantics {
+	case "start", "end":
+		semantics = i.Snapshot.TimeSemantics
+	}
+	raw := i.Snapshot.OriginalTime
+	if raw == "" || at.IsZero() {
+		return
+	}
+	clock := raw
+	if parsed, err := time.Parse(time.RFC3339Nano, raw); err == nil {
+		at = parsed
+		clock = raw[11:]
+		if strings.HasSuffix(raw, "Z") {
+			offset = "Z"
+			clock = strings.TrimSuffix(clock, "Z")
+		} else if len(raw) >= 6 {
+			offset = raw[len(raw)-6:]
+			clock = strings.TrimSuffix(clock, offset)
+		}
+	}
+	whole, fraction, ok := strings.Cut(clock, ".")
+	if !ok {
+		return
+	}
+	if len(fraction) == 0 {
+		return
+	}
+	for _, digit := range fraction {
+		if digit < '0' || digit > '9' {
+			return
+		}
+	}
+	switch {
+	case len(fraction) <= 3:
+		precision = "millisecond"
+	case len(fraction) <= 6:
+		precision = "microsecond"
+	default:
+		precision = "nanosecond"
+	}
+	if seconds, err := strconv.ParseInt(whole, 10, 64); err == nil {
+		digits := fraction[:min(len(fraction), 9)]
+		nanos, _ := strconv.ParseInt(digits+strings.Repeat("0", 9-len(digits)), 10, 64)
+		if strings.HasPrefix(whole, "-") {
+			nanos = -nanos
+		}
+		at = time.Unix(seconds, nanos)
+	}
+	return
 }
 
 // FileReceipt is a durable ordinal checkpoint that can be read without staging.
