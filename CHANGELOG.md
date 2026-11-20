@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.48] - 2026-11-20
+
+- No user-visible changes (ISSUE-092).
+
 ## [0.47] - 2026-11-20
 
 - The database upgrades from v9 to v11 and creates a `.pre-occurrence-ingest-*.bak` backup. TuneTrail 0.46 and earlier cannot open a v11 database. Stop the service for the upgrade and keep free disk space of at least three times the database size in the data and `TMPDIR` directories; about 21 seconds were needed with 300,000 receipts. Restoring the backup loses writes made after the upgrade (ISSUE-134).

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T22:56:00Z'
+updated_date: '2026-11-20T22:58:00Z'
 labels:
   - api
   - validacao
@@ -61,6 +61,15 @@ created: 2026-11-20T22:56:00Z
 ---
 
 Aceite do usuário em 20/11/2026: semântica aprovada (média sobre dias civis do recorte incluindo zeros; período em andamento limitado ao instante da consulta com a data de hoje no denominador e rótulo «até agora»; ranking por gravação como padrão com alternância por lançamento; eventos aceitos, com ocorrências autônomas no balde «Sem lançamento», e pendências fora dos totais) e tarefas aprovadas, com o ajuste de que o fuso NÃO aparece na interface. Tarefas abertas: ISSUE-176 (alinhar a média diária ao período consultado, bug medido: /stats 0,50 × /summary 1,94 para as mesmas 60 escutas) e ISSUE-177 (reduzir leituras históricas repetidas na Home e no Rewind, depois da ISSUE-135). O índice experimental fica sem adoção até a nova medição com os leitores por ocorrência. A preferência persistente de ranking por perfil segue como decisão independente da ISSUE-135. Estudo: doc-044 e backlog/evidencias/issue-092.
+
+---
+
+author: ebrgr
+created: 2026-11-20T22:58:00Z
+
+---
+
+Publicação: versão 0.48 (tag `v0.48`), branch `spike/issue-092-semantica-das-estatisticas-medias-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
