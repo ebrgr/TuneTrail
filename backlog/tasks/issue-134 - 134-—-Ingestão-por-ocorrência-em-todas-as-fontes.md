@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T19:19:00Z'
+updated_date: '2026-11-20T19:39:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -85,6 +85,15 @@ created: 2026-11-20T19:19:00Z
 ---
 
 Fase 1, plano v2. Parecer do Advisor: REPROVADO COM RESSALVAS. O plano incorpora as seis correções sobre proteção da gravação compartilhada, cascatas, 010 aditiva com reparo auditado de drift v9, exclusão real de recibos e chaves, replay na troca de modo e visibilidade dos leitores. Decisões de 20/11/2026: D1 álbum conhecido com faixa de ponte e aliases; D2 sem álbum pendente em perfis reais e ocorrência autônoma apenas no ensaio; D3 modo novo só em banco descartável até 135/083; D4 relay em espera, com habilitação bloqueada para perfil com relay até 082; D5 flag de mão única, opt-ins existentes em v9 e variante fixada no job e recibo; D6 MBID salvo/recebido, depois Subsonic (174), ListenBrainz (175) e campo vazio, com proveniência e resolução por metadados. Sequência E1–E4 registrada. E1 segue bloqueada para revisão do Advisor. ACs abertos.
+
+---
+
+author: codex
+created: 2026-11-20T19:39:00Z
+
+---
+
+E1 concluída e parada para Advisor high. Migração 010 aditiva, guardas SQL, origens, flag de mão única, variantes e créditos. Drift v9 reparado com revisão migration. Merge legado sincroniza vínculos sobreviventes pelo trigger AFTER UPDATE antes do DELETE. Doc-040 §4 confirma a cascata das revisões no descarte do recibo (AC5 em E3). Replay desligado e restore com v0.44 passaram (18 escutas e 18 recibos em sombra). Ensaio de 300 mil: backup 136,1 ms, DDL/commit 896,2 ms, reparo de um vínculo 20,8 ms. make check passou com 13/13 jornadas. E2/E3 aguardam; ACs e status Em andamento preservados.
 
 ---
 <!-- COMMENTS:END -->
