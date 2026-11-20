@@ -24,9 +24,10 @@ END;
 CREATE TRIGGER trg_occurrence_cut_insert BEFORE INSERT ON profile_ingest_flags
 WHEN NEW.occurrence_write=1 AND (
     EXISTS (SELECT 1 FROM ingest_events WHERE profile_id=NEW.profile_id AND mode='active' AND resolver_variant='v9' AND closed_at IS NULL)
+    OR EXISTS (SELECT 1 FROM ingest_events WHERE profile_id=NEW.profile_id AND mode='shadow' AND event_id IS NULL)
     OR EXISTS (SELECT 1 FROM profile_relays WHERE profile_id=NEW.profile_id AND (url<>'' OR token<>'')))
 BEGIN
-    SELECT RAISE(ABORT,'Occurrence writing requires drained receipts and no relay');
+    SELECT RAISE(ABORT,'Occurrence writing requires drained receipts, cleared shadow and no relay');
 END;
 -- +goose StatementEnd
 
@@ -34,9 +35,10 @@ END;
 CREATE TRIGGER trg_occurrence_cut_update BEFORE UPDATE OF occurrence_write ON profile_ingest_flags
 WHEN OLD.occurrence_write=0 AND NEW.occurrence_write=1 AND (
     EXISTS (SELECT 1 FROM ingest_events WHERE profile_id=NEW.profile_id AND mode='active' AND resolver_variant='v9' AND closed_at IS NULL)
+    OR EXISTS (SELECT 1 FROM ingest_events WHERE profile_id=NEW.profile_id AND mode='shadow' AND event_id IS NULL)
     OR EXISTS (SELECT 1 FROM profile_relays WHERE profile_id=NEW.profile_id AND (url<>'' OR token<>'')))
 BEGIN
-    SELECT RAISE(ABORT,'Occurrence writing requires drained receipts and no relay');
+    SELECT RAISE(ABORT,'Occurrence writing requires drained receipts, cleared shadow and no relay');
 END;
 -- +goose StatementEnd
 

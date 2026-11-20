@@ -29,7 +29,8 @@ func convertedOccurrenceFixture(t *testing.T) *Sqlite {
 	t.Helper()
 	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
+	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow' AND event_id IS NULL;
+		INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
 	return s
 }
 
@@ -303,4 +304,20 @@ func TestOccurrenceOriginGuard(t *testing.T) {
 		execSQL(t, s, update, "duplicate", id)
 	}
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE resolver_variant='occurrence' AND state='duplicate'`))
+}
+
+// TestOccurrenceCutRequiresClearedShadow checks both conversion paths against shadow replays.
+func TestOccurrenceCutRequiresClearedShadow(t *testing.T) {
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	seedIdentityHistory(t, s)
+	const enable = `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`
+	_, err := s.db.Exec(enable)
+	require.ErrorContains(t, err, "cleared shadow")
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`)
+	const convert = `UPDATE profile_ingest_flags SET occurrence_write=1 WHERE profile_id=1`
+	_, err = s.db.Exec(convert)
+	require.ErrorContains(t, err, "cleared shadow")
+	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow' AND event_id IS NULL`)
+	execSQL(t, s, convert)
+	require.Equal(t, 1, scalar(t, s, `SELECT occurrence_write FROM profile_ingest_flags WHERE profile_id=1`))
 }
