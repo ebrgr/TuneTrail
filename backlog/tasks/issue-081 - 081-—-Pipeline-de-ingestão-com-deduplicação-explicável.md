@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T17:57:00Z'
+updated_date: '2026-11-20T18:08:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/evidencias/issue-081/PLANO.md
   - backlog/evidencias/issue-081/RESSALVAS-ADVISOR.md
+  - backlog/evidencias/issue-081/ENSAIO-C6.md
 documentation:
   - doc-039
   - doc-043
@@ -33,11 +34,11 @@ Escopo: internal/ingest (normalizar, gravar recibo, resolver, deduplicar, enfile
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 No modo ativo, ListenBrainz e importações passam pelo pipeline sem mudar o formato nem a compatibilidade com os clientes; com o interruptor desligado o comportamento é exatamente o da v0.43; a remoção do escritor legado e do interruptor fica para a ISSUE-172, depois do piloto
-- [ ] #2 Cada decisão grava o motivo (reason_code, evidência e rule_version) em ingest_events, com a coluna mode (shadow ou active), e a intenção na outbox na mesma transação; colisão com a tripla legada tratada sob BEGIN IMMEDIATE sem ON CONFLICT silencioso nem erro 500
+- [ ] #1 No modo ativo, ListenBrainz e importações usam a admissão durável, preservam os formatos e a compatibilidade dos clientes e conservam as escutas confirmadas ao trocar os controles de ativação. Com o mestre desligado, a ingestão mantém o comportamento observável da v0.43. A retirada do escritor legado e do interruptor fica na ISSUE-172, após o piloto.
+- [x] #2 Cada decisão grava o motivo (reason_code, evidência e rule_version) em ingest_events, com a coluna mode (shadow ou active), e a intenção na outbox na mesma transação; colisão com a tripla legada tratada sob BEGIN IMMEDIATE sem ON CONFLICT silencioso nem erro 500
 - [ ] #3 Testes de concorrência e de repetições legítimas, e comparação com o resultado do modo sombra da ISSUE-171 sem contagem duplicada na transição; troca da flag com importação em andamento; recuperação após crash entre recibo e resolução; exclusão restrita aos recibos de sombra; EXPLAIN da fila nova
-- [ ] #4 Modo Revisar por perfil desligado por padrão, com fallback legado explicável (evidência review_deferred) sem pendência invisível; ativação documentada junto da ISSUE-083
-- [ ] #5 Parecer do Advisor (effort high) sobre o diff da ativação registrado; o parecer do plano está no comentário da tarefa e em [PLANO ISSUE-081B] no ai-memory
+- [x] #4 Modo Revisar por perfil desligado por padrão, com fallback legado explicável (evidência review_deferred) sem pendência invisível; ativação documentada junto da ISSUE-083
+- [x] #5 Parecer do Advisor (effort high) sobre o diff da ativação registrado; o parecer do plano está no comentário da tarefa e em [PLANO ISSUE-081B] no ai-memory
 <!-- AC:END -->
 
 ## Comments
@@ -188,6 +189,15 @@ created: 2026-11-20T17:57:00Z
 ---
 
 Correção do obrigatório do Reviewer em 95b4a83: ApplyProfileDelete fecha recibos ativos abertos somente quando a faixa fixada pertence à seleção excluída ou, sem faixa fixada, quando artista e título correspondem aos aliases da mesma faixa selecionada. O teste prova que o recibo relacionado perde o lease e que o recibo sem relação permanece aberto e resolve em seguida. R-c em 80f7ef0 mapeia ErrUnavailable para 503 com Retry-After no painel, com falha de COMMIT injetada. R-d em f69946b exclui CatalogTrackID do digest v1. R-e em 0be535a verifica a validação prévia já existente do lote Koito, incluindo ausência de efeitos no catálogo quando o segundo item é inválido. R-a e R-b estão documentadas para medir e decidir na C6. go test passou nos pacotes afetados com os assets da worktree. Graphify AST atualizado. Parada para releitura do diff. C6, CHANGELOG e make check continuam pendentes.
+
+---
+
+author: codex
+created: 2026-11-20T18:08:00Z
+
+---
+
+C6 concluída e documentada. make check passou com 13/13 jornadas e2e. A carga regular produziu 410 escutas equivalentes por cenário e preservou as três escutas da troca de controles. A vazão de materialização ativa ficou em 31,1 escutas/s pela API. A purga de 300 mil recibos bloqueou outro escritor por cerca de 4 s. BUSY devolveu 503 com Retry-After e as quatro tentativas posteriores produziram as escutas. Falha determinística repetiu a cada 60 s, e SIGKILL durante resolução recuperou o recibo após 120,16 s mesmo com os controles desligados. R1 reproduziu um HTTP 200 para uma chave de sombra cujo evento legado nunca foi escrito. AC1 foi reescrito para admissão ativa e preservação na troca de modo. AC1 e AC3 permanecem abertos e a tarefa segue Em andamento para releitura e decisão do usuário. O relatório registra decisões sobre R1, limiares, janela de sombra e manutenção, retry/fila de falhas, ISSUE-172 já aberta na main e coordenação da fila de revisão com a ISSUE-083.
 
 ---
 <!-- COMMENTS:END -->
