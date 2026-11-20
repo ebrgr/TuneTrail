@@ -227,3 +227,5 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - Feito — Documenta recusa do schema v11 pela versão publicada v0.45. Pendente — ressalvas de ensaio, proveniência e testes finais.
 
 - Feito — Restringe marcadores de proveniência MBID aos valores reservados. Pendente — ajustar imports e evidência do ensaio e executar testes finais.
+
+- Feito — Agrupa imports de ingestão conforme goimports. Pendente — precisar evidência do ensaio e executar testes finais.

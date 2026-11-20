@@ -1,10 +1,11 @@
 package ingest
 
 import (
-	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
-	"github.com/google/uuid"
 	"strconv"
 	"strings"
+
+	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
+	"github.com/google/uuid"
 )
 
 // ListenBrainzSnapshot excludes arbitrary extensions, raw headers and URLs.

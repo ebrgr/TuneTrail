@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"github.com/ebrgr/TuneTrail/internal/db"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/dedup"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 )
