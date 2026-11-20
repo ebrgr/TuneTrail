@@ -173,6 +173,19 @@ func TestOccurrenceMergeSync(t *testing.T) {
 	require.NoError(t, checkDatabase(s.db))
 }
 
+// TestOccurrenceMergeRequiresRevision catches an insert skipped under UPDATE OR IGNORE.
+func TestOccurrenceMergeRequiresRevision(t *testing.T) {
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	seedOccurrenceLinks(t, s)
+	// A NULL decision is legal on the ledger but violates the revision's NOT NULL.
+	execSQL(t, s, `UPDATE ingest_events SET duplicate_decision=NULL,resolution_version=2 WHERE receipt_id='linked-43'`)
+	require.ErrorContains(t, s.MergeTracks(context.Background(), 70, 1), "Missing link revision")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id=70 AND listened_at=43`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events
+		WHERE receipt_id='linked-43' AND occurrence_id=70 AND resolution_version=2`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id='linked-43'`))
+}
+
 // TestOccurrenceGuards exercises registered origins, immutable fields and protected parents.
 func TestOccurrenceGuards(t *testing.T) {
 	s, _, _ := migrationDB(t, currentSchemaVersion)

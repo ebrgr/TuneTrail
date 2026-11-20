@@ -211,6 +211,16 @@ BEGIN
         resolution_version=resolution_version+1
     WHERE (profile_id,event_id)=(NEW.profile_id,NEW.event_id)
       AND resolver_variant='v9' AND state IN ('accepted','duplicate');
+
+    SELECT RAISE(ABORT,'Missing link revision')
+    WHERE EXISTS (
+        SELECT 1 FROM ingest_events e
+        WHERE (e.profile_id,e.event_id)=(NEW.profile_id,NEW.event_id)
+          AND e.resolver_variant='v9' AND e.state IN ('accepted','duplicate')
+          AND NOT EXISTS (
+              SELECT 1 FROM ingest_revisions r
+              WHERE (r.profile_id,r.receipt_id,r.resolution_version)=(e.profile_id,e.receipt_id,e.resolution_version))
+    );
 END;
 -- +goose StatementEnd
 
