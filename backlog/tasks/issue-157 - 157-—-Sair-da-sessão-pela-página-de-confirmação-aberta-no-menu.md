@@ -1,11 +1,11 @@
 ---
 id: ISSUE-157
 title: 157 — Sair da sessão pela página de confirmação aberta no menu (+)
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-20T21:23:00Z'
+updated_date: '2026-11-20T21:24:00Z'
 labels:
   - admin
   - ui
@@ -31,7 +31,7 @@ Origem: parecer do Advisor na ISSUE-155; confirmação de saída aprovada pelo u
 - [x] #1 Sair… aparece no menu (+) só com sessão administrativa válida e abre uma página de confirmação; o GET não revoga a sessão
 - [x] #2 O botão Sair faz o POST protegido existente, revoga só a sessão atual, limpa os cookies e redireciona para o diretório público, que oferece Entrar (reescopo de 20/11/2026; antes: /admin); Cancelar volta a um destino interno validado, com Conta ou diretório como fallback
 - [x] #3 Provas de CSRF, sessão expirada, ticket reutilizado e duas abas; funciona sem JavaScript; ícone LogOut adicionado ao catálogo local
-- [ ] #4 Aceite visual do usuário
+- [x] #4 Aceite visual do usuário
 - [x] #5 Sair… disponível a qualquer sessão válida (não só administrativa) e presente na Conta e na 403; Cancelar volta a destino validado
 <!-- AC:END -->
 
@@ -89,6 +89,15 @@ created: 2026-11-20T21:23:00Z
 ---
 
 Texto do AC2 ajustado: o destino após sair é o diretório público (que oferece Entrar), conforme o reescopo de 20/11/2026 e o comportamento verificado e revisado; o texto original dizia /admin.
+
+---
+
+author: claude
+created: 2026-11-20T21:24:00Z
+
+---
+
+Aceite do usuário em 20/11/2026: AC4 (aceite visual da página de confirmação de saída, testada ao vivo em servidor isolado com contas fictícias, e capturas em Yuu e Pearl). Reviewer: 3 itens obrigatórios corrigidos pelo Codex (ícone LogOut oficial do Lucide, Cancelar preservando a página de origem, comentários em inglês) mais ressalvas (matriz de métodos, foco inicial em Cancelar, CHANGELOG). Observação: o texto do AC1 («só com sessão administrativa válida») é anterior ao reescopo de 20/11/2026 e vale para qualquer sessão válida, como o AC5 registra.
 
 ---
 <!-- COMMENTS:END -->
