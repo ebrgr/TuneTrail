@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T19:39:00Z'
+updated_date: '2026-11-20T19:58:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -94,6 +94,15 @@ created: 2026-11-20T19:39:00Z
 ---
 
 E1 concluída e parada para Advisor high. Migração 010 aditiva, guardas SQL, origens, flag de mão única, variantes e créditos. Drift v9 reparado com revisão migration. Merge legado sincroniza vínculos sobreviventes pelo trigger AFTER UPDATE antes do DELETE. Doc-040 §4 confirma a cascata das revisões no descarte do recibo (AC5 em E3). Replay desligado e restore com v0.44 passaram (18 escutas e 18 recibos em sombra). Ensaio de 300 mil: backup 136,1 ms, DDL/commit 896,2 ms, reparo de um vínculo 20,8 ms. make check passou com 13/13 jornadas. E2/E3 aguardam; ACs e status Em andamento preservados.
+
+---
+
+author: codex
+created: 2026-11-20T19:58:00Z
+
+---
+
+Emenda da E1 após parecer Advisor high (REPROVADO COM RESSALVAS). Corrigida a própria 010 em sete commits: flag ativa com chave fixa e cascata, título e ponte, aborto de merge sem revisão sob OR IGNORE, asserções de reparo, índice de artista, comentários em inglês e IDs obrigatórios no primeiro vínculo. Testes focados e make check (13/13 jornadas) passaram. Conforme pedido, preservadas as evidências anteriores de replay v0.44 e carga de 300 mil sem repetir os ensaios. Pendências registradas no plano: BEGIN IMMEDIATE para MergeTracks e guarda de release para MergeAlbums (E2 ou 135), risco de INSERT OR REPLACE nas flags, e CHANGELOG em inglês antes do Reviewer da E3. Orientações da E2 registradas no plano. E1 parada para nova revisão, com ACs abertos.
 
 ---
 <!-- COMMENTS:END -->
