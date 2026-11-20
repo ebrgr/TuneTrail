@@ -4,13 +4,16 @@ title: 126 — Remodelar a gestão de perfis
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-15T15:18:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-124
+  - ISSUE-163
+references:
+  - backlog/evidencias/issue-163/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 139000
@@ -28,4 +31,19 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 - [ ] #2 Página do perfil dividida em cartões, com zona de perigo separada
 - [ ] #3 Funciona sem JavaScript; com JavaScript atualiza só o cartão, preservando o token de uso único
 - [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
+- [ ] #5 Meu perfil para o usuário comum e lista root de contas e perfis, com alvo derivado da sessão
+- [ ] #6 Aviso junto ao checkbox de proteção: o relay configurado continua enviando escutas
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Reescopo (decisão do usuário em 20/11/2026, estudo da 163): absorve «Meu perfil» (gestão própria, sem informar ID ou slug) e a lista root de contas e perfis, reaproveitando os serviços da 160/162, com o aviso de que o relay segue ativo junto à opção de proteção. A exclusão de conta é zona root.
+
+---
+<!-- COMMENTS:END -->

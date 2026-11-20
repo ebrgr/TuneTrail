@@ -4,13 +4,15 @@ title: 074 — Remodelação responsiva da administração
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-15T15:18:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - admin
   - ui
 milestone: m-10
 dependencies:
   - ISSUE-071
+references:
+  - backlog/evidencias/issue-163/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 74000
@@ -66,6 +68,15 @@ created: 2026-11-15T15:18:00Z
 ---
 
 Reescrita como tarefa-mãe por pedido do usuário em 15/11/2026: as páginas da administração ganham tarefas próprias (ISSUE-125 a 128) no mesmo estilo responsivo; o escopo antigo foi absorvido pelas ISSUE-109, 110 e 123.
+
+---
+
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Estudo da 163 (20/11/2026): atualizar as referências históricas à segunda barra conforme a 156 e usar os mesmos cartões e zonas destrutivas nas 125–128. A 074 não deve ser predecessora das filhas que agrega; revisar o vínculo histórico 163 → 160/161/162 → 158/159 → 100 → 074 ao ajustar dependências.
 
 ---
 <!-- COMMENTS:END -->

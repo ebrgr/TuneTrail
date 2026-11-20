@@ -4,13 +4,16 @@ title: 128 — Remodelar login, revisões e mensagens da administração
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-15T15:18:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-124
+  - ISSUE-163
+references:
+  - backlog/evidencias/issue-163/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 141000
@@ -28,4 +31,18 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 - [ ] #2 Revisões com resumo do impacto e confirmação na zona de perigo
 - [ ] #3 Mensagens de erro e aviso com um componente único
 - [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
+- [ ] #5 Login e resgate neutros para todos os papéis, com 401/403/404 conforme o estudo da 163 e erro uniforme
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Reescopo (decisão do usuário em 20/11/2026, estudo da 163): login, resgate e estados 401/403/404 passam a atender todos os papéis, em /login com as entradas atuais preservadas, textos neutros e mensagens do estudo. Revisões ficam com escopo de dono ou root. Usa o retorno seguro da 163 e a confirmação de saída da 157.
+
+---
+<!-- COMMENTS:END -->

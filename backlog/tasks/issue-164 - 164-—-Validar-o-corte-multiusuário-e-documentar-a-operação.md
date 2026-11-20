@@ -4,7 +4,7 @@ title: 164 — Validar o corte multiusuário e documentar a operação
 status: Aberta
 assignee: []
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-17T17:33:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - validacao
   - docs
@@ -15,10 +15,10 @@ dependencies:
   - ISSUE-159
   - ISSUE-160
   - ISSUE-161
-  - ISSUE-162
   - ISSUE-163
 references:
   - backlog/decisions/decision-010
+  - backlog/evidencias/issue-163/ESTUDO.md
 documentation:
   - doc-041
 type: chore
@@ -37,3 +37,16 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 - [ ] #2 Regressão de ingestão e relay; make check verde; evidências sem segredos
 - [ ] #3 Documentação operacional e CHANGELOG atualizados
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Estudo da 163 (20/11/2026): recebe a matriz de papéis e estados (visitante, comum, dono, comum em perfil de terceiro, root, sessão expirada ou rebaixada), a validação ampla e a documentação da operação. Depende da 163.
+
+---
+<!-- COMMENTS:END -->

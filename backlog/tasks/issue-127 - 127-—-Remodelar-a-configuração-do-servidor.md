@@ -4,13 +4,15 @@ title: 127 — Remodelar a configuração do servidor
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-15T15:18:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-124
+references:
+  - backlog/evidencias/issue-163/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 140000
@@ -29,3 +31,16 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 - [ ] #3 Ações Salvar e Testar sempre alcançáveis; sem JavaScript o formulário funciona como hoje
 - [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Estudo da 163 (decisão do usuário em 20/11/2026): continua exclusivamente root; a 163 só retira o link indevido para o comum. Cartões, origem de valores e Salvar/Testar permanecem aqui.
+
+---
+<!-- COMMENTS:END -->

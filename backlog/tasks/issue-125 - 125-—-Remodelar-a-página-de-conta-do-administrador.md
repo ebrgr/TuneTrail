@@ -4,13 +4,16 @@ title: 125 — Remodelar a página de conta do administrador
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-15T15:18:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - ui
   - admin
 milestone: m-10
 dependencies:
   - ISSUE-124
+  - ISSUE-163
+references:
+  - backlog/evidencias/issue-163/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 138000
@@ -28,4 +31,18 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 - [ ] #2 Sair com peso secundário; mensagens junto do cartão
 - [ ] #3 Funciona sem JavaScript; com JavaScript atualiza só o cartão
 - [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
+- [ ] #5 Conta acessível a qualquer sessão autenticada em /account, sem cair no 403 do usuário comum
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Reescopo (decisão do usuário em 20/11/2026, estudo da 163): a página Conta passa a ser destino de qualquer sessão (comum e root) em /account, com cartões Identidade, Senha e Sessão, conforme doc-041 §7. A troca de senha encerra todas as sessões e avisa antes; username separado de slug. A 163 define o destino e a navegação; a 157 fornece o Sair….
+
+---
+<!-- COMMENTS:END -->

@@ -1,11 +1,11 @@
 ---
 id: ISSUE-163
 title: 163 — Adequar telas multiusuário e navegação por permissão
-status: Em andamento
+status: Planejada
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-19T20:04:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - ui
   - admin
@@ -35,6 +35,9 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 - [ ] #1 Telas de login, conta, gestão própria e gestão root conforme o papel; aviso do relay junto à opção de proteção
 - [ ] #2 Funciona sem JavaScript; foco, teclado e leitor de tela verificados
 - [ ] #3 Capturas responsivas e aceite visual do usuário
+- [ ] #4 Modelo de navegação montado no servidor a partir de AuthorizeAction: o HTML de visitante, comum, dono e root não traz links ou ações que o papel não pode usar; chamadas diretas continuam negadas
+- [ ] #5 Login válido segue para /account (comum) ou /admin (root), com retorno prioritário a leitura autorizada e validada; 403 definitivo oferece Minha conta, Diretório e Sair…
+- [ ] #6 Textos e logs sem «administrator session required» e «Administrative logout failed» para o comum; 404 legado com Vary: Cookie e política de cache; cadeado acessível; teste de tempo do login reexecutado
 <!-- AC:END -->
 
 ## Comments
@@ -64,6 +67,15 @@ created: 2026-11-19T20:04:00Z
 ---
 
 Estudo documental concluído na base v0.43. Registra inventário por papel, caminhos para 403, débitos das ISSUE-159 a 162, proposta de reescopo da 125–128 e 157, matriz de verificação futura e decisões para aceite do desenho. ACs seguem abertos.
+
+---
+
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Decisões do usuário em 20/11/2026 sobre o estudo (backlog/evidencias/issue-163/ESTUDO.md), as 4 aprovadas: (1) destino pós-login: comum em /account, root em /admin, com retorno prioritário a leitura autorizada; (2) entradas neutras /login, /account e «Meu perfil», com compatibilidade das rotas atuais; (3) as telas saem desta tarefa e vão para 125–128 e 157, e a 163 fica com integração, permissões, retorno do login e aceite (débitos de lock do resgate inválido e de CreateListeningProfile/DeleteListeningProfile vão para tarefas técnicas próprias; mudança de validade do token ao trocar papel exige decisão separada); (4) «Sair…» no menu (+), na Conta e na 403, com confirmação compartilhada. Ordem: 163 (modelo de navegação e retorno) → 157 e 125 → 126 e 128 → 164.
 
 ---
 <!-- COMMENTS:END -->

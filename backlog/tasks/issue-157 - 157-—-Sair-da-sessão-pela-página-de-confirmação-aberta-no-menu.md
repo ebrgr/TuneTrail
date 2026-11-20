@@ -4,13 +4,16 @@ title: 157 — Sair da sessão pela página de confirmação aberta no menu (+)
 status: Aberta
 assignee: []
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-18T21:42:00Z'
+updated_date: '2026-11-20T18:33:00Z'
 labels:
   - admin
   - ui
 milestone: m-10
 dependencies:
   - ISSUE-156
+  - ISSUE-163
+references:
+  - backlog/evidencias/issue-163/ESTUDO.md
 type: feature
 ordinal: 170000
 ---
@@ -27,6 +30,7 @@ Origem: parecer do Advisor na ISSUE-155; confirmação de saída aprovada pelo u
 - [ ] #2 O botão Sair faz o POST protegido existente, revoga só a sessão atual, limpa os cookies e redireciona para /admin; Cancelar volta a um destino interno validado
 - [ ] #3 Provas de CSRF, sessão expirada, ticket reutilizado e duas abas; funciona sem JavaScript; ícone LogOut adicionado ao catálogo local
 - [ ] #4 Aceite visual do usuário
+- [ ] #5 Sair… disponível a qualquer sessão válida (não só administrativa) e presente na Conta e na 403; Cancelar volta a destino validado
 <!-- AC:END -->
 
 ## Comments
@@ -38,6 +42,15 @@ created: 2026-11-18T21:42:00Z
 ---
 
 Verificar na 157 (origem: Reviewer da ISSUE-159, 2026-11-18): usuários comuns agora autenticam, mas /admin/logout era restrito a administrador (corrigido minimamente na 159 para aceitar qualquer sessão ativa com CSRF). Ao implementar o sair pela página de confirmação do menu (+), validar o fluxo com sessão de usuário comum e com cookie de usuário comum no mesmo navegador de um admin (o admin deve conseguir sair e ver o login), e que o CSRF do logout é o da própria sessão.
+
+---
+
+author: claude
+created: 2026-11-20T18:33:00Z
+
+---
+
+Reescopo (decisão do usuário em 20/11/2026, estudo da 163): Sair… atende comum e root, no menu (+), na Conta e na página 403, com a confirmação compartilhada. Revisar a proposta antiga do grupo Administração e do retorno fixo a /admin: o retorno é um destino interno validado, com fallback para Conta ou diretório; depois de sair, o diretório oferece Entrar.
 
 ---
 <!-- COMMENTS:END -->
