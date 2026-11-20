@@ -605,6 +605,16 @@ footer a:hover { text-decoration: underline; }
 .profile-identity strong {
   font-weight: 600
 }
+/* Protected-profile marker: the bundled Lucide icon follows the text color like other UI icons. */
+.profile-lock {
+  display: inline-block;
+  vertical-align: -2px
+}
+.profile-lock svg {
+  display: inline-block;
+  width: 14px;
+  height: 14px
+}
 .profile-identity>span {
   font-size: 12px;
   color: var(--color-fg-secondary)
