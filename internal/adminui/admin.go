@@ -340,7 +340,7 @@ func (h *Handler) failForSession(w http.ResponseWriter, r *http.Request, identit
 		h.fail(w, err)
 		return
 	}
-	nav := h.navigation(r.Context(), identity, nil, "")
+	nav := h.navigation(r, identity, nil, "")
 	h.render(w, http.StatusForbidden, view{Nav: nav, LogoutOnly: true, Error: "Your account does not have permission to access this page."})
 }
 
@@ -541,7 +541,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 	} else {
 		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
 	}
-	v.Nav = h.navigation(r.Context(), id, v.Profile, navSection(section))
+	v.Nav = h.navigation(r, id, v.Profile, navSection(section))
 
 	h.render(w, 200, v)
 }

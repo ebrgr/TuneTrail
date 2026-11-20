@@ -121,9 +121,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Both entry links use only destinations allowed by the read-route policy.
 	destination := adminweb.SafeReturn(p.CurrentURL)
 	p.access.LoginFor(destination)
-	if p.access.SignOut != nil && destination != "" {
-		p.access.SignOut.URL += "?return=" + url.QueryEscape(destination)
-	}
+	p.access.SignOutFor(destination)
 	for _, profile := range all {
 		p.Profiles = append(p.Profiles, publicProfile(profile))
 		p.SwitchLinks[profile.Slug] = switchURL(profile.Slug, r.URL.Path, r.URL.Query())
@@ -264,6 +262,10 @@ func (h *Pages) basePage(w http.ResponseWriter, r *http.Request) LivePage {
 		}
 	}
 	p.access = webassets.AccessNavigation(p.identity.User, nil, nil, "")
+	// Only the directory has a return URL in the neutral shell.
+	if r.URL.Path == "/" {
+		p.access.SignOutFor(adminweb.SafeReturn(r.URL.RequestURI()))
+	}
 	p.Admin = p.access.ManageCatalog
 	return p
 }

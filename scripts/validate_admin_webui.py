@@ -144,7 +144,7 @@ def validate(server):
     protected_forms = [form for form in re.findall(rb'<form\b.*?</form>', index, re.S)
                        if b'name="csrf_token"' in form]
     assert not protected_forms
-    assert b'href="/admin/sign-out"' in index
+    assert ('href="/admin/sign-out?return=' + urllib.parse.quote(manage, safe='') + '"').encode() in index
     assert (manage+'/edit').encode() in index and (manage+'/image').encode() in index
     mt=f.token(manage+'/edit');mc={'csrf_token':mt,'profile_id':str(p['id']),'profile_slug':'mara'}
     f.request('HEAD',manage)

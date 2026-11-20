@@ -52,7 +52,7 @@ func (h *Handler) signOutPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	h.render(w, http.StatusOK, view{
-		Nav:     h.navigation(r.Context(), identity, nil, "sign-out"),
+		Nav:     h.navigation(r, identity, nil, "sign-out"),
 		SignOut: true, CSRF: csrf, Submission: ticket, Next: next,
 	})
 }

@@ -113,7 +113,7 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 		require.Equal(t, 403, page.Code)
 		require.Contains(t, page.Body.String(), tc.message)
 		require.Contains(t, page.Body.String(), tc.button)
-		require.Contains(t, page.Body.String(), `href="/admin/sign-out"`)
+		require.Contains(t, page.Body.String(), `href="/admin/sign-out?return=%2Fadmin"`)
 		require.Equal(t, []string{ownLink}, profileLinks.FindAllString(page.Body.String(), -1))
 		for _, secret := range []string{`href="/admin/settings"`, `action="/admin/profile/create"`, `action="/admin/account/password"`, "Source Track"} {
 			require.NotContains(t, page.Body.String(), secret)
@@ -173,7 +173,7 @@ func TestUserTicketFloodKeepsAdminFormUsable159(t *testing.T) {
 	for i := 0; i < 500; i++ {
 		forbidden := taskRequest139(a, "GET", "/admin", session.ID.String(), nil, nil)
 		require.Equal(t, 403, forbidden.Code)
-		require.Contains(t, forbidden.Body.String(), `href="/admin/sign-out"`)
+		require.Contains(t, forbidden.Body.String(), `href="/admin/sign-out?return=%2Fadmin"`)
 	}
 	// The administrator can still submit the form issued before the repeated user requests.
 	require.Equal(t, 303, taskRequest139(a, "POST", "/admin/account/username", a.cookie, form, nil).Code)

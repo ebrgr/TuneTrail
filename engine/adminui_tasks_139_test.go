@@ -95,7 +95,7 @@ func TestManagementTaskPages139(t *testing.T) {
 		base := "/second/manage/" + media.kind + "/" + media.id
 		index := taskRequest139(a, "GET", base, a.cookie, nil, nil)
 		require.Equal(t, 200, index.Code)
-		require.Contains(t, index.Body.String(), `href="/admin/sign-out"`)
+		require.Contains(t, index.Body.String(), `href="/admin/sign-out?return=`+url.QueryEscape(base)+`"`)
 		for _, anchor := range []string{"aliases", "metadata", "artists", "merge", "artwork", "delete"} {
 			require.Contains(t, index.Body.String(), `id="`+anchor+`"`)
 		}

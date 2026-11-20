@@ -66,6 +66,13 @@ func (n *NavAccess) LoginFor(destination string) {
 	}
 }
 
+// SignOutFor carries an allowlisted read URL to the confirmation page.
+func (n *NavAccess) SignOutFor(destination string) {
+	if n.SignOut != nil && destination != "" {
+		n.SignOut.URL += "?return=" + url.QueryEscape(destination)
+	}
+}
+
 // OwnProfile finds the canonical profile associated with the authenticated user.
 func OwnProfile(actor *models.User, profiles []models.ListeningProfile) *models.ListeningProfile {
 	for i := range profiles {

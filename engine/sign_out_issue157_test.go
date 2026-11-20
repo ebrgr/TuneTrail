@@ -125,3 +125,29 @@ func TestSignOutSubmission157(t *testing.T) {
 	require.Contains(t, expired.Body.String(), "Entre para continuar.")
 	require.Contains(t, expired.Body.String(), `action="/admin/login"`)
 }
+
+// TestSignOutLinksKeepReadOrigin157 follows the return offered by each page.
+func TestSignOutLinksKeepReadOrigin157(t *testing.T) {
+	a := taskApp139(t)
+	ordinary := ordinarySession161(t, a)
+	for _, tc := range []struct{ path, cookie string }{
+		{"/admin/settings", a.cookie},
+		{"/admin?section=profiles", a.cookie},
+		{"/admin?section=account", ordinary},
+		{"/second/manage/track/12/edit", a.cookie},
+		{"/", ordinary},
+	} {
+		page := taskRequest139(a, "GET", tc.path, tc.cookie, nil, nil)
+		require.Equal(t, http.StatusOK, page.Code, tc.path)
+		link := signOut157 + "?return=" + url.QueryEscape(tc.path)
+		require.Contains(t, page.Body.String(), `href="`+link+`"`)
+		confirm := taskRequest139(a, "GET", link, tc.cookie, nil, nil)
+		require.Equal(t, http.StatusOK, confirm.Code)
+		require.Contains(t, confirm.Body.String(), `href="`+tc.path+`" aria-describedby="sign-out-description"`)
+	}
+
+	invalid := taskRequest139(a, "GET", "/admin?section=account&next=https://outside.test", ordinary, nil, nil)
+	require.Equal(t, http.StatusOK, invalid.Code)
+	require.Contains(t, invalid.Body.String(), `href="/admin/sign-out"`)
+	require.NotContains(t, invalid.Body.String(), "/admin/sign-out?return=")
+}

@@ -531,7 +531,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	v.Section = section
 	// Task fragments already carry their own form tokens and have no sidebar.
 	if v.Section == "" {
-		v.Nav = h.navigation(r.Context(), identity, profile, "")
+		v.Nav = h.navigation(r, identity, profile, "")
 	}
 	h.renderMedia(w, status, v)
 }

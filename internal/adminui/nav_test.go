@@ -1,8 +1,8 @@
 package adminui
 
 import (
-	"context"
 	"github.com/ebrgr/TuneTrail/internal/admin"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/ebrgr/TuneTrail/internal/models"
@@ -11,11 +11,12 @@ import (
 // TestAdminNavAdaptsProfile checks the administration's adapter to the shared sidebar.
 func TestAdminNavAdaptsProfile(t *testing.T) {
 	h := &Handler{}
-	if nav := h.navigation(context.Background(), admin.Identity{}, nil, ""); nav.Kind != "admin" || nav.Profile != nil || nav.AdminBadge {
+	r := httptest.NewRequest("GET", "/admin", nil)
+	if nav := h.navigation(r, admin.Identity{}, nil, ""); nav.Kind != "admin" || nav.Profile != nil || nav.AdminBadge {
 		t.Fatalf("no profile: %+v", nav)
 	}
 	image, icon := "abc", "radio"
-	nav := h.navigation(context.Background(), admin.Identity{}, &models.ListeningProfile{DisplayName: "Mara", Slug: "mara", AvatarImageID: &image, AvatarIcon: &icon}, "settings")
+	nav := h.navigation(r, admin.Identity{}, &models.ListeningProfile{DisplayName: "Mara", Slug: "mara", AvatarImageID: &image, AvatarIcon: &icon}, "settings")
 	if nav.AdminBadge || nav.Version == "" {
 		t.Fatalf("admin nav: %+v", nav)
 	}
