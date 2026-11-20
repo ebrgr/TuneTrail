@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T17:33:00Z'
+updated_date: '2026-11-20T17:40:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -14,6 +14,7 @@ dependencies:
   - ISSUE-133
 references:
   - backlog/evidencias/issue-081/PLANO.md
+  - backlog/evidencias/issue-081/RESSALVAS-ADVISOR.md
 documentation:
   - doc-039
   - doc-043
@@ -169,6 +170,15 @@ created: 2026-11-20T17:33:00Z
 ---
 
 Correção de autoria do comentário anterior: o Advisor aprovou C1+C2, sem itens obrigatórios nesses commits. O usuário comunicou o parecer e autorizou a continuação.
+
+---
+
+author: codex
+created: 2026-11-20T17:40:00Z
+
+---
+
+Ressalvas do Advisor high sobre C3–C5 tratadas em commits separados: d1487bd admite os recibos do Koito; b02dffa persiste metadados de associação e compara retries v1 com a projeção v1; 9953dee rejeita identidade incompleta e refaz a associação após remoção da faixa fixada; 3208627 rejeita review=true até existir fila de revisão; f7c9590 fecha recibos ativos received/retryable do perfil no mesmo commit da exclusão de histórico e invalida o lease anterior; 446bde4 devolve 403 quando a sessão root não é válida; 017f0ae exibe Pendentes e Duplicadas na importação ativa; 06253e1 cobre Koito, ListenBrainz com mbid_mapping, faixa apagada, lease vencido com disputa entre conexões, intenção relay:<id>, 400 sem escrita do prefixo e 503 com Retry-After em BUSY ou falha de COMMIT. A inclusão manual permanece no escritor legado e está fora do escopo da ISSUE-081b. R1–R5 e R7 estão documentadas na evidência vinculada, incluindo o ensaio de 300 mil recibos e a janela de manutenção. go test passou nos pacotes SQLite/DB, ingest, dedup, importadores, catálogo, admin, adminweb, adminui, i18n e engine com TUNETRAIL_WEB_DIR apontando para os assets da worktree. Graphify AST atualizado. Parada para o Reviewer. C6, CHANGELOG e make check ficam pendentes.
 
 ---
 <!-- COMMENTS:END -->
