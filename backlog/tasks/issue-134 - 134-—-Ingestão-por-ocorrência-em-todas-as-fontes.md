@@ -1,11 +1,11 @@
 ---
 id: ISSUE-134
 title: 134 — Ingestão por ocorrência em todas as fontes
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T21:26:00Z'
+updated_date: '2026-11-20T21:39:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -16,6 +16,7 @@ references:
   - backlog/decisions/decision-009
   - backlog/evidencias/issue-134/PLANO.md
   - backlog/evidencias/issue-134/ENSAIO-E3.md
+  - backlog/evidencias/issue-134/ENSAIO-E4.md
 documentation:
   - doc-036
   - doc-039
@@ -140,6 +141,15 @@ created: 2026-11-20T21:26:00Z
 ---
 
 Correções do Reviewer da E3 concluídas. ListenBrainz HTTP e ZIP preservam zero segundos como instante ausente nos recibos. Exclusão v9 mantém a chave encerrada e a revisão profile_history_deleted; occurrence remove o recibo selecionado e permite novo evento no replay. Documentação agora usa a versão publicada v0.45, cujo binário recusou v11. Proveniência usa marcadores reservados, imports foram agrupados e o ensaio distingue retenção em outro perfil de contenção no mesmo perfil. O EXPLAIN conferiu o índice de alias. Testes dos pacotes afetados e make check 13/13 passaram. Pendências da E4/135/083 registradas no PLANO. Status Em andamento, aguarda releitura do Reviewer.
+
+---
+
+author: codex
+created: 2026-11-20T21:39:00Z
+
+---
+
+Verificação E4 concluída em bases descartáveis. Após rebase v0.46 e no final, make check passou 13/13 jornadas e 170 arquivos de referência visual sem diferenças. Go test dos pacotes afetados passou. Com 300 mil recibos no mesmo perfil, 600 escutas resolveram a 19,39/s, ACK p95 8,29 ms e visibilidade após ACK p95 958,77 ms. Sobreposição das seis origens preservou 20 escutas e 100 pendências. Paridade, relay legado, upgrade com WAL, restore e recusa pela tag v0.46 foram conferidos. SIGKILL recuperou pela expiração natural do lease, rollback de COMMIT e SQLite cheio passaram. ACs 1–7 reverificados conforme o relatório. Aguardando releitura do Reviewer e aceite explícito antes de Done. Nenhum perfil real habilitado.
 
 ---
 <!-- COMMENTS:END -->

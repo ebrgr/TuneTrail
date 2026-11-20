@@ -81,3 +81,13 @@ Pendências por tarefa:
 - **173.** Teto, intervalos, fila de falhas permanentes, alertas, reprocessamento e R-b.
 
 Decisões do usuário ainda abertas: aprovar a janela, duração e limiares do piloto depois dos pré-requisitos, escolher o perfil inicial e o critério de suspensão, decidir se excluir histórico também deve cancelar admissões ainda sem ocorrência resolvida, e definir quem pode reconciliar gravações provisórias e reprocessar falhas terminais. As decisões D1–D9 continuam registradas no plano. Nenhum perfil real foi habilitado.
+
+## Revalidação dos critérios
+
+- **ACs 1 e 2.** Testes Go cobriram A/B (inclusive no mesmo segundo e em ordens inversas) e Intro com IDs e posições distintas. O corte A/B ficou demonstrado também com binários separados e prova sintética em loopback.
+- **ACs 3 e 6.** Os testes de identidade ambígua passaram. A E4 preservou as revisões, os candidatos tipados e a regra de decisão na colisão entre seis origens. A lista de escutas conservou 20 eventos.
+- **AC 4.** Fixtures de arquivo renomeado, concorrência, retenção de chave e observação para snapshot ampliado passaram. A carga acrescentou 600 repetições legítimas em segundos distintos.
+- **AC 5.** Testes Go reverificaram reimportação de lote e arquivo após exclusão parcial e total, chaves e duplicados vinculados, descarte explícito com lease, isolamento por perfil e geração de novo evento. A seleção de recibos ainda sem ocorrência permanece a decisão descrita acima.
+- **AC 7.** As seis origens passaram pelo envelope comum e pela verificação de precisão. A recuperação da E3 sem staging foi revalidada pelos testes dos importadores. A E4 confirmou que o worker reiniciado drena um recibo já admitido mesmo com o mestre desligado.
+
+Os testes Go dos pacotes afetados e o `make check` passaram. Tanto após o rebase quanto na verificação final foram 13/13 jornadas, com 170 arquivos da referência visual sem diferenças. O script Python passou na verificação de sintaxe e o graphify AST foi atualizado.

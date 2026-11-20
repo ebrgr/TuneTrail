@@ -264,3 +264,7 @@ Rebase sobre v0.46. Ensaio somente em bancos descartáveis.
 - Feito — Registra carga, paridade, sobreposição e limites do piloto. Pendente — resultado do SIGKILL e commit real, suíte final e Backlog.
 
 - Feito — Registra recuperação após SIGKILL e planos do claim e lease. Pendente — concluir make check final e registrar critérios e status no Backlog.
+
+[ENSAIO-E4.md](ENSAIO-E4.md) reúne carga no mesmo perfil, limites e decisões, paridade, fragmentação, sobreposição e falhas. Os critérios foram reverificados com os testes e ensaios listados. A E4 encerra o trabalho desta worktree para releitura do Reviewer e aceite explícito antes de Done.
+
+- Feito — Reverifica ACs da E4 e encaminha para aceite. Pendente — releitura do Reviewer e aceite explícito do usuário.
