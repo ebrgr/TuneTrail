@@ -32,6 +32,9 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 			return match, nil, err
 		}
 		if !slices.Contains(releases, trackRelease) {
+			for i := range releases {
+				releases[i] = "release:" + releases[i]
+			}
 			return match, releases, nil
 		}
 		releases = []string{trackRelease}
@@ -101,12 +104,12 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		switch {
 		case byTrack:
 			if c.release != match.release || differentPosition || differentRecording || !c.text {
-				return match, []string{strconv.FormatInt(c.id, 10)}, nil
+				return match, []string{"occurrence:" + strconv.FormatInt(c.id, 10)}, nil
 			}
 			tiers[0] = append(tiers[0], c)
 		case byPosition:
 			if differentRecording || (proof.track != "" && c.trackMBID != "" && c.trackMBID != proof.track) || !c.text {
-				return match, []string{strconv.FormatInt(c.id, 10)}, nil
+				return match, []string{"occurrence:" + strconv.FormatInt(c.id, 10)}, nil
 			}
 			tiers[1] = append(tiers[1], c)
 		case differentPosition || (proof.track != "" && c.trackMBID != "" && c.trackMBID != proof.track):
@@ -116,7 +119,7 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		case c.text:
 			if differentRecording || (snapshot.TrackMBID != "" && c.trackMBID != "" && snapshot.TrackMBID != c.trackMBID) {
 				if len(textConflicts) < 33 {
-					textConflicts = append(textConflicts, strconv.FormatInt(c.id, 10))
+					textConflicts = append(textConflicts, "occurrence:"+strconv.FormatInt(c.id, 10))
 				}
 			} else {
 				tiers[3] = append(tiers[3], c)
@@ -138,7 +141,7 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		default:
 			ids := make([]string, 0, min(len(tier), 33))
 			for _, candidate := range tier[:min(len(tier), 33)] {
-				ids = append(ids, strconv.FormatInt(candidate.id, 10))
+				ids = append(ids, "occurrence:"+strconv.FormatInt(candidate.id, 10))
 			}
 			return match, ids, nil
 		}
@@ -277,7 +280,7 @@ func occurrenceCreditConflicts(ctx context.Context, tx *sql.Conn, names []string
 		if err := rows.Scan(&id); err != nil {
 			return nil, err
 		}
-		ids = append(ids, strconv.FormatInt(id, 10))
+		ids = append(ids, "artist:"+strconv.FormatInt(id, 10))
 		if len(ids) == 33 {
 			break
 		}

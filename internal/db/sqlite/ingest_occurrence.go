@@ -285,7 +285,7 @@ func occurrenceListenCandidates(ctx context.Context, tx *sql.Conn, r claimedRece
 			reason = "legacy_identity_collision"
 		}
 		if len(candidates) < 33 {
-			candidates = append(candidates, id)
+			candidates = append(candidates, "event:"+id)
 		}
 	}
 	return candidates, reason, rows.Err()

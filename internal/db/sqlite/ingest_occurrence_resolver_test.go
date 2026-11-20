@@ -186,7 +186,7 @@ func TestOccurrenceResolverOverlap(t *testing.T) {
 	}
 	t.Logf("three resolver calls: %s; two pending out of three", elapsed)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE origin='lastfm_import'`))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE state='pending_duplicate' AND reason_codes='["legacy_identity_collision"]'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE state='pending_duplicate' AND reason_codes='["legacy_identity_collision"]' AND json_extract(evidence,'$.candidates[0]') LIKE 'event:%'`))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM outbox`))
 }
 
@@ -349,6 +349,16 @@ func TestOccurrenceProofRedirects(t *testing.T) {
 	proof = verifyOccurrence(context.Background(), item, client)
 	require.True(t, proof.conflict)
 	require.Equal(t, recording.String(), proof.evidence.RecordingReturned)
+	conflicted := convertedOccurrenceFixture(t)
+	conflictID := admitOccurrenceFixture(t, conflicted, item, 1300, "recording-conflict")
+	resolveOccurrenceFixture(t, conflicted, client)
+	requireReceiptState(t, conflicted, conflictID, "pending_identity")
+	require.Equal(t, 1, scalar(t, conflicted, `SELECT count(*) FROM ingest_events WHERE receipt_id=?
+		AND json_extract(evidence,'$.musicbrainz.release_requested')=? AND json_extract(evidence,'$.musicbrainz.release_returned')=?
+		AND json_extract(evidence,'$.musicbrainz.release_title')=? AND json_extract(evidence,'$.musicbrainz.recording_declared')=?
+		AND json_extract(evidence,'$.musicbrainz.recording_returned')=? AND json_extract(evidence,'$.musicbrainz.track_recording')=?
+		AND json_extract(evidence,'$.musicbrainz.track_declared')=? AND json_extract(evidence,'$.musicbrainz.track_returned')=?`,
+		conflictID, request.String(), canonical.String(), release.Title, recording.String(), recording.String(), fixtureRecording, track.ID, track.ID))
 	item.Release = "Presented album"
 	s := convertedOccurrenceFixture(t)
 	id := admitOccurrenceFixture(t, s, item, 1300, "title-disagreement")
