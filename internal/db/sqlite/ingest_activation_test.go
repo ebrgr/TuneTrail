@@ -157,7 +157,7 @@ func TestIngestAdmissionModeReplay(t *testing.T) {
 
 			pinned, err := s.BeginImportIngest(ctx, 1, true)
 			require.NoError(t, err)
-			require.True(t, pinned)
+			require.True(t, pinned.Active)
 			execSQL(t, s, `UPDATE profile_ingest_flags SET active=0 WHERE profile_id=1`)
 			switch key {
 			case "external":
@@ -228,7 +228,7 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 				{Ordinal: 2, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "B", Title: "U", CatalogTrackID: 71}},
 				{Ordinal: 3, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "other artist", Title: "Intro"}},
 			}}
-		pinned := true
+		pinned := ingest.JobMode{Active: true, Variant: "v9"}
 		_, results, err := s.AdmitIngest(ctx, batch, true, &pinned, nil)
 		require.NoError(t, err)
 		if profile == 1 {
@@ -264,7 +264,7 @@ func TestExpiredIngestLeaseCanBeReclaimed(t *testing.T) {
 	ctx := context.Background()
 	s, _, path := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
-	pinned := true
+	pinned := ingest.JobMode{Active: true, Variant: "v9"}
 	_, results, err := s.AdmitIngest(ctx, ingest.Batch{
 		ProfileID: 1, Source: "file", Operation: "import", ReceivedAt: time.Now(),
 		Items: []ingest.Item{{ListenedAt: time.Unix(100, 0), Snapshot: ingest.Snapshot{Artist: "A", Title: "T", CatalogTrackID: 1}}},

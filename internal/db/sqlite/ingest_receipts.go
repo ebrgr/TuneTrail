@@ -30,21 +30,22 @@ func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]ingest
 }
 
 // BeginImportIngest selects the mode once for the entire import job.
-func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bool) (active bool, err error) {
+func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bool) (mode ingest.JobMode, err error) {
+	mode.Variant = "v9"
 	if !master {
 		// A disabled job only needs a committed flag snapshot. SQL guards still enforce a concurrent conversion.
 		version, err := ingestSchemaVersion(ctx, s.db)
 		if err != nil || version < 11 {
-			return false, err
+			return mode, err
 		}
 		converted, err := occurrenceWriteFlag(ctx, s.db, profile)
 		if err != nil {
-			return false, err
+			return mode, err
 		}
 		if converted {
-			return false, &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
+			return mode, &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
 		}
-		return false, nil
+		return mode, nil
 	}
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		version, err := ingestSchemaVersion(ctx, tx)
@@ -57,15 +58,14 @@ func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bo
 			if err != nil {
 				return err
 			}
-			// File jobs still use the v9 adapter until the occurrence adapter lands.
 			if converted {
-				return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
+				mode.Variant = "occurrence"
 			}
 		}
-		active, err = activeIngestMode(ctx, tx, profile)
+		mode.Active, err = activeIngestMode(ctx, tx, profile)
 		return err
 	})
-	return active, ingestStorageError(err, true)
+	return mode, ingestStorageError(err, true)
 }
 
 type ingestModeReader interface {
@@ -96,8 +96,8 @@ func occurrenceWriteFlag(ctx context.Context, tx ingestModeReader, profile int32
 }
 
 // AdmitIngest fixes the mode under the writer lock, honoring the import job's pinned mode.
-func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *bool, invalid error) (active bool, results []ingest.Result, err error) {
-	if len(batch.Items) == 0 && !master && (pinned == nil || !*pinned) {
+func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (active bool, results []ingest.Result, err error) {
+	if len(batch.Items) == 0 && !master && (pinned == nil || !pinned.Active) {
 		return false, nil, nil
 	}
 	source := receiptSourcePrefix(batch.Source) + fmt.Sprint(batch.ProfileID)
@@ -132,7 +132,7 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 			}
 			if converted {
 				active = true
-				if !master || pinned != nil {
+				if !master || (pinned != nil && (!pinned.Active || pinned.Variant != "occurrence")) {
 					return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
 				}
 				variant = "occurrence"
@@ -141,7 +141,10 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 		hasMode := version >= 9
 		// Older layouts can still receive historical shadow receipts.
 		if pinned != nil {
-			active = *pinned && version >= 10
+			if pinned.Variant != variant {
+				return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
+			}
+			active = pinned.Active && version >= 10
 		} else if master && version >= 10 {
 			var err error
 			active, err = activeIngestMode(ctx, tx, batch.ProfileID)
@@ -190,7 +193,7 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 		return nil
 	})
 	if err != nil {
-		return active || !modeKnown, nil, ingestStorageError(err, active || !modeKnown || (pinned != nil && *pinned))
+		return active || !modeKnown, nil, ingestStorageError(err, active || !modeKnown || (pinned != nil && pinned.Active))
 	}
 	return active, results, nil
 }

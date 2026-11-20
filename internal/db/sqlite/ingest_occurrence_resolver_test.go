@@ -458,11 +458,11 @@ func TestOccurrenceImportMasterOffReadsUnderContention(t *testing.T) {
 	defer func() { _, err := other.ExecContext(ctx, "ROLLBACK"); require.NoError(t, err) }()
 	active, err := s.BeginImportIngest(ctx, 2, false)
 	require.NoError(t, err)
-	require.False(t, active)
+	require.False(t, active.Active)
 	active, err = s.BeginImportIngest(ctx, 1, false)
 	var unavailable *ingest.ErrUnavailable
 	require.ErrorAs(t, err, &unavailable)
-	require.False(t, active)
+	require.False(t, active.Active)
 }
 
 // TestOccurrenceLegacyUnpositionedCharacterization records how textual matching reuses a legacy bridge.

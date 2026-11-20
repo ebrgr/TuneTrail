@@ -56,15 +56,15 @@ func (s countingStore) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]
 }
 
 // BeginImportIngest forwards the optional mode selection through the counting store.
-func (s countingStore) BeginImportIngest(ctx context.Context, profile int32, master bool) (bool, error) {
+func (s countingStore) BeginImportIngest(ctx context.Context, profile int32, master bool) (ingest.JobMode, error) {
 	if admission, ok := s.UploadStore.(ingest.Admission); ok {
 		return admission.BeginImportIngest(ctx, profile, master)
 	}
-	return false, nil
+	return ingest.JobMode{Variant: "v9"}, nil
 }
 
 // AdmitIngest forwards an already pinned job to the underlying durable writer.
-func (s countingStore) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *bool, invalid error) (bool, []ingest.Result, error) {
+func (s countingStore) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (bool, []ingest.Result, error) {
 	if admission, ok := s.UploadStore.(ingest.Admission); ok {
 		return admission.AdmitIngest(ctx, batch, master, pinned, invalid)
 	}

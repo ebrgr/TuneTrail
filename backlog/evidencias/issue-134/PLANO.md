@@ -167,3 +167,9 @@ Com o mestre desligado, o início de importação consulta a flag sem reservar o
 Ficam para seus recortes próprios os leitores e mutações da 135, a entrega durável de relay, a UI de revisão, a fila terminal de retry e as buscas externas de MBID. Agrupamento de versões, equivalência por caixa e recuperação retroativa de lançamentos perdidos também ficam fora da 134.
 
 Evidência consultada: [plano 081](../issue-081/PLANO.md), [ensaio C6](../issue-081/ENSAIO-C6.md), [ressalvas 081](../issue-081/RESSALVAS-ADVISOR.md), [plano 133](../issue-133/PLANO.md), [verificação 133](../issue-133/VERIFICACAO.md) e [parecer 133](../issue-133/PARECER-REVIEWER.md), além dos planos de Advisor da 081B e 133 no ai-memory.
+
+## ESTADO DA E3
+
+Retomada após rebase em v0.45.
+
+- Feito — Fixa modo e variante em cada job de importação. Pendente — adaptadores por fonte, digest, exclusão, MusicBrainz, ensaio e verificação.

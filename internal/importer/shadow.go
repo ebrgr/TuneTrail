@@ -23,7 +23,7 @@ const shadowBatchSize = 200
 type fileShadow struct {
 	receiver  ingest.Receiver
 	admission ingest.Admission
-	active    bool
+	mode      ingest.JobMode
 	batch     ingest.Batch
 	ordinal   int
 }
@@ -35,21 +35,24 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 		return ctx, nil
 	}
 	admission, _ := store.(ingest.Admission)
-	active := false
+	mode := ingest.JobMode{Variant: "v9"}
 	// Check the profile cut even with the master switch off.
 	if admission != nil {
 		var err error
-		active, err = admission.BeginImportIngest(ctx, profile, cfg.ActiveIngestEnabled())
+		mode, err = admission.BeginImportIngest(ctx, profile, cfg.ActiveIngestEnabled())
 		if err != nil {
 			return ctx, err
 		}
 	}
+	if mode.Variant == "occurrence" && !occurrenceFileReady(format) {
+		return ctx, &ingest.ErrUnavailable{Cause: fmt.Errorf("occurrence adapter for %s is not ready", format)}
+	}
 	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
-		result.Active = active
+		result.Active = mode.Active
 	}
 	info, err := file.Stat()
 	if err != nil {
-		if active {
+		if mode.Active {
 			return ctx, fmt.Errorf("stat active import: %w", err)
 		}
 		logger.FromContext(ctx).Warn().Msg("Could not stat import for shadow receipt")
@@ -57,23 +60,31 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 	}
 	hash := sha256.New()
 	if _, err := io.Copy(hash, &contextReader{ctx: ctx, reader: io.NewSectionReader(file, 0, info.Size())}); err != nil {
-		if active {
+		if mode.Active {
 			return ctx, fmt.Errorf("hash active import: %w", err)
 		}
 		logger.FromContext(ctx).Warn().Msg("Could not hash import for shadow receipt")
 		return ctx, nil
 	}
 	return context.WithValue(ctx, shadowKey{}, &fileShadow{
-		receiver: receiver, admission: admission, active: active,
+		receiver: receiver, admission: admission, mode: mode,
 		batch:   ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceFile, Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
 		ordinal: -1,
 	}), nil
 }
 
+// occurrenceFileReady enables each format only once its adapter is ready.
+func occurrenceFileReady(format string) bool {
+	switch format {
+	default:
+		return false
+	}
+}
+
 // activeFileIngest reports the mode pinned before reading this job's items.
 func activeFileIngest(ctx context.Context) bool {
 	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
-	return ok && job.active
+	return ok && job.mode.Active
 }
 
 // captureFileListen buffers a bounded page with absolute ordinals.
@@ -86,7 +97,7 @@ func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Ti
 		shadow.batch.ReceivedAt = time.Now()
 	}
 	item := ingest.Item{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at}
-	if shadow.active {
+	if shadow.mode.Active {
 		if snapshot.Artist == "" || snapshot.Title == "" {
 			return invalidFile(fmt.Errorf("listen at ordinal %d requires an artist and title", item.Ordinal))
 		}
@@ -120,15 +131,15 @@ func flushFileShadow(ctx context.Context) error {
 	}
 	var results []ingest.Result
 	var err error
-	if shadow.active {
-		_, results, err = shadow.admission.AdmitIngest(ctx, shadow.batch, true, &shadow.active, nil)
+	if shadow.mode.Active {
+		_, results, err = shadow.admission.AdmitIngest(ctx, shadow.batch, true, &shadow.mode, nil)
 	} else {
 		results, err = shadow.receiver.ReceiveBatch(ctx, shadow.batch)
 	}
 	clear(shadow.batch.Items)
 	shadow.batch.Items = shadow.batch.Items[:0]
 	if err != nil {
-		if shadow.active {
+		if shadow.mode.Active {
 			return err
 		}
 		logger.FromContext(ctx).Warn().Msg("Import shadow receipt batch failed")
@@ -138,7 +149,7 @@ func flushFileShadow(ctx context.Context) error {
 		for _, receipt := range results {
 			if receipt.Pending {
 				result.Pending++
-			} else if shadow.active && receipt.Replay {
+			} else if shadow.mode.Active && receipt.Replay {
 				result.Duplicates++
 			}
 		}

@@ -77,10 +77,16 @@ type Result struct {
 	Replay    bool
 }
 
+// JobMode pins admission and the resolver variant for every page of an import.
+type JobMode struct {
+	Active  bool
+	Variant string
+}
+
 // Admission selects active mode atomically or admits pages using a pinned import mode.
 type Admission interface {
-	AdmitIngest(context.Context, Batch, bool, *bool, error) (bool, []Result, error)
-	BeginImportIngest(context.Context, int32, bool) (bool, error)
+	AdmitIngest(context.Context, Batch, bool, *JobMode, error) (bool, []Result, error)
+	BeginImportIngest(context.Context, int32, bool) (JobMode, error)
 }
 
 type Receiver interface {
