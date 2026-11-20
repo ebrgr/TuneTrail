@@ -203,3 +203,5 @@ Retomada após rebase em v0.45.
 - Feito — Mede resolução com 300 mil recibos retidos em outro perfil. Pendente — rodar cenário de escala final e registrar resultados.
 
 - Feito — Cobre a cascata de duplicados vinculados no replay parcial. Pendente — validação final com ensaio, suíte e revisão.
+
+- Feito — Separa os parâmetros do recibo e da revisão na fixture de cascata. Pendente — repetir testes dos pacotes e make check.
