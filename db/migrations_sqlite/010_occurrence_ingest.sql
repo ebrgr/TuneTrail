@@ -170,6 +170,31 @@ BEGIN
 END;
 -- +goose StatementEnd
 
+-- Keep surviving v9 receipts aligned when the legacy merge moves a listen.
+-- Ignored conflicts do not fire this trigger and are deleted by the merge.
+-- +goose StatementBegin
+CREATE TRIGGER trg_identity_listen_sync_v9 AFTER UPDATE OF track_id ON listens
+WHEN NEW.track_id IS NOT OLD.track_id
+BEGIN
+    INSERT INTO ingest_revisions(profile_id,receipt_id,resolution_version,author,decision,reason_codes,evidence,rule_version,created_at)
+    SELECT e.profile_id,e.receipt_id,e.resolution_version+1,'automatic',e.duplicate_decision,
+           '["legacy_listen_moved"]',
+           json_object('before',json_object('occurrence_id',e.occurrence_id,'recording_id',e.recording_id),
+                       'after',json_object('occurrence_id',NEW.track_id,'recording_id',o.recording_id)),
+           'occurrence-link-repair-v1',unixepoch()
+    FROM ingest_events e JOIN occurrences o ON o.id=NEW.track_id
+    WHERE (e.profile_id,e.event_id)=(NEW.profile_id,NEW.event_id)
+      AND e.resolver_variant='v9' AND e.state IN ('accepted','duplicate');
+
+    UPDATE ingest_events
+    SET occurrence_id=NEW.track_id,
+        recording_id=(SELECT recording_id FROM occurrences WHERE id=NEW.track_id),
+        resolution_version=resolution_version+1
+    WHERE (profile_id,event_id)=(NEW.profile_id,NEW.event_id)
+      AND resolver_variant='v9' AND state IN ('accepted','duplicate');
+END;
+-- +goose StatementEnd
+
 -- +goose Down
 -- Restore the pre-upgrade backup to return to v9.
 CREATE TEMP TABLE occurrence_ingest_downgrade_guard (value INTEGER CHECK(value=0));
