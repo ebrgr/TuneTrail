@@ -20,16 +20,43 @@ type KoitoExport struct {
 	Listens    []KoitoListen `json:"listens"`
 }
 type KoitoListen struct {
-	ListenedAt time.Time     `json:"listened_at"`
-	Client     string        `json:"client"`
-	Track      KoitoTrack    `json:"track"`
-	Album      KoitoAlbum    `json:"album"`
-	Artists    []KoitoArtist `json:"artists"`
+	OriginalListenedAt string        `json:"-"`
+	ListenedAt         time.Time     `json:"listened_at"`
+	Client             string        `json:"client"`
+	Track              KoitoTrack    `json:"track"`
+	Album              KoitoAlbum    `json:"album"`
+	Artists            []KoitoArtist `json:"artists"`
 }
+
+// UnmarshalJSON retains the original timestamp for occurrence import receipts.
+func (item *KoitoListen) UnmarshalJSON(data []byte) error {
+	type listen KoitoListen
+	var value struct {
+		*listen
+		Time string `json:"listened_at"`
+	}
+	value.listen = (*listen)(item)
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	item.OriginalListenedAt = value.Time
+	if value.Time == "" {
+		return nil
+	}
+	at, err := time.Parse(time.RFC3339Nano, value.Time)
+	item.ListenedAt = at
+	return err
+}
+
 type KoitoTrack struct {
-	MBID     *uuid.UUID     `json:"mbid"`
-	Duration int            `json:"duration"`
-	Aliases  []models.Alias `json:"aliases"`
+	TrackMBID      string         `json:"track_mbid,omitempty"`
+	DiscNumber     int            `json:"disc_number,omitempty"`
+	TrackNumber    int            `json:"track_number,omitempty"`
+	MBIDSource     string         `json:"mbid_source,omitempty"`
+	MBIDDeclaredAt string         `json:"mbid_declared_at,omitempty"`
+	MBID           *uuid.UUID     `json:"mbid"`
+	Duration       int            `json:"duration"`
+	Aliases        []models.Alias `json:"aliases"`
 }
 type KoitoAlbum struct {
 	ImageUrl       string         `json:"image_url"`

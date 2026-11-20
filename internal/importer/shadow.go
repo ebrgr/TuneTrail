@@ -76,7 +76,7 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 // occurrenceFileReady enables each format only once its adapter is ready.
 func occurrenceFileReady(format string) bool {
 	switch format {
-	case "listenbrainz", "lastfm", "spotify", "maloja":
+	case "listenbrainz", "lastfm", "spotify", "maloja", "koito":
 		return true
 	default:
 		return false

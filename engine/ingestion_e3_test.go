@@ -80,3 +80,17 @@ func TestOccurrenceMaloja(t *testing.T) {
 		require.Equal(t, "1780000000", s.OriginalTime)
 	})
 }
+
+func TestOccurrenceNative(t *testing.T) {
+	data := []byte(`{"version":"1","listens":[{"listened_at":"2026-05-29T00:00:00.010Z",
+		"track":{"disc_number":2,"track_number":1,"aliases":[{"alias":"Track","is_primary":true}]},
+		"album":{"aliases":[{"alias":"Album","is_primary":true}]},
+		"artists":[{"aliases":[{"alias":"First","is_primary":true}]},{"aliases":[{"alias":"Second","is_primary":true}]}]}]}`)
+	occurrenceFileFixture(t, "koito", "native_import", data, func(s ingest.Snapshot) {
+		require.Zero(t, s.CatalogTrackID)
+		require.Equal(t, 2, s.DiscNumber)
+		require.Equal(t, 1, s.TrackNumber)
+		require.Equal(t, []string{"First", "Second"}, s.ArtistNames)
+		require.Equal(t, "2026-05-29T00:00:00.010Z", s.OriginalTime)
+	})
+}

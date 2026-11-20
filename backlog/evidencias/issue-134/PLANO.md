@@ -183,3 +183,5 @@ Retomada após rebase em v0.45.
 - Feito — Habilita o adaptador Spotify por ocorrência. Pendente — Maloja, nativo e verificações.
 
 - Feito — Habilita o adaptador Maloja por ocorrência. Pendente — nativo, precisão, replay, exclusão e verificações.
+
+- Feito — Admite importação nativa antes da associação de catálogo. Pendente — precisão do ledger, replay, exclusão, MusicBrainz e verificações.

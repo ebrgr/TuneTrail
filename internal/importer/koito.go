@@ -64,7 +64,7 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		if item.Track.Duration < 0 || item.Track.Duration > math.MaxInt32 {
 			return invalidFile(fmt.Errorf("invalid track duration"))
 		}
-		if len(item.Artists) == 0 || getPrimaryAliasFromAliasSlice(item.Track.Aliases) == "" || getPrimaryAliasFromAliasSlice(item.Album.Aliases) == "" {
+		if len(item.Artists) == 0 || getPrimaryAliasFromAliasSlice(item.Track.Aliases) == "" || (!occurrenceFileIngest(ctx) && getPrimaryAliasFromAliasSlice(item.Album.Aliases) == "") {
 			return invalidFile(fmt.Errorf("invalid TuneTrail/Koito export: artists, album and track required"))
 		}
 		for _, artist := range item.Artists {
@@ -95,6 +95,26 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			DurationMS:   int64(item.Track.Duration) * 1000,
 			Client:       item.Client,
 			OriginalTime: item.ListenedAt.Format(time.RFC3339Nano),
+		}
+		if occurrenceFileIngest(ctx) {
+			// Admit the observed native item before resolving or mutating catalog metadata.
+			snapshot.OriginalTime = item.OriginalListenedAt
+			snapshot.TrackMBID = item.Track.TrackMBID
+			snapshot.DiscNumber, snapshot.TrackNumber = item.Track.DiscNumber, item.Track.TrackNumber
+			snapshot.MBIDSource, snapshot.MBIDDeclaredAt = item.Track.MBIDSource, item.Track.MBIDDeclaredAt
+			if item.Track.MBID != nil && *item.Track.MBID != uuid.Nil {
+				snapshot.Recording = item.Track.MBID.String()
+			}
+			if item.Album.MBID != nil && *item.Album.MBID != uuid.Nil {
+				snapshot.ReleaseMBID = item.Album.MBID.String()
+			}
+			for _, artist := range item.Artists {
+				snapshot.ArtistNames = append(snapshot.ArtistNames, getPrimaryAliasFromAliasSlice(artist.Aliases))
+			}
+			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
+				return err
+			}
+			continue
 		}
 		if !activeFileIngest(ctx) {
 			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
