@@ -47,24 +47,26 @@ func TestIngestActivationUpgrade(t *testing.T) {
 	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id) VALUES(1)`)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM profile_ingest_flags WHERE active=0 AND review=0`))
 
-	for _, query := range []string{
-		`UPDATE profile_ingest_flags SET review=2`,
-		`UPDATE ingest_events SET mode='active' WHERE receipt_id='shadow'`,
-		`UPDATE ingest_events SET state='accepted',event_id=(SELECT event_id FROM listens WHERE rowid=10)`,
-		`INSERT INTO ingest_revisions VALUES(1,'shadow',1,'fixture','review','["fixture"]','{}','1',0)`,
-		`INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at)
-		  SELECT 'blocked',1,'source',event_id,'listen','blocked',0 FROM listens WHERE rowid=10`,
+	for _, tc := range []struct{ query, guard string }{
+		{`UPDATE profile_ingest_flags SET review=2`, "CHECK constraint failed: review IN (0,1)"},
+		{`UPDATE ingest_events SET mode='active' WHERE receipt_id='shadow'`, "Receipt mode is immutable"},
+		{`UPDATE ingest_events SET state='accepted',event_id=(SELECT event_id FROM listens WHERE rowid=10)`, "shadow receipts cannot materialize decisions"},
+		{`INSERT INTO ingest_revisions VALUES(1,'shadow',1,'fixture','review','["fixture"]','{}','1',0)`, "Receipt revision requires an active receipt"},
+		{`INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at)
+		  SELECT 'blocked',1,'source',event_id,'listen','blocked',0 FROM listens WHERE rowid=10`, "Outbox intent requires an accepted active receipt"},
 	} {
-		_, err := conn.Exec(query)
-		require.Error(t, err, query)
+		_, err := conn.Exec(tc.query)
+		require.ErrorContains(t, err, tc.guard, tc.query)
 	}
 
 	const insert = `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,
 		batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,state)
 		VALUES('admitted',1,'source',1,'test','1','batch',0,'submit',0,'second','start','{}','digest','1',?,'pending_duplicate')`
 	_, err = conn.Exec(insert, "unknown")
-	require.Error(t, err)
+	require.ErrorContains(t, err, "CHECK constraint failed: mode IN ('shadow','active')")
 	execSQL(t, s, insert, "active")
+	_, err = conn.Exec(`UPDATE ingest_events SET mode='shadow' WHERE receipt_id='admitted'`)
+	require.ErrorContains(t, err, "Receipt mode is immutable")
 
 	const queue = `SELECT receipt_id FROM ingest_events WHERE mode='active' AND closed_at IS NULL AND state='pending_duplicate' ORDER BY next_attempt_at,received_at`
 	var receiptID, plan string
