@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T18:18:00Z'
+updated_date: '2026-11-20T18:26:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -216,6 +216,15 @@ created: 2026-11-20T18:18:00Z
 ---
 
 Aceite do usuário em 20/11/2026: ativação opt-in da ingestão (C1–C6 e correção do R1) aceita. O mestre permanece desligado; promoção depende de limiares, janela de sombra e janela de manutenção a aprovar.
+
+---
+
+author: ebrgr
+created: 2026-11-20T18:26:00Z
+
+---
+
+Publicação: versão 0.44 (tag `v0.44`), branch `feat/issue-081-pipeline-de-ingestao-com-deduplicacao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

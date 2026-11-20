@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.44] - 2026-11-20
+
 - Active ingestion of ListenBrainz submissions and imports requires the master switch plus per-profile activation, with a preview and a shadow purge confirmed by the root administrator. The Review option stays blocked until the review queue exists (ISSUE-081).
 
 ## [0.43] - 2026-11-19
