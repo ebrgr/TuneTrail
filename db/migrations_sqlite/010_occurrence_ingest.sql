@@ -36,6 +36,14 @@ WHERE e.mode='active' AND e.state IN ('accepted','duplicate')
   AND (e.occurrence_id IS NOT l.track_id OR e.recording_id IS NOT o.recording_id OR e.identity_status IS NOT 'resolved');
 CREATE UNIQUE INDEX temp.idx_occurrence_link_repairs ON occurrence_link_repairs(receipt_id);
 
+CREATE TEMP TABLE occurrence_repair_assertion (
+    name TEXT PRIMARY KEY,
+    decision_present INTEGER NOT NULL CONSTRAINT occurrence_repair_missing_decision CHECK(decision_present=1),
+    links_aligned INTEGER NOT NULL CONSTRAINT occurrence_repair_remaining_drift CHECK(links_aligned=1)
+);
+INSERT INTO occurrence_repair_assertion
+VALUES ('before repair',NOT EXISTS (SELECT 1 FROM occurrence_link_repairs WHERE duplicate_decision IS NULL),1);
+
 INSERT INTO ingest_revisions(profile_id,receipt_id,resolution_version,author,decision,reason_codes,evidence,rule_version,created_at)
 SELECT profile_id,receipt_id,version,'migration',duplicate_decision,'["migration_link_repair"]',evidence,'occurrence-link-repair-v1',unixepoch()
 FROM occurrence_link_repairs;
@@ -45,6 +53,16 @@ SET occurrence_id=r.occurrence_id,recording_id=r.recording_id,identity_status='r
 FROM occurrence_link_repairs r
 WHERE e.receipt_id=r.receipt_id;
 
+INSERT INTO occurrence_repair_assertion
+VALUES ('after repair',1,NOT EXISTS (
+    SELECT 1 FROM ingest_events e
+    LEFT JOIN listens l ON (l.profile_id,l.event_id)=(e.profile_id,e.event_id)
+    LEFT JOIN occurrences o ON o.id=l.track_id
+    WHERE e.mode='active' AND e.state IN ('accepted','duplicate')
+      AND (l.event_id IS NULL OR o.id IS NULL OR e.occurrence_id IS NOT l.track_id
+           OR e.recording_id IS NOT o.recording_id OR e.identity_status IS NOT 'resolved')
+));
+DROP TABLE occurrence_repair_assertion;
 DROP TABLE occurrence_link_repairs;
 
 -- +goose StatementBegin

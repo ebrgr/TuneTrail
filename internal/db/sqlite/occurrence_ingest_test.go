@@ -111,6 +111,27 @@ func TestOccurrenceUpgradeRollback(t *testing.T) {
 	}
 }
 
+// TestOccurrenceRepairAssertions reports the invalid decision or remaining drift explicitly.
+func TestOccurrenceRepairAssertions(t *testing.T) {
+	for _, tc := range []struct{ query, message string }{
+		{`UPDATE ingest_events SET duplicate_decision=NULL WHERE receipt_id='linked-43'`, "occurrence_repair_missing_decision"},
+		{`CREATE TRIGGER skip_repair BEFORE UPDATE OF occurrence_id ON ingest_events
+			WHEN NEW.receipt_id='linked-43' BEGIN SELECT RAISE(IGNORE); END`, "occurrence_repair_remaining_drift"},
+	} {
+		t.Run(tc.message, func(t *testing.T) {
+			ctx := context.Background()
+			s, provider, _ := migrationDB(t, 9)
+			seedOccurrenceLinks(t, s)
+			require.NoError(t, s.MergeTracks(ctx, 70, 1))
+			execSQL(t, s, tc.query)
+			_, err := provider.Up(ctx)
+			require.ErrorContains(t, err, tc.message)
+			require.Equal(t, 9, scalar(t, s, `SELECT max(version_id) FROM goose_db_version`))
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE author='migration'`))
+		})
+	}
+}
+
 // TestOccurrenceFlagRequiresActive keeps the flag attached to its active profile.
 func TestOccurrenceFlagRequiresActive(t *testing.T) {
 	s, _, _ := migrationDB(t, currentSchemaVersion)
