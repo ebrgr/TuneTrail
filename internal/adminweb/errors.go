@@ -22,7 +22,7 @@ func ErrorStatus(err error) int {
 		return 400
 	case errors.Is(err, admin.ErrUnauthorized):
 		return 401
-	case errors.Is(err, admin.ErrForbidden), errors.Is(err, db.ErrOwnAccountToken), errors.Is(err, ErrCSRF):
+	case errors.Is(err, admin.ErrForbidden), errors.Is(err, db.ErrForbidden), errors.Is(err, db.ErrOwnAccountToken), errors.Is(err, ErrCSRF):
 		return 403
 	case errors.Is(err, db.ErrNotFound):
 		return 404

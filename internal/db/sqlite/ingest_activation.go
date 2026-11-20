@@ -88,7 +88,7 @@ func checkIngestRoot(ctx context.Context, tx ingestActivationReader, session uui
 	err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM sessions s JOIN users u ON u.id=s.user_id
 		WHERE s.id=? AND s.expires_at>unixepoch() AND u.role='admin' AND u.status='active')`, session.String()).Scan(&root)
 	if err == nil && !root {
-		return db.ErrConflict
+		return db.ErrForbidden
 	}
 	return err
 }

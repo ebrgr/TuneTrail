@@ -19,3 +19,6 @@ var ErrTrackIdentityConflict = errors.New("conflicting track identity")
 
 // ErrLastAdmin prevents removal of the last administrator and its profile.
 var ErrLastAdmin = errors.New("last administrator is required")
+
+// ErrForbidden marks an operation denied by the store's live authorization check.
+var ErrForbidden = errors.New("operation forbidden")

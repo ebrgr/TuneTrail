@@ -39,7 +39,7 @@ func TestIngestActivationConfirmation(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = s.PreviewIngestActivation(ctx, uuid.Nil, target.ID)
-	require.ErrorIs(t, err, db.ErrConflict)
+	require.ErrorIs(t, err, db.ErrForbidden)
 	preview, err := s.PreviewIngestActivation(ctx, session.ID, target.ID)
 	require.NoError(t, err)
 	require.EqualValues(t, 1, preview.Receipts)
