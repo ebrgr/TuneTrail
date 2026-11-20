@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-20T20:27:00Z'
+updated_date: '2026-11-20T20:36:00Z'
 labels:
   - ui
   - admin
@@ -95,6 +95,15 @@ created: 2026-11-20T20:27:00Z
 ---
 
 Verificação da implementação. Navegação e ações renderizadas por permissão, retorno pós-login validado, Conta na rota funcional até a 125, saída protegida até a 157, 403/404 e cache verificados, aviso do relay e pendências da 161 cobertos. Testes Go, instrumentação de login, custo das fixtures migradas e make check passaram (13/13 jornadas E2E). Foram registradas 56 capturas em Yuu/Pearl e a jornada sem JavaScript com teclado e árvore de acessibilidade. O AC 2 segue aberto para validação com leitor de tela em execução e o AC 3 para o aceite visual do usuário. A tarefa permanece Em andamento para o Reviewer.
+
+---
+
+author: codex
+created: 2026-11-20T20:36:00Z
+
+---
+
+Verificação da correção autorizada após o Reviewer (aprovado com um item obrigatório). O ticket de saída reutilizado conserva o token e recebe 30 minutos completos a cada emissão. O teste verifica a limpeza dos expirados, a recusa do ticket em outra ação (409) e a revogação da sessão pelo POST de saída. A 403 do usuário comum foi verificada em pt-BR e en com apenas o link do perfil próprio. Documentado LogoutForm e registrada na ISSUE-161 a correção da referência ao parecer. Os testes Go dos pacotes afetados e make check passaram, com 13/13 jornadas E2E. Ressalvas conhecidas e aceitas: o botão Sair… envia o POST direto até a confirmação da ISSUE-157, e a falha rara na resolução pós-login pode deixar uma sessão órfã sem risco explorável identificado pelo Reviewer.
 
 ---
 <!-- COMMENTS:END -->
