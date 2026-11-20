@@ -62,7 +62,11 @@ already admitted by the active writer.
 Before resuming, drain the shadow writers, start a new preview and confirm
 activation again. Turn off the profile switch before using the master switch
 as a longer-term pause. If the master switch alone is turned off, the profile
-flag remains on and shadow receipts can accumulate. Restarting with only the
-master switch on can replay a shadow key whose original listen was never
-saved. The new preview and purge avoid carrying those unlinked keys into the
-resumed pilot.
+flag remains on and shadow receipts can accumulate. The new preview and purge
+give you a clean starting point for measuring the resumed pilot.
+
+If a client retries a submission whose key still belongs to an unlinked shadow
+receipt, active ingestion takes over that submission. TuneTrail keeps the
+existing listen if it matches the same track and second, or saves the listen if
+it is missing. Shadow receipts already linked to a listen remain available for
+replay.
