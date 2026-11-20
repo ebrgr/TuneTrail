@@ -116,6 +116,9 @@ func TestSubmissionExpiryAndGlobalCeiling159(t *testing.T) {
 	_, err = h.newSubmission(uuid.New())
 	require.ErrorIs(t, err, db.ErrConflict)
 	require.Len(t, h.submissions, 4096)
+	_, err = h.issueSubmission(uuid.New(), true)
+	require.ErrorIs(t, err, db.ErrConflict)
+	require.Len(t, h.submissions, 4096)
 }
 
 // TestLogoutSubmissionRenewsExpiry verifies renewal through the real logout form and POST.
@@ -168,6 +171,8 @@ func TestLogoutSubmissionRenewsExpiry(t *testing.T) {
 	}
 	require.Equal(t, http.StatusConflict, post("/admin/account/username").Code)
 	require.Equal(t, http.StatusSeeOther, post("/admin/logout").Code)
+	// A consumed ticket stays invalid independently of the revoked session.
+	require.ErrorIs(t, h.consumeTicket(session.ID, renewed, true), db.ErrConflict)
 	_, err = admin.Authenticate(ctx, store, session.ID)
 	require.ErrorIs(t, err, admin.ErrUnauthorized)
 }

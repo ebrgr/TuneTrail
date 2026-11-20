@@ -2,7 +2,9 @@
   <!doctype html>
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
     <head>
-      {{template "partial/head" (head "admin" (printf "%s — TuneTrail" (tr "ui.account" "Account")))}}
+      {{$title := tr "ui.account" "Account"}}
+      {{if .SignOut}}{{$title = tr "admin.sign_out.title" "End this session in this browser"}}{{end}}
+      {{template "partial/head" (head "admin" (printf "%s — TuneTrail" $title))}}
     </head>
     <body
       data-admin-ui="go"
