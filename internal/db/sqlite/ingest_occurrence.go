@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/ingest"
@@ -16,6 +17,37 @@ import (
 )
 
 const occurrenceRuleVersion = "occurrence-v1"
+
+type occurrenceReleaseCache struct {
+	mu       sync.Mutex
+	releases map[uuid.UUID]cachedOccurrenceRelease
+}
+
+type cachedOccurrenceRelease struct {
+	expires time.Time
+	release *mbz.MusicBrainzRelease
+}
+
+// occurrenceReleaseLookup shares successful release evidence across receipts.
+func (c *occurrenceReleaseCache) occurrenceReleaseLookup(ctx context.Context, id uuid.UUID, lookup func(context.Context, uuid.UUID) (*mbz.MusicBrainzRelease, error)) (*mbz.MusicBrainzRelease, error) {
+	c.mu.Lock()
+	entry, ok := c.releases[id]
+	c.mu.Unlock()
+	if ok && time.Now().Before(entry.expires) {
+		return entry.release, nil
+	}
+	release, err := lookup(ctx, id)
+	if err != nil || release == nil {
+		return release, err
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.releases == nil || len(c.releases) >= 256 {
+		c.releases = make(map[uuid.UUID]cachedOccurrenceRelease)
+	}
+	c.releases[id] = cachedOccurrenceRelease{expires: time.Now().Add(10 * time.Minute), release: release}
+	return release, nil
+}
 
 type occurrenceProof struct {
 	release, recording, track         string
@@ -45,7 +77,7 @@ type occurrenceMatch struct {
 }
 
 // verifyOccurrence checks release-track membership before acquiring the SQLite writer.
-func verifyOccurrence(ctx context.Context, snapshot ingest.Snapshot, client mbz.MusicBrainzCaller) occurrenceProof {
+func verifyOccurrence(ctx context.Context, snapshot ingest.Snapshot, client mbz.MusicBrainzCaller, caches ...*occurrenceReleaseCache) occurrenceProof {
 	releaseID := uuidFromSnapshot(snapshot.ReleaseMBID, snapshot.MappedReleaseMBID)
 	if client == nil || releaseID == uuid.Nil || snapshot.Release == "" {
 		return occurrenceProof{}
@@ -56,7 +88,13 @@ func verifyOccurrence(ctx context.Context, snapshot ingest.Snapshot, client mbz.
 	}); ok {
 		getRelease = lookup.GetReleaseTracks
 	}
-	release, err := getRelease(ctx, releaseID)
+	var release *mbz.MusicBrainzRelease
+	var err error
+	if len(caches) > 0 {
+		release, err = caches[0].occurrenceReleaseLookup(ctx, releaseID, getRelease)
+	} else {
+		release, err = getRelease(ctx, releaseID)
+	}
 	if err != nil || release == nil {
 		return occurrenceProof{}
 	}

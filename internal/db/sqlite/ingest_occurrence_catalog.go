@@ -168,13 +168,12 @@ func occurrenceReleaseCandidates(ctx context.Context, tx *sql.Conn, title, mbid,
 			return nil, err
 		}
 	}
-	rows, err := tx.QueryContext(ctx, `SELECT r.id FROM releases r WHERE
-		(?='' OR r.musicbrainz_id IS NULL) AND EXISTS (
-			SELECT 1 FROM release_aliases a WHERE a.release_id=r.id AND a.alias=?)
+	rows, err := tx.QueryContext(ctx, `SELECT DISTINCT r.id FROM release_aliases ra JOIN releases r ON r.id=ra.release_id
+		WHERE ra.alias=? AND (?='' OR r.musicbrainz_id IS NULL)
 			AND EXISTS (SELECT 1 FROM json_each(?) c JOIN artist_aliases a ON a.alias=c.value WHERE
 				EXISTS (SELECT 1 FROM artist_releases ar WHERE ar.release_id=r.id AND ar.artist_id=a.artist_id)
 				OR EXISTS (SELECT 1 FROM tracks t JOIN artist_tracks at ON at.track_id=t.id WHERE t.release_id=r.id AND at.artist_id=a.artist_id))
-		ORDER BY r.id`, mbid, title, credits)
+		ORDER BY r.id`, title, mbid, credits)
 	if err != nil {
 		return nil, err
 	}

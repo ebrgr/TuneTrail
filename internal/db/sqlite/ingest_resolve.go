@@ -13,6 +13,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
 )
@@ -24,7 +25,7 @@ var errIngestTrackMissing = errors.New("ingest track no longer exists")
 type claimedReceipt struct {
 	id, lease, client, source, variant, format string
 	profile, track                             int32
-	version, work, unix                        int64
+	version, work, unix, attempts              int64
 	snapshot                                   ingest.Snapshot
 }
 
@@ -51,7 +52,10 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 		if track, err := uuid.Parse(receipt.snapshot.TrackMBID); err == nil && track != uuid.Nil {
 			receipt.snapshot.TrackMBID = track.String()
 		}
-		proof := verifyOccurrence(ctx, receipt.snapshot, mbzc)
+		// Finish remote verification well before the 120-second claim expires.
+		proofCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
+		proof := verifyOccurrence(proofCtx, receipt.snapshot, mbzc, &s.occurrenceProofCache)
+		cancel()
 		if err := s.finishOccurrence(ctx, receipt, proof); err != nil {
 			return true, s.retryIngest(ctx, receipt, err)
 		}
@@ -101,8 +105,8 @@ func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, s
 	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,attempt_count=attempt_count+1
 		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')
 		AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
-		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,'')`,
-		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format)
+		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,''),attempt_count`,
+		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format, &receipt.attempts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return claimedReceipt{}, "", "", nil
 	}
@@ -147,6 +151,8 @@ func uuidFromSnapshot(values ...string) uuid.UUID {
 
 // retryIngest releases this claim while preserving any newer claim or decision.
 func (s *Sqlite) retryIngest(ctx context.Context, r claimedReceipt, cause error) error {
+	logger.FromContext(ctx).Warn().Int64("attempt", r.attempts).Str("variant", r.variant).
+		Msg("Ingest receipt scheduled for retry")
 	_, err := s.db.ExecContext(ctx, `UPDATE ingest_events SET state='retryable',next_attempt_at=?,lease_owner=NULL,lease_until=NULL
 		WHERE receipt_id=? AND mode='active' AND resolution_version=? AND work_version=? AND lease_owner=?`,
 		time.Now().Add(time.Minute).Unix(), r.id, r.version, r.work, r.lease)

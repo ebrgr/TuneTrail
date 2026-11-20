@@ -22,6 +22,7 @@ type Sqlite struct {
 	db *sql.DB
 	// Standalone occurrences are enabled only by disposable resolver fixtures.
 	allowStandaloneOccurrences bool
+	occurrenceProofCache       occurrenceReleaseCache
 }
 
 func New() (*Sqlite, error) {
