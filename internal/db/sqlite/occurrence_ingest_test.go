@@ -111,6 +111,25 @@ func TestOccurrenceUpgradeRollback(t *testing.T) {
 	}
 }
 
+// TestOccurrenceFlagRequiresActive keeps the flag attached to its active profile.
+func TestOccurrenceFlagRequiresActive(t *testing.T) {
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	seedIdentityHistory(t, s)
+	_, err := s.db.Exec(`INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,0,1)`)
+	require.ErrorContains(t, err, "requires active ingestion")
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id) VALUES(1)`)
+	_, err = s.db.Exec(`UPDATE profile_ingest_flags SET occurrence_write=1 WHERE profile_id=1`)
+	require.ErrorContains(t, err, "Occurrence writing cannot be disabled")
+	execSQL(t, s, `UPDATE profile_ingest_flags SET active=1,occurrence_write=1 WHERE profile_id=1`)
+	_, err = s.db.Exec(`UPDATE profile_ingest_flags SET profile_id=2 WHERE profile_id=1`)
+	require.ErrorContains(t, err, "Occurrence writing cannot be disabled")
+
+	// The activation upsert leaves the converted profile's flag untouched.
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,0)
+		ON CONFLICT(profile_id) DO UPDATE SET active=excluded.active,review=excluded.review`)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM profile_ingest_flags WHERE profile_id=1 AND active=1 AND occurrence_write=1`))
+}
+
 // TestOccurrenceGuardCascades covers the real foreign-key order for every legacy deletion root.
 func TestOccurrenceGuardCascades(t *testing.T) {
 	for _, deletion := range []struct{ name, sql string }{

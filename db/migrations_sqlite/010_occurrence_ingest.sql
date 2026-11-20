@@ -48,10 +48,19 @@ WHERE e.receipt_id=r.receipt_id;
 DROP TABLE occurrence_link_repairs;
 
 -- +goose StatementBegin
-CREATE TRIGGER trg_occurrence_flag_one_way BEFORE UPDATE OF occurrence_write,active ON profile_ingest_flags
-WHEN OLD.occurrence_write=1 AND (NEW.occurrence_write=0 OR (OLD.active=1 AND NEW.active=0))
+CREATE TRIGGER trg_occurrence_flag_one_way BEFORE UPDATE OF occurrence_write,active,profile_id ON profile_ingest_flags
+WHEN (OLD.occurrence_write=1 AND (NEW.occurrence_write=0 OR NEW.active=0 OR NEW.profile_id IS NOT OLD.profile_id))
+  OR (NEW.occurrence_write=1 AND NEW.active=0)
 BEGIN
     SELECT RAISE(ABORT,'Occurrence writing cannot be disabled');
+END;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TRIGGER trg_occurrence_flag_insert BEFORE INSERT ON profile_ingest_flags
+WHEN NEW.occurrence_write=1 AND NEW.active=0
+BEGIN
+    SELECT RAISE(ABORT,'Occurrence writing requires active ingestion');
 END;
 -- +goose StatementEnd
 
