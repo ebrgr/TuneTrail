@@ -462,3 +462,20 @@ func TestOccurrenceImportMasterOffReadsUnderContention(t *testing.T) {
 	require.ErrorAs(t, err, &unavailable)
 	require.False(t, active)
 }
+
+// TestOccurrenceLegacyUnpositionedCharacterization records how textual matching reuses a legacy bridge.
+func TestOccurrenceLegacyUnpositionedCharacterization(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `DELETE FROM tracks WHERE id=70;
+		INSERT INTO release_aliases VALUES(1,'Legacy album','Fixture',1)`)
+	item := ingest.Snapshot{Title: "Intro", Artist: "Artist", Release: "Legacy album", TrackNumber: 1}
+	// The legacy bridge has no position, so either asserted disc matches its text.
+	for _, disc := range []int{1, 2} {
+		item.DiscNumber = disc
+		id := admitOccurrenceFixture(t, s, item, int64(1700+10*disc), uuid.NewString())
+		resolveOccurrenceFixture(t, s, nil)
+		requireReceiptState(t, s, id, "accepted")
+		require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND occurrence_id=1`, id))
+	}
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences WHERE id=1 AND disc_number IS NULL AND track_number IS NULL`))
+}
