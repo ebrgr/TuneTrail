@@ -2,9 +2,9 @@
 
 TuneTrail adds public listening profiles and administrator-only management to
 Koito. The current source version is
-**TuneTrail 0.46**, a prerelease intended for testing with a backup of your data.
+**TuneTrail 0.47**, a prerelease intended for testing with a backup of your data.
 
-The target image is `ghcr.io/ebrgr/tunetrail:0.46`, built for Linux amd64
+The target image is `ghcr.io/ebrgr/tunetrail:0.47`, built for Linux amd64
 and arm64. Publish the matching image before pulling this tag, or build it locally. The image serves both the API and compiled interface on port 4110;
 Node.js, Go, and Vite are not required on the deployment host.
 
@@ -41,7 +41,7 @@ interfaces, independently of this host setting.
 
 ## Upgrade from the `koito-sum` compose project
 
-Since 0.46 the compose project and service are named `tunetrail`, the data is
+Since 0.47 the compose project and service are named `tunetrail`, the data is
 mounted at `/etc/tunetrail` and variables use the `TUNETRAIL_` prefix. Keep your
 `deploy/.env`: its `KOITO_*` names are unchanged, so it still points at the same
 host data directory.
@@ -151,7 +151,7 @@ to shut down gracefully. `stop` and `down` preserve the host data directory.
 ## Upgrade to schema v11 (TuneTrail 0.47)
 
 Stop the service in a maintenance window before upgrading from a v9 database
-(TuneTrail 0.44 to 0.46). Keep free disk space of at least three times the
+(TuneTrail 0.44 to 0.47). Keep free disk space of at least three times the
 database size in the data directory and in the SQLite temporary directory
 (`TMPDIR`). On first start TuneTrail writes a verified
 `.pre-occurrence-ingest-*.bak` backup next to the database, then migrates it to
@@ -159,7 +159,7 @@ v11. On the test hardware a database with 300,000 receipts needed about 21
 seconds before the health endpoint answered and a backup of about 260 MB.
 
 The migration runs on every installation, even though the occurrence mode stays
-off until a profile is converted. Versions 0.46 and earlier refuse a v11
+off until a profile is converted. Versions 0.47 and earlier refuse a v11
 database. To go back, stop the service and restore the backup; writes made
 after the upgrade are lost, and relay deliveries already made stay at the
 destination (ISSUE-134).
@@ -182,7 +182,7 @@ them, and import them again after upgrading.
    migration"; follow step 5 of the recovery procedure, or upgrade from a new
    directory restored from the backup.
 
-These paths were exercised with TuneTrail 0.5 and 0.46 on fictional data
+These paths were exercised with TuneTrail 0.5 and 0.47 on fictional data
 (`scripts/validate_rollback.py`).
 
 ## Container registry access
@@ -210,7 +210,7 @@ timezone data and curl for the healthcheck.
 
 For local development and validation, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-Current source: **TuneTrail 0.46**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.46 becomes 0.46); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
+Current source: **TuneTrail 0.47**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.47 becomes 0.47); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
 
 ## External web assets (ISSUE-066)
 

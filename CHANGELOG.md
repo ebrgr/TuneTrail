@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.47] - 2026-11-20
+
 - The database upgrades from v9 to v11 and creates a `.pre-occurrence-ingest-*.bak` backup. TuneTrail 0.46 and earlier cannot open a v11 database. Stop the service for the upgrade and keep free disk space of at least three times the database size in the data and `TMPDIR` directories; about 21 seconds were needed with 300,000 receipts. Restoring the backup loses writes made after the upgrade (ISSUE-134).
 - Occurrence-based ingestion can preserve separate album appearances of the same recording across ListenBrainz submissions and supported imports. It is opt-in per profile and available for testing on disposable databases. Profiles with a configured relay cannot use it until durable relay delivery is available (ISSUE-134, ISSUE-082).
 
