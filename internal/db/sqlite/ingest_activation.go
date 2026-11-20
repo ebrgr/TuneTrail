@@ -116,7 +116,10 @@ func previewIngestActivation(ctx context.Context, tx ingestActivationReader, pro
 		return p, err
 	}
 	hash := sha256.New()
-	fmt.Fprintf(hash, "ingest-activation-v2/%d/%t/%t/%t\n", profile, p.Active, p.Review, p.OccurrenceWrite)
+	fmt.Fprintf(hash, "ingest-activation-v1/%d/%t/%t\n", profile, p.Active, p.Review)
+	if p.OccurrenceWrite {
+		fmt.Fprintln(hash, "occurrence-write=1")
+	}
 	rows, err := tx.QueryContext(ctx, `WITH targets AS MATERIALIZED (
 		SELECT * FROM ingest_events WHERE `+shadowPurgeScope+`
 	)

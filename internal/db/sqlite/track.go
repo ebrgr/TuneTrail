@@ -225,7 +225,7 @@ func (s *Sqlite) SaveTrack(ctx context.Context, opts db.SaveTrackOpts) (*models.
 		Duration: opts.Duration,
 		AlbumID:  opts.AlbumID,
 	}
-	if opts.RecordingMbzID != uuid.Nil {
+	if opts.RecordingMbzID != uuid.Nil && recording == 0 {
 		u := opts.RecordingMbzID
 		ret.MbzID = &u
 	}
@@ -353,6 +353,21 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 		if opts.OnlyFillMusicBrainzID && currentMBID.Valid && currentMBID.String != uuid.Nil.String() && currentMBID.String != opts.MusicBrainzID.String() {
 			return db.ErrTrackIdentityConflict
 		}
+		if opts.OnlyFillMusicBrainzID {
+			var belongsElsewhere bool
+			err := tx.QueryRowContext(ctx, `SELECT EXISTS (
+				SELECT 1 FROM recordings r WHERE r.musicbrainz_id=? AND NOT EXISTS (
+					SELECT 1 FROM occurrences o WHERE o.legacy_track_id=? AND o.recording_id=r.id))`,
+				opts.MusicBrainzID.String(), opts.ID).Scan(&belongsElsewhere)
+			if err != nil {
+				return err
+			}
+			if belongsElsewhere {
+				opts.MusicBrainzID = uuid.Nil
+			}
+		}
+	}
+	if opts.MusicBrainzID != uuid.Nil {
 		if _, err := tx.ExecContext(ctx,
 			`UPDATE tracks SET musicbrainz_id = ? WHERE id = ?`,
 			opts.MusicBrainzID.String(), opts.ID); err != nil {
@@ -750,7 +765,7 @@ func mergeTracksIn(ctx context.Context, tx *sql.Tx, fromId, toId int32) error {
 	if _, err := tx.ExecContext(ctx,
 		`UPDATE OR IGNORE listens SET track_id = ? WHERE track_id = ?`, toId, fromId); err != nil {
 		if isOccurrenceGuard(err, "Cannot move an occurrence-resolved listen") {
-			return fmt.Errorf("MergeTracks: occurrence resolved: %w", db.ErrConflict)
+			return fmt.Errorf("MergeTracks: %w: %w", db.ErrConflict, err)
 		}
 		return fmt.Errorf("MergeTracks: redirect listens: %w", err)
 	}

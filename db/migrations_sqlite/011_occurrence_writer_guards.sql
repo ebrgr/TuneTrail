@@ -66,9 +66,9 @@ WHEN NEW.mode='active' AND NEW.event_id IS NOT NULL AND NOT EXISTS (
       AND l.origin=CASE
         WHEN NEW.resolver_variant='v9' THEN 'legacy'
         WHEN NEW.source_type='listenbrainz' AND NEW.file_format IS NULL THEN 'listenbrainz_api'
-        WHEN NEW.file_format='listenbrainz' THEN 'listenbrainz_import'
-        WHEN NEW.file_format='koito' THEN 'native_import'
-        WHEN NEW.file_format IN ('lastfm','spotify','maloja') THEN NEW.file_format||'_import'
+        WHEN NEW.source_type='file' AND NEW.file_format='listenbrainz' THEN 'listenbrainz_import'
+        WHEN NEW.source_type='file' AND NEW.file_format='koito' THEN 'native_import'
+        WHEN NEW.source_type='file' AND NEW.file_format IN ('lastfm','spotify','maloja') THEN NEW.file_format||'_import'
       END)
 BEGIN
     SELECT RAISE(ABORT,'Ingest link origin conflicts with its resolver variant');
@@ -82,9 +82,9 @@ WHEN NEW.mode='active' AND NEW.event_id IS NOT NULL AND NOT EXISTS (
       AND l.origin=CASE
         WHEN NEW.resolver_variant='v9' THEN 'legacy'
         WHEN NEW.source_type='listenbrainz' AND NEW.file_format IS NULL THEN 'listenbrainz_api'
-        WHEN NEW.file_format='listenbrainz' THEN 'listenbrainz_import'
-        WHEN NEW.file_format='koito' THEN 'native_import'
-        WHEN NEW.file_format IN ('lastfm','spotify','maloja') THEN NEW.file_format||'_import'
+        WHEN NEW.source_type='file' AND NEW.file_format='listenbrainz' THEN 'listenbrainz_import'
+        WHEN NEW.source_type='file' AND NEW.file_format='koito' THEN 'native_import'
+        WHEN NEW.source_type='file' AND NEW.file_format IN ('lastfm','spotify','maloja') THEN NEW.file_format||'_import'
       END)
 BEGIN
     SELECT RAISE(ABORT,'Ingest link origin conflicts with its resolver variant');

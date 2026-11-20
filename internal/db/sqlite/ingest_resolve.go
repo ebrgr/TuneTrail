@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
@@ -43,6 +44,13 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	}
 	receipt.client = receipt.snapshot.Client
 	if receipt.variant == "occurrence" {
+		// Normalize comparisons without changing the persisted observations.
+		if strings.TrimSpace(receipt.snapshot.Release) == "" {
+			receipt.snapshot.Release = ""
+		}
+		if track, err := uuid.Parse(receipt.snapshot.TrackMBID); err == nil && track != uuid.Nil {
+			receipt.snapshot.TrackMBID = track.String()
+		}
 		proof := verifyOccurrence(ctx, receipt.snapshot, mbzc)
 		if err := s.finishOccurrence(ctx, receipt, proof); err != nil {
 			return true, s.retryIngest(ctx, receipt, err)

@@ -37,9 +37,15 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 	if proof.recording != "" {
 		declared = proof.recording
 	}
-	if declaredID != uuid.Nil || proof.recording != "" {
-		err = tx.QueryRowContext(ctx, `SELECT id FROM recordings WHERE musicbrainz_id=? AND (mbid_source='validated' OR ?<>'')`,
-			declared, proof.recording).Scan(&match.recording)
+	if proof.recording != "" || (declaredID != uuid.Nil && snapshot.MBIDSource == "") {
+		err = tx.QueryRowContext(ctx, `SELECT r.id FROM recordings r WHERE r.musicbrainz_id=? AND
+			(?<>'' OR (r.mbid_source='validated' AND EXISTS (
+				SELECT 1 FROM occurrences o JOIN track_aliases t ON t.track_id=o.id
+				WHERE o.recording_id=r.id AND t.alias=?
+				  AND NOT EXISTS (SELECT 1 FROM json_each(?) c WHERE NOT EXISTS (
+				    SELECT 1 FROM artist_tracks at JOIN artist_aliases a ON a.artist_id=at.artist_id
+				    WHERE at.track_id=o.id AND a.alias=c.value)))))
+			`, declared, proof.recording, snapshot.Title, string(credits)).Scan(&match.recording)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return match, nil, err
 		}
@@ -238,16 +244,45 @@ func createOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsho
 	return match, nil
 }
 
+// occurrenceCreditConflicts keeps new associations from picking a homonymous artist by row order.
+func occurrenceCreditConflicts(ctx context.Context, tx *sql.Conn, names []string) ([]string, error) {
+	credits, err := json.Marshal(names)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := tx.QueryContext(ctx, `WITH ambiguous AS (
+		SELECT a.alias FROM artist_aliases a JOIN json_each(?) c ON a.alias=c.value
+		GROUP BY a.alias HAVING count(DISTINCT a.artist_id)>1
+	) SELECT DISTINCT a.artist_id FROM artist_aliases a JOIN ambiguous b USING(alias)
+	ORDER BY a.artist_id`, string(credits))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []string
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, strconv.FormatInt(id, 10))
+		if len(ids) == 33 {
+			break
+		}
+	}
+	return ids, rows.Err()
+}
+
 // ensureOccurrenceArtists reuses exact known names and keeps the observed order.
 func ensureOccurrenceArtists(ctx context.Context, tx *sql.Conn, names []string) ([]int64, error) {
 	var result []int64
 	for _, name := range names {
 		var id int64
-		err := tx.QueryRowContext(ctx, `SELECT coalesce(min(artist_id),0) FROM artist_aliases WHERE alias=? COLLATE BINARY`, name).Scan(&id)
-		if err != nil {
+		err := tx.QueryRowContext(ctx, `SELECT DISTINCT artist_id FROM artist_aliases WHERE alias=? COLLATE BINARY`, name).Scan(&id)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return nil, err
 		}
-		if id == 0 {
+		if errors.Is(err, sql.ErrNoRows) {
 			if err = tx.QueryRowContext(ctx, `INSERT INTO artists DEFAULT VALUES RETURNING id`).Scan(&id); err != nil {
 				return nil, err
 			}

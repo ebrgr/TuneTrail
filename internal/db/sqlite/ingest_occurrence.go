@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/ingest"
@@ -113,7 +114,13 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			return err
 		}
 		origin := occurrenceOrigin(r)
-		if origin == "" || proof.conflict || r.snapshot.Title == "" || len(observedCredits(r.snapshot)) == 0 || r.snapshot.DiscNumber < 0 || r.snapshot.TrackNumber < 0 || (r.snapshot.Release == "" && !s.allowStandaloneOccurrences) {
+		if proof.conflict {
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "contradictory_musicbrainz_identity", precision, nil, "")
+		}
+		if r.snapshot.Release == "" && !s.allowStandaloneOccurrences {
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "release_missing", precision, nil, "")
+		}
+		if origin == "" || strings.TrimSpace(r.snapshot.Title) == "" || len(observedCredits(r.snapshot)) == 0 || r.snapshot.DiscNumber < 0 || r.snapshot.TrackNumber < 0 {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "unresolved_identity", precision, nil, "")
 		}
 		if admissionReason == "client_batch_conflict" {
@@ -134,6 +141,13 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			return writeOccurrenceDecision(ctx, tx, r, match, "pending_duplicate", reason, precision, candidates, "")
 		}
 		if match.id == 0 {
+			conflicts, err := occurrenceCreditConflicts(ctx, tx, observedCredits(r.snapshot))
+			if err != nil {
+				return err
+			}
+			if len(conflicts) > 0 {
+				return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_artist_credit", precision, conflicts, "")
+			}
 			match, err = createOccurrence(ctx, tx, r.snapshot, proof, match)
 			if err != nil {
 				return err
@@ -238,7 +252,7 @@ func observedCredits(s ingest.Snapshot) []string {
 	}
 	var credits []string
 	for _, name := range names {
-		if name != "" && !slices.Contains(credits, name) {
+		if strings.TrimSpace(name) != "" && !slices.Contains(credits, name) {
 			credits = append(credits, name)
 		}
 	}
