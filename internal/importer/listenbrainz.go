@@ -236,7 +236,9 @@ func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.Mus
 			observedAt = time.Unix(int64(payload.ListenedAt), 0)
 		}
 		// Active files write only through durable receipt admission.
-		err = captureFileListen(ctx, ingest.ListenBrainzSnapshot(payload.TrackMeta), observedAt)
+		snapshot := ingest.ListenBrainzSnapshot(payload.TrackMeta)
+		snapshot.SkipCacheImage = opts.SkipCacheImage
+		err = captureFileListen(ctx, snapshot, observedAt)
 		if err == nil && !activeFileIngest(ctx) {
 			err = catalog.SubmitListen(ctx, store, opts)
 		}

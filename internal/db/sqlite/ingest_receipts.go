@@ -20,7 +20,7 @@ const receiptTime = "2006-01-02T15:04:05.000000000Z"
 
 type preparedReceipt struct {
 	ingest.Item
-	snapshot, digest string
+	snapshot, digest, legacyDigest string
 }
 
 // ReceiveBatch retains the legacy shadow writer for callers without active admission.
@@ -68,15 +68,19 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 	batchID := uuid.NewString()
 	prepared := make([]preparedReceipt, len(batch.Items))
 	digests := make([]string, len(batch.Items))
+	legacyDigests := make([]string, len(batch.Items))
 	for n, item := range batch.Items {
 		snapshot, digest := item.Encode()
-		prepared[n] = preparedReceipt{Item: item, snapshot: string(snapshot), digest: digest}
+		prepared[n] = preparedReceipt{Item: item, snapshot: string(snapshot), digest: digest, legacyDigest: item.LegacyDigest(batch.Source, batch.FileFormat)}
 		digests[n] = digest
+		legacyDigests[n] = prepared[n].legacyDigest
 	}
-	var batchDigest string
+	var batchDigest, legacyBatchDigest string
 	if batch.ClientKey != "" {
 		data, _ := json.Marshal(digests)
 		batchDigest = ingest.Digest(data)
+		legacy, _ := json.Marshal(legacyDigests)
+		legacyBatchDigest = ingest.Digest(legacy)
 	}
 	modeKnown := !master || pinned != nil
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
@@ -105,22 +109,27 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 			VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`, source, batch.ProfileID, batch.Source, batch.ReceivedAt.Unix()); err != nil {
 			return err
 		}
-		var previousBatchDigest string
+		var previousBatchDigest, previousBatchVersion string
 		if batch.ClientKey != "" {
-			err := tx.QueryRowContext(ctx, `SELECT batch_digest FROM ingest_events
+			err := tx.QueryRowContext(ctx, `SELECT batch_digest,digest_version FROM ingest_events
 				WHERE profile_id=? AND source_instance_id=? AND operation=? AND client_idempotency_key=?
-				ORDER BY item_ordinal LIMIT 1`, batch.ProfileID, source, batch.Operation, batch.ClientKey).Scan(&previousBatchDigest)
+				ORDER BY item_ordinal LIMIT 1`, batch.ProfileID, source, batch.Operation, batch.ClientKey).Scan(&previousBatchDigest, &previousBatchVersion)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 		}
+		comparableBatchDigest := batchDigest
+		if previousBatchVersion == ingest.LegacyDigestVersion {
+			comparableBatchDigest = legacyBatchDigest
+		}
+		batchConflict := previousBatchDigest != "" && previousBatchDigest != comparableBatchDigest
 		for _, item := range prepared {
 			var result ingest.Result
 			var err error
 			if active {
-				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, previousBatchDigest)
+				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict)
 			} else {
-				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, previousBatchDigest, hasMode)
+				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, hasMode)
 			}
 			if err != nil {
 				return err
@@ -159,7 +168,7 @@ func isAlreadyRolledBack(err error) bool {
 }
 
 const receiptColumns = `receipt_id, source_instance_id, coalesce(external_namespace,''), coalesce(external_event_id,''),
-	snapshot_digest, coalesce(batch_digest,''), time_precision, listened_at, original_snapshot, state`
+	snapshot_digest, coalesce(batch_digest,''), time_precision, listened_at, original_snapshot, state, digest_version`
 
 // scanReceipt reads the narrow projection used by historical shadow receipts.
 func scanReceipt(row interface{ Scan(...any) error }) (dedup.Receipt, error) {
@@ -171,7 +180,7 @@ func scanReceiptMode(row interface{ Scan(...any) error }, hasMode bool) (r dedup
 	var instant sql.NullString
 	var snapshot string
 	r.Mode = "shadow"
-	fields := []any{&r.ID, &r.Source, &r.Namespace, &r.ExternalID, &r.Digest, &r.BatchDigest, &r.Precision, &instant, &snapshot, &r.State}
+	fields := []any{&r.ID, &r.Source, &r.Namespace, &r.ExternalID, &r.Digest, &r.BatchDigest, &r.Precision, &instant, &snapshot, &r.State, &r.DigestVersion}
 	if hasMode {
 		fields = append(fields, &r.Mode, &r.Decision)
 	}
@@ -237,7 +246,7 @@ func findKey(ctx context.Context, tx *sql.Conn, b ingest.Batch, i ingest.Item, s
 }
 
 // receiveItem records the decision without setting any of the future identity columns.
-func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, previousBatchDigest string, hasMode bool) (ingest.Result, error) {
+func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict, hasMode bool) (ingest.Result, error) {
 	r := dedup.Receipt{Source: source, Namespace: i.ExternalNamespace, ExternalID: i.ExternalID, Digest: i.digest,
 		BatchDigest: batchDigest, Snapshot: i.Snapshot, Time: i.ListenedAt, Precision: "second"}
 	if r.Time.IsZero() {
@@ -250,8 +259,11 @@ func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedRe
 	if previous != nil && previous.Mode == "active" {
 		return replayIngest(previous), nil
 	}
+	if previous != nil && previous.DigestVersion == ingest.LegacyDigestVersion {
+		r.Digest, r.BatchDigest = i.legacyDigest, legacyBatchDigest
+	}
 	decision := dedup.Compare(dedup.Shadow, r, previous, previous != nil)
-	if previous == nil && previousBatchDigest != "" && previousBatchDigest != batchDigest {
+	if previous == nil && batchConflict {
 		// An extra ordinal under a reused batch key is still part of the conflict.
 		decision.Value, decision.Reason = "review", "client_batch_conflict"
 	} else if previous == nil {
@@ -309,7 +321,7 @@ func replayIngest(r *dedup.Receipt) ingest.Result {
 }
 
 // receiveActiveItem replays keys held by either mode and records active variants separately.
-func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, previousBatchDigest string) (ingest.Result, error) {
+func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool) (ingest.Result, error) {
 	previous, err := findKey(ctx, tx, b, i.Item, source, true)
 	if errors.Is(err, errReceiptKeyConflict) {
 		return ingest.Result{Decision: "review", Pending: true}, nil
@@ -324,7 +336,11 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 			result.Pending = previous.State == "pending_duplicate"
 			return result, nil
 		}
-		if previous.Digest != i.digest || previous.BatchDigest != batchDigest {
+		digest, comparableBatchDigest := i.digest, batchDigest
+		if previous.DigestVersion == ingest.LegacyDigestVersion {
+			digest, comparableBatchDigest = i.legacyDigest, legacyBatchDigest
+		}
+		if previous.Digest != digest || previous.BatchDigest != comparableBatchDigest {
 			_, err := tx.ExecContext(ctx, `INSERT INTO ingest_observations(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)
 				VALUES(?,?,?,1,?,?,?,?) ON CONFLICT(profile_id,receipt_id,digest_version,snapshot_digest) DO NOTHING`,
 				uuid.NewString(), b.ProfileID, previous.ID, i.digest, ingest.DigestVersion, i.snapshot, b.ReceivedAt.Unix())
@@ -338,7 +354,7 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 		at, precision = b.ReceivedAt, "estimated"
 	}
 	state, reasons := "received", "[]"
-	if previousBatchDigest != "" && previousBatchDigest != batchDigest {
+	if batchConflict {
 		var review bool
 		if err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT review FROM profile_ingest_flags WHERE profile_id=?),0)`, b.ProfileID).Scan(&review); err != nil {
 			return ingest.Result{}, err

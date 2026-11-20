@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
@@ -66,7 +67,7 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 		receipt.track = receipt.snapshot.CatalogTrackID
 	}
 	if receipt.track == 0 {
-		receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, mbzc))
+		receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, receipt.source, mbzc))
 	}
 	if err == nil {
 		err = s.finishIngest(ctx, receipt)
@@ -78,17 +79,23 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 }
 
 // ingestCatalogOptions maps only the durable allowlisted snapshot to catalog inputs.
-func ingestCatalogOptions(s ingest.Snapshot, mbzc mbz.MusicBrainzCaller) catalog.SubmitListenOpts {
+func ingestCatalogOptions(s ingest.Snapshot, source string, mbzc mbz.MusicBrainzCaller) catalog.SubmitListenOpts {
 	opts := catalog.SubmitListenOpts{
 		Artist: s.Artist, ArtistNames: s.ArtistNames, TrackTitle: s.Title, ReleaseTitle: s.Release,
 		Duration: int32(s.DurationMS / 1000), MbzCaller: mbzc,
 		RecordingMbzID:    uuidFromSnapshot(s.Recording, s.MappedRecording),
 		ReleaseMbzID:      uuidFromSnapshot(s.ReleaseMBID, s.MappedReleaseMBID),
 		ReleaseGroupMbzID: uuidFromSnapshot(s.ReleaseGroupMBID),
+		SkipCacheImage:    source == ingest.ShadowSourceFile && !cfg.FetchImagesDuringImport(),
 	}
 	for _, raw := range s.ArtistMBIDs {
 		if id, err := uuid.Parse(raw); err == nil {
 			opts.ArtistMbzIDs = append(opts.ArtistMbzIDs, id)
+		}
+	}
+	for _, credit := range s.ArtistMbidMappings {
+		if id, err := uuid.Parse(credit.MBID); err == nil {
+			opts.ArtistMbidMappings = append(opts.ArtistMbidMappings, catalog.ArtistMbidMap{Artist: credit.Name, Mbid: id})
 		}
 	}
 	return opts

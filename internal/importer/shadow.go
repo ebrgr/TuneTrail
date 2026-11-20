@@ -142,7 +142,20 @@ func flushFileShadow(ctx context.Context) error {
 // submitFileListen records the observed fields before catalog enrichment.
 func submitFileListen(ctx context.Context, store importStore, opts catalog.SubmitListenOpts, originalTime string) error {
 	snapshot := ingest.Snapshot{Artist: opts.Artist, ArtistNames: opts.ArtistNames, Title: opts.TrackTitle,
-		Release: opts.ReleaseTitle, DurationMS: int64(opts.Duration) * 1000, Client: opts.Client, OriginalTime: originalTime}
+		Release: opts.ReleaseTitle, DurationMS: int64(opts.Duration) * 1000, Client: opts.Client, OriginalTime: originalTime, SkipCacheImage: opts.SkipCacheImage}
+	// Preserve the same identifiers and named credits passed to the legacy catalog.
+	for _, id := range opts.ArtistMbzIDs {
+		snapshot.ArtistMBIDs = append(snapshot.ArtistMBIDs, id.String())
+	}
+	for _, credit := range opts.ArtistMbidMappings {
+		snapshot.ArtistMbidMappings = append(snapshot.ArtistMbidMappings, ingest.ArtistMapping{Name: credit.Artist, MBID: credit.Mbid.String()})
+	}
+	if opts.ReleaseMbzID != uuid.Nil {
+		snapshot.ReleaseMBID = opts.ReleaseMbzID.String()
+	}
+	if opts.ReleaseGroupMbzID != uuid.Nil {
+		snapshot.ReleaseGroupMBID = opts.ReleaseGroupMbzID.String()
+	}
 	if opts.RecordingMbzID != uuid.Nil {
 		snapshot.Recording = opts.RecordingMbzID.String()
 	}

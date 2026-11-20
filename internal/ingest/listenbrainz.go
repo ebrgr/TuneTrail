@@ -13,6 +13,11 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 		ClientVersion: info.SubmissionClientVersion}
 	s.ArtistMBIDs = validMBIDs(info.ArtistMBIDs)
 	s.MappedArtistMBIDs = validMBIDs(meta.MBIDMapping.ArtistMBIDs)
+	for _, credit := range meta.MBIDMapping.Artists {
+		if id, err := uuid.Parse(credit.ArtistMBID); err == nil && credit.ArtistName != "" {
+			s.ArtistMbidMappings = append(s.ArtistMbidMappings, ArtistMapping{Name: credit.ArtistName, MBID: id.String()})
+		}
+	}
 	if id, err := uuid.Parse(info.ReleaseGroupMBID); err == nil {
 		s.ReleaseGroupMBID = id.String()
 	}

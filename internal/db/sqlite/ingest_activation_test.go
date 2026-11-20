@@ -171,3 +171,32 @@ func TestIngestAdmissionModeReplay(t *testing.T) {
 		})
 	}
 }
+
+// TestIngestDigestUpgrade preserves v1 keyed retries while detecting changes to v1 fields.
+func TestIngestDigestUpgrade(t *testing.T) {
+	ctx := context.Background()
+	s, _, _ := migrationDB(t, 9)
+	seedIdentityHistory(t, s)
+	// Store the v1 bytes and batch digest exactly as the old adapter wrote them.
+	legacySnapshot := `{"artist":"A","title":"T"}`
+	oldDigest := ingest.Digest([]byte(legacySnapshot))
+	batchDigest := ingest.Digest([]byte(fmt.Sprintf(`["%s"]`, oldDigest)))
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('listenbrainz:1',1,'listenbrainz',0);
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,
+			operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,client_idempotency_key,batch_digest)
+		VALUES('v1',1,'listenbrainz:1',1,'listenbrainz','1','batch',0,'single',0,'estimated','unknown',?,?,'sha256-json-v1','key',?)`,
+		legacySnapshot, oldDigest, batchDigest)
+	batch := ingest.Batch{ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ClientKey: "key", ReceivedAt: time.Now(),
+		Items: []ingest.Item{{Snapshot: ingest.Snapshot{Artist: "A", Title: "T",
+			ArtistMbidMappings: []ingest.ArtistMapping{{Name: "A", MBID: "12345678-1234-4321-abcd-000000000001"}}}}}}
+	retry, err := s.ReceiveBatch(ctx, batch)
+	require.NoError(t, err)
+	require.Equal(t, "v1", retry[0].ReceiptID)
+	require.Equal(t, "same", retry[0].Decision)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='v1'`))
+	batch.Items[0].Snapshot.Title = "Changed"
+	retry, err = s.ReceiveBatch(ctx, batch)
+	require.NoError(t, err)
+	require.Equal(t, "review", retry[0].Decision)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='v1' AND digest_version=?`, ingest.DigestVersion))
+}
