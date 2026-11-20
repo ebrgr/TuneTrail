@@ -50,6 +50,10 @@ func (s *Sqlite) SetIngestActivation(ctx context.Context, session uuid.UUID, pro
 		if err != nil {
 			return err
 		}
+		// The cut is irreversible even through the existing activation API.
+		if current.OccurrenceWrite && !active {
+			return db.ErrConflict
+		}
 		if active && (!current.Active || digest != "") {
 			if len(digest) != sha256.Size*2 {
 				return db.ErrInvalidInput
@@ -97,8 +101,8 @@ func checkIngestRoot(ctx context.Context, tx ingestActivationReader, session uui
 func ingestActivationFlags(ctx context.Context, tx ingestActivationReader, profile int32) (p db.IngestActivationPreview, err error) {
 	p.ProfileID = profile
 	p.Groups = []db.IngestShadowGroup{}
-	err = tx.QueryRowContext(ctx, `SELECT coalesce(f.active,0),coalesce(f.review,0)
-		FROM listening_profiles p LEFT JOIN profile_ingest_flags f ON f.profile_id=p.id WHERE p.id=?`, profile).Scan(&p.Active, &p.Review)
+	err = tx.QueryRowContext(ctx, `SELECT coalesce(f.active,0),coalesce(f.review,0),coalesce(f.occurrence_write,0)
+		FROM listening_profiles p LEFT JOIN profile_ingest_flags f ON f.profile_id=p.id WHERE p.id=?`, profile).Scan(&p.Active, &p.Review, &p.OccurrenceWrite)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = db.ErrNotFound
 	}
@@ -112,7 +116,7 @@ func previewIngestActivation(ctx context.Context, tx ingestActivationReader, pro
 		return p, err
 	}
 	hash := sha256.New()
-	fmt.Fprintf(hash, "ingest-activation-v1/%d/%t/%t\n", profile, p.Active, p.Review)
+	fmt.Fprintf(hash, "ingest-activation-v2/%d/%t/%t/%t\n", profile, p.Active, p.Review, p.OccurrenceWrite)
 	rows, err := tx.QueryContext(ctx, `WITH targets AS MATERIALIZED (
 		SELECT * FROM ingest_events WHERE `+shadowPurgeScope+`
 	)

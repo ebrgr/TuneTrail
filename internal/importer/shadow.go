@@ -36,9 +36,10 @@ func withFileShadow(ctx context.Context, store importStore, profile int32, forma
 	}
 	admission, _ := store.(ingest.Admission)
 	active := false
-	if admission != nil && cfg.ActiveIngestEnabled() {
+	// Check the profile cut even with the master switch off.
+	if admission != nil {
 		var err error
-		active, err = admission.BeginImportIngest(ctx, profile, true)
+		active, err = admission.BeginImportIngest(ctx, profile, cfg.ActiveIngestEnabled())
 		if err != nil {
 			return ctx, err
 		}

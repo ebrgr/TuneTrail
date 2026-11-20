@@ -92,11 +92,6 @@ END;
 -- +goose StatementEnd
 
 -- +goose Down
-DROP TRIGGER trg_occurrence_link_origin_update;
-DROP TRIGGER trg_occurrence_link_origin_insert;
-DROP TRIGGER trg_occurrence_relay_update;
-DROP TRIGGER trg_occurrence_relay_insert;
-DROP TRIGGER trg_occurrence_cut_update;
-DROP TRIGGER trg_occurrence_cut_insert;
-DROP TRIGGER trg_occurrence_listen_admission;
-DROP TRIGGER trg_occurrence_receipt_admission;
+-- Restore the pre-upgrade backup instead of removing the writer boundary.
+CREATE TEMP TABLE occurrence_writer_downgrade_guard (value INTEGER CHECK(value=0));
+INSERT INTO occurrence_writer_downgrade_guard VALUES (1);

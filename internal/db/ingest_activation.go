@@ -12,12 +12,13 @@ var ErrIngestReviewUnavailable = fmt.Errorf("%w: review requires the ingestion r
 
 // IngestActivationPreview reports the aggregate export and confirmation digest for one profile.
 type IngestActivationPreview struct {
-	ProfileID int32               `json:"profile_id"`
-	Active    bool                `json:"active"`
-	Review    bool                `json:"review"`
-	Digest    string              `json:"digest"`
-	Receipts  int64               `json:"receipts"`
-	Groups    []IngestShadowGroup `json:"groups"`
+	ProfileID       int32               `json:"profile_id"`
+	Active          bool                `json:"active"`
+	OccurrenceWrite bool                `json:"occurrence_write,omitempty"`
+	Review          bool                `json:"review"`
+	Digest          string              `json:"digest"`
+	Receipts        int64               `json:"receipts"`
+	Groups          []IngestShadowGroup `json:"groups"`
 }
 
 // IngestShadowGroup carries only aggregated measurements and adapter provenance.

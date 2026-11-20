@@ -31,16 +31,25 @@ func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]ingest
 
 // BeginImportIngest selects the mode once for the entire import job.
 func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bool) (active bool, err error) {
-	if !master {
-		return false, nil
-	}
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		version, err := ingestSchemaVersion(ctx, tx)
 		// Active import admission requires the occurrence-ready schema.
 		if err != nil || version < 10 {
 			return err
 		}
-		active, err = activeIngestMode(ctx, tx, profile)
+		if version >= 11 {
+			converted, err := occurrenceWriteFlag(ctx, tx, profile)
+			if err != nil {
+				return err
+			}
+			// File jobs still use the v9 adapter until the occurrence adapter lands.
+			if converted {
+				return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
+			}
+		}
+		if master {
+			active, err = activeIngestMode(ctx, tx, profile)
+		}
 		return err
 	})
 	return active, ingestStorageError(err, true)
@@ -58,6 +67,15 @@ func activeIngestMode(ctx context.Context, tx *sql.Conn, profile int32) (bool, e
 	var active bool
 	err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT active FROM profile_ingest_flags WHERE profile_id=?),0)`, profile).Scan(&active)
 	return active, err
+}
+
+var errOccurrenceAdmissionPaused = errors.New("occurrence admission is paused")
+
+// occurrenceWriteFlag reads the irreversible cut under the writer lock.
+func occurrenceWriteFlag(ctx context.Context, tx *sql.Conn, profile int32) (bool, error) {
+	var converted bool
+	err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT occurrence_write FROM profile_ingest_flags WHERE profile_id=?),0)`, profile).Scan(&converted)
+	return converted, err
 }
 
 // AdmitIngest fixes the mode under the writer lock, honoring the import job's pinned mode.
@@ -88,6 +106,20 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 		version, err := ingestSchemaVersion(ctx, tx)
 		if err != nil {
 			return err
+		}
+		variant := "v9"
+		if version >= 11 {
+			converted, err := occurrenceWriteFlag(ctx, tx, batch.ProfileID)
+			if err != nil {
+				return err
+			}
+			if converted {
+				active = true
+				if !master || pinned != nil {
+					return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
+				}
+				variant = "occurrence"
+			}
 		}
 		hasMode := version >= 9
 		// Older layouts can still receive historical shadow receipts.
@@ -129,7 +161,7 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 			var result ingest.Result
 			var err error
 			if active {
-				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict)
+				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, variant)
 			} else {
 				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, hasMode)
 			}
@@ -160,6 +192,12 @@ func ingestStorageError(err error, active bool) error {
 		}
 	}
 	return err
+}
+
+// isOccurrenceGuard recognizes controlled SQLite trigger errors without matching other SQL failures.
+func isOccurrenceGuard(err error, message string) bool {
+	var sqliteErr *sqlitedriver.Error
+	return errors.As(err, &sqliteErr) && sqliteErr.Code() == sqlitecodes.SQLITE_CONSTRAINT_TRIGGER && strings.Contains(sqliteErr.Error(), message)
 }
 
 // isAlreadyRolledBack recognizes automatic SQLite rollback after a storage error.
@@ -323,7 +361,7 @@ func replayIngest(r *dedup.Receipt) ingest.Result {
 }
 
 // receiveActiveItem replaces unlinked shadow receipts and replays linked or active owners.
-func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool) (ingest.Result, error) {
+func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, variant string) (ingest.Result, error) {
 	previous, err := findKey(ctx, tx, b, i.Item, source, true)
 	if errors.Is(err, errReceiptKeyConflict) {
 		return ingest.Result{Decision: "review", Pending: true}, nil
@@ -376,7 +414,9 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 		}
 	}
 	state, reasons := "received", "[]"
-	if batchConflict {
+	if batchConflict && variant == "occurrence" {
+		reasons = `["client_batch_conflict"]`
+	} else if batchConflict {
 		var review bool
 		if err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT review FROM profile_ingest_flags WHERE profile_id=?),0)`, b.ProfileID).Scan(&review); err != nil {
 			return ingest.Result{}, err
@@ -389,12 +429,12 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 	_, err = tx.ExecContext(ctx, `INSERT INTO ingest_events
 		(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
 		external_namespace,external_event_id,external_id_trusted,client_idempotency_key,batch_digest,file_digest,file_format,format_version,
-		listened_at,original_time,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version)
+		listened_at,original_time,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant)
 		VALUES(?,?,?,1,?,'1',?,?,?,?,nullif(?,''),nullif(?,''),?,nullif(?,''),nullif(?,''),nullif(?,''),nullif(?,''),CASE WHEN ?!='' THEN '1' END,
-		?,nullif(?,''),?,'unknown',?,?,?,'active',?,?,?)`,
+		?,nullif(?,''),?,'unknown',?,?,?,'active',?,?,?,?)`,
 		id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
 		b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, at.UTC().Format(receiptTime), i.OriginalTime(), precision,
-		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion)
+		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion, variant)
 	return ingest.Result{ReceiptID: id, Pending: true}, err
 }
 
