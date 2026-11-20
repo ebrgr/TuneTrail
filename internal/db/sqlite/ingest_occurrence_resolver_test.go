@@ -411,3 +411,15 @@ func TestOccurrenceProvenTrackDisambiguatesRelease(t *testing.T) {
 		return nil
 	}))
 }
+
+// TestOccurrenceWriteConflicts exposes the three SQL boundaries as typed administrative conflicts.
+func TestOccurrenceWriteConflicts(t *testing.T) {
+	ctx := context.Background()
+	s := convertedOccurrenceFixture(t)
+	require.ErrorIs(t, s.SetProfileRelay(ctx, 1, "https://fixture.invalid", "token"), db.ErrConflict)
+	require.ErrorIs(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(1500, 0)}), db.ErrConflict)
+	execSQL(t, s, `UPDATE recordings SET musicbrainz_id=?,mbid_source='validated' WHERE id=(SELECT recording_id FROM occurrences WHERE id=1)`, fixtureRecording)
+	err := s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 70, MusicBrainzID: uuid.MustParse(fixtureRecording)})
+	require.ErrorIs(t, err, db.ErrConflict)
+	require.ErrorContains(t, err, "recordings.musicbrainz_id")
+}

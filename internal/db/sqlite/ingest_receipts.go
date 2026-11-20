@@ -196,8 +196,13 @@ func ingestStorageError(err error, active bool) error {
 
 // isOccurrenceGuard recognizes controlled SQLite trigger errors without matching other SQL failures.
 func isOccurrenceGuard(err error, message string) bool {
+	return matchesSQLiteError(err, sqlitecodes.SQLITE_CONSTRAINT_TRIGGER, message)
+}
+
+// matchesSQLiteError recognizes the named constraint without classifying unrelated failures.
+func matchesSQLiteError(err error, code int, message string) bool {
 	var sqliteErr *sqlitedriver.Error
-	return errors.As(err, &sqliteErr) && sqliteErr.Code() == sqlitecodes.SQLITE_CONSTRAINT_TRIGGER && strings.Contains(sqliteErr.Error(), message)
+	return errors.As(err, &sqliteErr) && sqliteErr.Code() == code && strings.Contains(sqliteErr.Error(), message)
 }
 
 // isAlreadyRolledBack recognizes automatic SQLite rollback after a storage error.

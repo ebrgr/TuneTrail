@@ -159,6 +159,10 @@ func (s *Sqlite) SetProfileRelay(ctx context.Context, id int32, url, token strin
 		return err
 	}
 	_, err := s.db.ExecContext(ctx, `INSERT INTO profile_relays(profile_id,url,token) VALUES (?,?,?) ON CONFLICT(profile_id) DO UPDATE SET url=excluded.url,token=excluded.token`, id, url, token)
+	// Expose an incompatible relay configuration as an administrative conflict.
+	if isOccurrenceGuard(err, "Relay conflicts") {
+		return fmt.Errorf("SetProfileRelay: %w: %w", db.ErrConflict, err)
+	}
 	return err
 }
 

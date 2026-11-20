@@ -13,6 +13,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
+	sqlitecodes "modernc.org/sqlite/lib"
 )
 
 func (s *Sqlite) GetTrack(ctx context.Context, opts db.GetTrackOpts) (*models.Track, error) {
@@ -373,10 +374,14 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 			opts.MusicBrainzID.String(), opts.ID); err != nil {
 			if isOccurrenceGuard(err, "shared or validated") {
 				if !opts.OnlyFillMusicBrainzID {
-					return fmt.Errorf("UpdateTrack: MBID protected: %w", db.ErrConflict)
+					return fmt.Errorf("UpdateTrack: MBID protected: %w: %w", db.ErrConflict, err)
 				}
 				// Leave the shared identity intact and continue the legacy listen.
 			} else {
+				// A surviving recording may own the MBID after its primary track was removed.
+				if matchesSQLiteError(err, sqlitecodes.SQLITE_CONSTRAINT_UNIQUE, "recordings.musicbrainz_id") {
+					return fmt.Errorf("UpdateTrack: recording MBID already assigned: %w: %w", db.ErrConflict, err)
+				}
 				return fmt.Errorf("UpdateTrack: mbzid: %w", err)
 			}
 		}

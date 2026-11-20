@@ -39,6 +39,10 @@ func (s *Sqlite) SaveListenWithResult(ctx context.Context, opts db.SaveListenOpt
          ON CONFLICT (profile_id, track_id, listened_at) DO NOTHING`,
 		opts.TrackID, opts.Time.Unix(), nullableLegacyUserID(opts.UserID), profileID, client,
 	)
+	// Manual legacy writes cannot bypass a converted profile's admission.
+	if isOccurrenceGuard(err, "Legacy listen conflicts") {
+		return false, fmt.Errorf("SaveListen: %w: %w", db.ErrConflict, err)
+	}
 	if err != nil {
 		return false, err
 	}
