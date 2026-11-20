@@ -1,11 +1,11 @@
 ---
 id: ISSUE-163
 title: 163 — Adequar telas multiusuário e navegação por permissão
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-20T20:36:00Z'
+updated_date: '2026-11-20T20:51:00Z'
 labels:
   - ui
   - admin
@@ -34,8 +34,8 @@ Origem: ISSUE-100 (aceita em 2026-11-17). Contrato normativo: doc-041 e decision
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 Telas de login, conta, gestão própria e gestão root conforme o papel; aviso do relay junto à opção de proteção
-- [ ] #2 Funciona sem JavaScript; foco, teclado e leitor de tela verificados
-- [ ] #3 Capturas responsivas e aceite visual do usuário
+- [x] #2 Funciona sem JavaScript; foco, teclado e leitor de tela verificados
+- [x] #3 Capturas responsivas e aceite visual do usuário
 - [x] #4 Modelo de navegação montado no servidor a partir de AuthorizeAction: o HTML de visitante, comum, dono e root não traz links ou ações que o papel não pode usar; chamadas diretas continuam negadas
 - [x] #5 Login válido segue para /account (comum) ou /admin (root), com retorno prioritário a leitura autorizada e validada; 403 definitivo oferece Minha conta, Diretório e Sair…
 - [x] #6 Textos e logs sem «administrator session required» e «Administrative logout failed» para o comum; 404 legado com Vary: Cookie e política de cache; cadeado acessível; teste de tempo do login reexecutado
@@ -104,6 +104,15 @@ created: 2026-11-20T20:36:00Z
 ---
 
 Verificação da correção autorizada após o Reviewer (aprovado com um item obrigatório). O ticket de saída reutilizado conserva o token e recebe 30 minutos completos a cada emissão. O teste verifica a limpeza dos expirados, a recusa do ticket em outra ação (409) e a revogação da sessão pelo POST de saída. A 403 do usuário comum foi verificada em pt-BR e en com apenas o link do perfil próprio. Documentado LogoutForm e registrada na ISSUE-161 a correção da referência ao parecer. Os testes Go dos pacotes afetados e make check passaram, com 13/13 jornadas E2E. Ressalvas conhecidas e aceitas: o botão Sair… envia o POST direto até a confirmação da ISSUE-157, e a falha rara na resolução pós-login pode deixar uma sessão órfã sem risco explorável identificado pelo Reviewer.
+
+---
+
+author: claude
+created: 2026-11-20T20:51:00Z
+
+---
+
+Aceite do usuário em 20/11/2026: AC2 (sem JavaScript, foco, teclado e leitor de tela, testados ao vivo em servidor isolado com contas fictícias) e AC3 (capturas responsivas e aceite visual). Durante o aceite o usuário pediu trocar o cadeado emoji pelo ícone LockKeyhole do catálogo do sistema (commit 9310342); as capturas dos diretórios em backlog/evidencias/issue-163/capturas anteriores a esse commit ainda mostram o emoji e não foram regeneradas. Pendências conhecidas e aceitas: «Sair…» envia direto até a confirmação da ISSUE-157; /account e a página Conta própria são da ISSUE-125 (o destino do comum segue /admin?section=account numa constante isolada).
 
 ---
 <!-- COMMENTS:END -->
