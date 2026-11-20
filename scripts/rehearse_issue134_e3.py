@@ -13,6 +13,19 @@ from rehearse_issue134_e1 import verify_replay
 from validate_multiuser import ROOT
 
 
+def catalog_query_plans(conn):
+    sql = (ROOT / "internal/db/sqlite/ingest_occurrence_catalog.go").read_text()
+
+    def explain(prefix, parameters):
+        query = prefix + sql.split("QueryContext(ctx, `" + prefix, 1)[1].split("`", 1)[0]
+        return [row[3] for row in conn.execute("EXPLAIN QUERY PLAN " + query, parameters)]
+
+    return {
+        "occurrence_query_plan": explain("SELECT o.id", ("Song", "Song", '["Artist"]', 1, False, "")),
+        "release_query_plan": explain("SELECT DISTINCT r.id", ("Album", "", '["Artist"]')),
+    }
+
+
 def rehearse(binary, baseline, root):
     directory = root / "load"
     init(baseline, directory)
@@ -37,10 +50,7 @@ def rehearse(binary, baseline, root):
     try:
         with database(directory) as conn:
             assert conn.execute("SELECT count(*) FROM ingest_events").fetchone() == (300000,)
-            sql = (ROOT / "internal/db/sqlite/ingest_occurrence_catalog.go").read_text()
-            query = sql.split("QueryContext(ctx, `SELECT o.id", 1)[1].split("`", 1)[0]
-            plan = [row[3] for row in conn.execute("EXPLAIN QUERY PLAN SELECT o.id" + query,
-                                                    ("Song", "Song", '["Artist"]', 1, False, ""))]
+            plans = catalog_query_plans(conn)
             conn.execute("INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)")
 
         server.login()
@@ -107,7 +117,7 @@ def rehearse(binary, baseline, root):
             "shadow_receipts_retained_during_resolution": 300000, "accepted_first_wave": 101,
             "first_wave_seconds": round(visible_at - started, 3),
             "last_upload_ack_to_all_visible_ms": round(max(0, visible_at - max(arrivals.values())) * 1000, 1),
-            "overlap_pending": 20, "commit_rollback_and_restart": True, "occurrence_query_plan": plan,
+            "overlap_pending": 20, "commit_rollback_and_restart": True, **plans,
             "backup_bytes": next(directory.glob("*.pre-occurrence-ingest-*.bak")).stat().st_size}
 
 

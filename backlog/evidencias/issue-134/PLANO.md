@@ -229,3 +229,5 @@ Os testes dos pacotes afetados e o `make check` passaram, com 13/13 jornadas. A 
 - Feito — Restringe marcadores de proveniência MBID aos valores reservados. Pendente — ajustar imports e evidência do ensaio e executar testes finais.
 
 - Feito — Agrupa imports de ingestão conforme goimports. Pendente — precisar evidência do ensaio e executar testes finais.
+
+- Feito — Explicita limites do ensaio e verifica o plano de busca por alias. Pendente — executar go test e make check, registrar Backlog e parar.

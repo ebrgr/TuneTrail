@@ -1,6 +1,6 @@
 # ISSUE-134 — Ensaio da E3
 
-O ensaio usou o binário da worktree baseada na v0.45 e um binário compilado da tag v0.44. Todos os dados e servidores foram descartáveis. O perfil v9 de origem foi atualizado para v11. Outro perfil conservou **300.000 recibos de sombra** enquanto o perfil de teste resolvia as escutas e os arquivos. MusicBrainz e relay ficaram desligados.
+O ensaio usou o binário da worktree baseada na v0.45 e um binário compilado da tag v0.44. Todos os dados e servidores foram descartáveis. O perfil v9 de origem foi atualizado para v11. Um perfil separado conservou **300.000 recibos de sombra** com snapshot `{}` e `listened_at` nulo enquanto o perfil de teste resolvia as escutas e os arquivos. Essa massa mede retenção e isolamento por índice entre perfis. Contenção com 300.000 recibos no mesmo perfil fica para a E4. MusicBrainz e relay ficaram desligados.
 
 | Medida | Resultado observado |
 | --- | ---: |
@@ -19,7 +19,7 @@ Uma falha de COMMIT induzida por FK adiada deixou o recibo em retry e zero escut
 
 O replay com controles desligados comparou 18 escutas, 18 recibos de sombra e exportação com a v0.44. O backup v9 abriu e repetiu o mesmo resultado no binário da tag v0.44. Em uma verificação separada, o binário compilado da tag v0.45 recusou a base v11 com `unsupported schema version 11`.
 
-O `EXPLAIN QUERY PLAN` da seleção de ocorrências reportou `MULTI-INDEX OR`, com dois ramos usando `idx_occurrences_release` e um ramo usando o índice único de `track_mbid`. A gravação foi buscada pela chave primária. A comparação de créditos usou os índices de aliases e vínculos, e a ordenação usou uma B-tree temporária. A busca textual de lançamento começa pelo alias.
+O `EXPLAIN QUERY PLAN` da seleção de ocorrências reportou `MULTI-INDEX OR`, com dois ramos usando `idx_occurrences_release` e um ramo usando o índice único de `track_mbid`. A gravação foi buscada pela chave primária. A comparação de créditos usou os índices de aliases e vínculos, e a ordenação usou uma B-tree temporária. Uma verificação separada em schema v11 executou o EXPLAIN da busca textual de lançamento. O plano reportou `SEARCH ra USING INDEX idx_release_aliases_alias (alias=?)`, com release pela chave primária. O índice existe desde a 001. O script agora inclui os dois planos.
 
 Comando de reprodução:
 
@@ -27,4 +27,4 @@ Comando de reprodução:
 python3 scripts/rehearse_issue134_e3.py --binary /caminho/v11 --baseline /caminho/v044
 ```
 
-Os tempos são observações de um ensaio local e incluem a cadência do worker na execução HTTP. A fixture direta mede trabalho local, sem espera de fila, catálogo remoto ou carga concorrente. O ensaio usou uma rajada de 101 escutas com um ledger grande e não estabelece limites de produção. A E4 mede os casos de fragmentação, o piloto e a carga sustentada após o Reviewer.
+Os tempos são observações de um ensaio local e incluem a cadência do worker na execução HTTP. Os tempos de 2,35 ms e 1,03 ms vêm do log Go de `TestOccurrenceResolverOverlap` em `internal/db/sqlite/ingest_occurrence_resolver_test.go`. A fixture direta mede trabalho local, sem espera de fila, catálogo remoto ou carga concorrente. O ensaio usou uma rajada de 101 escutas com um ledger grande e não estabelece limites de produção. A E4 mede os casos de fragmentação, o piloto e a carga sustentada após o Reviewer.
