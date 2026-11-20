@@ -323,6 +323,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		err = h.authorizeAction(r, identity)
 	}
 	if r.URL.Path == "/admin/logout" && errors.Is(err, admin.ErrUnauthorized) {
+		// An expired or revoked session gets a neutral sign-in form instead of a 403.
 		h.renderLogin(w, r, http.StatusUnauthorized, "Sign in to continue.")
 		return
 	}
@@ -542,7 +543,6 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
 	}
 	v.Nav = h.navigation(r, id, v.Profile, navSection(section))
-
 	h.render(w, 200, v)
 }
 

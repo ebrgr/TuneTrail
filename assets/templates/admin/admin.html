@@ -65,8 +65,8 @@
             <form method="post" action="/admin/logout">
               <input type="hidden" name="csrf_token" value="{{.CSRF}}">
               <input type="hidden" name="submission_token" value="{{.Submission}}">
-              <button type="submit" autofocus aria-describedby="sign-out-description">{{tr "admin.sign_out.confirm" "Sign out"}}</button>
-              <a href="{{.Next}}" aria-describedby="sign-out-description">{{tr "admin.sign_out.cancel" "Cancel"}}</a>
+              <a href="{{.Next}}" autofocus aria-describedby="sign-out-description">{{tr "admin.sign_out.cancel" "Cancel"}}</a>
+              <button type="submit" aria-describedby="sign-out-description">{{tr "admin.sign_out.confirm" "Sign out"}}</button>
             </form>
           {{else if .LogoutOnly}}
             {{with $nav.Account}}<p>{{template "partial/nav-link" .}}</p>{{end}}

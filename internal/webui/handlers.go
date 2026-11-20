@@ -32,8 +32,7 @@ type ReadStore interface {
 }
 type Options struct {
 	// Sessions resolves account cookies independently of role.
-	Sessions admin.SessionReader
-
+	Sessions       admin.SessionReader
 	Languages      *i18n.Catalog
 	ForcedTimezone bool
 	DefaultTheme   string
@@ -117,7 +116,6 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p.access = webassets.AccessNavigation(p.identity.User, webassets.OwnProfile(p.identity.User, all), visited, "")
-
 	// Both entry links use only destinations allowed by the read-route policy.
 	destination := adminweb.SafeReturn(p.CurrentURL)
 	p.access.LoginFor(destination)
@@ -334,7 +332,6 @@ func (h *Pages) fail(w http.ResponseWriter, p LivePage, status int) {
 		p.Media = nil
 		p.Section, p.Timezone, p.WeekStart = "profiles", "", 0
 		p.access = webassets.AccessNavigation(p.identity.User, nil, nil, "")
-
 		if p.Locale != nil {
 			p.Locale.Return = "/"
 		}

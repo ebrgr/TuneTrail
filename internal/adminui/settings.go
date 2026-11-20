@@ -108,7 +108,6 @@ func (h *Handler) renderSettings(r *http.Request, w http.ResponseWriter, id admi
 	zone, _ := now.Zone()
 	local := fmt.Sprintf("%s (%s, UTC%s)", now.Location(), zone, now.Format("-07:00"))
 	v := settingsView{Nav: h.navigation(r, id, profile, "settings"), Locale: i18n.ViewOf(w), User: id.User, Profile: profile, CSRF: token, Submission: ticket, Revision: revision, Notice: notice, Error: message, LocalTimezone: local, RestartRequired: snap.RestartRequired, StateAvailable: len(snap.Revision) == 64}
-
 	for _, spec := range settingsFields {
 		value := snap.Saved[spec.Name]
 		if draft != nil {

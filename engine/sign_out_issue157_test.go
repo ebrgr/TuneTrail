@@ -41,8 +41,8 @@ func TestSignOutConfirmation157(t *testing.T) {
 		require.Equal(t, "private, no-store", page.Header().Get("Cache-Control"))
 		require.Contains(t, page.Header().Values("Vary"), "Cookie")
 		require.Contains(t, page.Body.String(), tc.title)
-		require.Contains(t, page.Body.String(), `autofocus aria-describedby="sign-out-description">`+tc.label+`</button>`)
-		require.Contains(t, page.Body.String(), `href="/" aria-describedby="sign-out-description">`+tc.cancel+`</a>`)
+		require.Contains(t, page.Body.String(), `type="submit" aria-describedby="sign-out-description">`+tc.label+`</button>`)
+		require.Contains(t, page.Body.String(), `href="/" autofocus aria-describedby="sign-out-description">`+tc.cancel+`</a>`)
 		head := taskRequest139(a, "HEAD", signOut157, tc.cookie, nil, nil)
 		require.Equal(t, http.StatusOK, head.Code)
 		require.Equal(t, page.Header().Get("Cache-Control"), head.Header().Get("Cache-Control"))
@@ -52,15 +52,15 @@ func TestSignOutConfirmation157(t *testing.T) {
 		require.Empty(t, prefetch.Body.String())
 		for _, bad := range []string{"//outside.test", "https://outside.test/", "javascript:alert(1)", "/admin/logout"} {
 			cancel := taskRequest139(a, "GET", signOut157+"?return="+url.QueryEscape(bad), tc.cookie, nil, nil)
-			require.Contains(t, cancel.Body.String(), `href="/admin?section=account" aria-describedby="sign-out-description"`)
+			require.Contains(t, cancel.Body.String(), `href="/admin?section=account" autofocus aria-describedby="sign-out-description"`)
 		}
 		_, err := admin.Authenticate(context.Background(), a.store, uuid.MustParse(tc.cookie))
 		require.NoError(t, err)
 	}
 	denied := taskRequest139(a, "GET", signOut157+"?return=%2Fadmin%2Fsettings", ordinary, nil, nil)
-	require.Contains(t, denied.Body.String(), `href="/admin?section=account" aria-describedby="sign-out-description"`)
+	require.Contains(t, denied.Body.String(), `href="/admin?section=account" autofocus aria-describedby="sign-out-description"`)
 	allowed := taskRequest139(a, "GET", signOut157+"?return=%2Fadmin%2Fsettings", a.cookie, nil, nil)
-	require.Contains(t, allowed.Body.String(), `href="/admin/settings" aria-describedby="sign-out-description"`)
+	require.Contains(t, allowed.Body.String(), `href="/admin/settings" autofocus aria-describedby="sign-out-description"`)
 	missing := taskRequest139(a, "GET", signOut157, "", nil, nil)
 	require.Equal(t, http.StatusUnauthorized, missing.Code)
 	require.Contains(t, missing.Body.String(), "Sign in to continue.")
@@ -143,7 +143,7 @@ func TestSignOutLinksKeepReadOrigin157(t *testing.T) {
 		require.Contains(t, page.Body.String(), `href="`+link+`"`)
 		confirm := taskRequest139(a, "GET", link, tc.cookie, nil, nil)
 		require.Equal(t, http.StatusOK, confirm.Code)
-		require.Contains(t, confirm.Body.String(), `href="`+tc.path+`" aria-describedby="sign-out-description"`)
+		require.Contains(t, confirm.Body.String(), `href="`+tc.path+`" autofocus aria-describedby="sign-out-description"`)
 	}
 
 	invalid := taskRequest139(a, "GET", "/admin?section=account&next=https://outside.test", ordinary, nil, nil)

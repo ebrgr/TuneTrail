@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Signing out now asks for confirmation (ISSUE-157).
+- Signing out now asks for confirmation and returns you to the public directory. “Sign out…” is available on the account and 403 pages (ISSUE-157).
 
 ## [0.45] - 2026-11-20
 

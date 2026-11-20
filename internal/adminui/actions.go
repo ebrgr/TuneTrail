@@ -70,6 +70,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		}
 		adminweb.ClearSessionCookie(w, r)
 		adminweb.ClearPreauth(w, r)
+		// Signing out lands on the public directory, which offers Sign in.
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	case "account/username", "account/password":

@@ -373,8 +373,8 @@
             <form method="post" action="/admin/logout">
               <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
               <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-              <button type="submit" autofocus aria-describedby="sign-out-description">Sign out</button>
-              <a href="/admin?section=account" aria-describedby="sign-out-description">Cancel</a>
+              <a href="/admin?section=account" autofocus aria-describedby="sign-out-description">Cancel</a>
+              <button type="submit" aria-describedby="sign-out-description">Sign out</button>
             </form>
           
         </main>

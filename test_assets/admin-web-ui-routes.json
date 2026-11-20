@@ -141,6 +141,26 @@
   ],
   [
     "GET",
+    "/admin/sign-out",
+    true
+  ],
+  [
+    "HEAD",
+    "/admin/sign-out",
+    true
+  ],
+  [
+    "POST",
+    "/admin/sign-out",
+    false
+  ],
+  [
+    "DELETE",
+    "/admin/sign-out",
+    false
+  ],
+  [
+    "GET",
     "/admin/logout",
     false
   ],

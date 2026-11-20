@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-20T21:12:00Z'
+updated_date: '2026-11-20T21:23:00Z'
 labels:
   - admin
   - ui
@@ -71,6 +71,15 @@ created: 2026-11-20T21:12:00Z
 ---
 
 Verificação conforme o reescopo de 20/11: confirmação para comum e root, Cancelar volta a leitura autorizada ou à Conta, e o POST encerra apenas a sessão atual e responde 303 para o diretório, que oferece Entrar. Testes Go e make check passaram (13/13 jornadas). Chromium validou a jornada por teclado sem JavaScript e a resposta da segunda aba. Oito capturas em Yuu e Pearl estão nas evidências. AC4 segue para aceite visual do usuário e a implementação segue para o Reviewer.
+
+---
+
+author: codex
+created: 2026-11-20T21:23:00Z
+
+---
+
+Correções do Reviewer verificadas: ícone oficial Lucide log-out, retorno de Cancelar nas páginas administrativas e no diretório quando permitido, e comentários em inglês. Cancelar recebe o foco inicial e Tab chega a Sair sem JavaScript. A matriz de métodos e o CHANGELOG foram atualizados. Referência e oito capturas regeneradas. Testes Go dos pacotes afetados e make check passaram (13/13 jornadas). AC4 segue pendente para aceite visual.
 
 ---
 <!-- COMMENTS:END -->

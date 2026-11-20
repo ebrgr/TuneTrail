@@ -74,7 +74,6 @@ func (h *Handler) reviewProfileDelete(w http.ResponseWriter, r *http.Request, id
 	h.catalogPlans[token] = pendingCatalogPlan{Session: identity.SessionID, ProfileID: p.ID, ProfileSlug: p.Slug, RouteID: id, Kind: kind, Personal: &plan, Expires: now.Add(10 * time.Minute)}
 	h.mu.Unlock()
 	view := catalogReviewView{Nav: h.navigation(r, identity, p, ""), Locale: i18n.ViewOf(w), Profile: p, RouteID: id, Kind: kind, CSRF: csrf, Token: token.String(), Submission: submission, Personal: &plan, Dialog: partial, ReturnPath: fmt.Sprintf("/%s/%s/%d", url.PathEscape(p.Slug), kind, id)}
-
 	tmpl, err := h.adminTemplate(view.Locale)
 	var output strings.Builder
 	name := "admin/catalog-review"

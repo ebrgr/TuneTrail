@@ -69,7 +69,6 @@ func (h *Handler) reviewProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	var out strings.Builder
 	view := profileReviewView{Nav: h.navigation(r, identity, p, ""), Locale: i18n.ViewOf(w), Profile: p, Count: count, CSRF: token, Submission: ticket}
-
 	tmpl, err := h.adminTemplate(view.Locale)
 	if err == nil {
 		err = tmpl.ExecuteTemplate(&out, "admin/profile-review", view)
