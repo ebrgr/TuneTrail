@@ -195,3 +195,5 @@ Retomada após rebase em v0.45.
 - Feito — Limita prova MusicBrainz e indexa busca por alias de release. Pendente — EXPLAIN, ensaio de 300 mil, CHANGELOG e verificações.
 
 - Feito — Documenta atualização SQLite e ingestão por ocorrência. Pendente — ensaio de carga, provas de recuperação e validação final.
+
+- Feito — Adiciona ensaio de carga e retomada da E3. Pendente — executar ensaio, registrar evidências, make check e Backlog.
