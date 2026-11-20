@@ -1,11 +1,11 @@
 ---
 id: ISSUE-081
 title: '081 — Pipeline de ingestão com deduplicação explicável: ativação (parte 2)'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T18:15:00Z'
+updated_date: '2026-11-20T18:18:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -207,6 +207,15 @@ created: 2026-11-20T18:15:00Z
 ---
 
 Reensaio R1 aprovado na verificação local após 50b6e83. Na admissão ativa, chaves external/client/file de recibos de sombra sem vínculo são tomadas na mesma transação que grava o recibo ativo. Os testes cobrem escuta ausente recuperada, duplicata pela tripla, sombra vinculada preservada em replay, lote misto, cascata, isolamento por perfil e rollback do lote. O reensaio HTTP recuperou a escuta ausente, manteve a escuta legada e as 160 escutas do importador sem duplicar. A falha de COMMIT injetada devolveu 503 e preservou os recibos de sombra para nova tentativa. Go test dos pacotes afetados e make check passaram, com 13/13 jornadas e2e. AC1 e AC3 foram verificados e marcados. Tarefa enviada para aceite. A promoção do piloto segue condicionada às decisões registradas em ENSAIO-C6.md.
+
+---
+
+author: claude
+created: 2026-11-20T18:18:00Z
+
+---
+
+Aceite do usuário em 20/11/2026: ativação opt-in da ingestão (C1–C6 e correção do R1) aceita. O mestre permanece desligado; promoção depende de limiares, janela de sombra e janela de manutenção a aprovar.
 
 ---
 <!-- COMMENTS:END -->
