@@ -2,45 +2,45 @@
 
 ## [Unreleased]
 
-- A ingestão ativa de ListenBrainz e importações exige o interruptor mestre e a ativação por perfil, com prévia e purga de sombra pelo administrador raiz. A opção Revisar fica bloqueada até existir a fila de revisão (ISSUE-081).
+- Active ingestion of ListenBrainz submissions and imports requires the master switch plus per-profile activation, with a preview and a shadow purge confirmed by the root administrator. The Review option stays blocked until the review queue exists (ISSUE-081).
 
 ## [0.43] - 2026-11-19
 
-- Para migrar o banco da v7 à v8, pare o serviço em uma janela de manutenção e reserve pelo menos três vezes o tamanho do banco tanto no diretório do banco quanto no diretório temporário do SQLite (TMPDIR). O upgrade cria o backup automático `.pre-recording-identity-*.bak`. As versões 0.41 e 0.42 recusam o banco v8. Restaurar o backup perde as escritas feitas após o upgrade, e as entregas já feitas pelo relay permanecem no destino (ISSUE-133).
+- To migrate the database from v7 to v8, stop the service in a maintenance window and reserve at least three times the database size in both the database directory and the SQLite temporary directory (TMPDIR). The upgrade creates the automatic backup `.pre-recording-identity-*.bak`. Versions 0.41 and 0.42 refuse a v8 database. Restoring the backup loses writes made after the upgrade, and deliveries already made by the relay remain at the destination (ISSUE-133).
 
 ## [0.42] - 2026-11-19
 
-- Administradores podem gerenciar contas e perfis juntos, atribuir o papel de administrador e emitir tokens de ativação e recuperação de uso único (ISSUE-162).
+- Administrators can manage accounts and profiles together, grant the administrator role, and issue single-use activation and recovery tokens (ISSUE-162).
 
 ## [0.41] - 2026-11-19
 
-- A exclusão de escutas também remove os recibos de ingestão correspondentes e libera suas chaves para reimportação (ISSUE-171).
+- Deleting listens also removes the matching ingest receipts and frees their keys for re-import (ISSUE-171).
 
-- A API ListenBrainz responde com HTTP 503 quando o armazenamento dos recibos falha, permitindo reenviar o lote (ISSUE-171).
+- The ListenBrainz API answers HTTP 503 when receipt storage fails, so the batch can be resent (ISSUE-171).
 
 ## [0.40] - 2026-11-19
 
-- O diretório público lista todos os perfis, e donos e administradores podem exigir login para acessar as escutas e capas de um perfil (ISSUE-161).
+- The public directory lists every profile, and owners and administrators can require login to view a profile's listens and covers (ISSUE-161).
 
 ## [0.39] - 2026-11-19
 
-- Usuários gerenciam seus próprios dados, chaves e relay, com importações que preservam o isolamento entre perfis e bloqueiam buscas de imagens na rede interna; administração global e último administrador ativo permanecem protegidos (ISSUE-160).
+- Users manage their own data, keys and relay, with imports that keep profiles isolated and block image lookups on the internal network; global administration and the last active administrator stay protected (ISSUE-160).
 
 ## [0.38] - 2026-11-19
 
-- Navegações ganham transições suaves e pré-carregamento de páginas públicas do mesmo perfil; gráficos mostram detalhes por intervalo sem JavaScript adicional (ISSUE-075).
+- Navigation gains smooth transitions and prefetching of public pages of the same profile; charts show per-interval details without extra JavaScript (ISSUE-075).
 
 ## [0.37] - 2026-11-18
 
-- Contas de usuários comuns passam a autenticar com sessões individuais, mantendo a administração restrita a administradores e permitindo sair pela página de acesso negado (ISSUE-159).
+- Regular user accounts now authenticate with individual sessions, administration stays restricted to administrators, and the access-denied page offers a way to sign out (ISSUE-159).
 
 ## [0.36] - 2026-11-18
 
-- Perfis passam a ter contas individuais; a exclusão do perfil do último administrador é impedida (ISSUE-158).
+- Profiles now have individual accounts; deleting the last administrator's profile is blocked (ISSUE-158).
 
 ## [0.35] - 2026-11-18
 
-- Histórico compacto no celular, ações por reticências e páginas de mídia com degradê da capa e navegação por seções (ISSUE-073).
+- Compact history on mobile, ellipsis actions, and media pages with a cover gradient and section navigation (ISSUE-073).
 
 ## [0.34] - 2026-11-18
 
@@ -48,31 +48,31 @@
 
 ## [0.33] - 2026-11-17
 
-- A Home mostra KPIs do período com comparação, tocando agora no topo e seletor de período fixo, com totais históricos ao lado do heatmap fluido, tooltips nas células e variações ao lado dos números (“Mais”, “Menos” ou “Igual”) (ISSUE-072).
+- Home shows period KPIs with comparison, now playing at the top and a fixed period selector, with historical totals next to the fluid heatmap, cell tooltips and variations beside the numbers ("More", "Less" or "Same") (ISSUE-072).
 
 ## [0.32] - 2026-11-17
 
-- O administrador vê a página vazia de faixa, álbum ou artista sem escutas também ao recarregar, em vez de um erro 404; visitantes continuam recebendo 404 (ISSUE-150).
+- Administrators see the empty page of a track, album or artist without listens, also on reload, instead of a 404 error; visitors still get 404 (ISSUE-150).
 
 ## [0.31] - 2026-11-17
 
-- As ações de administração agora ficam agrupadas no menu (+), sem segunda barra lateral, sem opção empurrar/sobrepor e sem repetir o seletor de período (ISSUE-156).
+- Administration actions are now grouped in the (+) menu, with no second sidebar, no push/overlay option and no repeated period selector (ISSUE-156).
 
 ## [0.30] - 2026-11-17
 
-- A lista "Last played" da Home volta a ocupar toda a largura e a lateral do desktop passa a ser só de ícones por padrão, com a opção de rótulos no painel de tema; a Retrospectiva substitui o Histórico na barra e o menu (+) fecha ao clicar fora; o gráfico de atividade tem largura máxima igual à do gráfico de interesse e se ajusta à janela sem barras de rolagem; nomes e textos dos cards de destaque e das faixas mais ouvidas usam toda a largura da coluna, sem quebrar palavras; o botão de entrar na barra de administração usa o ícone de chave; a opção "Mostrar tempo de reprodução?" da retrospectiva fica centralizada na coluna (ISSUE-154).
+- The Home "Last played" list is full width again and the desktop sidebar is icons-only by default, with a label option in the theme panel; the Retrospective replaces History in the bar and the (+) menu closes when clicking outside; the activity chart has the same maximum width as the interest chart and fits the window without scrollbars; names and text of the highlight cards and top tracks use the full column width without breaking words; the sign-in button in the administration bar uses the key icon; the retrospective's "Show playback time?" option is centered in the column (ISSUE-154).
 ## [0.29] - 2026-11-16
 
 ### Changed
-- A interface carrega fontes locais, sem Google Fonts; a retrospectiva alinha pesos e caixa à referência Koito (ISSUE-070).
+- The interface loads local fonts, without Google Fonts; the retrospective aligns weights and casing with the Koito reference (ISSUE-070).
 
 ## [0.28] - 2026-11-16
 
-- Navegação com barra inferior no celular, lateral de ícones no tablet e escolha de rótulos no menu de tema com período no desktop (ISSUE-071).
+- Navigation with a bottom bar on mobile, an icon sidebar on tablet, and a label choice in the theme menu with a period selector on desktop (ISSUE-071).
 
 ## [0.27] - 2026-11-16
 
-- Corrige a identificação por aliases secundários de faixas e recusa associações ambíguas ou com MusicBrainz IDs conflitantes (ISSUE-131).
+- Fixes identification by secondary track aliases and refuses ambiguous associations or ones with conflicting MusicBrainz IDs (ISSUE-131).
 
 - Pages now adapt with fluid typography, shared spacing, three screen breakpoints and cards that respond to their available space (ISSUE-069).
 
