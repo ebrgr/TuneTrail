@@ -167,3 +167,24 @@ func TestActiveIngestBusy(t *testing.T) {
 	require.Equal(t, http.StatusServiceUnavailable, response.StatusCode)
 	require.Equal(t, "1", response.Header.Get("Retry-After"))
 }
+
+// TestActiveKoitoValidatesBeforeCatalog verifies that an invalid item leaves no catalog writes.
+func TestActiveKoitoValidatesBeforeCatalog(t *testing.T) {
+	a := newProfileTestApp(t)
+	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(2,1)`))
+	const input = `{"version":"1","listens":[
+		{"listened_at":"2023-11-14T22:13:20Z","track":{"aliases":[{"alias":"Track","is_primary":true}]},
+		 "album":{"aliases":[{"alias":"Album","is_primary":true}]},"artists":[{"aliases":[{"alias":"Artist","is_primary":true}]}]},
+		{"listened_at":"2023-11-14T22:14:00Z","track":{"aliases":[{"alias":"Other","is_primary":true}]},
+		 "album":{"aliases":[{"alias":"Album","is_primary":true}]},"artists":[{"aliases":[{"alias":"","is_primary":true}]}]}
+	]}`
+	file := filepath.Join(t.TempDir(), "input.json")
+	require.NoError(t, os.WriteFile(file, []byte(input), 0600))
+	_, err := importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, 2, "koito", file)
+	require.ErrorIs(t, err, importer.ErrInvalidFile)
+	for _, table := range []string{"artists", "releases", "tracks", "ingest_events", "listens"} {
+		n, err := a.store.Count("SELECT count(*) FROM " + table)
+		require.NoError(t, err)
+		require.Zero(t, n, table)
+	}
+}
