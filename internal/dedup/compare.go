@@ -18,9 +18,9 @@ type Policy struct {
 var Shadow = Policy{Version: "shadow-v2", Window: 2 * time.Second}
 
 type Receipt struct {
-	ID, Source, Namespace, ExternalID, Digest, BatchDigest, Precision, State string
-	Snapshot                                                                 ingest.Snapshot
-	Time                                                                     time.Time
+	ID, Source, Namespace, ExternalID, Digest, BatchDigest, Precision, State, Mode, Decision string
+	Snapshot                                                                                 ingest.Snapshot
+	Time                                                                                     time.Time
 }
 
 type Evidence struct {

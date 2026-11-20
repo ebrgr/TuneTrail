@@ -224,3 +224,10 @@ func ForceTZ() *time.Location {
 }
 
 func WebUI() string { lock.RLock(); defer lock.RUnlock(); return globalConfig.webUI }
+
+// ActiveIngestEnabled returns the master switch loaded at startup.
+func ActiveIngestEnabled() bool {
+	lock.RLock()
+	defer lock.RUnlock()
+	return globalConfig.ingestActive
+}

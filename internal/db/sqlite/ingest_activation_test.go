@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/stretchr/testify/require"
 )
 
@@ -114,6 +115,59 @@ func TestResolveIngestLegacyCollision(t *testing.T) {
 				require.Equal(t, "review_deferred", reason)
 			}
 			require.ErrorIs(t, s.finishIngest(context.Background(), receipt), sql.ErrNoRows)
+		})
+	}
+}
+
+// TestIngestAdmissionModeReplay exercises all shared key indexes across mode switches.
+func TestIngestAdmissionModeReplay(t *testing.T) {
+	ctx := context.Background()
+	for _, key := range []string{"external", "client", "file"} {
+		t.Run(key, func(t *testing.T) {
+			s, _, _ := migrationDB(t, 9)
+			seedIdentityHistory(t, s)
+			batch := ingest.Batch{ProfileID: 1, Source: "adapter", Operation: "single", ReceivedAt: time.Now(),
+				Items: []ingest.Item{{Snapshot: ingest.Snapshot{Artist: "Artist", Title: "Track"}}}}
+			switch key {
+			case "external":
+				batch.Items[0].ExternalNamespace, batch.Items[0].ExternalID = "provider", "one"
+			case "client":
+				batch.ClientKey = "one"
+			case "file":
+				batch.FileDigest, batch.FileFormat = ingest.Digest([]byte("one")), "fixture"
+			}
+			shadow, err := s.ReceiveBatch(ctx, batch)
+			require.NoError(t, err)
+			execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`)
+			activeMode, replay, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			require.NoError(t, err)
+			require.True(t, activeMode)
+			require.True(t, replay[0].Replay)
+			require.Equal(t, shadow[0].ReceiptID, replay[0].ReceiptID)
+
+			pinned, err := s.BeginImportIngest(ctx, 1, true)
+			require.NoError(t, err)
+			require.True(t, pinned)
+			execSQL(t, s, `UPDATE profile_ingest_flags SET active=0 WHERE profile_id=1`)
+			switch key {
+			case "external":
+				batch.Items[0].ExternalID = "two"
+			case "client":
+				batch.ClientKey = "two"
+			case "file":
+				batch.FileDigest = ingest.Digest([]byte("two"))
+			}
+			activeMode, active, err := s.AdmitIngest(ctx, batch, true, &pinned, nil)
+			require.NoError(t, err)
+			require.True(t, activeMode)
+			require.False(t, active[0].Replay)
+			before := legacyDigests(t, s.db)
+			batch.Items[0].Snapshot.Title = "Variant"
+			replay, err = s.ReceiveBatch(ctx, batch)
+			require.NoError(t, err)
+			require.True(t, replay[0].Replay)
+			require.Equal(t, active[0].ReceiptID, replay[0].ReceiptID)
+			require.Equal(t, before, legacyDigests(t, s.db))
 		})
 	}
 }

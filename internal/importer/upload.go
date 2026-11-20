@@ -17,7 +17,7 @@ import (
 // Result distinguishes newly stored listens from duplicates and skipped entries.
 type Result struct {
 	Processed, Imported, Duplicates, Ignored, Errors int
-	Pending                                          int // Shadow count that can overlap Imported or Duplicates.
+	Pending                                          int // Active receipts awaiting a decision, or shadow reviews in legacy mode.
 }
 type resultKey struct{}
 
@@ -52,6 +52,23 @@ func (s countingStore) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]
 		return nil, nil
 	}
 	return receiver.ReceiveBatch(ctx, batch)
+}
+
+// BeginImportIngest forwards the optional mode selection through the counting store.
+func (s countingStore) BeginImportIngest(ctx context.Context, profile int32, master bool) (bool, error) {
+	if admission, ok := s.UploadStore.(ingest.Admission); ok {
+		return admission.BeginImportIngest(ctx, profile, master)
+	}
+	return false, nil
+}
+
+// AdmitIngest forwards an already pinned job to the underlying durable writer.
+func (s countingStore) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *bool, invalid error) (bool, []ingest.Result, error) {
+	if admission, ok := s.UploadStore.(ingest.Admission); ok {
+		return admission.AdmitIngest(ctx, batch, master, pinned, invalid)
+	}
+	results, err := s.ReceiveBatch(ctx, batch)
+	return false, results, err
 }
 
 func (s countingStore) SaveListen(ctx context.Context, o db.SaveListenOpts) error {

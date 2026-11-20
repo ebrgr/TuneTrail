@@ -246,6 +246,11 @@ func Run(
 		}
 	}()
 
+	// Drain durable active receipts even after the master admission switch is disabled.
+	ingestCtx, stopIngest := context.WithCancel(ctx)
+	defer stopIngest()
+	ingestDone := startIngestRecovery(ingestCtx, store, mbzC)
+
 	l.Info().Msg("Engine: Beginning startup tasks...")
 
 	l.Debug().Msg("Engine: Checking import configuration")
@@ -275,6 +280,11 @@ func Run(
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	l.Info().Msg("Engine: Waiting for all processes to finish")
+	stopIngest()
+	select {
+	case <-ingestDone:
+	case <-ctx.Done():
+	}
 	mbzC.Shutdown()
 	if err := httpServer.Shutdown(ctx); err != nil {
 		l.Fatal().Err(err).Msg("Engine: Error during server shutdown")

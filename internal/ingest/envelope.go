@@ -20,6 +20,7 @@ const (
 
 // Snapshot only carries fields explicitly selected by an adapter.
 type Snapshot struct {
+	CatalogTrackID    int32    `json:"catalog_track_id,omitempty"`
 	ArtistMBIDs       []string `json:"artist_mbids,omitempty"`
 	MappedArtistMBIDs []string `json:"mapped_artist_mbids,omitempty"`
 	ReleaseGroupMBID  string   `json:"release_group_mbid,omitempty"`
@@ -57,6 +58,13 @@ type Result struct {
 	ReceiptID string
 	Decision  string
 	Pending   bool
+	Replay    bool
+}
+
+// Admission selects active mode atomically or admits pages using a pinned import mode.
+type Admission interface {
+	AdmitIngest(context.Context, Batch, bool, *bool, error) (bool, []Result, error)
+	BeginImportIngest(context.Context, int32, bool) (bool, error)
 }
 
 type Receiver interface {

@@ -60,8 +60,11 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 		}
 		declared += f.UncompressedSize64
 	}
-	ctx = withFileShadow(ctx, store, db.ProfileID(ctx), "listenbrainz", file)
-	defer flushFileShadow(ctx) // Flush a partial page even when the legacy parser returns early.
+	ctx, err = withFileShadow(ctx, store, db.ProfileID(ctx), "listenbrainz", file)
+	if err != nil {
+		return err
+	}
+	defer flushLegacyFileShadow(ctx)
 	budget := &io.LimitedReader{N: maxExpanded + 1}
 	totalLines := 0
 	ctx = context.WithValue(ctx, archiveLinesKey{}, &totalLines)
@@ -103,7 +106,9 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 	if matched == 0 {
 		return invalidFile(fmt.Errorf("archive has no ListenBrainz listen files"))
 	}
-	flushFileShadow(ctx)
+	if err := flushFileShadow(ctx); err != nil {
+		return err
+	}
 	return finishImport(ctx, filename, 0)
 }
 
@@ -230,8 +235,11 @@ func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.Mus
 		if payload.ListenedAt != 0 {
 			observedAt = time.Unix(int64(payload.ListenedAt), 0)
 		}
-		captureFileListen(ctx, ingest.ListenBrainzSnapshot(payload.TrackMeta), observedAt)
-		err = catalog.SubmitListen(ctx, store, opts)
+		// Active files write only through durable receipt admission.
+		err = captureFileListen(ctx, ingest.ListenBrainzSnapshot(payload.TrackMeta), observedAt)
+		if err == nil && !activeFileIngest(ctx) {
+			err = catalog.SubmitListen(ctx, store, opts)
+		}
 		if err != nil {
 			l.Err(err).Msg("Failed to import LastFM playback item")
 			return fmt.Errorf("ImportListenBrainzFile: %w", err)

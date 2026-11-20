@@ -133,7 +133,8 @@ func TestRecordingIdentityBridge(t *testing.T) {
 	require.ErrorContains(t, checkDatabase(s.db), "unexpected index unexpected_legacy_index")
 }
 
-// TestRecordingIdentityExactDeletion simulates the identity cut from an isolated v8 fixture.
+// TestRecordingIdentityExactDeletion preserves the historical v8 cut fixture.
+// ISSUE-135 must build its migration on v9 and retain the active receipt guards.
 func TestRecordingIdentityExactDeletion(t *testing.T) {
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)

@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"io"
 	"os"
 	"time"
@@ -19,69 +21,122 @@ type shadowKey struct{}
 const shadowBatchSize = 200
 
 type fileShadow struct {
-	receiver ingest.Receiver
-	batch    ingest.Batch
-	ordinal  int
+	receiver  ingest.Receiver
+	admission ingest.Admission
+	active    bool
+	batch     ingest.Batch
+	ordinal   int
 }
 
 // withFileShadow hashes exact file bytes using an independent reader position.
-func withFileShadow(ctx context.Context, store importStore, profile int32, format string, file *os.File) context.Context {
+func withFileShadow(ctx context.Context, store importStore, profile int32, format string, file *os.File) (context.Context, error) {
 	receiver, ok := store.(ingest.Receiver)
 	if !ok {
-		return ctx
+		return ctx, nil
+	}
+	admission, _ := store.(ingest.Admission)
+	active := false
+	if admission != nil && cfg.ActiveIngestEnabled() {
+		var err error
+		active, err = admission.BeginImportIngest(ctx, profile, true)
+		if err != nil {
+			return ctx, err
+		}
 	}
 	info, err := file.Stat()
 	if err != nil {
+		if active {
+			return ctx, fmt.Errorf("stat active import: %w", err)
+		}
 		logger.FromContext(ctx).Warn().Msg("Could not stat import for shadow receipt")
-		return ctx
+		return ctx, nil
 	}
 	hash := sha256.New()
 	if _, err := io.Copy(hash, &contextReader{ctx: ctx, reader: io.NewSectionReader(file, 0, info.Size())}); err != nil {
+		if active {
+			return ctx, fmt.Errorf("hash active import: %w", err)
+		}
 		logger.FromContext(ctx).Warn().Msg("Could not hash import for shadow receipt")
-		return ctx
+		return ctx, nil
 	}
 	return context.WithValue(ctx, shadowKey{}, &fileShadow{
-		receiver: receiver,
-		batch:    ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceFile, Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
-		ordinal:  -1,
-	})
+		receiver: receiver, admission: admission, active: active,
+		batch:   ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceFile, Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
+		ordinal: -1,
+	}), nil
+}
+
+// activeFileIngest reports the mode pinned before reading this job's items.
+func activeFileIngest(ctx context.Context) bool {
+	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
+	return ok && job.active
 }
 
 // captureFileListen buffers a bounded page with absolute ordinals.
-func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Time) {
+func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Time) error {
 	shadow, ok := ctx.Value(shadowKey{}).(*fileShadow)
 	if !ok {
-		return
+		return nil
 	}
 	if len(shadow.batch.Items) == 0 {
 		shadow.batch.ReceivedAt = time.Now()
 	}
-	shadow.batch.Items = append(shadow.batch.Items, ingest.Item{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at})
+	item := ingest.Item{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at}
+	if shadow.active {
+		encoded, _ := item.Encode()
+		if len(encoded) > 10<<10 {
+			return invalidFile(fmt.Errorf("listen at ordinal %d exceeds 10 KiB", item.Ordinal))
+		}
+	}
+	shadow.batch.Items = append(shadow.batch.Items, item)
 	if len(shadow.batch.Items) == shadowBatchSize {
-		flushFileShadow(ctx)
+		return flushFileShadow(ctx)
+	}
+	return nil
+}
+
+// flushLegacyFileShadow preserves the partial-page behavior of the legacy parser.
+func flushLegacyFileShadow(ctx context.Context) {
+	if !activeFileIngest(ctx) {
+		_ = flushFileShadow(ctx) // Shadow errors are logged and never affect the import.
 	}
 }
 
-// flushFileShadow commits full pages or the final partial page without affecting legacy status.
-func flushFileShadow(ctx context.Context) {
+// flushFileShadow admits a page, with active failures returned to the importer.
+func flushFileShadow(ctx context.Context) error {
 	shadow, ok := ctx.Value(shadowKey{}).(*fileShadow)
-	if !ok || len(shadow.batch.Items) == 0 || ctx.Err() != nil {
-		return
+	if !ok || len(shadow.batch.Items) == 0 {
+		return nil
 	}
-	results, err := shadow.receiver.ReceiveBatch(ctx, shadow.batch)
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	var results []ingest.Result
+	var err error
+	if shadow.active {
+		_, results, err = shadow.admission.AdmitIngest(ctx, shadow.batch, true, &shadow.active, nil)
+	} else {
+		results, err = shadow.receiver.ReceiveBatch(ctx, shadow.batch)
+	}
 	clear(shadow.batch.Items)
 	shadow.batch.Items = shadow.batch.Items[:0]
 	if err != nil {
+		if shadow.active {
+			return err
+		}
 		logger.FromContext(ctx).Warn().Msg("Import shadow receipt batch failed")
-		return
+		return nil
 	}
 	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
 		for _, receipt := range results {
 			if receipt.Pending {
 				result.Pending++
+			} else if shadow.active && receipt.Replay {
+				result.Duplicates++
 			}
 		}
 	}
+	return nil
 }
 
 // submitFileListen records the observed fields before catalog enrichment.
@@ -91,6 +146,8 @@ func submitFileListen(ctx context.Context, store importStore, opts catalog.Submi
 	if opts.RecordingMbzID != uuid.Nil {
 		snapshot.Recording = opts.RecordingMbzID.String()
 	}
-	captureFileListen(ctx, snapshot, opts.Time)
+	if err := captureFileListen(ctx, snapshot, opts.Time); err != nil || activeFileIngest(ctx) {
+		return err
+	}
 	return catalog.SubmitListen(ctx, store, opts)
 }

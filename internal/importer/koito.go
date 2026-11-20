@@ -50,8 +50,11 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 	if len(data.Listens) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
-	ctx = withFileShadow(ctx, store, profileID, "koito", f)
-	defer flushFileShadow(ctx) // Flush a partial page even when the legacy parser returns early.
+	ctx, err = withFileShadow(ctx, store, profileID, "koito", f)
+	if err != nil {
+		return err
+	}
+	defer flushLegacyFileShadow(ctx)
 	// Validate all required identities before writing anything. Uploaded exports
 	// are untrusted and an empty artist list must not panic at artistIds[0].
 	for _, item := range data.Listens {
@@ -85,14 +88,19 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			continue
 		}
 		item := data.Listens[i]
-		captureFileListen(ctx, ingest.Snapshot{
+		snapshot := ingest.Snapshot{
 			Artist:       getPrimaryAliasFromAliasSlice(item.Artists[0].Aliases),
 			Title:        getPrimaryAliasFromAliasSlice(item.Track.Aliases),
 			Release:      getPrimaryAliasFromAliasSlice(item.Album.Aliases),
 			DurationMS:   int64(item.Track.Duration) * 1000,
 			Client:       item.Client,
 			OriginalTime: item.ListenedAt.Format(time.RFC3339Nano),
-		}, item.ListenedAt)
+		}
+		if !activeFileIngest(ctx) {
+			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
+				return err
+			}
+		}
 		err := func() error {
 			unlock, err := catalog.LockAssociations(ctx)
 			if err != nil {
@@ -223,6 +231,11 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 				return fmt.Errorf("ImportKoitoFile: %w", err)
 			}
 
+			// The active receipt preserves the catalog association made by this importer.
+			if activeFileIngest(ctx) {
+				snapshot.CatalogTrackID = track.ID
+				return nil
+			}
 			// save listen
 			err = store.SaveListen(ctx, db.SaveListenOpts{
 				TrackID:   track.ID,
@@ -243,7 +256,9 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		}
 	}
 
-	flushFileShadow(ctx)
+	if err := flushFileShadow(ctx); err != nil {
+		return err
+	}
 	return finishImport(ctx, filename, count)
 }
 func getPrimaryAliasFromAliasSlice(aliases []models.Alias) string {

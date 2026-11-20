@@ -9,8 +9,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 )
 
-// deleteListenReceipts compares the deleted track's aliases and credits with
-// snapshots in the same profile and UTC second. Receipts own their variants.
+// deleteListenReceipts compares shadow snapshots with the deleted track's aliases and credits in the same profile and UTC second. Receipts own their variants.
 func deleteListenReceipts(ctx context.Context, tx *sql.Tx, profile, track int32, at time.Time) error {
 	rows, err := tx.QueryContext(ctx, `SELECT 'title',alias FROM track_aliases WHERE track_id=?
 		UNION ALL SELECT 'artist',a.alias FROM artist_tracks c JOIN artist_aliases a ON a.artist_id=c.artist_id WHERE c.track_id=?`, track, track)
@@ -35,7 +34,7 @@ func deleteListenReceipts(ctx context.Context, tx *sql.Tx, profile, track int32,
 
 	start := at.UTC().Truncate(time.Second)
 	rows, err = tx.QueryContext(ctx, `WITH receipts AS (
-		SELECT receipt_id,original_snapshot FROM ingest_events WHERE profile_id=? AND listened_at>=? AND listened_at<?
+		SELECT receipt_id,original_snapshot FROM ingest_events WHERE profile_id=? AND mode='shadow' AND listened_at>=? AND listened_at<?
 	) SELECT receipt_id,json_extract(original_snapshot,'$.artist'),json_extract(original_snapshot,'$.title') FROM receipts
 	UNION ALL SELECT o.receipt_id,json_extract(o.original_snapshot,'$.artist'),json_extract(o.original_snapshot,'$.title')
 	FROM receipts r JOIN ingest_observations o ON o.receipt_id=r.receipt_id AND o.profile_id=?`,
@@ -62,7 +61,7 @@ func deleteListenReceipts(ctx context.Context, tx *sql.Tx, profile, track int32,
 		return err
 	}
 	for id := range ids {
-		if _, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND receipt_id=?`, profile, id); err != nil {
+		if _, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND receipt_id=? AND mode='shadow'`, profile, id); err != nil {
 			return err
 		}
 	}
@@ -76,7 +75,7 @@ func receiptSourcePrefix(source string) string {
 
 // deleteShadowIntegrations removes only adapter-owned identities, globally when profile is zero.
 func deleteShadowIntegrations(ctx context.Context, tx *sql.Tx, profile int32) error {
-	query := `DELETE FROM integrations WHERE id IN (? || profile_id, ? || profile_id)`
+	query := `DELETE FROM integrations WHERE id IN (? || profile_id, ? || profile_id) AND NOT EXISTS (SELECT 1 FROM ingest_events e WHERE e.profile_id=integrations.profile_id AND e.source_instance_id=integrations.id)`
 	args := []any{receiptSourcePrefix(ingest.ShadowSourceListenBrainz), receiptSourcePrefix(ingest.ShadowSourceFile)}
 	if profile != 0 {
 		query += ` AND profile_id=?`

@@ -17,6 +17,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/importer"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/models"
@@ -133,10 +134,7 @@ func profileImportHandler(store db.DB, mbzc mbz.MusicBrainzCaller) http.HandlerF
 				logger.FromContext(ctx).Error().Err(quarantineErr).Msg("Manual import remains in staging")
 				message += "; file retained in staging"
 			}
-			status := http.StatusInternalServerError
-			if errors.Is(err, importer.ErrInvalidFile) || errors.Is(err, db.ErrInvalidInput) {
-				status = http.StatusBadRequest
-			}
+			status := importFailureStatus(w, err)
 			utils.WriteError(w, message, status)
 			return
 		}
@@ -193,12 +191,23 @@ func uploadProfileImport(w http.ResponseWriter, r *http.Request, store db.DB, mb
 	name := uuid.NewString() + "-" + suffix
 	ctx := importer.WithUploadSource(r.Context(), destination)
 	if err = importProfileFile(ctx, store, mbzc, path.Join(fmt.Sprint(db.ProfileID(ctx)), name)); err != nil {
-		status := http.StatusInternalServerError
-		if errors.Is(err, importer.ErrInvalidFile) || errors.Is(err, db.ErrInvalidInput) {
-			status = http.StatusBadRequest
-		}
+		status := importFailureStatus(w, err)
 		utils.WriteError(w, "import failed; some records may have been saved. Check the file before retrying", status)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// importFailureStatus asks clients to retry when active receipt storage is unavailable.
+func importFailureStatus(w http.ResponseWriter, err error) int {
+	var unavailable *ingest.ErrUnavailable
+	switch {
+	case errors.As(err, &unavailable):
+		w.Header().Set("Retry-After", "1")
+		return http.StatusServiceUnavailable
+	case errors.Is(err, importer.ErrInvalidFile), errors.Is(err, db.ErrInvalidInput):
+		return http.StatusBadRequest
+	default:
+		return http.StatusInternalServerError
+	}
 }

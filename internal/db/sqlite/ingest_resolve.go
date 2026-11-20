@@ -29,12 +29,23 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	now := time.Now().Unix()
 	receipt := claimedReceipt{lease: uuid.NewString()}
 	var snapshot, instant string
-	err := s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,attempt_count=attempt_count+1
-		WHERE receipt_id=(SELECT receipt_id FROM ingest_events WHERE mode='active' AND closed_at IS NULL
-			AND state IN ('received','retryable') AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
-			ORDER BY received_at,receipt_id LIMIT 1)
+	const nextReceipt = `SELECT receipt_id FROM ingest_events WHERE mode='active' AND closed_at IS NULL
+		AND state IN ('received','retryable') AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
+		ORDER BY received_at,receipt_id LIMIT 1`
+	// An idle worker does not take the writer lock. The claim still rechecks the lease.
+	var next string
+	err := s.db.QueryRowContext(ctx, nextReceipt, now, now).Scan(&next)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,attempt_count=attempt_count+1
+		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')
+		AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
 		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type`,
-		receipt.lease, now+120, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source)
+		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false, nil
 	}
@@ -50,7 +61,13 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 		return true, s.retryIngest(ctx, receipt, err)
 	}
 	receipt.client = receipt.snapshot.Client
-	receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, mbzc))
+	// Only the native file adapter can pin a locally associated track.
+	if receipt.source == ingest.ShadowSourceFile {
+		receipt.track = receipt.snapshot.CatalogTrackID
+	}
+	if receipt.track == 0 {
+		receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, mbzc))
+	}
 	if err == nil {
 		err = s.finishIngest(ctx, receipt)
 	}
@@ -100,13 +117,13 @@ func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		var recording int64
 		var review bool
-		var precision string
-		err := tx.QueryRowContext(ctx, `SELECT o.recording_id,coalesce(f.review,0),e.time_precision
+		var precision, admissionReason string
+		err := tx.QueryRowContext(ctx, `SELECT o.recording_id,coalesce(f.review,0),e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),'')
 			FROM ingest_events e JOIN occurrences o ON o.id=? AND o.legacy_track_id=o.id
 			LEFT JOIN profile_ingest_flags f ON f.profile_id=e.profile_id
 			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.closed_at IS NULL
 			AND e.resolution_version=? AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
-			r.track, r.id, r.profile, r.version, r.work, r.lease, time.Now().Unix()).Scan(&recording, &review, &precision)
+			r.track, r.id, r.profile, r.version, r.work, r.lease, time.Now().Unix()).Scan(&recording, &review, &precision, &admissionReason)
 		if err != nil {
 			return err
 		}
@@ -120,18 +137,29 @@ func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 		if candidate == "" {
 			err = tx.QueryRowContext(ctx, `SELECT l.event_id FROM listens l JOIN occurrences o ON o.id=l.track_id
 				WHERE l.profile_id=? AND l.listened_at BETWEEN ? AND ?
-				AND (l.track_id=? OR o.recording_id=?) ORDER BY l.listened_at,l.event_id LIMIT 1`,
-				r.profile, r.unix-2, r.unix+2, r.track, recording).Scan(&candidate)
+				AND (l.track_id=? OR o.recording_id=?)
+				AND NOT EXISTS (
+					SELECT 1 FROM ingest_events prior JOIN ingest_events incoming ON incoming.receipt_id=?
+					WHERE prior.profile_id=l.profile_id AND prior.event_id=l.event_id AND prior.mode='active'
+					AND prior.state='accepted' AND prior.source_instance_id=incoming.source_instance_id
+					AND (
+						(prior.external_id_trusted=1 AND incoming.external_id_trusted=1
+						AND prior.external_namespace=incoming.external_namespace AND prior.external_event_id<>incoming.external_event_id)
+						OR (prior.file_digest=incoming.file_digest AND prior.file_format=incoming.file_format
+						AND prior.format_version=incoming.format_version AND prior.item_ordinal<>incoming.item_ordinal)
+					)
+				) ORDER BY l.listened_at,l.event_id LIMIT 1`,
+				r.profile, r.unix-2, r.unix+2, r.track, recording, r.id).Scan(&candidate)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 		}
-		return finalizeActiveReceipt(ctx, tx, r, recording, precision, review, existing, candidate)
+		return finalizeActiveReceipt(ctx, tx, r, recording, precision, review, existing, candidate, admissionReason)
 	})
 }
 
 // finalizeActiveReceipt writes the decision, revision, listen and eligible relay intent atomically.
-func finalizeActiveReceipt(ctx context.Context, tx *sql.Conn, r claimedReceipt, recording int64, precision string, review bool, existing, candidate string) error {
+func finalizeActiveReceipt(ctx context.Context, tx *sql.Conn, r claimedReceipt, recording int64, precision string, review bool, existing, candidate, admissionReason string) error {
 	now := time.Now().Unix()
 	state, decision, reason := "accepted", "different", "no_candidate"
 	var event, closed any
@@ -145,7 +173,7 @@ func finalizeActiveReceipt(ctx context.Context, tx *sql.Conn, r claimedReceipt, 
 		state, decision, reason = "duplicate", "same", "review_deferred"
 		event, closed = existing, now
 	default:
-		if candidate != "" {
+		if candidate != "" || admissionReason == "review_deferred" {
 			reason = "review_deferred"
 		}
 		event, closed = uuid.NewString(), now
