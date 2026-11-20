@@ -1,10 +1,11 @@
 ---
 id: ISSUE-157
 title: 157 — Sair da sessão pela página de confirmação aberta no menu (+)
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-17T12:46:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-20T21:12:00Z'
 labels:
   - admin
   - ui
@@ -14,6 +15,7 @@ dependencies:
   - ISSUE-163
 references:
   - backlog/evidencias/issue-163/ESTUDO.md
+  - backlog/evidencias/issue-157/VERIFICACAO.md
 type: feature
 ordinal: 170000
 ---
@@ -26,11 +28,11 @@ Origem: parecer do Advisor na ISSUE-155; confirmação de saída aprovada pelo u
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Sair… aparece no menu (+) só com sessão administrativa válida e abre uma página de confirmação; o GET não revoga a sessão
-- [ ] #2 O botão Sair faz o POST protegido existente, revoga só a sessão atual, limpa os cookies e redireciona para /admin; Cancelar volta a um destino interno validado
-- [ ] #3 Provas de CSRF, sessão expirada, ticket reutilizado e duas abas; funciona sem JavaScript; ícone LogOut adicionado ao catálogo local
+- [x] #1 Sair… aparece no menu (+) só com sessão administrativa válida e abre uma página de confirmação; o GET não revoga a sessão
+- [x] #2 O botão Sair faz o POST protegido existente, revoga só a sessão atual, limpa os cookies e redireciona para /admin; Cancelar volta a um destino interno validado
+- [x] #3 Provas de CSRF, sessão expirada, ticket reutilizado e duas abas; funciona sem JavaScript; ícone LogOut adicionado ao catálogo local
 - [ ] #4 Aceite visual do usuário
-- [ ] #5 Sair… disponível a qualquer sessão válida (não só administrativa) e presente na Conta e na 403; Cancelar volta a destino validado
+- [x] #5 Sair… disponível a qualquer sessão válida (não só administrativa) e presente na Conta e na 403; Cancelar volta a destino validado
 <!-- AC:END -->
 
 ## Comments
@@ -51,6 +53,24 @@ created: 2026-11-20T18:33:00Z
 ---
 
 Reescopo (decisão do usuário em 20/11/2026, estudo da 163): Sair… atende comum e root, no menu (+), na Conta e na página 403, com a confirmação compartilhada. Revisar a proposta antiga do grupo Administração e do retorno fixo a /admin: o retorno é um destino interno validado, com fallback para Conta ou diretório; depois de sair, o diretório oferece Entrar.
+
+---
+
+author: ebrgr
+created: 2026-11-20T21:03:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-157` na branch `feat/issue-157-sair-da-sessao-pela-pagina` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-20T21:12:00Z
+
+---
+
+Verificação conforme o reescopo de 20/11: confirmação para comum e root, Cancelar volta a leitura autorizada ou à Conta, e o POST encerra apenas a sessão atual e responde 303 para o diretório, que oferece Entrar. Testes Go e make check passaram (13/13 jornadas). Chromium validou a jornada por teclado sem JavaScript e a resposta da segunda aba. Oito capturas em Yuu e Pearl estão nas evidências. AC4 segue para aceite visual do usuário e a implementação segue para o Reviewer.
 
 ---
 <!-- COMMENTS:END -->
