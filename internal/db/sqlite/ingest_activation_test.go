@@ -230,3 +230,39 @@ func TestProfileDeleteClosesActiveIngest(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
 	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: claimed, profile: 1, track: 1, lease: "old", unix: 42}), sql.ErrNoRows)
 }
+
+// TestExpiredIngestLeaseCanBeReclaimed checks CAS while the new claim is still open.
+func TestExpiredIngestLeaseCanBeReclaimed(t *testing.T) {
+	ctx := context.Background()
+	s, _, path := migrationDB(t, 9)
+	seedIdentityHistory(t, s)
+	pinned := true
+	_, results, err := s.AdmitIngest(ctx, ingest.Batch{
+		ProfileID: 1, Source: "file", Operation: "import", ReceivedAt: time.Now(),
+		Items: []ingest.Item{{ListenedAt: time.Unix(100, 0), Snapshot: ingest.Snapshot{Artist: "A", Title: "T", CatalogTrackID: 1}}},
+	}, true, &pinned, nil)
+	require.NoError(t, err)
+	first, _, _, err := s.claimNextIngest(ctx)
+	require.NoError(t, err)
+	require.Equal(t, results[0].ReceiptID, first.id)
+
+	conn, err := openExisting(path)
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, conn.Close()) })
+	worker := &Sqlite{db: conn}
+	unavailable, _, _, err := worker.claimNextIngest(ctx)
+	require.NoError(t, err)
+	require.Empty(t, unavailable.id)
+	execSQL(t, s, `UPDATE ingest_events SET lease_until=unixepoch()-1 WHERE receipt_id=?`, first.id)
+
+	second, _, _, err := worker.claimNextIngest(ctx)
+	require.NoError(t, err)
+	require.Equal(t, first.id, second.id)
+	require.NotEqual(t, first.lease, second.lease)
+	require.Equal(t, first.work+1, second.work)
+	first.track, first.unix = 1, 100
+	second.track, second.unix = 1, 100
+	require.ErrorIs(t, s.finishIngest(ctx, first), sql.ErrNoRows)
+	require.NoError(t, worker.finishIngest(ctx, second))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=100`))
+}
