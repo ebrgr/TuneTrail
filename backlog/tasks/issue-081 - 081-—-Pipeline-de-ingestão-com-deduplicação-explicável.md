@@ -1,11 +1,11 @@
 ---
 id: ISSUE-081
 title: '081 — Pipeline de ingestão com deduplicação explicável: ativação (parte 2)'
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T18:08:00Z'
+updated_date: '2026-11-20T18:15:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -34,9 +34,9 @@ Escopo: internal/ingest (normalizar, gravar recibo, resolver, deduplicar, enfile
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 No modo ativo, ListenBrainz e importações usam a admissão durável, preservam os formatos e a compatibilidade dos clientes e conservam as escutas confirmadas ao trocar os controles de ativação. Com o mestre desligado, a ingestão mantém o comportamento observável da v0.43. A retirada do escritor legado e do interruptor fica na ISSUE-172, após o piloto.
+- [x] #1 No modo ativo, ListenBrainz e importações usam a admissão durável, preservam os formatos e a compatibilidade dos clientes e conservam as escutas confirmadas ao trocar os controles de ativação. Com o mestre desligado, a ingestão mantém o comportamento observável da v0.43. A retirada do escritor legado e do interruptor fica na ISSUE-172, após o piloto.
 - [x] #2 Cada decisão grava o motivo (reason_code, evidência e rule_version) em ingest_events, com a coluna mode (shadow ou active), e a intenção na outbox na mesma transação; colisão com a tripla legada tratada sob BEGIN IMMEDIATE sem ON CONFLICT silencioso nem erro 500
-- [ ] #3 Testes de concorrência e de repetições legítimas, e comparação com o resultado do modo sombra da ISSUE-171 sem contagem duplicada na transição; troca da flag com importação em andamento; recuperação após crash entre recibo e resolução; exclusão restrita aos recibos de sombra; EXPLAIN da fila nova
+- [x] #3 Testes de concorrência e de repetições legítimas, e comparação com o resultado do modo sombra da ISSUE-171 sem contagem duplicada na transição; troca da flag com importação em andamento; recuperação após crash entre recibo e resolução; exclusão restrita aos recibos de sombra; EXPLAIN da fila nova
 - [x] #4 Modo Revisar por perfil desligado por padrão, com fallback legado explicável (evidência review_deferred) sem pendência invisível; ativação documentada junto da ISSUE-083
 - [x] #5 Parecer do Advisor (effort high) sobre o diff da ativação registrado; o parecer do plano está no comentário da tarefa e em [PLANO ISSUE-081B] no ai-memory
 <!-- AC:END -->
@@ -198,6 +198,15 @@ created: 2026-11-20T18:08:00Z
 ---
 
 C6 concluída e documentada. make check passou com 13/13 jornadas e2e. A carga regular produziu 410 escutas equivalentes por cenário e preservou as três escutas da troca de controles. A vazão de materialização ativa ficou em 31,1 escutas/s pela API. A purga de 300 mil recibos bloqueou outro escritor por cerca de 4 s. BUSY devolveu 503 com Retry-After e as quatro tentativas posteriores produziram as escutas. Falha determinística repetiu a cada 60 s, e SIGKILL durante resolução recuperou o recibo após 120,16 s mesmo com os controles desligados. R1 reproduziu um HTTP 200 para uma chave de sombra cujo evento legado nunca foi escrito. AC1 foi reescrito para admissão ativa e preservação na troca de modo. AC1 e AC3 permanecem abertos e a tarefa segue Em andamento para releitura e decisão do usuário. O relatório registra decisões sobre R1, limiares, janela de sombra e manutenção, retry/fila de falhas, ISSUE-172 já aberta na main e coordenação da fila de revisão com a ISSUE-083.
+
+---
+
+author: codex
+created: 2026-11-20T18:15:00Z
+
+---
+
+Reensaio R1 aprovado na verificação local após 50b6e83. Na admissão ativa, chaves external/client/file de recibos de sombra sem vínculo são tomadas na mesma transação que grava o recibo ativo. Os testes cobrem escuta ausente recuperada, duplicata pela tripla, sombra vinculada preservada em replay, lote misto, cascata, isolamento por perfil e rollback do lote. O reensaio HTTP recuperou a escuta ausente, manteve a escuta legada e as 160 escutas do importador sem duplicar. A falha de COMMIT injetada devolveu 503 e preservou os recibos de sombra para nova tentativa. Go test dos pacotes afetados e make check passaram, com 13/13 jornadas e2e. AC1 e AC3 foram verificados e marcados. Tarefa enviada para aceite. A promoção do piloto segue condicionada às decisões registradas em ENSAIO-C6.md.
 
 ---
 <!-- COMMENTS:END -->

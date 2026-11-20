@@ -3,16 +3,18 @@
 ## Resultado para aceite
 
 O fluxo regular conservou as 410 escutas esperadas nos quatro cenários e as três
-escutas adicionais enviadas durante a troca dos controles. O teste de R1 reproduziu
-um HTTP 200 que não materializou uma escuta. Esse resultado impede o aceite e a
-promoção do piloto até a decisão do usuário sobre R1.
+escutas adicionais da troca de controles. O reensaio de R1 recuperou a escuta
+ausente e preservou as já materializadas. A falha de COMMIT devolveu 503 e
+preservou os recibos anteriores. Os cenários verificados sustentam o envio
+para aceite. A promoção do piloto depende dos limiares e da janela aprovados
+pelo usuário.
 
 ## Método
 
 O [ensaio reproduzível](../../../scripts/rehearse_issue081.py) usa servidores
 TuneTrail de verdade em loopback, bancos temporários e dados fictícios. A base
 v0.43 veio da tag `v0.43` (`4f9232e`). O binário v9 foi compilado a partir do
-código aprovado até `6b5fd6c`. A máquina foi um Mac16,1 arm64 com 16 GiB, Go
+código aprovado até `6b5fd6c` para a carga e as outras medições. O reensaio de R1 usou o binário com `50b6e83`. A máquina foi um Mac16,1 arm64 com 16 GiB, Go
 1.26.3 e Python 3.15.2. O gerador da ISSUE-133 prepara 30 mil escutas, quatro
 perfis, 9.018 faixas e recibos de sombra. O ensaio copia a mesma base para cada
 cenário. A confirmação de ativação nos cenários indicados usa a API root real.
@@ -118,17 +120,24 @@ receberam 200 e produziram quatro escutas.
 
 - **Reinício do mestre.** Com o perfil opt-in e o mestre desligado, uma
   entrega com chave gravou sombra e escuta. Um trigger sintético fez outra
-  entrega gravar sombra e falhar na gravação legada com HTTP 500. Depois do
-  restart com o mestre ligado, ambas as chaves receberam HTTP 200. A primeira
-  manteve sua escuta. A segunda continuou sem evento e fora da fila ativa.
-  O recibo ativo de controle enviado a seguir foi resolvido. Resultado
-  observado: um dos dois replays recebeu 200 sem escuta existente ou trabalho
-  que pudesse criá-la.
+  entrega gravar sombra e falhar na escrita legada com HTTP 500. No ensaio
+  original, o replay ativo dessa segunda chave recebeu 200 e ficou sem escuta.
+  No reensaio, uma falha de COMMIT durante a substituição devolveu 503 e
+  preservou os dois recibos de sombra. Removida a falha, os dois reenvios
+  receberam 200. O resolvedor marcou a primeira chave como `duplicate` pelo
+  evento legado e aceitou a segunda, recuperando a escuta ausente. Restaram
+  zero recibos de sombra sem vínculo e zero confirmações sem escuta após
+  a resolução. O recibo ativo de controle também foi resolvido.
 - **Job iniciado em sombra.** Uma importação Spotify de 160 escutas começou
-  antes da ativação. A confirmação ocorreu com o job em andamento. A página
-  final gravou 160 recibos de sombra depois da purga. O upload ativo posterior
-  encontrou as 160 chaves. As 160 escutas legadas já existiam e foram
-  preservadas, sem recibos ativos novos.
+  antes da ativação. A página final gravou 160 recibos de sombra depois da
+  purga. O upload ativo seguinte substituiu as 160 chaves e o resolvedor
+  marcou todas como `duplicate`. As 160 escutas já existentes continuaram
+  no histórico, cada uma uma vez.
+- **Cobertura de admissão.** Os testes Go verificam os três índices de chave
+  compartilhados, um lote com recibos substituídos, preservados e novos,
+  cascata de observações e detalhes, rollback do lote e isolamento entre
+  perfis. A substituição preserva a hora estimada original quando um
+  reenvio com a mesma chave continua sem timestamp.
 - **R-b.** Ocultar temporariamente a tabela de flags com o mestre ligado e
   o perfil inativo provocou HTTP 500 em 6 ms, sem escuta. Restaurada a tabela,
   o reenvio escreveu pelo caminho legado. O teste isola um erro genérico
@@ -136,8 +145,7 @@ receberam 200 e produziram quatro escutas.
 
 ## Recomendações e decisões de promoção
 
-Até decidir R1, manter o mestre desligado em produção. Para a próxima tentativa
-de promoção, propor três semanas de medição em sombra, cobrindo fins de semana,
+Para a promoção, propor três semanas de medição em sombra, cobrindo fins de semana,
 picos e importações. Aplicar o piloto a um perfil com até 15 escutas/s
 sustentadas, aproximadamente metade da vazão local observada. Propor zero
 confirmações sem escuta ou trabalho recuperável, zero contagens duplicadas
@@ -153,8 +161,7 @@ do destino antes de marcar a janela de produção.
 Decisões do usuário que permanecem abertas
 
 - Aprovar os limiares, a duração da sombra e a janela de manutenção.
-- Definir a correção ou o critério de bloqueio operacional para R1 antes do
-  piloto. Definir a resposta a R-b quando o modo efetivo ainda é indeterminado.
+- Definir a resposta a R-b quando o modo efetivo ainda é indeterminado.
 - Aprovar o limite de tentativas e a operação da fila de falhas permanentes.
 - Coordenar a remoção do escritor legado com a ISSUE-172, que já existe na
   `main`. Decidir se a fila de revisão e falhas permanentes cabe na ISSUE-083
@@ -171,10 +178,13 @@ que verificam o schema vigente passaram a derivar a versão das migrações
 do checkout. A validação adicional incluiu a sintaxe do script Python e
 da navegação dos guias.
 
-- AC1 e AC3 seguem abertos por causa do 200 sem escuta em R1. Os testes
-  confirmaram a troca de flag com um job fixado, retomada por lease, fila
-  parcial com EXPLAIN e exclusão seletiva. Essa cobertura não elimina a
-  falha de transição medida.
+- AC1 foi verificado pela comparação das 410 escutas, pela troca dos
+  controles e pelo reensaio de R1. Os reenvios recuperaram a escuta
+  ausente e mantiveram a contagem das já salvas.
+- AC3 foi verificado com repetições legítimas, testes de concorrência,
+  troca de flag com um job fixado, retomada por lease, fila parcial com
+  EXPLAIN e exclusão seletiva de recibos. O reensaio de R1 confirmou
+  a transição sem contagens extras nos dois cenários.
 - AC2 foi verificado pelo teste de colisão sob reserva de escritor, pelo
   motivo `review_deferred` preservado no ensaio e pelo teste de decisão com
   intenção de relay. A falha injetada no ensaio de retry comprova rollback
