@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/ebrgr/TuneTrail/internal/ingest"
@@ -24,7 +25,16 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		return match, nil, err
 	}
 	if len(releases) > 1 {
-		return match, releases, nil
+		// A stored release-track identity can disambiguate identical release labels.
+		var trackRelease string
+		err := tx.QueryRowContext(ctx, `SELECT coalesce(release_id,0) FROM occurrences WHERE track_mbid=?`, snapshot.TrackMBID).Scan(&trackRelease)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return match, nil, err
+		}
+		if !slices.Contains(releases, trackRelease) {
+			return match, releases, nil
+		}
+		releases = []string{trackRelease}
 	}
 	if len(releases) == 1 {
 		match.release, err = strconv.ParseInt(releases[0], 10, 64)
@@ -81,7 +91,8 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		differentPosition := snapshot.DiscNumber > 0 && c.disc > 0 && snapshot.DiscNumber != c.disc ||
 			snapshot.TrackNumber > 0 && c.position > 0 && snapshot.TrackNumber != c.position
 		differentRecording := match.recording != 0 && match.recording != c.recording ||
-			c.validated && snapshot.Recording != "" && c.recordingMBID != declared
+			c.validated && snapshot.Recording != "" && c.recordingMBID != declared ||
+			proof.recording != "" && c.recordingMBID != "" && c.recordingMBID != proof.recording
 		byTrack := track != "" && track == c.trackMBID
 		byPosition := snapshot.DiscNumber > 0 && snapshot.TrackNumber > 0 && c.disc == snapshot.DiscNumber && c.position == snapshot.TrackNumber
 		switch {
@@ -164,9 +175,7 @@ func occurrenceReleaseCandidates(ctx context.Context, tx *sql.Conn, title, mbid,
 		if err := rows.Scan(&id); err != nil {
 			return nil, err
 		}
-		if len(releases) < 33 {
-			releases = append(releases, id)
-		}
+		releases = append(releases, id)
 	}
 	return releases, rows.Err()
 }

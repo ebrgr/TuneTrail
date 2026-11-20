@@ -153,8 +153,15 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 				return err
 			}
 		} else if proof.recording != "" {
-			if _, err := tx.ExecContext(ctx, `UPDATE recordings SET mbid_source='validated' WHERE id=? AND musicbrainz_id=?`, match.recording, proof.recording); err != nil {
+			// Only independent proof can promote a provisional recording or add a track MBID.
+			if _, err := tx.ExecContext(ctx, `UPDATE recordings SET musicbrainz_id=?,mbid_source='validated'
+				WHERE id=? AND (musicbrainz_id IS NULL OR musicbrainz_id=?)`, proof.recording, match.recording, proof.recording); err != nil {
 				return err
+			}
+			if proof.track != "" && match.trackMBID == "" {
+				if _, err := tx.ExecContext(ctx, `UPDATE occurrences SET track_mbid=? WHERE id=?`, proof.track, match.id); err != nil {
+					return err
+				}
 			}
 		}
 		event := uuid.NewString()

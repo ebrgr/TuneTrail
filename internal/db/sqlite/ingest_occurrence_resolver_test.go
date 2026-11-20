@@ -246,3 +246,26 @@ func TestOccurrenceResolverStandalone(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences WHERE release_id IS NULL AND legacy_track_id IS NULL AND presented_title='Solo'`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM occurrence_credits`))
 }
+
+// TestOccurrenceProvisionalPromotion verifies that later proof keeps the original bridge and recording.
+func TestOccurrenceProvisionalPromotion(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	item := ingest.Snapshot{Title: "Shared", Artist: "Artist", Release: "Provisional", DiscNumber: 1, TrackNumber: 1}
+	original := admitOccurrenceFixture(t, s, item, 1000, "provisional")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, original, "accepted")
+
+	releaseID := uuid.New()
+	track := mbz.MusicBrainzReleaseTrack{Title: item.Title, Position: 1, ID: uuid.NewString()}
+	track.Recording.ID = fixtureRecording
+	client := &occurrenceReleaseFixture{releases: map[uuid.UUID]*mbz.MusicBrainzRelease{
+		releaseID: {ID: releaseID.String(), Title: item.Release, Media: []mbz.MusicBrainzMedium{{Position: 1, Tracks: []mbz.MusicBrainzReleaseTrack{track}}}},
+	}}
+	item.Recording, item.ReleaseMBID, item.TrackMBID = fixtureRecording, releaseID.String(), track.ID
+	proven := admitOccurrenceFixture(t, s, item, 1010, "proven")
+	resolveOccurrenceFixture(t, s, client)
+	requireReceiptState(t, s, proven, "accepted")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(DISTINCT occurrence_id) FROM ingest_events WHERE receipt_id IN (?,?)`, original, proven))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences o JOIN recordings r ON r.id=o.recording_id
+		WHERE o.track_mbid=? AND r.musicbrainz_id=? AND r.mbid_source='validated'`, track.ID, fixtureRecording))
+}
