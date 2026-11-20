@@ -260,3 +260,5 @@ Rebase sobre v0.46. Ensaio somente em bancos descartáveis.
 - Feito — Ensaia SIGKILL com lease real e rollback de commit. Pendente — aguardar expiração do lease, testar SQLite cheio e exclusão em trânsito, registrar resultados.
 
 - Feito — Caracteriza exclusão com lease em trânsito e simula SQLite cheio. Pendente — verificar testes focados e consolidar relatório após os ensaios.
+
+- Feito — Registra carga, paridade, sobreposição e limites do piloto. Pendente — resultado do SIGKILL e commit real, suíte final e Backlog.
