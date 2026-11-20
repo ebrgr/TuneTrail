@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-20T18:30:00Z'
+updated_date: '2026-11-20T19:19:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -76,6 +76,15 @@ created: 2026-11-20T18:30:00Z
 ---
 
 Fase 1: plano entregue. Mapeia as fontes e a cobertura herdada da 081, propõe testes para os sete ACs e migração 010 para identidade, origens e guardas, com paridade v0.44 na via desligada. Explicita os cortes com 135, 082, 083 e 173, inclusive R-b na 173. Aguarda parecer do Advisor antes de implementar. ACs continuam abertos.
+
+---
+
+author: codex
+created: 2026-11-20T19:19:00Z
+
+---
+
+Fase 1, plano v2. Parecer do Advisor: REPROVADO COM RESSALVAS. O plano incorpora as seis correções sobre proteção da gravação compartilhada, cascatas, 010 aditiva com reparo auditado de drift v9, exclusão real de recibos e chaves, replay na troca de modo e visibilidade dos leitores. Decisões de 20/11/2026: D1 álbum conhecido com faixa de ponte e aliases; D2 sem álbum pendente em perfis reais e ocorrência autônoma apenas no ensaio; D3 modo novo só em banco descartável até 135/083; D4 relay em espera, com habilitação bloqueada para perfil com relay até 082; D5 flag de mão única, opt-ins existentes em v9 e variante fixada no job e recibo; D6 MBID salvo/recebido, depois Subsonic (174), ListenBrainz (175) e campo vazio, com proveniência e resolução por metadados. Sequência E1–E4 registrada. E1 segue bloqueada para revisão do Advisor. ACs abertos.
 
 ---
 <!-- COMMENTS:END -->
