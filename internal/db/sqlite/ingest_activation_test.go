@@ -200,3 +200,33 @@ func TestIngestDigestUpgrade(t *testing.T) {
 	require.Equal(t, "review", retry[0].Decision)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='v1' AND digest_version=?`, ingest.DigestVersion))
 }
+
+// TestProfileDeleteClosesActiveIngest revokes claims in the affected profile atomically.
+func TestProfileDeleteClosesActiveIngest(t *testing.T) {
+	ctx := context.Background()
+	s, _, _ := migrationDB(t, 9)
+	seedIdentityHistory(t, s)
+	for _, profile := range []int32{1, 2} {
+		batch := ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", ReceivedAt: time.Now(),
+			Items: []ingest.Item{{Ordinal: 0, Snapshot: ingest.Snapshot{Artist: "A", Title: "T"}},
+				{Ordinal: 1, Snapshot: ingest.Snapshot{Artist: "B", Title: "U"}}}}
+		pinned := true
+		_, results, err := s.AdmitIngest(ctx, batch, true, &pinned, nil)
+		require.NoError(t, err)
+		execSQL(t, s, `UPDATE ingest_events SET state='retryable',lease_owner='old',lease_until=unixepoch()+60
+			WHERE receipt_id=?`, results[1].ReceiptID)
+	}
+	var claimed string
+	require.NoError(t, s.db.QueryRow(`SELECT receipt_id FROM ingest_events WHERE profile_id=1 AND lease_owner='old'`).Scan(&claimed))
+	plan, err := s.PreviewProfileDelete(ctx, 1, "track", 1)
+	require.NoError(t, err)
+	require.Positive(t, plan.Count)
+	deleted, err := s.ApplyProfileDelete(ctx, plan)
+	require.NoError(t, err)
+	require.Equal(t, plan.Count, deleted)
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND state='invalid'
+		AND closed_at IS NOT NULL AND lease_owner IS NULL AND resolution_version=1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1 AND decision='invalid'`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
+	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: claimed, profile: 1, track: 1, lease: "old", unix: 42}), sql.ErrNoRows)
+}
