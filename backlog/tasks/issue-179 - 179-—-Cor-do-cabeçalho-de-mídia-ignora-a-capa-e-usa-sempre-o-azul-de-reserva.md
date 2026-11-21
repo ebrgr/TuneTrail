@@ -1,11 +1,11 @@
 ---
 id: ISSUE-179
 title: 179 — Cor do cabeçalho de mídia ignora a capa e usa sempre o azul de reserva
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T14:02:00Z'
-updated_date: '2026-11-21T14:03:00Z'
+updated_date: '2026-11-21T14:07:00Z'
 labels:
   - imagens
 dependencies: []
@@ -41,6 +41,15 @@ created: 2026-11-21T14:03:00Z
 ---
 
 Início: branch `fix/issue-179-cor-do-cabecalho-de-midia` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-21T14:07:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 21/11/2026, após ver a correção num build temporário com a ISSUE-180.
 
 ---
 <!-- COMMENTS:END -->
