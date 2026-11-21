@@ -912,3 +912,20 @@ func TestRelayTransientPauses(t *testing.T) {
 		})
 	}
 }
+
+// TestRelaySuccessWithoutRateLimitDeadline pauses even without a server hint.
+func TestRelaySuccessWithoutRateLimitDeadline(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	s.relayJitter = func(limit int64) int64 { return limit / 2 }
+	now := time.Now().UTC().Truncate(time.Second).Add(time.Minute)
+	relayReceipt(t, s, 1, "hintless", "v9", 1, now)
+	resolveRelayV9(t, s)
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
+	execSQL(t, s, "UPDATE relay_destinations SET backoff_count=4 WHERE profile_id=1")
+	_, err = s.FinishRelayBatch(t.Context(), batch, batch.Items, relay.Result{Class: relay.Success, Status: 200, RemainingZero: true}, now, true)
+	require.NoError(t, err)
+	require.EqualValues(t, now.Add(15*time.Second).Unix(), scalar(t, s, "SELECT paused_until FROM relay_destinations WHERE profile_id=1"))
+	require.Zero(t, scalar(t, s, "SELECT backoff_count FROM relay_destinations WHERE profile_id=1"))
+}

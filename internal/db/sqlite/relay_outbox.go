@@ -423,11 +423,18 @@ func releaseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch
 
 // pauseRelayDestination applies server waits and per-destination backoff.
 func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, result relay.Result, now time.Time, failures int64) (bool, error) {
+	sample := s.relayJitter
+	if sample == nil {
+		sample = rand.Int64N
+	}
 	class := result.Class
 	switch class {
 	case relay.Success:
 		if result.RemainingZero {
-			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class='rate_limited',paused_until=?,backoff_count=0 WHERE profile_id=?", now.Add(result.ServerWait).Unix(), batch.Profile)
+			// Successful bursts use a fixed jitter window, never escalating the failure counter.
+			delay := retry.FullJitter(30*time.Second, time.Hour, 0, sample)
+			wait := max(time.Second, delay, result.ServerWait)
+			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class='rate_limited',paused_until=?,backoff_count=0 WHERE profile_id=?", now.Add(wait).Unix(), batch.Profile)
 			return true, err
 		}
 		_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=NULL,paused_until=NULL,backoff_count=0 WHERE profile_id=?", batch.Profile)
@@ -445,10 +452,6 @@ func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch 
 	base := 30 * time.Second
 	if class == relay.TLS {
 		base = 15 * time.Minute
-	}
-	sample := s.relayJitter
-	if sample == nil {
-		sample = rand.Int64N
 	}
 	delay := retry.FullJitter(base, time.Hour, failures, sample)
 	until := now.Add(max(delay, result.ServerWait)).Unix()
