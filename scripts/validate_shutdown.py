@@ -17,9 +17,12 @@ def main():
     """Confirm a durable local listen and bounded process shutdown during relay I/O."""
     parser=argparse.ArgumentParser();parser.add_argument('--binary',type=Path,required=True);args=parser.parse_args()
     entered=threading.Event();release=threading.Event();finished=threading.Event()
+    received=[]
     class Receiver(BaseHTTPRequestHandler):
         def do_POST(self):
-            self.rfile.read(int(self.headers.get('Content-Length','0')))
+            body=json.loads(self.rfile.read(int(self.headers.get('Content-Length','0'))))
+            received.extend((item['listened_at'],item['track_metadata']['track_name'],'fixture-user')
+                            for item in body['payload'])
             entered.set();release.wait(15)
             try:self.send_response(200);self.end_headers()
             except OSError:pass
@@ -60,7 +63,8 @@ def main():
                     if delivered:break
                     assert time.monotonic()<deadline, 'persisted delivery was not retried'
                     time.sleep(.1)
-                print(json.dumps({'local_listens':1,'relay':'resumed after SIGTERM','shutdown_seconds':round(duration,3),'integrity':'ok'}))
+                assert len(received)==2 and len(set(received))==1
+                print(json.dumps({'posts':2,'duplicate_attempts':1,'unique_mock_keys':1,'local_listens':1,'relay':'resumed after SIGTERM','shutdown_seconds':round(duration,3),'integrity':'ok'}))
             finally:server.stop()
     finally:
         release.set();finished.wait(2);relay.shutdown();relay.server_close();thread.join()

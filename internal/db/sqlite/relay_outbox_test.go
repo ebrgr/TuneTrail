@@ -716,8 +716,10 @@ func TestRelayCapacity(t *testing.T) {
 	_, err = s.FinishRelayBatch(t.Context(), batch, batch.Items[:1], relay.Result{Class: relay.Success, Status: 200}, now.Add(time.Minute), true)
 	require.NoError(t, err)
 	require.Equal(t, 99999, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+	readmission := time.Now()
 	_, err = s.ClaimRelayBatch(t.Context(), now.Add(time.Minute))
 	require.NoError(t, err)
+	t.Logf("readmission_with_claim=%s", time.Since(readmission))
 	require.Zero(t, scalar(t, s, "SELECT count(*) FROM outbox WHERE json_extract(result,'$.reason')='queue_capacity'"))
 	require.Equal(t, scalar(t, s, "SELECT count(*) FROM outbox WHERE state IN ('pending','retryable')"), scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 }

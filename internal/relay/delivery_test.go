@@ -229,7 +229,7 @@ func TestDeliverRechecksDNS(t *testing.T) {
 	resolver := &net.Resolver{PreferGo: true}
 	resolver.Dial = func(_ context.Context, _, _ string) (net.Conn, error) {
 		client, peer := net.Pipe()
-		go answerDNS(peer, &rebound)
+		go answerDNS(peer, &rebound, false)
 		return client, nil
 	}
 	allow := allowFunc(func(_ string, ip netip.Addr) bool { return ip == netip.MustParseAddr("127.0.0.1") })
@@ -241,8 +241,21 @@ func TestDeliverRechecksDNS(t *testing.T) {
 	require.EqualValues(t, 1, requests.Load())
 }
 
+// TestDeliverNXDOMAIN exercises transient DNS diagnostics without external DNS.
+func TestDeliverNXDOMAIN(t *testing.T) {
+	resolver := &net.Resolver{PreferGo: true}
+	resolver.Dial = func(_ context.Context, _, _ string) (net.Conn, error) {
+		client, peer := net.Pipe()
+		go answerDNS(peer, nil, true)
+		return client, nil
+	}
+	result := newDeliverer(nil, nil, resolver).Deliver(t.Context(), "https://relay.test./submit-listens", fixtureToken, nil)
+	require.Equal(t, Transient, result.Class)
+	require.Equal(t, "dns_resolution_failed", result.Diagnostic.Code)
+}
+
 // answerDNS is a one-query TCP DNS fixture for the real Go dialer.
-func answerDNS(conn net.Conn, rebound *atomic.Bool) {
+func answerDNS(conn net.Conn, rebound *atomic.Bool, notFound bool) {
 	defer func() { _ = conn.Close() }() // The resolver may close first.
 	var size uint16
 	if err := binary.Read(conn, binary.BigEndian, &size); err != nil || size < 17 {
@@ -260,7 +273,9 @@ func answerDNS(conn net.Conn, rebound *atomic.Bool) {
 	reply := query[:questionEnd:questionEnd]
 	reply[2], reply[3] = 0x81, 0x80
 	clear(reply[6:12])
-	if binary.BigEndian.Uint16(reply[24:26]) == 1 {
+	if notFound {
+		reply[3] = 0x83
+	} else if binary.BigEndian.Uint16(reply[24:26]) == 1 {
 		reply[7] = 1
 		ip := byte(1)
 		if rebound.Load() {
@@ -284,7 +299,7 @@ func TestLegacyRelayGolden(t *testing.T) {
 		// An environment proxy would reach the fixture unless the new transport ignores it.
 		resolver := &net.Resolver{PreferGo: true, Dial: func(_ context.Context, _, _ string) (net.Conn, error) {
 			client, peer := net.Pipe()
-			go answerDNS(peer, &atomic.Bool{})
+			go answerDNS(peer, &atomic.Bool{}, false)
 			return client, nil
 		}}
 		allow := allowFunc(func(hostPort string, _ netip.Addr) bool { return !strings.HasPrefix(hostPort, "relay.test") })

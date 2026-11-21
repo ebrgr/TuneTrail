@@ -67,7 +67,7 @@ def exercise(binary, directory, scenario):
             preview = app.request('GET', profile + '/ingest-activation', admin=True)
             app.request('PUT', profile + '/ingest-activation',
                         {'active': True, 'review': False, 'digest': preview['digest']}, admin=True, expected=204)
-            port = receiver.server_port if scenario != 'refused' else refused.getsockname()[1]
+            port = receiver.server_port if scenario not in ('refused', 'capacity') else refused.getsockname()[1]
             host = f'127.0.0.1:{port}'
             for permission in ({'host_port': host, 'allow_http': True},
                                {'host_port': host, 'cidr': '127.0.0.1/32', 'allow_private': True}):
@@ -97,7 +97,7 @@ def exercise(binary, directory, scenario):
                     state = states(db)
                     if state.get('sent', 0) + state.get('failed', 0) == count:
                         return state
-                    if scenario == 'refused' and row and row[0] and sum(state.values()) == count:
+                    if scenario in ('refused', 'capacity') and row and row[0] and sum(state.values()) == count:
                         return state
                     time.sleep(.05)
                 raise AssertionError(f'{scenario} did not settle: {states(db)}')
@@ -113,17 +113,37 @@ def exercise(binary, directory, scenario):
                 acks = [submit(files * size + i, 1) for i in range(40)]
                 final = settle(db, files * size + 40, 400)
                 duration = time.monotonic() - start
-                if scenario != 'refused':
+                if scenario not in ('refused', 'capacity'):
                     assert final == ({'sent': 4039, 'failed': 1} if scenario == 'healthy' else {'sent': 160}), final
                     assert len(set(accepted)) == final['sent']
                     assert posts and max(posts) <= 100
                 assert db.execute('SELECT count(*) FROM listens').fetchone()[0] == files * size + 40
+                saturated_ack = None
+                storage_ack = None
+                if scenario == 'capacity':
+                    fill_capacity(db)
+                    saturated_ack = percentiles([submit(files * size + 40 + n, 1) for n in range(40)])
+                    final = settle(db, 100040, 60)
+                    assert final.get('failed') == 40
+                    assert db.execute("SELECT count(*) FROM outbox WHERE json_extract(result,'$.reason')='queue_capacity'").fetchone()[0] == 40
+                    assert db.execute('SELECT open_count FROM relay_destinations').fetchone()[0] == 100000
+                    assert db.execute('SELECT count(*) FROM listens').fetchone()[0] == 100040
+                    assert db.execute("SELECT count(*) FROM outbox WHERE instr(coalesce(result,''),'e4-fictional')").fetchone()[0] == 0
+                    # Model an unavailable local writer separately from delivery capacity.
+                    db.execute('BEGIN IMMEDIATE')
+                    try:
+                        unavailable_at = time.monotonic()
+                        app.request('POST', LBZ + '/submit-listens', scrobble(start_stamp + 1000),
+                                    token=key, expected=503)
+                        storage_ack = round(time.monotonic() - unavailable_at, 3)
+                    finally:
+                        db.rollback()
                 before = cpu_time(app)
                 time.sleep(3)
                 idle_cpu = cpu_time(app) - before
             return dict(scenario=scenario, seconds=round(duration, 3), posts=len(posts),
                         batch_sizes=dict(sorted(Counter(posts).items())), states=final, pauses=sorted(pauses),
-                        ack=percentiles(acks), imports=percentiles(imports), idle_cpu_seconds=round(idle_cpu, 3),
+                        ack=percentiles(acks), saturated_ack=saturated_ack, local_writer_503_seconds=storage_ack, imports=percentiles(imports), idle_cpu_seconds=round(idle_cpu, 3),
                         duplicates=len(accepted) - len(set(accepted)),
                         inversions=sum(a > b for a, b in zip(accepted, accepted[1:])), **peaks)
         finally:
@@ -131,6 +151,31 @@ def exercise(binary, directory, scenario):
             app.stop()
             receiver.shutdown()
             thread.join()
+
+
+def fill_capacity(db):
+    # Seed no-send history while the refused destination remains paused.
+    db.execute("UPDATE relay_destinations SET paused_until=unixepoch()+3600,pause_class='transient'")
+    db.executescript("""
+        CREATE TEMP TABLE e4_sequence(n INTEGER PRIMARY KEY);
+        INSERT INTO e4_sequence WITH RECURSIVE seq(n) AS
+            (VALUES(1) UNION ALL SELECT n+1 FROM seq WHERE n<99840) SELECT n FROM seq;
+        INSERT INTO listens(profile_id,track_id,listened_at,event_id)
+            SELECT 1,(SELECT min(track_id) FROM listens),100000+n,'e4-capacity-'||n FROM e4_sequence;
+        INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,
+            batch_id,item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,original_snapshot,
+            snapshot_digest,digest_version,state,identity_status,event_id,occurrence_id,recording_id,mode,delivery_policy,closed_at)
+            SELECT l.event_id,1,e.source_instance_id,1,'listenbrainz','1',l.event_id,0,'import',unixepoch(),
+                e.listened_at,'second','start',e.original_snapshot,'fixture','1','accepted','resolved',
+                l.event_id,e.occurrence_id,e.recording_id,'active','durable',unixepoch()
+            FROM listens l CROSS JOIN (SELECT * FROM ingest_events WHERE state='accepted' LIMIT 1) e
+            WHERE l.event_id LIKE 'e4-capacity-%';
+        INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at,next_attempt_at,format_version)
+            SELECT event_id,1,'relay:1',event_id,'listen',event_id,unixepoch(),unixepoch(),1
+            FROM ingest_events WHERE receipt_id LIKE 'e4-capacity-%';
+    """)
+    assert db.execute('SELECT open_count FROM relay_destinations').fetchone()[0] == 100000
+
 
 
 def upgrade(binary, baseline, root):
@@ -204,7 +249,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--baseline', type=Path)
-    parser.add_argument('--cases', nargs='+', choices=['healthy', 'slow', 'refused', 'oscillating', 'upgrade'],
+    parser.add_argument('--cases', nargs='+', choices=['healthy', 'slow', 'refused', 'oscillating', 'capacity', 'upgrade'],
                         default=['healthy', 'slow', 'refused', 'oscillating'])
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='tunetrail-relay-e4-') as root:

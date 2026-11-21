@@ -234,3 +234,4 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Medido: expiração de 100 mil itens com 300 mil recibos, 15,55–16,29 ms em sete ticks. Índice adicional dispensado neste host. Remoção de histórico no mesmo cenário e espaço da fila medidos.
 - Verificado: SIGTERM em 4,004 s; paridade v0.48; SIGKILL em três fronteiras e recusa injetada na gravação do 2xx. O mock observou uma reentrega após aceite remoto sem CAS e uma após falha da gravação, ambas deduplicáveis.
 - Medido: TLS real em loopback com CA de teste. Pendente registrar síntese dos cenários, upgrade e verificação final.
+- Carga, TLS, paridade, upgrade e segurança registrados em ENSAIO-E4.md. A outbox com 100 mil abertos manteve 200, e uma reserva externa do escritor produziu 503. O backup físico de rollback inclui a credencial, conforme a restauração integral documentada. A exigência de token ausente em todo backup precisa de decisão do usuário antes de mudar o status.
