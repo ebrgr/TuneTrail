@@ -167,6 +167,7 @@ func TestOccurrenceResolverIntro(t *testing.T) {
 // TestOccurrenceResolverOverlap times first visibility and preserves ambiguous imports.
 func TestOccurrenceResolverOverlap(t *testing.T) {
 	s := convertedOccurrenceFixture(t)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, true))
 	snapshot := ingest.Snapshot{Title: "Track", Artist: "Artist", Release: "Album"}
 	var elapsed time.Duration
 	for i, stamp := range []int64{500, 501, 500} {
@@ -605,6 +606,7 @@ func TestOccurrenceReleaseProofCache(t *testing.T) {
 func TestProfileDeleteRemovesResolvedOccurrencePending(t *testing.T) {
 	ctx := context.Background()
 	s := convertedOccurrenceFixture(t)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, true))
 	snapshot := ingest.Snapshot{Title: "Profile delete", Artist: "Artist", Release: "Album"}
 	accepted := admitOccurrenceFixture(t, s, snapshot, 2000, "accepted")
 	resolveOccurrenceFixture(t, s, nil)

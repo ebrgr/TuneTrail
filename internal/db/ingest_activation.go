@@ -2,13 +2,9 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 )
-
-// ErrIngestReviewUnavailable rejects activation of a queue that operators cannot see yet.
-var ErrIngestReviewUnavailable = fmt.Errorf("%w: review requires the ingestion review queue", ErrInvalidInput)
 
 // IngestActivationPreview reports the aggregate export and confirmation digest for one profile.
 type IngestActivationPreview struct {

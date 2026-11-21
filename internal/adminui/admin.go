@@ -241,7 +241,7 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Health has its own session and profile authorization before diagnostics.
-	if r.URL.Path == "/admin/health" || r.URL.Path == "/admin/health/reprocess" {
+	if r.URL.Path == "/admin/health" || isHealthAction(r.URL.Path) {
 		h.healthPage(w, r)
 		return
 	}

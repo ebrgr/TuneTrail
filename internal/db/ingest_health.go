@@ -7,20 +7,25 @@ import (
 
 // IngestHealthStore provides profile diagnostics and manual recovery.
 type IngestHealthStore interface {
-	IngestHealth(context.Context, int32) (IngestHealth, error)
+	IngestHealth(context.Context, int32, ...int) (IngestHealth, error)
 	ReprocessIngest(context.Context, int32, string) error
+	SetIngestReview(context.Context, int32, bool) error
+	ResolveIngestReview(context.Context, int32, IngestReviewDecision) error
 	ListenProvenance(context.Context, int32, int32, int64, ...string) ([]ListenProvenance, error)
 }
 
 type IngestHealth struct {
-	Sources      []IngestSource
-	Decisions    []IngestDecision
-	Relay        []IngestDelivery
-	Open         int
-	Pause        string
-	RelayTracked bool
-	Failures     []IngestFailure
-	FailureCount int
+	Sources                                 []IngestSource
+	Decisions                               []IngestDecision
+	Relay                                   []IngestDelivery
+	Open                                    int
+	Pause                                   string
+	RelayTracked                            bool
+	Failures                                []IngestFailure
+	FailureCount                            int
+	Reviews                                 []IngestReview
+	ReviewCount, ReviewPrevious, ReviewNext int
+	ReviewAvailable, ReviewEnabled          bool
 }
 
 // IngestFailure is the credential-free projection of a parked receipt.
@@ -50,4 +55,24 @@ type IngestDelivery struct {
 type ListenProvenance struct {
 	Origin, Precision, Delivery, Reason, Rule string
 	Received                                  *time.Time
+}
+
+// IngestReview contains only displayable evidence scoped to the authorized profile.
+type IngestReview struct {
+	Receipt, Source, Title, Reason, Precision, Rule string
+	Received                                        time.Time
+	ListenedAt                                      *time.Time
+	Version                                         int64
+	CanKeep                                         bool
+	Candidates                                      []IngestReviewCandidate
+}
+
+type IngestReviewCandidate struct {
+	Event, Title string
+	At           time.Time
+}
+
+type IngestReviewDecision struct {
+	Receipt, Candidate, Value string
+	Version                   int64
 }

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/ebrgr/TuneTrail/engine/middleware"
@@ -45,11 +44,7 @@ func IngestActivationHandler(store db.IngestActivationStore) http.HandlerFunc {
 			return
 		}
 		if err := store.SetIngestActivation(ctx, actor.SessionID, profile.ID, *body.Active, *body.Review, body.Digest); err != nil {
-			// Explain why this particular flag cannot be enabled.
-			if errors.Is(err, db.ErrIngestReviewUnavailable) {
-				utils.WriteError(w, "review cannot be enabled until the ingestion review queue is available", http.StatusBadRequest)
-				return
-			}
+			// Report activation validation errors through the management API.
 			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 			return
 		}

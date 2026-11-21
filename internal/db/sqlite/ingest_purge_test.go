@@ -47,9 +47,8 @@ func TestIngestActivationConfirmation(t *testing.T) {
 	require.Positive(t, preview.Groups[0].SnapshotBytes)
 	require.False(t, preview.Active)
 	require.False(t, preview.Review)
-	err = s.SetIngestActivation(ctx, session.ID, target.ID, true, true, preview.Digest)
+	err = s.SetIngestActivation(ctx, session.ID, target.ID, false, true, "")
 	require.ErrorIs(t, err, db.ErrInvalidInput)
-	require.ErrorContains(t, err, "review requires the ingestion review queue")
 
 	batch.Items[0].Snapshot.Title = "Conflicting variant"
 	_, err = s.ReceiveBatch(ctx, batch)
@@ -58,7 +57,10 @@ func TestIngestActivationConfirmation(t *testing.T) {
 	preview, err = s.PreviewIngestActivation(ctx, session.ID, target.ID)
 	require.NoError(t, err)
 	require.EqualValues(t, 1, preview.Groups[0].Observations)
-	require.NoError(t, s.SetIngestActivation(ctx, session.ID, target.ID, true, false, preview.Digest))
+	require.NoError(t, s.SetIngestActivation(ctx, session.ID, target.ID, true, true, preview.Digest))
+	enabled, err := s.PreviewIngestActivation(ctx, session.ID, target.ID)
+	require.NoError(t, err)
+	require.True(t, enabled.Review)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, first[0].ReceiptID))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_observations`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=? AND mode='shadow'`, other.ID))

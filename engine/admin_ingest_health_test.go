@@ -183,3 +183,99 @@ func TestIngestHealthReprocess(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, listens)
 }
+
+// TestIngestHealthReviewActions checks session authorization and the complete review form flow.
+func TestIngestHealthReviewActions(t *testing.T) {
+	a := newProfileTestApp(t)
+	const stamp = 1714564800
+	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2`))
+	for _, key := range []string{"first-key", "second-key"} {
+		w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Review Track", stamp), key, false)
+		require.Equal(t, 200, w.Code, w.Body.String())
+	}
+	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)`))
+	receipts := map[int]string{1: "f0000000-0000-4000-8000-000000000181", 2: "f0000000-0000-4000-8000-000000000182"}
+	for profile, receipt := range receipts {
+		require.NoError(t, a.store.Exec(`INSERT INTO integrations(id,profile_id,source_type,token_ref,created_at)
+			VALUES('review:'||?,?,'listenbrainz','PRIVATE_TOKEN',0)`, profile, profile))
+		require.NoError(t, a.store.Exec(`INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,
+			source_type,adapter_version,batch_id,item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,
+			original_snapshot,snapshot_digest,digest_version,mode,state,duplicate_decision,reason_codes,evidence,rule_version,
+			resolution_version,occurrence_id,recording_id,identity_status)
+			SELECT ?,l.profile_id,'review:'||l.profile_id,1,'listenbrainz','1','review',0,'single',?,
+			'2024-05-01T12:00:00.000000000Z','second','start','{"private":"PRIVATE_BODY"}','fixture','1','active',
+			'pending_duplicate','review','["legacy_identity_collision"]',json_object('candidate_event_id',l.event_id,'private','PRIVATE_EVIDENCE'),
+			'active-v1',1,o.id,o.recording_id,'resolved'
+			FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=?`, receipt, stamp, profile))
+	}
+	session, err := a.store.SaveSession(t.Context(), 2, time.Now().Add(time.Hour), false)
+	require.NoError(t, err)
+	owner := *a
+	owner.cookie = session.ID.String()
+	tokenPattern := regexp.MustCompile(`name="csrf_token" value="([^"]+)"`)
+	tokens := make(map[int]string, 2)
+	var firstCandidate string
+	for profile, app := range map[int]*profileTestApp{1: a, 2: &owner} {
+		w := app.request("GET", fmt.Sprintf("/admin/health?profile=%d", profile), "", "", true)
+		html := w.Body.String()
+		require.Equal(t, http.StatusOK, w.Code, html)
+		for _, want := range []string{"Pending reviews", "View evidence", "Accept as duplicate", "Keep as a separate listen", receipts[profile]} {
+			require.Contains(t, html, want)
+		}
+		require.NotContains(t, html, receipts[3-profile])
+		require.NotContains(t, html, "PRIVATE_")
+		match := tokenPattern.FindStringSubmatch(html)
+		require.Len(t, match, 2)
+		tokens[profile] = match[1]
+		if profile == 1 {
+			option := regexp.MustCompile(`<option value="([a-f0-9-]+)">Review Track`).FindStringSubmatch(html)
+			require.Len(t, option, 2)
+			firstCandidate = option[1]
+		}
+	}
+	post := func(app *profileTestApp, action string, profile int, form url.Values) int {
+		t.Helper()
+		path := fmt.Sprintf("/admin/health/%s?profile=%d", action, profile)
+		r := httptest.NewRequest(http.MethodPost, path, strings.NewReader(form.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: app.cookie})
+		w := httptest.NewRecorder()
+		app.router.ServeHTTP(w, r)
+		return w.Code
+	}
+	review := url.Values{"receipt": {receipts[2]}, "version": {"1"}, "decision": {"different"}}
+	require.Equal(t, http.StatusForbidden, post(&owner, "review", 2, review))
+	review.Set("csrf_token", tokens[1])
+	require.Equal(t, http.StatusForbidden, post(&owner, "review", 2, review))
+	review.Set("csrf_token", tokens[2])
+	require.Equal(t, http.StatusForbidden, post(&owner, "review", 1, review))
+	review.Set("receipt", receipts[1])
+	require.Equal(t, http.StatusNotFound, post(&owner, "review", 2, review))
+	w := owner.request("GET", "/admin/health/review?profile=2&receipt="+receipts[2], "", "", true)
+	require.Equal(t, http.StatusNotFound, w.Code)
+
+	flag := url.Values{"csrf_token": {tokens[2]}, "enabled": {"1"}}
+	require.Equal(t, http.StatusForbidden, post(&owner, "review-setting", 1, flag))
+	require.Equal(t, http.StatusSeeOther, post(&owner, "review-setting", 2, flag))
+	w = owner.request("GET", "/admin/health?profile=2", "", "", true)
+	require.Contains(t, w.Body.String(), "Turn off duplicate review")
+
+	review.Set("receipt", receipts[2])
+	require.Equal(t, http.StatusSeeOther, post(&owner, "review", 2, review))
+	require.Equal(t, http.StatusConflict, post(&owner, "review", 2, review))
+	review.Set("receipt", receipts[1])
+	review.Set("csrf_token", tokens[1])
+	review.Set("decision", "same")
+	review.Set("candidate", firstCandidate)
+	require.Equal(t, http.StatusSeeOther, post(a, "review", 1, review))
+	count, err := a.store.Count(`SELECT count(*) FROM ingest_revisions WHERE author='user'`)
+	require.NoError(t, err)
+	require.Equal(t, 2, count)
+	localized := httptest.NewRequest(http.MethodGet, "/admin/health?profile=2", nil)
+	localized.Header.Set("Accept-Language", "pt-BR")
+	localized.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: owner.cookie})
+	out := httptest.NewRecorder()
+	owner.router.ServeHTTP(out, localized)
+	require.Equal(t, http.StatusOK, out.Code)
+	require.Contains(t, out.Body.String(), "Pendências de revisão")
+}

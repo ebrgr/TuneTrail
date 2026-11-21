@@ -12,10 +12,25 @@ For new active submissions, HTTP 200 means TuneTrail has saved the submission
 for processing. The listen may take time to appear in the history. For a 503
 response, respect `Retry-After` before resending. The import summary shows
 **Pending** for submissions waiting on processing and **Duplicates** for
-completed submissions the importer recognized. The review option is locked
-until there is an operator queue for resolving ambiguous submissions. Until
-then, a repeat of the same track in the same second follows the existing
-one-listen rule.
+completed submissions the importer recognized. Duplicate review is off by
+default. Without review, the legacy resolver keeps its same-track, same-second
+deduplication rule. The occurrence resolver keeps submissions with compatible
+identity as separate listens after checking for receipt replays.
+
+## Review possible duplicates
+
+In **Health → Pending reviews**, the profile owner or root can turn on
+duplicate review for an active profile and open **View evidence** on a receipt.
+Choose an existing listen and select **Accept as duplicate** to link the
+receipt to it. **Keep as a separate listen** adds a listen at the submitted
+time and queues relay delivery when eligible. Pending receipts do not count
+toward listening statistics.
+
+Turning review off changes how new decisions are made. Receipts already in
+the queue remain available. A submission conflict without a resolved track or
+an existing candidate remains visible as evidence until its identity can be
+established. The source summary groups the 10,000 most recent receipts for the
+selected profile.
 
 ## Prepare a pilot
 
@@ -84,8 +99,9 @@ The occurrence resolver is opt-in and currently restricted to disposable test
 databases. Profiles with a configured ListenBrainz relay cannot convert.
 Conversion requires clearing unlinked shadow receipts and draining compatible
 active receipts. After conversion, disabling the master switch pauses new
-admissions while already accepted batches continue resolving. Ambiguous items
-remain pending and are excluded from listening counts.
+admissions while already accepted batches continue resolving. Identity conflicts
+remain pending, and turning on duplicate review can also hold possible duplicate
+listens. Pending items are excluded from listening counts.
 
 Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
 TuneTrail 0.46 and earlier cannot open a v11 database.
@@ -96,12 +112,13 @@ TuneTrail 0.46 and earlier cannot open a v11 database.
 **+** menu: root finds it under **Administration**, above **Server
 configuration**, and profile owners find it with their account links. The page
 is also at `/admin/health?profile=<id>`. Only the profile's owner and root can
-open it, always signed in, even when the profile is public. It is read-only:
-it does not accept or change any decision.
+open it, always signed in, even when the profile is public.
 
-- **Sources and last submission** lists the latest submission for each
-  integration, source format and declared client, with the received time, the
-  time precision, and the relay delivery state.
+- **Pending reviews** shows submissions awaiting a duplicate decision and
+  lets you turn review on or off for the active profile.
+- **Recent sources and last submission** lists the latest submission for each
+  integration, source format and declared client in the recent receipt window,
+  with the received time, time precision, and relay delivery state.
 - **Relay queue and failures** shows the number of queued deliveries, the pause
   reason when the destination is paused, and the most recent open or failed
   deliveries with their attempt count and reason code.
@@ -117,8 +134,7 @@ missing fields read **Not recorded**. Times are shown in UTC.
 
 The pages never show API keys, relay URLs or tokens, raw request bodies, or the
 stored evidence documents. Deliveries and decisions of one profile never appear
-on another profile's page. Ambiguous submissions still wait as pending and stay
-out of the counts. There is no screen to resolve them yet.
+on another profile's page.
 
 ## Durable ListenBrainz relay
 
@@ -140,7 +156,7 @@ cancellation.
 | --- | --- |
 | ListenBrainz | Unique combination of user, track, and `listened_at`. |
 | Koito | Primary key on `track_id` and `listened_at`. |
-| TuneTrail | v9 deduplicates by profile, track, and `listened_at`. Occurrence mode can instead expose a `pending_duplicate` for review. |
+| TuneTrail | v9 deduplicates by profile, track, and `listened_at`. With review enabled, either resolver can hold a possible duplicate for a decision. |
 | Maloja and multi-scrobbler | To be confirmed in the relay trial. |
 
 These keys describe receiver behavior. TuneTrail cannot guarantee that an

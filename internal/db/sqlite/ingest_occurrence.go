@@ -177,13 +177,14 @@ func occurrenceOrigin(r claimedReceipt) string {
 func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof occurrenceProof) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		var precision, admissionReason string
-		err := tx.QueryRowContext(ctx, `SELECT e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),'')
+		var review bool
+		err := tx.QueryRowContext(ctx, `SELECT e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),''),f.review
 			FROM ingest_events e JOIN listening_profiles p ON p.id=e.profile_id
 			JOIN profile_ingest_flags f ON f.profile_id=p.id AND f.occurrence_write=1
 			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.resolver_variant='occurrence'
 			  AND e.closed_at IS NULL AND e.state IN ('received','retryable') AND e.resolution_version=?
 			  AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
-			r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&precision, &admissionReason)
+			r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&precision, &admissionReason, &review)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
@@ -210,12 +211,15 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		if len(conflicts) > 0 {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_occurrence", precision, conflicts, "", proof.evidence)
 		}
-		candidates, reason, err := occurrenceListenCandidates(ctx, tx, r, match.id)
-		if err != nil {
-			return err
-		}
-		if len(candidates) > 0 {
-			return writeOccurrenceDecision(ctx, tx, r, match, "pending_duplicate", reason, precision, candidates, "", proof.evidence)
+		// Optional candidate review is independent of conflicts in the submission itself.
+		if review {
+			candidates, reason, err := occurrenceListenCandidates(ctx, tx, r, match.id)
+			if err != nil {
+				return err
+			}
+			if len(candidates) > 0 {
+				return writeOccurrenceDecision(ctx, tx, r, match, "pending_duplicate", reason, precision, candidates, "", proof.evidence)
+			}
 		}
 		if match.id == 0 {
 			conflicts, err := occurrenceCreditConflicts(ctx, tx, observedCredits(r.snapshot))

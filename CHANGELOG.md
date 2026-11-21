@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Profile owners and root can turn on duplicate review in Ingestion health, inspect pending receipts, and link each resolvable receipt to an existing listen or keep it as a separate listen (ISSUE-181).
+
 ## [0.56] - 2026-11-21
 
 - Track merges join only the recording identity and preserve both tracks, their releases and every listen. Administrators can undo a track merge for 30 days. Later track merge or undo operations prune expired entries (ISSUE-183).

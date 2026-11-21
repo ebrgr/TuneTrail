@@ -16,6 +16,87 @@
     </form>
   {{end}}
   <div class="ingestion-health-grid">
+  <section class="card ingestion-diagnostics" aria-labelledby="health-review">
+    <h2 id="health-review">{{tr "admin.health.review_queue" "Pending reviews"}} <span>({{.Health.ReviewCount}})</span></h2>
+    {{- if .Health.ReviewAvailable}}
+      <form class="ingestion-review-setting" method="post" action="/admin/health/review-setting?profile={{.Profile.ID}}">
+        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+        {{- if .Health.ReviewEnabled}}
+          <input type="hidden" name="enabled" value="0">
+          <button type="submit">{{tr "admin.health.review_disable" "Turn off duplicate review"}}</button>
+        {{- else}}
+          <input type="hidden" name="enabled" value="1">
+          <button type="submit">{{tr "admin.health.review_enable" "Turn on duplicate review"}}</button>
+        {{- end}}
+      </form>
+    {{- end}}
+    {{- range .Health.Reviews}}
+      <details>
+        <summary>
+          {{tr "admin.health.review_evidence" "View evidence"}} · {{if .Title}}{{.Title}}{{else}}{{.Source}}{{end}}
+          · {{template "admin/health-time" .Received}}
+        </summary>
+        <dl>
+          <dt>{{tr "admin.health.receipt" "Receipt"}}</dt><dd><samp>{{.Receipt}}</samp></dd>
+          <dt>{{tr "admin.health.source" "Source"}}</dt><dd>{{.Source}}</dd>
+          {{- if .ListenedAt}}
+            <dt>{{tr "admin.health.review_listened_at" "Submitted listen time"}}</dt>
+            <dd>{{template "admin/health-time" .ListenedAt}}</dd>
+          {{- end}}
+          <dt>{{tr "admin.health.precision" "Time precision"}}</dt><dd>{{template "admin/health-code" .Precision}}</dd>
+          <dt>{{tr "admin.health.reason" "Reason code"}}</dt><dd>{{template "admin/health-code" .Reason}}</dd>
+          <dt>{{tr "admin.health.rule" "Rule version"}}</dt><dd>{{template "admin/health-code" .Rule}}</dd>
+        </dl>
+        {{- if .Candidates}}
+          <form class="ingestion-reprocess" method="post" action="/admin/health/review?profile={{$.Profile.ID}}">
+            <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+            <input type="hidden" name="receipt" value="{{.Receipt}}">
+            <input type="hidden" name="version" value="{{.Version}}">
+            <input type="hidden" name="decision" value="same">
+            <label>{{tr "admin.health.review_candidate" "Existing listen"}}
+              <select name="candidate" required>
+                <option value="">{{tr "admin.health.review_choose" "Choose an existing listen"}}</option>
+                {{- range .Candidates}}
+                  <option value="{{.Event}}">{{.Title}} · {{.At.Format "2006-01-02 15:04:05 MST"}} · {{.Event}}</option>
+                {{- end}}
+              </select>
+            </label>
+            <button type="submit">{{tr "admin.health.review_accept" "Accept as duplicate"}}</button>
+          </form>
+        {{- end}}
+        {{- if .CanKeep}}
+          <form class="ingestion-reprocess" method="post" action="/admin/health/review?profile={{$.Profile.ID}}">
+            <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+            <input type="hidden" name="receipt" value="{{.Receipt}}">
+            <input type="hidden" name="version" value="{{.Version}}">
+            <input type="hidden" name="decision" value="different">
+            <button type="submit">{{tr "admin.health.review_keep" "Keep as a separate listen"}}</button>
+          </form>
+        {{- else if not .Candidates}}
+          <p class="ingestion-review-unavailable">
+            {{tr "admin.health.review_unavailable" "This receipt has no resolved track or existing listen to review."}}
+          </p>
+        {{- end}}
+      </details>
+    {{- else}}
+      <p>{{tr "admin.health.no_reviews" "No pending duplicate reviews."}}</p>
+    {{- end}}
+    {{- if or .Health.ReviewPrevious .Health.ReviewNext}}
+      <nav class="admin-sections" aria-label="{{tr "admin.health.review_queue" "Pending reviews"}}">
+        {{- if .Health.ReviewPrevious}}
+          <a href="/admin/health?profile={{.Profile.ID}}&amp;review_page={{.Health.ReviewPrevious}}#health-review">
+            {{tr "admin.health.review_previous" "Previous page"}}
+          </a>
+        {{- end}}
+        {{- if .Health.ReviewNext}}
+          <a href="/admin/health?profile={{.Profile.ID}}&amp;review_page={{.Health.ReviewNext}}#health-review">
+            {{tr "admin.health.review_next" "Next page"}}
+          </a>
+        {{- end}}
+      </nav>
+    {{- end}}
+  </section>
+
   <section class="card ingestion-diagnostics" aria-labelledby="health-failures">
     <h2 id="health-failures">{{tr "admin.health.failures" "Permanent failures"}} <span>({{.Health.FailureCount}})</span></h2>
     {{- range .Health.Failures}}
@@ -37,8 +118,8 @@
     {{- end}}
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
-    <h2 id="health-sources">{{tr "admin.health.sources" "Sources and last submission"}}</h2>
-    {{range .Health.Sources}}
+    <h2 id="health-sources">{{tr "admin.health.sources" "Recent sources and last submission"}}</h2>
+    {{- range .Health.Sources}}
       <details>
         <summary>{{.Integration}} · {{.Source}}{{if .Client}} · {{.Client}}{{end}}</summary>
         <dl>
@@ -47,9 +128,9 @@
           <dt>{{tr "admin.health.delivery" "Relay delivery"}}</dt><dd>{{template "admin/health-delivery" .Delivery}}</dd>
         </dl>
       </details>
-    {{else}}
+    {{- else}}
       <p>{{tr "admin.health.no_sources" "No submissions recorded."}}</p>
-    {{end}}
+    {{- end}}
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-relay">
     <h2 id="health-relay">{{tr "admin.health.relay" "Relay queue and failures"}}</h2>
@@ -82,28 +163,28 @@
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-decisions">
     <h2 id="health-decisions">{{tr "admin.health.decisions" "Recent deduplication decisions"}}</h2>
-    {{range .Health.Decisions}}
+    {{- range .Health.Decisions}}
       <details>
         <summary>
           {{template "admin/health-time" .At}} · <samp>{{.Value}}</samp> · {{template "admin/health-code" .Reason}}
-          {{if eq .Mode "shadow"}} · {{tr "admin.health.shadow" "Shadow mode"}}{{end}}
+          {{- if eq .Mode "shadow"}} · {{tr "admin.health.shadow" "Shadow mode"}}{{end}}
         </summary>
         <dl>
           <dt>{{tr "admin.health.rule" "Rule version"}}</dt><dd>{{template "admin/health-code" .Rule}}</dd>
           <dt>{{tr "admin.health.precision" "Time precision"}}</dt><dd>{{template "admin/health-code" .Precision}}</dd>
-          {{if .CandidateCount}}<dt>{{tr "admin.health.candidates" "Candidates recorded"}}</dt><dd>{{.CandidateCount}}</dd>{{end}}
-          {{if .DeltaSeconds}}<dt>{{tr "admin.health.delta" "Time difference (seconds)"}}</dt><dd>{{.DeltaSeconds}}</dd>{{end}}
-          {{if .TrustedExternalID}}<dt>{{tr "admin.health.external_id" "Trusted external ID"}}</dt>
+          {{- if .CandidateCount}}<dt>{{tr "admin.health.candidates" "Candidates recorded"}}</dt><dd>{{.CandidateCount}}</dd>{{end}}
+          {{- if .DeltaSeconds}}<dt>{{tr "admin.health.delta" "Time difference (seconds)"}}</dt><dd>{{.DeltaSeconds}}</dd>{{end}}
+          {{- if .TrustedExternalID}}<dt>{{tr "admin.health.external_id" "Trusted external ID"}}</dt>
             <dd>{{tr "admin.health.recorded" "Recorded"}}</dd>{{end}}
-          {{if eq .ReleaseDiffers "1"}}<dt>{{tr "media.album" "Album"}}</dt>
+          {{- if eq .ReleaseDiffers "1"}}<dt>{{tr "media.album" "Album"}}</dt>
             <dd>{{tr "admin.health.release_differs" "Title differs from the MusicBrainz release"}}</dd>{{end}}
-          {{if .RecordingMatch}}<dt>{{tr "admin.health.recording_match" "Recording ID matches"}}</dt>
+          {{- if .RecordingMatch}}<dt>{{tr "admin.health.recording_match" "Recording ID matches"}}</dt>
             <dd>{{if eq .RecordingMatch "1"}}{{tr "admin.health.yes" "Yes"}}{{else}}{{tr "admin.health.no" "No"}}{{end}}</dd>{{end}}
         </dl>
       </details>
-    {{else}}
+    {{- else}}
       <p>{{tr "admin.health.no_decisions" "No deduplication decisions recorded."}}</p>
-    {{end}}
+    {{- end}}
   </section>
   </div>
   </div>

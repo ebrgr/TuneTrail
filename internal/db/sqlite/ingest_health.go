@@ -23,7 +23,7 @@ func healthDeliverySQL(version int) (state, join string) {
 }
 
 // IngestHealth reads only typed diagnostics for a single, previously authorized profile.
-func (s *Sqlite) IngestHealth(ctx context.Context, profile int32) (db.IngestHealth, error) {
+func (s *Sqlite) IngestHealth(ctx context.Context, profile int32, pages ...int) (db.IngestHealth, error) {
 	var health db.IngestHealth
 	version, err := ingestSchemaVersion(ctx, s.db)
 	if err != nil {
@@ -53,6 +53,13 @@ func (s *Sqlite) IngestHealth(ctx context.Context, profile int32) (db.IngestHeal
 	if version >= 13 {
 		health.Failures, health.FailureCount, err = s.healthFailures(ctx, profile)
 	}
+	if err == nil && version >= 16 {
+		page := 1
+		if len(pages) > 0 {
+			page = pages[0]
+		}
+		err = s.healthReviews(ctx, profile, page, &health)
+	}
 	return health, err
 }
 
@@ -80,30 +87,39 @@ func (s *Sqlite) healthFailures(ctx context.Context, profile int32) ([]db.Ingest
 	return failures, count, rows.Err()
 }
 
-// healthSources selects the latest receipt per integration, adapter format and declared client.
-// The original snapshot stays in SQLite; only its scalar client field can be used as a fallback.
-func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int) ([]db.IngestSource, error) {
+// healthSourcesSQL groups receipts by source and client, including on pre-v16 fixtures.
+func healthSourcesSQL(version int) string {
 	delivery, join := healthDeliverySQL(version)
 	policy := "'legacy' AS delivery_policy"
 	if version >= 12 {
 		policy = "e.delivery_policy"
 	}
-	rows, err := s.db.QueryContext(ctx, `WITH sources AS (
-		SELECT e.profile_id,e.receipt_id,e.source_instance_id,e.received_at,e.time_precision,e.event_id,`+policy+`,
+	sample := "SELECT * FROM ingest_events WHERE profile_id=?"
+	if version >= 16 {
+		// Bound the grouping work while keeping the latest submission for each recent source.
+		sample += " ORDER BY received_at DESC,receipt_id DESC LIMIT 10000"
+	}
+	return `WITH recent AS (` + sample + `), sources AS (
+		SELECT e.profile_id,e.receipt_id,e.source_instance_id,e.received_at,e.time_precision,e.event_id,` + policy + `,
 			substr(coalesce(nullif(e.client_name,''),
 			CASE WHEN json_valid(e.original_snapshot) THEN
 				CASE WHEN json_type(e.original_snapshot,'$.client')='text' THEN json_extract(e.original_snapshot,'$.client') END
 			END,''),1,120) AS client,
 			coalesce(e.file_format,e.source_type) AS source
-		FROM ingest_events e WHERE e.profile_id=?
+		FROM recent e
 	), latest AS (
 		SELECT *, row_number() OVER (PARTITION BY source_instance_id, source, client ORDER BY received_at DESC, receipt_id DESC) AS rank
 		FROM sources
 	)
 	SELECT coalesce(nullif(i.display_name,''),e.source_instance_id), e.source, e.client, e.received_at, e.time_precision,
-		`+delivery+`
+		` + delivery + `
 	FROM latest e JOIN integrations i ON i.profile_id=e.profile_id AND i.id=e.source_instance_id
-	`+join+` WHERE e.rank=1 ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT 100`, profile)
+	` + join + ` WHERE e.rank=1 ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT 100`
+}
+
+// healthSources projects the latest receipt per integration, format and client.
+func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int) ([]db.IngestSource, error) {
+	rows, err := s.db.QueryContext(ctx, healthSourcesSQL(version), profile)
 	if err != nil {
 		return nil, err
 	}
@@ -121,9 +137,8 @@ func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int) 
 	return sources, rows.Err()
 }
 
-// healthDecisions deliberately projects scalar evidence rather than exposing the evidence document.
-func (s *Sqlite) healthDecisions(ctx context.Context, profile int32) ([]db.IngestDecision, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT e.mode,e.duplicate_decision,
+// healthDecisionsSQL projects scalar evidence rather than exposing the evidence document.
+const healthDecisionsSQL = `SELECT e.mode,e.duplicate_decision,
 		coalesce(json_extract(e.reason_codes,'$[0]'),''),coalesce(e.rule_version,''),e.time_precision,
 		CASE WHEN json_type(e.evidence,'$.candidates')='array' THEN json_array_length(e.evidence,'$.candidates')
 			WHEN json_type(e.evidence,'$.candidate_event_id')='text' THEN (json_extract(e.evidence,'$.candidate_event_id')<>'')
@@ -133,7 +148,11 @@ func (s *Sqlite) healthDecisions(ctx context.Context, profile int32) ([]db.Inges
 		CASE json_type(e.evidence,'$.musicbrainz.release_title_differs') WHEN 'true' THEN '1' WHEN 'false' THEN '0' ELSE '' END,
 		e.external_id_trusted,coalesce(e.resolved_at,e.received_at)
 		FROM ingest_events e WHERE e.profile_id=? AND e.duplicate_decision IS NOT NULL
-		ORDER BY coalesce(e.resolved_at,e.received_at) DESC,e.receipt_id DESC LIMIT 25`, profile)
+		ORDER BY coalesce(e.resolved_at,e.received_at) DESC,e.receipt_id DESC LIMIT 25`
+
+// healthDecisions reads the newest twenty-five decisions for the selected profile.
+func (s *Sqlite) healthDecisions(ctx context.Context, profile int32) ([]db.IngestDecision, error) {
+	rows, err := s.db.QueryContext(ctx, healthDecisionsSQL, profile)
 	if err != nil {
 		return nil, err
 	}

@@ -181,8 +181,9 @@ func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 		if !recording.Valid {
 			return errIngestTrackMissing
 		}
+		// Multiple explicitly separate listens can share a track and second.
 		var existing, candidate string
-		err = tx.QueryRowContext(ctx, `SELECT event_id FROM listens WHERE profile_id=? AND track_id=? AND listened_at=?`,
+		err = tx.QueryRowContext(ctx, `SELECT event_id FROM listens WHERE profile_id=? AND track_id=? AND listened_at=? ORDER BY (origin='legacy') DESC,event_id LIMIT 1`,
 			r.profile, r.track, r.unix).Scan(&existing)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return err

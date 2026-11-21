@@ -378,6 +378,8 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 }
 .admin-main .ingestion-health .card { min-width:0; padding:var(--space-5); margin:0; overflow-wrap:anywhere; }
 .admin-main .ingestion-health .ingestion-reprocess { margin:0; padding:0 12px var(--space-3); }
+.admin-main .ingestion-health .ingestion-review-setting { margin:0 0 var(--space-3); }
+.admin-main .ingestion-health .ingestion-review-unavailable { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .card > h2 {
   margin:0 0 var(--space-3); font-size:18px; font-weight:400; text-transform:uppercase; color:var(--color-fg-secondary);
 }

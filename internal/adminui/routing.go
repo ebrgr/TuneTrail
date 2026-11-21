@@ -38,8 +38,11 @@ func IsAction(path string) bool {
 		return false
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
-	// Health can requeue a receipt only through the protected POST dispatcher.
-	if path == "/admin/health/reprocess" || path == "/admin/redeem" || path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" || path == "/admin/settings/relay" {
+	// Health mutations share the profile-authorized POST dispatcher.
+	if isHealthAction(path) {
+		return true
+	}
+	if path == "/admin/redeem" || path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" || path == "/admin/settings/relay" {
 		return true
 	}
 	if len(p) >= 4 && p[0] == "admin" && p[1] == "profile" {
@@ -72,4 +75,13 @@ func IsRoute(method, path string) bool {
 		return IsPage(path)
 	}
 	return method == "POST" && IsAction(path)
+}
+
+// isHealthAction lists the health routes that can mutate ingestion state.
+func isHealthAction(path string) bool {
+	switch path {
+	case "/admin/health/reprocess", "/admin/health/review", "/admin/health/review-setting":
+		return true
+	}
+	return false
 }

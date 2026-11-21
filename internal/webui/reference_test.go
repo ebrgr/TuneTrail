@@ -214,6 +214,14 @@ func TestUIReference(t *testing.T) {
 		FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=1 AND l.track_id=1;
 		INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,attempt_count,result,format_version)
 		SELECT 'reference-delivery',profile_id,'relay:1',event_id,'listen','reference','failed',1714564860,3,'{"reason":"item_rejected"}',1
+		FROM ingest_events WHERE receipt_id='reference-active';
+		INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,1);
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
+			mode,state,duplicate_decision,reason_codes,rule_version,evidence,resolution_version,identity_status,occurrence_id,recording_id,delivery_policy)
+		SELECT 'f0000000-0000-4000-8000-000000000181',profile_id,source_instance_id,1,'listenbrainz','1','reference-review',
+			0,'single',1714564920,'2024-05-01T12:00:00.000000000Z','second','start','{}','reference','1','active','pending_duplicate',
+			'review','["legacy_identity_collision"]','active-v1',json_object('candidate_event_id',event_id),1,'resolved',occurrence_id,recording_id,'durable'
 		FROM ingest_events WHERE receipt_id='reference-active'`); err != nil {
 		t.Fatal(err)
 	}

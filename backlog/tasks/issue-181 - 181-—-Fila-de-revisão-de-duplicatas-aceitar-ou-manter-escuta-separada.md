@@ -1,10 +1,11 @@
 ---
 id: ISSUE-181
 title: '181 — Fila de revisão de duplicatas: aceitar ou manter escuta separada'
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-21T16:17:00Z'
+updated_date: '2026-11-21T23:27:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -12,6 +13,7 @@ dependencies:
   - ISSUE-083
 references:
   - backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md
+  - backlog/evidencias/issue-181/VERIFICACAO.md
 priority: medium
 type: feature
 ordinal: 194000
@@ -29,12 +31,12 @@ Escopo proposto: seção Pendências de revisão na central de saúde (/admin/he
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Verificar se o backend já produz casos em revisão e se a flag de Revisar por perfil pode ser ativada
-- [ ] #2 Pendências de revisão listadas na central de saúde, por perfil, sem expor segredos
-- [ ] #3 Aceitar como duplicata e Manter como escuta separada gravam a decisão em uma única transação, com CSRF
-- [ ] #4 Testes de isolamento entre perfis e de decisão repetida ou concorrente
-- [ ] #5 Visual consistente com a central de saúde, responsivo e com hover
-- [ ] #6 Medir o custo das consultas da central de saúde (fontes e decisões) com volume realista de eventos e, se necessário, limitar a janela de tempo ou indexar; risco 1 do parecer da ISSUE-083
+- [x] #1 Verificar se o backend já produz casos em revisão e se a flag de Revisar por perfil pode ser ativada
+- [x] #2 Pendências de revisão listadas na central de saúde, por perfil, sem expor segredos
+- [x] #3 Aceitar como duplicata e Manter como escuta separada gravam a decisão em uma única transação, com CSRF
+- [x] #4 Testes de isolamento entre perfis e de decisão repetida ou concorrente
+- [x] #5 Visual consistente com a central de saúde, responsivo e com hover
+- [x] #6 Medir o custo das consultas da central de saúde (fontes e decisões) com volume realista de eventos e, se necessário, limitar a janela de tempo ou indexar; risco 1 do parecer da ISSUE-083
 <!-- AC:END -->
 
 ## Comments
@@ -46,6 +48,24 @@ created: 2026-11-21T16:17:00Z
 ---
 
 Herdado do parecer do Reviewer da ISSUE-083 (21/11/2026): o risco 1 (healthSources e healthDecisions percorrem todos os eventos do perfil a cada abertura da página, sem medição) passou para esta tarefa, pois a fila de revisão vai ler as mesmas tabelas. Os riscos 2 e 3 do parecer foram resolvidos na 083 (item no menu; AC do acesso reescrito). Parecer atualizado em backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md.
+
+---
+
+author: ebrgr
+created: 2026-11-21T23:13:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-181` na branch `feat/issue-181-fila-de-revisao-de-duplicatas` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-21T23:27:00Z
+
+---
+
+Verificação: ambos os resolvedores já geravam pending_duplicate. A flag legada era bloqueada na API e o resolvedor de ocorrência não a consultava. A central passou a oferecer controle por perfil, fila paginada e decisão transacional com CSRF e outbox elegível. Testes de isolamento, concorrência, rollback e reenvio passaram. Referência ISSUE-075 regenerada e validada no Orca. EXPLAIN com 300 mil recibos confirmou a janela de fontes e os índices do schema v16. Conflitos sem identidade ou candidato permanecem visíveis com evidência e sem ação de decisão.
 
 ---
 <!-- COMMENTS:END -->

@@ -14,7 +14,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=f075ad9fd03e71d431bf4eae3a8c93a5adc049d7a2ca0e8b8dfd750777d49157">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=7bb39539972c2b2c647c5911664650c84a1984b1eb11d41260a3ca16760fbbd8">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=9c2de13e09eca06a2886463bdb012dcba5d419ab1cedf0b740cbcffa2b2d6bdc"></script>
       
@@ -449,6 +449,50 @@
     </form>
   
   <div class="ingestion-health-grid">
+  <section class="card ingestion-diagnostics" aria-labelledby="health-review">
+    <h2 id="health-review">Pending reviews <span>(1)</span></h2>
+      <form class="ingestion-review-setting" method="post" action="/admin/health/review-setting?profile=1">
+        <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="enabled" value="0">
+          <button type="submit">Turn off duplicate review</button>
+      </form>
+      <details>
+        <summary>
+          View evidence · Alpha Track
+          · <time datetime="2024-05-01T12:02:00Z">2024-05-01 12:02:00 UTC</time>
+        </summary>
+        <dl>
+          <dt>Receipt</dt><dd><samp>f0000000-0000-4000-8000-000000000181</samp></dd>
+          <dt>Source</dt><dd>listenbrainz</dd>
+            <dt>Submitted listen time</dt>
+            <dd><time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time></dd>
+          <dt>Time precision</dt><dd><samp>second</samp></dd>
+          <dt>Reason code</dt><dd><samp>legacy_identity_collision</samp></dd>
+          <dt>Rule version</dt><dd><samp>active-v1</samp></dd>
+        </dl>
+          <form class="ingestion-reprocess" method="post" action="/admin/health/review?profile=1">
+            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000181">
+            <input type="hidden" name="version" value="1">
+            <input type="hidden" name="decision" value="same">
+            <label>Existing listen
+              <select name="candidate" required>
+                <option value="">Choose an existing listen</option>
+                  <option value="fixture-1">Alpha Track · 2024-05-01 12:00:00 UTC · fixture-1</option>
+              </select>
+            </label>
+            <button type="submit">Accept as duplicate</button>
+          </form>
+          <form class="ingestion-reprocess" method="post" action="/admin/health/review?profile=1">
+            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000181">
+            <input type="hidden" name="version" value="1">
+            <input type="hidden" name="decision" value="different">
+            <button type="submit">Keep as a separate listen</button>
+          </form>
+      </details>
+  </section>
+
   <section class="card ingestion-diagnostics" aria-labelledby="health-failures">
     <h2 id="health-failures">Permanent failures <span>(1)</span></h2>
       <details>
@@ -466,8 +510,15 @@
       </details>
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
-    <h2 id="health-sources">Sources and last submission</h2>
-    
+    <h2 id="health-sources">Recent sources and last submission</h2>
+      <details>
+        <summary>Fictional player · listenbrainz</summary>
+        <dl>
+          <dt>Received</dt><dd><time datetime="2024-05-01T12:02:00Z">2024-05-01 12:02:00 UTC</time></dd>
+          <dt>Time precision</dt><dd><samp>second</samp></dd>
+          <dt>Relay delivery</dt><dd>Not queued</dd>
+        </dl>
+      </details>
       <details>
         <summary>Fictional player · listenbrainz · Fictional client</summary>
         <dl>
@@ -476,7 +527,6 @@
           <dt>Relay delivery</dt><dd><samp>failed</samp></dd>
         </dl>
       </details>
-    
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-relay">
     <h2 id="health-relay">Relay queue and failures</h2>
@@ -505,40 +555,34 @@
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-decisions">
     <h2 id="health-decisions">Recent deduplication decisions</h2>
-    
+      <details>
+        <summary>
+          <time datetime="2024-05-01T12:02:00Z">2024-05-01 12:02:00 UTC</time> · <samp>review</samp> · <samp>legacy_identity_collision</samp>
+        </summary>
+        <dl>
+          <dt>Rule version</dt><dd><samp>active-v1</samp></dd>
+          <dt>Time precision</dt><dd><samp>second</samp></dd><dt>Candidates recorded</dt><dd>1</dd>
+        </dl>
+      </details>
       <details>
         <summary>
           <time datetime="2024-05-01T12:01:00Z">2024-05-01 12:01:00 UTC</time> · <samp>different</samp> · <samp>no_candidate</samp>
-          
         </summary>
         <dl>
           <dt>Rule version</dt><dd><samp>active-v1</samp></dd>
           <dt>Time precision</dt><dd><samp>second</samp></dd>
-          
-          
-          
-          
-          
         </dl>
       </details>
-    
       <details>
         <summary>
-          <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · <samp>review</samp> · <samp>ambiguous_time_candidate</samp>
-           · Shadow mode
+          <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · <samp>review</samp> · <samp>ambiguous_time_candidate</samp> · Shadow mode
         </summary>
         <dl>
           <dt>Rule version</dt><dd><samp>shadow-v1</samp></dd>
-          <dt>Time precision</dt><dd><samp>second</samp></dd>
-          
-          <dt>Time difference (seconds)</dt><dd>3</dd>
-          
-          
-          <dt>Recording ID matches</dt>
+          <dt>Time precision</dt><dd><samp>second</samp></dd><dt>Time difference (seconds)</dt><dd>3</dd><dt>Recording ID matches</dt>
             <dd>Yes</dd>
         </dl>
       </details>
-    
   </section>
   </div>
   </div>
