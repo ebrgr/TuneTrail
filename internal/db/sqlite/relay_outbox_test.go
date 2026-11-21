@@ -166,6 +166,8 @@ func TestRelayD4KeepsTheLegacyCut(t *testing.T) {
 	execSQL(t, s, "UPDATE relay_delivery_gate SET policy='durable'")
 	execSQL(t, s, "UPDATE profile_ingest_flags SET occurrence_write=1 WHERE profile_id=1")
 	require.NoError(t, s.SetProfileRelay(t.Context(), 2, "https://relay.test", "fixture"))
+	_, err = s.db.Exec("UPDATE relay_delivery_gate SET policy='legacy'")
+	require.ErrorContains(t, err, "cannot be reversed")
 }
 
 // relayReceipt creates an active fixture under the simulated E3 policy.
@@ -340,6 +342,13 @@ func TestRelayConfigurationTransitions(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, "SELECT generation FROM relay_destinations WHERE profile_id=1"))
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://relay.test/changed", "rotated"))
 	require.Equal(t, 2, scalar(t, s, "SELECT generation FROM relay_destinations WHERE profile_id=1"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='pending' AND relay_generation=1"))
+	require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+	empty, err := s.ClaimRelayBatch(ctx, time.Now().Add(time.Minute))
+	require.NoError(t, err)
+	require.Empty(t, empty.Items)
+	_, err = s.ExpireRelayWork(ctx, 1, time.Now())
+	require.NoError(t, err)
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='failed' AND json_extract(result,'$.reason')='destination_changed'"))
 	require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.Error(t, s.SetRelayPermission(ctx, 1, RelayPermission{HostPort: "relay.test:443", Prefix: netip.MustParsePrefix("100.64.0.0/10"), Private: true}))
@@ -403,10 +412,9 @@ func TestRelayCounterCrash(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='pending'"))
 }
 
-// TestRelayCapacity fills a real queue, then readmits the oldest overflow item after delivery.
-func TestRelayCapacity(t *testing.T) {
-	s, _ := relayStoreFixture(t)
-	now := time.Now().UTC().Truncate(time.Second)
+// fillRelayCapacity creates 100,000 genuine open items.
+func fillRelayCapacity(t *testing.T, s *Sqlite, now time.Time) {
+	t.Helper()
 	execSQL(t, s, `WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<100000)
 		INSERT INTO listens(profile_id,track_id,listened_at,event_id)
 		SELECT 1,1,x+1000000,printf('capacity-%06d',x) FROM n`)
@@ -419,6 +427,45 @@ func TestRelayCapacity(t *testing.T) {
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('relay:1',1,'listenbrainz-relay',0)`)
 	execSQL(t, s, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at,next_attempt_at,format_version)
 		SELECT event_id,1,'relay:1',event_id,'listen',event_id,?, ?,1 FROM ingest_events WHERE receipt_id LIKE 'capacity-%'`, now.Unix(), now.Unix())
+}
+
+// TestRelayMutationMeasurements times writer operations at full capacity.
+func TestRelayMutationMeasurements(t *testing.T) {
+	if os.Getenv("TUNETRAIL_RELAY_MEASURE") != "1" {
+		t.Skip("opt-in rehearsal")
+	}
+	for _, operation := range []string{"url", "remove", "profile"} {
+		t.Run(operation, func(t *testing.T) {
+			s, _ := relayStoreFixture(t)
+			fillRelayCapacity(t, s, time.Now().UTC())
+			start := time.Now()
+			var err error
+			switch operation {
+			case "url":
+				err = s.SetProfileRelay(t.Context(), 1, "https://fixture.test/new", "synthetic")
+			case "remove":
+				err = s.SetProfileRelay(t.Context(), 1, "", "")
+			case "profile":
+				err = s.DeleteListeningProfile(t.Context(), 1, "One", 100002)
+			}
+			elapsed := time.Since(start)
+			require.NoError(t, err)
+			t.Logf("operation=%s elapsed=%s", operation, elapsed)
+			if operation != "profile" {
+				require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+				require.Equal(t, 100000, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='pending'"))
+				require.Zero(t, scalar(t, s, `SELECT count(*) FROM outbox o JOIN relay_destinations d USING(profile_id)
+					WHERE o.profile_id=1 AND o.relay_generation=d.generation AND o.state IN ('pending','retryable')`))
+			}
+		})
+	}
+}
+
+// TestRelayCapacity fills a real queue, then readmits the oldest overflow item after delivery.
+func TestRelayCapacity(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().UTC().Truncate(time.Second)
+	fillRelayCapacity(t, s, now)
 	relayReceipt(t, s, 1, "overflow", "v9", 1, now.Add(time.Hour))
 	resolveRelayV9(t, s)
 	require.Equal(t, 100000, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
@@ -487,7 +534,7 @@ func TestRelayMigrationMeasurements(t *testing.T) {
 		args []any
 	}{
 		{relayCandidate, []any{1, 1, 1}},
-		{`SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND ` + relayDue + ` AND next_attempt_at<=? AND coalesce(lease_until,0)<=? AND created_at>? ORDER BY next_attempt_at,id LIMIT 100`, []any{1, 1, 1, 1, 0}},
+		{`SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND relay_generation=? AND ` + relayDue + ` AND next_attempt_at<=? AND coalesce(lease_until,0)<=? AND created_at>? ORDER BY next_attempt_at,id LIMIT 100`, []any{1, 1, 1, 1, 1, 0}},
 	} {
 		rows, err := s.db.Query("EXPLAIN QUERY PLAN "+query.sql, query.args...)
 		require.NoError(t, err)

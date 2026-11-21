@@ -45,10 +45,10 @@ func insertRelayIntent(ctx context.Context, tx *sql.Conn, r claimedReceipt, even
 			uuid.NewString(), destination, event, event, now, now, r.profile)
 		return err
 	}
-	_, err := tx.ExecContext(ctx, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,next_attempt_at,result,format_version)
+	_, err := tx.ExecContext(ctx, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,next_attempt_at,result,format_version,relay_generation)
 		SELECT ?,d.profile_id,?,?,'listen',?,CASE WHEN d.open_count<100000 THEN 'pending' ELSE 'failed' END,?,
 			CASE WHEN d.open_count<100000 THEN ? END,
-			CASE WHEN d.open_count<100000 THEN '{}' ELSE '{"reason":"queue_capacity"}' END,1
+			CASE WHEN d.open_count<100000 THEN '{}' ELSE '{"reason":"queue_capacity"}' END,1,d.generation
 		FROM relay_destinations d JOIN profile_relays p USING(profile_id)
 		WHERE d.profile_id=? AND p.url<>'' AND p.token<>''`,
 		uuid.NewString(), destination, event, event, now, now, r.profile)
@@ -100,13 +100,13 @@ func (s *Sqlite) ClaimRelayBatch(ctx context.Context, now time.Time) (RelayBatch
 		if err != nil {
 			return err
 		}
-		if err := maintainRelayQueue(ctx, tx, batch.Profile, at); err != nil {
+		if err := maintainRelayQueue(ctx, tx, batch.Profile, batch.Generation, at); err != nil {
 			return err
 		}
 		rows, err := tx.QueryContext(ctx, `UPDATE outbox SET lease_owner=?,lease_until=?,work_version=work_version+1
-			WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND `+relayDue+`
+			WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND relay_generation=? AND `+relayDue+`
 			 AND next_attempt_at<=? AND coalesce(lease_until,0)<=? AND created_at>? ORDER BY next_attempt_at,id LIMIT ?)
-			RETURNING id,work_version,next_attempt_at`, batch.Owner, until, batch.Profile, batch.Profile, at, at, now.Add(-relayMaxAge).Unix(), relayBatchSize)
+			RETURNING id,work_version,next_attempt_at`, batch.Owner, until, batch.Profile, batch.Profile, batch.Generation, at, at, now.Add(-relayMaxAge).Unix(), relayBatchSize)
 		if err != nil {
 			return err
 		}
@@ -144,51 +144,95 @@ func (s *Sqlite) ClaimRelayBatch(ctx context.Context, now time.Time) (RelayBatch
 const relayCandidate = `SELECT d.profile_id FROM relay_destinations d JOIN profile_relays p USING(profile_id)
 	WHERE p.url<>'' AND p.token<>'' AND coalesce(d.lease_until,0)<=?
 	AND (d.pause_class IS NULL OR d.paused_until<=?)
-	AND (EXISTS (SELECT 1 FROM outbox WHERE profile_id=d.profile_id AND destination_id='relay:'||d.profile_id AND ` + relayDue + ` AND next_attempt_at<=?)
-	OR (d.open_count<100000 AND EXISTS (SELECT 1 FROM outbox WHERE profile_id=d.profile_id AND destination_id='relay:'||d.profile_id AND ` + relayCapacity + `)))
+	AND (EXISTS (SELECT 1 FROM outbox WHERE profile_id=d.profile_id AND destination_id='relay:'||d.profile_id AND relay_generation=d.generation AND ` + relayDue + ` AND next_attempt_at<=?)
+	OR (d.open_count<100000 AND EXISTS (SELECT 1 FROM outbox WHERE profile_id=d.profile_id AND destination_id='relay:'||d.profile_id AND relay_generation=d.generation AND ` + relayCapacity + `)))
 	ORDER BY d.last_claim_at,d.profile_id LIMIT 1`
 
-// ExpireRelayWork marks a bounded number of aged items, including paused destinations.
+// ExpireRelayWork normalizes stale generations and expires bounded work even while paused.
 func (s *Sqlite) ExpireRelayWork(ctx context.Context, profile int32, now time.Time) (int64, error) {
-	result, err := s.db.ExecContext(ctx, expireRelayWork, profile, profile, now.Add(-relayMaxAge).Unix())
+	var total int64
+	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		var generation int64
+		err := tx.QueryRowContext(ctx, "SELECT generation FROM relay_destinations WHERE profile_id=?", profile).Scan(&generation)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if err := invalidateStaleRelayItems(ctx, tx, profile, generation); err != nil {
+			return err
+		}
+		cutoff := now.Add(-relayMaxAge).Unix()
+		for _, scope := range []string{relayDue, relayCapacity} {
+			result, err := tx.ExecContext(ctx, expireRelayWork+scope+" LIMIT 100)", profile, profile, generation, cutoff, now.Unix())
+			if err != nil {
+				return err
+			}
+			n, err := result.RowsAffected()
+			if err != nil {
+				return err
+			}
+			total += n
+		}
+		return nil
+	})
 	if err != nil {
 		return 0, err
 	}
-	return result.RowsAffected()
+	return total, nil
 }
 
-const expireRelayWork = `UPDATE outbox SET state='failed',result='{"reason":"expired"}',next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL
-	WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND created_at<=?
-	AND lease_owner IS NULL AND ((` + relayDue + `) OR (` + relayCapacity + `)) LIMIT 100)`
+const expireRelayWork = `UPDATE outbox SET state='failed',result='{"reason":"expired"}',next_attempt_at=NULL,
+	lease_owner=NULL,lease_until=NULL,work_version=work_version+1
+	WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND relay_generation=?
+	AND created_at<=? AND coalesce(lease_until,0)<=? AND `
+
+const staleRelayUpdate = `UPDATE outbox SET state='failed',result='{"reason":"destination_changed"}',
+	next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL,work_version=work_version+1 WHERE `
+
+// invalidateStaleRelayItems materializes old-generation failures in bounded groups.
+func invalidateStaleRelayItems(ctx context.Context, tx *sql.Conn, profile int32, generation int64) error {
+	for _, scope := range []string{relayDue, relayCapacity} {
+		_, err := tx.ExecContext(ctx, staleRelayUpdate+`id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||?
+			AND relay_generation<? AND `+scope+` LIMIT 100)`, profile, profile, generation)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // maintainRelayQueue expires bounded work and readmits the oldest capacity failures.
-func maintainRelayQueue(ctx context.Context, tx *sql.Conn, profile int32, now int64) error {
+func maintainRelayQueue(ctx context.Context, tx *sql.Conn, profile int32, generation, now int64) error {
+	if err := invalidateStaleRelayItems(ctx, tx, profile, generation); err != nil {
+		return err
+	}
 	cutoff := now - int64(relayMaxAge/time.Second)
-	// Inspect a bounded due window here. The separate expiry operation also covers paused destinations.
+	// Check only the due window here. Periodic expiry also covers paused destinations.
 	_, err := tx.ExecContext(ctx, `UPDATE outbox SET state='failed',result='{"reason":"expired"}',
 		next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL WHERE created_at<=?
-		AND id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND `+relayDue+`
-		AND next_attempt_at<=? AND coalesce(lease_until,0)<=? ORDER BY next_attempt_at,id LIMIT 100)`, cutoff, profile, profile, now, now)
+		AND id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND relay_generation=? AND `+relayDue+`
+		AND next_attempt_at<=? AND coalesce(lease_until,0)<=? ORDER BY next_attempt_at,id LIMIT 100)`, cutoff, profile, profile, generation, now, now)
 	if err != nil {
 		return err
 	}
-	// Expire overflow entries before checking whether any can be readmitted.
-	_, err = tx.ExecContext(ctx, `UPDATE outbox SET result='{"reason":"expired"}'
-		WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND `+relayCapacity+`
-		AND created_at<=? ORDER BY created_at,id LIMIT 100)`, profile, profile, cutoff)
+	_, err = tx.ExecContext(ctx, expireRelayWork+relayCapacity+" LIMIT 100)", profile, profile, generation, cutoff, now)
 	if err != nil {
 		return err
 	}
 	_, err = tx.ExecContext(ctx, `UPDATE outbox SET state='pending',result='{}',next_attempt_at=?
-		WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND `+relayCapacity+`
-		AND created_at>? ORDER BY created_at,id LIMIT (SELECT min(100,100000-open_count) FROM relay_destinations WHERE profile_id=?))`, now, profile, profile, cutoff, profile)
+		WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND relay_generation=? AND `+relayCapacity+`
+		AND created_at>? ORDER BY created_at,id LIMIT (SELECT min(100,100000-open_count) FROM relay_destinations WHERE profile_id=?))`, now, profile, profile, generation, cutoff, profile)
 	return err
 }
 
 // RetryRelayItem explicitly readmits a failed item against the current destination.
 func (s *Sqlite) RetryRelayItem(ctx context.Context, profile int32, id string, now time.Time) (bool, error) {
-	result, err := s.db.ExecContext(ctx, `UPDATE outbox SET state='pending',result='{}',next_attempt_at=?
-		WHERE profile_id=? AND id=? AND destination_id='relay:'||? AND state='failed' AND format_version>0
+	result, err := s.db.ExecContext(ctx, `UPDATE outbox SET state='pending',result='{}',next_attempt_at=?,relay_generation=(SELECT generation FROM relay_destinations WHERE profile_id=outbox.profile_id),
+		lease_owner=NULL,lease_until=NULL,work_version=work_version+1
+		WHERE profile_id=? AND id=? AND destination_id='relay:'||? AND format_version>0
+		  AND (state='failed' OR (state IN ('pending','retryable') AND relay_generation<>(SELECT generation FROM relay_destinations WHERE profile_id=outbox.profile_id)))
 		  AND created_at>? AND attempt_count<8
 		  AND EXISTS (SELECT 1 FROM relay_destinations d JOIN profile_relays p USING(profile_id)
 		      WHERE d.profile_id=outbox.profile_id AND d.open_count<100000 AND p.url<>'' AND p.token<>'')`,
@@ -291,8 +335,8 @@ func finishRelayItem(ctx context.Context, tx *sql.Conn, batch RelayBatch, item R
 	}
 	if !terminal {
 		_, err := tx.ExecContext(ctx, `UPDATE outbox SET result=?,last_attempt_at=?
-			WHERE profile_id=? AND id=? AND work_version=? AND lease_owner=? AND `+relayDue,
-			string(data), at, batch.Profile, item.ID, item.Version, batch.Owner)
+			WHERE profile_id=? AND id=? AND work_version=? AND lease_owner=? AND relay_generation=? AND `+relayDue,
+			string(data), at, batch.Profile, item.ID, item.Version, batch.Owner, batch.Generation)
 		return err
 	}
 	state := "failed"
@@ -303,8 +347,8 @@ func finishRelayItem(ctx context.Context, tx *sql.Conn, batch RelayBatch, item R
 	}
 	_, err = tx.ExecContext(ctx, `UPDATE outbox SET state=?,closed_at=?,result=?,attempt_count=min(8,attempt_count+?),last_attempt_at=?,
 		next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL
-		WHERE profile_id=? AND id=? AND work_version=? AND lease_owner=? AND `+relayDue,
-		state, closed, string(data), increment, at, batch.Profile, item.ID, item.Version, batch.Owner)
+		WHERE profile_id=? AND id=? AND work_version=? AND lease_owner=? AND relay_generation=? AND `+relayDue,
+		state, closed, string(data), increment, at, batch.Profile, item.ID, item.Version, batch.Owner, batch.Generation)
 	return err
 }
 
@@ -319,7 +363,14 @@ func releaseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch
 func pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, result relay.Result, now time.Time, failures int64) (bool, error) {
 	class := result.Class
 	switch class {
-	case relay.Success, relay.BadRequest:
+	case relay.Success:
+		if result.RemainingZero {
+			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class='rate_limited',paused_until=?,backoff_count=0 WHERE profile_id=?", now.Add(result.ServerWait).Unix(), batch.Profile)
+			return true, err
+		}
+		_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=NULL,paused_until=NULL,backoff_count=0 WHERE profile_id=?", batch.Profile)
+		return false, err
+	case relay.BadRequest:
 		if !result.RemainingZero {
 			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET backoff_count=0 WHERE profile_id=?", batch.Profile)
 			return false, err

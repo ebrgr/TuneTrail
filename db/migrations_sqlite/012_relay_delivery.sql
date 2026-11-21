@@ -9,6 +9,7 @@ ALTER TABLE ingest_events ADD COLUMN delivery_policy TEXT NOT NULL DEFAULT 'lega
     CHECK(delivery_policy IN ('legacy','durable'));
 ALTER TABLE outbox ADD COLUMN format_version INTEGER NOT NULL DEFAULT 0 CHECK(format_version>=0);
 ALTER TABLE outbox ADD COLUMN last_attempt_at INTEGER;
+ALTER TABLE outbox ADD COLUMN relay_generation INTEGER NOT NULL DEFAULT 1 CHECK(relay_generation>0);
 
 CREATE TABLE relay_destinations (
     profile_id INTEGER PRIMARY KEY REFERENCES listening_profiles(id) ON DELETE CASCADE,
@@ -40,9 +41,9 @@ CREATE TABLE relay_allowlist (
 INSERT INTO relay_destinations(profile_id, pause_class)
 SELECT profile_id, 'policy_blocked' FROM profile_relays;
 
-CREATE INDEX idx_outbox_relay_due ON outbox(profile_id,destination_id,next_attempt_at,id)
+CREATE INDEX idx_outbox_relay_due ON outbox(profile_id,destination_id,relay_generation,next_attempt_at,id)
 WHERE format_version>0 AND state IN ('pending','retryable');
-CREATE INDEX idx_outbox_relay_capacity ON outbox(profile_id,destination_id,created_at,id)
+CREATE INDEX idx_outbox_relay_capacity ON outbox(profile_id,destination_id,relay_generation,created_at,id)
 WHERE format_version>0 AND state='failed' AND json_extract(result,'$.reason')='queue_capacity';
 
 DROP TRIGGER trg_ingest_event_shadow_insert;
@@ -143,49 +144,49 @@ CREATE TRIGGER trg_relay_destination_update AFTER UPDATE ON profile_relays
 WHEN tt_relay_canonical(OLD.url) IS NOT tt_relay_canonical(NEW.url) OR OLD.token IS NOT NEW.token
 BEGIN
     UPDATE relay_destinations SET generation=generation+(tt_relay_canonical(OLD.url) IS NOT tt_relay_canonical(NEW.url)),
+        open_count=CASE WHEN tt_relay_canonical(OLD.url) IS NOT tt_relay_canonical(NEW.url) THEN 0 ELSE open_count END,
         config_version=config_version+1, pause_class=NULL, paused_until=NULL, backoff_count=0
     WHERE profile_id=NEW.profile_id;
-    UPDATE outbox SET state='failed',result='{"reason":"destination_changed"}',
-        next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL,work_version=work_version+1
-    WHERE profile_id=NEW.profile_id AND destination_id='relay:'||NEW.profile_id AND format_version>0
-      AND (state IN ('pending','retryable') OR (state='failed' AND json_extract(result,'$.reason')='queue_capacity'))
-      AND tt_relay_canonical(OLD.url) IS NOT tt_relay_canonical(NEW.url);
 END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_relay_destination_delete AFTER DELETE ON profile_relays
 BEGIN
-    UPDATE relay_destinations SET generation=generation+1,config_version=config_version+1,
+    UPDATE relay_destinations SET generation=generation+1,config_version=config_version+1,open_count=0,
         pause_class=NULL,paused_until=NULL,backoff_count=0 WHERE profile_id=OLD.profile_id;
-    UPDATE outbox SET state='failed',result='{"reason":"destination_changed"}',
-        next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL,work_version=work_version+1
-    WHERE profile_id=OLD.profile_id AND destination_id='relay:'||OLD.profile_id AND format_version>0
-      AND (state IN ('pending','retryable') OR (state='failed' AND json_extract(result,'$.reason')='queue_capacity'));
 END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_relay_count_insert AFTER INSERT ON outbox
-WHEN (NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id) <> 0
 BEGIN
-    UPDATE relay_destinations SET open_count=open_count+(NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id)-0 WHERE profile_id=NEW.profile_id;
+    UPDATE relay_destinations SET open_count=open_count+(NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id AND NEW.relay_generation=generation)-0
+      WHERE profile_id=NEW.profile_id AND (NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id AND NEW.relay_generation=generation)<>0;
 END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
-CREATE TRIGGER trg_relay_count_update AFTER UPDATE OF state,format_version ON outbox
-WHEN (NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id) <> (OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id)
+CREATE TRIGGER trg_relay_count_update AFTER UPDATE OF state,format_version,relay_generation ON outbox
 BEGIN
-    UPDATE relay_destinations SET open_count=open_count+(NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id)-(OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id) WHERE profile_id=NEW.profile_id;
+    UPDATE relay_destinations SET open_count=open_count+(NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id AND NEW.relay_generation=generation)-(OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id AND OLD.relay_generation=generation)
+      WHERE profile_id=NEW.profile_id AND (NEW.format_version>0 AND NEW.state IN ('pending','retryable') AND NEW.destination_id='relay:'||NEW.profile_id AND NEW.relay_generation=generation)<>(OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id AND OLD.relay_generation=generation);
 END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_relay_count_delete AFTER DELETE ON outbox
-WHEN 0 <> (OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id)
 BEGIN
-    UPDATE relay_destinations SET open_count=open_count+0-(OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id) WHERE profile_id=OLD.profile_id;
+    UPDATE relay_destinations SET open_count=open_count+0-(OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id AND OLD.relay_generation=generation)
+      WHERE profile_id=OLD.profile_id AND 0<>(OLD.format_version>0 AND OLD.state IN ('pending','retryable') AND OLD.destination_id='relay:'||OLD.profile_id AND OLD.relay_generation=generation);
+END;
+-- +goose StatementEnd
+
+-- +goose StatementBegin
+CREATE TRIGGER trg_relay_policy_one_way BEFORE UPDATE OF policy ON relay_delivery_gate
+WHEN OLD.policy='durable' AND NEW.policy<>'durable'
+BEGIN
+    SELECT RAISE(ABORT,'Durable relay admission cannot be reversed');
 END;
 -- +goose StatementEnd
 

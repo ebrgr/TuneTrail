@@ -19,7 +19,7 @@ func (s *Sqlite) RelayPayload(ctx context.Context, batch RelayBatch, item RelayI
 		FROM outbox o JOIN ingest_events e ON e.profile_id=o.profile_id AND e.event_id=o.event_id
 		JOIN relay_destinations d ON d.profile_id=o.profile_id
 		WHERE o.profile_id=? AND o.id=? AND o.work_version=? AND o.lease_owner=?
-		  AND d.generation=? AND d.work_version=? AND d.lease_owner=?
+		  AND o.relay_generation=d.generation AND d.generation=? AND d.work_version=? AND d.lease_owner=?
 		  AND e.mode='active' AND e.state='accepted' AND e.delivery_policy='durable'`,
 		batch.Profile, item.ID, item.Version, batch.Owner, batch.Generation, batch.Version, batch.Owner).
 		Scan(&version, &snapshot, &listenedAt)
