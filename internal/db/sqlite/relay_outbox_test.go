@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -28,12 +29,37 @@ func (fixture lookupFixture) LookupNetIP(_ context.Context, _, host string) ([]n
 	return nil, errors.New("synthetic DNS failure")
 }
 
+type slowFirstLookup struct{ fast atomic.Int32 }
+
+func (r *slowFirstLookup) LookupNetIP(ctx context.Context, _, host string) ([]netip.Addr, error) {
+	if host == "slow.test" {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+	r.fast.Add(1)
+	return []netip.Addr{netip.MustParseAddr("8.8.8.8")}, nil
+}
+
+// TestRelaySeedSlowFirstHost keeps later hosts independent and deduplicates ports.
+func TestRelaySeedSlowFirstHost(t *testing.T) {
+	seeds := []relaySeed{{raw: "https://slow.test", admin: true}, {raw: "https://fast.test", admin: true}, {raw: "https://FAST.TEST:8443", admin: true}}
+	resolver := &slowFirstLookup{}
+	resolveRelaySeeds(t.Context(), seeds, resolver)
+	require.True(t, seeds[0].blocked)
+	require.False(t, seeds[1].blocked)
+	require.False(t, seeds[2].blocked)
+	require.EqualValues(t, 1, resolver.fast.Load())
+}
+
 // TestRelayUpgrade preserves the v11 data and seeds only narrowly scoped exceptions.
 func TestRelayUpgrade(t *testing.T) {
 	s, _, path := migrationDB(t, 11)
-	for i, u := range []string{"HTTPS://PUBLIC.TEST:443/base", "http://clear.test:80", "https://private.test", "https://mixed.test", "https://unknown.test"} {
+	for i, u := range []string{"HTTPS://PUBLIC.TEST:443/base", "http://clear.test:80", "https://private.test", "https://mixed.test", "https://unknown.test", "http://clear.test", "https://private.test"} {
 		id := int32(i + 1)
 		testfixtures.Profile(t, s, int(id), fmt.Sprintf("profile%d", id), fmt.Sprintf("Profile %d", id), 0)
+		if id <= 5 {
+			execSQL(t, s, "UPDATE users SET role='admin' WHERE id=?", id)
+		}
 		execSQL(t, s, "INSERT INTO profile_relays VALUES(?,?,?)", id, u, "relay-secret-fixture")
 	}
 	execSQL(t, s, "INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('source',1,'test',0)")
@@ -71,7 +97,7 @@ func TestRelayUpgrade(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE origin='seeded'"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE profile_id=2 AND host_port='clear.test:80' AND allow_http=1 AND allow_private=0"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE profile_id=3 AND cidr='10.1.2.3/32' AND allow_private=1 AND allow_http=0"))
-	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id IN (4,5) AND pause_class='policy_blocked'"))
+	require.Equal(t, 4, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id IN (4,5,6,7) AND pause_class='policy_blocked'"))
 	for _, table := range []string{"relay_destinations", "relay_allowlist", "outbox", "ingest_events", "integrations"} {
 		rows, err := s.db.Query("SELECT * FROM " + table)
 		require.NoError(t, err)
@@ -333,6 +359,16 @@ func TestRelayBootstrapBinding(t *testing.T) {
 	require.NoError(t, s.InitializeLegacyRelay(t.Context(), "http://ignored.test", "different"))
 	require.Equal(t, 1, scalar(t, s, "SELECT config_version FROM relay_destinations"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM profile_relays WHERE url='https://relay.test'"))
+}
+
+// TestRelayBootstrapSeedsAdmin covers a new install configured through the environment.
+func TestRelayBootstrapSeedsAdmin(t *testing.T) {
+	s, _, _ := migrationDB(t, 12)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")
+	require.NoError(t, s.InitializeLegacyRelay(t.Context(), "HTTP://127.0.0.1:80/prefix", "fixture"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE origin='seeded' AND allow_http=1 AND cidr=''"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE origin='seeded' AND allow_private=1 AND cidr='127.0.0.1/32'"))
 }
 
 // TestRelayCounterCrash proves that outbox and counter share rollback and process recovery.

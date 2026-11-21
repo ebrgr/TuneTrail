@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	migrations "github.com/ebrgr/TuneTrail/db/migrations_sqlite"
@@ -92,12 +93,12 @@ type relaySeed struct {
 	raw, canonical, hostPort string
 	http                     bool
 	private                  []netip.Prefix
-	blocked                  bool
+	blocked, admin           bool
 }
 
 // relaySeeds resolves endpoints before obtaining the writer reservation.
 func relaySeeds(ctx context.Context, db *sql.DB, resolver relayResolver) ([]relaySeed, error) {
-	rows, err := db.QueryContext(ctx, "SELECT profile_id,url FROM profile_relays")
+	rows, err := db.QueryContext(ctx, "SELECT r.profile_id,r.url,u.role='admin' FROM profile_relays r JOIN listening_profiles p ON p.id=r.profile_id JOIN users u ON u.id=p.user_id ORDER BY r.profile_id")
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func relaySeeds(ctx context.Context, db *sql.DB, resolver relayResolver) ([]rela
 	var seeds []relaySeed
 	for rows.Next() {
 		var seed relaySeed
-		if err := rows.Scan(&seed.profile, &seed.raw); err != nil {
+		if err := rows.Scan(&seed.profile, &seed.raw, &seed.admin); err != nil {
 			return nil, err
 		}
 		seeds = append(seeds, seed)
@@ -113,45 +114,121 @@ func relaySeeds(ctx context.Context, db *sql.DB, resolver relayResolver) ([]rela
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
-	// A single deadline bounds the total DNS wait, even with many configured profiles.
-	dnsCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
-	defer cancel()
-	for i := range seeds {
-		seeds[i].resolve(dnsCtx, resolver)
-	}
+	resolveRelaySeeds(ctx, seeds, resolver)
 	return seeds, nil
 }
 
-// resolve records only the private IPs observed at upgrade and rejects mixed forbidden answers.
-func (seed *relaySeed) resolve(ctx context.Context, resolver relayResolver) {
-	seed.canonical, seed.hostPort, _ = canonicalRelay(seed.raw) // An invalid URL remains blocked.
-	seed.blocked = true
-	if seed.hostPort == "" {
-		return
+// resolveRelaySeeds deduplicates DNS work and bounds both concurrency and latency.
+func resolveRelaySeeds(ctx context.Context, seeds []relaySeed, resolver relayResolver) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	type lookup struct {
+		host string
+		ips  []netip.Addr
 	}
-	host, _, err := net.SplitHostPort(seed.hostPort)
-	if err != nil {
-		return
+	var lookups []lookup
+	hostIndex := make(map[string]int)
+	seedIndex := make([]int, len(seeds))
+	for i := range seeds {
+		seedIndex[i] = -1
+		seed := &seeds[i]
+		seed.blocked = true
+		canonical, key, err := canonicalRelay(seed.raw)
+		if err != nil {
+			continue
+		}
+		host, _, err := net.SplitHostPort(key)
+		if err != nil {
+			continue
+		}
+		seed.canonical, seed.hostPort = canonical, key
+		seed.http = strings.HasPrefix(canonical, "http://")
+		index, ok := hostIndex[host]
+		if !ok {
+			index = len(lookups)
+			hostIndex[host] = index
+			lookups = append(lookups, lookup{host: host})
+		}
+		seedIndex[i] = index
 	}
-	ip, parseErr := netip.ParseAddr(host)
-	addrs := []netip.Addr{ip}
-	if parseErr != nil {
-		addrs, err = resolver.LookupNetIP(ctx, "ip", host)
-		if err != nil || len(addrs) == 0 {
-			return
+	work := make(chan int, len(lookups))
+	for i := range lookups {
+		work <- i
+	}
+	close(work)
+	var workers sync.WaitGroup
+	for range min(4, len(lookups)) {
+		workers.Go(func() {
+			for i := range work {
+				if ctx.Err() != nil {
+					return
+				}
+				entry := &lookups[i]
+				if ip, err := netip.ParseAddr(entry.host); err == nil {
+					entry.ips = []netip.Addr{ip}
+					continue
+				}
+				hostCtx, stop := context.WithTimeout(ctx, 2*time.Second)
+				ips, err := resolver.LookupNetIP(hostCtx, "ip", entry.host)
+				stop()
+				if err == nil {
+					entry.ips = ips
+				}
+			}
+		})
+	}
+	workers.Wait()
+	for i, index := range seedIndex {
+		if index >= 0 {
+			seeds[i].applyAddresses(lookups[index].ips)
 		}
 	}
-	for _, ip := range addrs {
+}
+
+// applyAddresses permits narrow admin exceptions and rejects an entire unsafe answer.
+func (seed *relaySeed) applyAddresses(addresses []netip.Addr) {
+	if len(addresses) == 0 || (seed.http && !seed.admin) {
+		return
+	}
+	for _, ip := range addresses {
 		ip = ip.Unmap().WithZone("")
 		if relay.IsForbiddenAddress(ip) {
 			return
 		}
 		if relay.IsReservedAddress(ip) {
-			seed.private = append(seed.private, netip.PrefixFrom(ip, ip.BitLen()))
+			prefix := netip.PrefixFrom(ip, ip.BitLen())
+			if !seed.admin || !relay.ValidExceptionPrefix(prefix) {
+				return
+			}
+			seed.private = append(seed.private, prefix)
 		}
 	}
-	seed.http = strings.HasPrefix(seed.canonical, "http://")
 	seed.blocked = false
+}
+
+// applyRelaySeed records a policy block or narrowly scoped operator exceptions.
+func applyRelaySeed(ctx context.Context, tx *sql.Tx, seed relaySeed) error {
+	var pause any
+	if seed.blocked {
+		pause = "policy_blocked"
+	}
+	if _, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=?,paused_until=NULL WHERE profile_id=?", pause, seed.profile); err != nil {
+		return err
+	}
+	if seed.blocked {
+		return nil
+	}
+	if seed.http {
+		if _, err := tx.ExecContext(ctx, "INSERT INTO relay_allowlist VALUES(?,?,'',1,0,'seeded') ON CONFLICT DO NOTHING", seed.profile, seed.hostPort); err != nil {
+			return err
+		}
+	}
+	for _, prefix := range seed.private {
+		if _, err := tx.ExecContext(ctx, "INSERT INTO relay_allowlist VALUES(?,?,?,0,1,'seeded') ON CONFLICT DO NOTHING", seed.profile, seed.hostPort, prefix.String()); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // upgradeRelaySchema commits the final SQL, seeds and version marker atomically.
@@ -200,18 +277,8 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 		if n != 1 {
 			continue
 		}
-		if _, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=NULL WHERE profile_id=?", seed.profile); err != nil {
+		if err := applyRelaySeed(ctx, tx, seed); err != nil {
 			return err
-		}
-		if seed.http {
-			if _, err := tx.ExecContext(ctx, "INSERT INTO relay_allowlist VALUES(?,?,'',1,0,'seeded')", seed.profile, seed.hostPort); err != nil {
-				return err
-			}
-		}
-		for _, prefix := range seed.private {
-			if _, err := tx.ExecContext(ctx, "INSERT INTO relay_allowlist VALUES(?,?,?,0,1,'seeded') ON CONFLICT DO NOTHING", seed.profile, seed.hostPort, prefix.String()); err != nil {
-				return err
-			}
 		}
 	}
 	if err := bootstrapPhase("relay-after-seed"); err != nil {

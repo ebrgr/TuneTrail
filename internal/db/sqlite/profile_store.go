@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net"
 	"regexp"
 	"strings"
 	"time"
@@ -120,6 +121,18 @@ func (s *Sqlite) GetProfileRelay(ctx context.Context, id int32) (string, string,
 // Record the migration decision once. Revoking a relay or deleting its profile
 // must never cause the old credentials to be reassigned on a later restart.
 func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) error {
+	// Resolve outside the writer transaction, and skip DNS when the bootstrap insert is a no-op.
+	var needsSeed bool
+	if err := s.db.QueryRowContext(ctx, `SELECT NOT EXISTS(SELECT 1 FROM legacy_relay_binding)
+		AND (SELECT count(*) FROM listening_profiles)=1
+		AND NOT EXISTS(SELECT 1 FROM profile_relays)
+		AND EXISTS(SELECT 1 FROM listening_profiles p JOIN users u ON u.id=p.user_id WHERE u.role='admin')`).Scan(&needsSeed); err != nil {
+		return err
+	}
+	seeds := []relaySeed{{raw: url, admin: true, blocked: true}}
+	if needsSeed {
+		resolveRelaySeeds(ctx, seeds, net.DefaultResolver)
+	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -145,8 +158,19 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 		if canonical, _, normalizeErr := canonicalRelay(url); normalizeErr == nil {
 			url = canonical
 		}
-		if _, err := tx.ExecContext(ctx, `INSERT INTO profile_relays(profile_id,url,token) VALUES (?,?,?) ON CONFLICT(profile_id) DO NOTHING`, profileID.Int64, url, token); err != nil {
+		result, err := tx.ExecContext(ctx, `INSERT INTO profile_relays(profile_id,url,token) VALUES (?,?,?) ON CONFLICT(profile_id) DO NOTHING`, profileID.Int64, url, token)
+		if err != nil {
 			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n == 1 {
+			seeds[0].profile = int32(profileID.Int64)
+			if err := applyRelaySeed(ctx, tx, seeds[0]); err != nil {
+				return err
+			}
 		}
 	}
 	if err := tx.Commit(); err != nil {
