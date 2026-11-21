@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T12:09:00Z'
+updated_date: '2026-11-21T12:10:00Z'
 labels:
   - ingestao
   - api
@@ -189,6 +189,15 @@ created: 2026-11-21T12:09:00Z
 ---
 
 Aceite do usuário em 21/11/2026 (ISSUE-082: relay durável). Pareceres registrados: Advisor (plano; revisão curta do contrato; E2; releitura da 012; pós-E3 e configuração) e Reviewer (E1, E3, emendas pós-Advisor e E4). Decisões do usuário: R5 (replay de recibo legacy depois do upgrade não reenvia o POST bruto); D1–D6 do Advisor pós-E3 (allow_private_network global sem loopback/link-local, DNS transitório na semeadura, classe única para não-root, encerramento ≈8 s, DisableKeepAlives mantido, retenção sent/failed para a 083); token do relay pode aparecer nos backups físicos (documentado: mesma sensibilidade do banco, 0600); botão «Permitir este relay» no lugar do formulário de CIDR (CIDR só pela API). RESSALVA REGISTRADA: por decisão do usuário a releitura do Reviewer sobre o botão «Permitir este relay» (commits c9f22b4 a 5c8f5b2: relay_grant.go, painel e confirmação) foi SUSPENSA e as alterações foram aceitas sem esse parecer; o diff foi conferido pelo orquestrador apenas em resumo e pelo relato do Codex (testes dirigidos com -race, make check 13/13, referência visual regenerada). Pontos que a releitura teria conferido: TOCTOU entre tela e confirmação, rebinding na confirmação, exceção por host:porta sem liberar proibidos, CSRF/same-origin, escape do HTML, duplo clique/duas abas. Tarefa opcional futura: cifrar em repouso as credenciais de relay.
+
+---
+
+author: ebrgr
+created: 2026-11-21T12:10:00Z
+
+---
+
+Publicação: versão 0.49 (tag `v0.49`), branch `feat/issue-082-outbox-duravel-no-lugar-do` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
