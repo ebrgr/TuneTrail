@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-20T23:27:00Z'
+updated_date: '2026-11-21T00:30:00Z'
 labels:
   - ingestao
   - api
@@ -14,6 +14,7 @@ dependencies:
   - ISSUE-081
 references:
   - backlog/evidencias/issue-082/PLANO.md
+  - backlog/evidencias/issue-082/MEDICOES-E2.md
 priority: high
 type: feature
 ordinal: 82000
@@ -87,6 +88,15 @@ created: 2026-11-20T23:27:00Z
 ---
 
 E1, retorno ao Reviewer: corrigidos os três itens do parecer NÃO APROVADO, em ddad548 (metadados), 191b279 (NAT64 local) e e7f98fd (token com controle). 651d01e cobre faixas reservadas e host:porta canônico. Plano v4 incorpora a semeadura restrita, as orientações para E2 e os limites DNS conhecidos. Teste de internal/relay com race e make check passaram, com 13/13 jornadas E2E. E2 aguarda nova revisão.
+
+---
+
+author: Codex
+created: 2026-11-21T00:30:00Z
+
+---
+
+E2 concluída: 012 aditiva com política vigente legacy, guardas D4 efetivas, backup v11, semeadura e pausas transacionais. Store com intenções v9/occurrence, contador sem COUNT na escrita, claim em lote e CAS, encoders v1/v2 e testes de recuperação. Ensaio com 300 mil recibos: 012 em 1,43 s, CHECK isolado em 1,42 s. make check passou com 13/13 E2E, sem bloqueio de sandbox. Race direcionado passou sem a fixture de 100 mil itens, que excedeu o timeout instrumentado e passou na suíte normal. Handler, admissão durável e worker ficam para E3, após revisão de invariantes pelo Advisor Opus high.
 
 ---
 <!-- COMMENTS:END -->
