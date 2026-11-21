@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T11:36:00Z'
+updated_date: '2026-11-21T12:06:00Z'
 labels:
   - ingestao
   - api
@@ -171,6 +171,15 @@ created: 2026-11-21T11:36:00Z
 ---
 
 Retorno do Reviewer sobre as emendas pós-Advisor e a E4 aplicado. A documentação de backup foi commitada em 310bc6f e relida. Aliases Compose com sublinhado funcionam no upgrade, na allowlist e no dialer, preservando a sanitização do log. Chaves globais mantêm as pausas que precisam de exceção local. Guias, CHANGELOG, PLANO e ENSAIO-E4 registram janela de upgrade, limite do ensaio TLS e o SIGTERM de 4,011 s. go test dirigido, race, graphify AST e make check passaram (13/13 E2E). Aguardando releitura do Reviewer com status Em andamento.
+
+---
+
+author: Codex
+created: 2026-11-21T12:06:00Z
+
+---
+
+Decisão de 21/11 aplicada. O root usa Permitir este relay, revisa as permissões e confirma o destino salvo em formulário nativo. O fluxo recusa confirmação obsoleta, mantém bloqueios absolutos e usa o IP exato confirmado para exceções de rede privada. A 012 permanece intacta: permissões do botão usam origem manual, e a API continua aceitando CIDRs avançados. Jornada administrativa, testes com race, referência visual, graphify AST e make check passaram (13/13 E2E). Em andamento para releitura do Reviewer.
 
 ---
 <!-- COMMENTS:END -->

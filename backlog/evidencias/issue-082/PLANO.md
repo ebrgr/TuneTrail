@@ -248,4 +248,4 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 
 - Decisão do usuário: trocar a edição visual de HTTP/CIDR por confirmação nativa para a URL salva, exclusiva do root. A 012 e a API avançada mantêm as validações e a precedência existentes.
 - Feito: painel Servidor/perfil, prévia com DNS para root, cerca por perfil, versão, URL e endereços, remoção seletiva e log sanitizado. Para nomes, o HTTP acompanha a autoridade; rede privada exige o IP exato mostrado, limitado pelo armazenamento atual. O botão grava origem `manual`, conforme o domínio `manual|seeded` da 012.
-- Pendente: testes dirigidos, referência visual, documentação e verificação completa.
+- Verificado: testes Go dirigidos com race, jornada administrativa nativa (CSRF, confirmação obsoleta, remoção e API avançada), referência visual, graphify AST e make check com 13/13 jornadas E2E. Guia e CHANGELOG atualizados. Pendente: releitura do Reviewer.
