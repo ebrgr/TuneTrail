@@ -130,6 +130,15 @@ func ingestCatalogOptions(s ingest.Snapshot, source string, mbzc mbz.MusicBrainz
 			opts.ArtistMbzIDs = append(opts.ArtistMbzIDs, id)
 		}
 	}
+	// ISSUE-170: like recording and release, artists fall back to mbid_mapping only when
+	// additional_info has no valid ID, so declared values keep priority.
+	if len(opts.ArtistMbzIDs) == 0 {
+		for _, raw := range s.MappedArtistMBIDs {
+			if id, err := uuid.Parse(raw); err == nil {
+				opts.ArtistMbzIDs = append(opts.ArtistMbzIDs, id)
+			}
+		}
+	}
 	for _, credit := range s.ArtistMbidMappings {
 		if id, err := uuid.Parse(credit.MBID); err == nil {
 			opts.ArtistMbidMappings = append(opts.ArtistMbidMappings, catalog.ArtistMbidMap{Artist: credit.Name, Mbid: id})

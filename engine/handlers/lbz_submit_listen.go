@@ -263,7 +263,8 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 			}
 			if len(artistMbzIDs) < 1 {
 				l.Debug().AnErr("error", err).Msg("LbzSubmitListenHandler: Attempting to parse artist UUIDs from mbid_mapping")
-				utils.ParseUUIDSlice(payload.TrackMeta.MBIDMapping.ArtistMBIDs)
+				// ISSUE-170: keep the mapped IDs; the previous call discarded its result.
+				artistMbzIDs, err = utils.ParseUUIDSlice(payload.TrackMeta.MBIDMapping.ArtistMBIDs)
 				if err != nil {
 					l.Debug().AnErr("error", err).Msg("LbzSubmitListenHandler: Failed to parse one or more UUIDs")
 				}
