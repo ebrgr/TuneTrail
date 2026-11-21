@@ -6,7 +6,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
-	"strconv"
 	"strings"
 	"time"
 
@@ -23,10 +22,10 @@ const activeRuleVersion = "active-v1"
 var errIngestTrackMissing = errors.New("ingest track no longer exists")
 
 type claimedReceipt struct {
-	id, lease, client, source, variant, format string
-	profile, track                             int32
-	version, work, unix, attempts              int64
-	snapshot                                   ingest.Snapshot
+	id, lease, client, source, variant, format, deliveryPolicy string
+	profile, track                                             int32
+	version, work, unix, attempts                              int64
+	snapshot                                                   ingest.Snapshot
 }
 
 // ResolveNextIngest claims one active receipt independently of the admission flags.
@@ -105,8 +104,8 @@ func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, s
 	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,attempt_count=attempt_count+1
 		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')
 		AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
-		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,''),attempt_count`,
-		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format, &receipt.attempts)
+		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,''),attempt_count,delivery_policy`,
+		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format, &receipt.attempts, &receipt.deliveryPolicy)
 	if errors.Is(err, sql.ErrNoRows) {
 		return claimedReceipt{}, "", "", nil
 	}
@@ -254,20 +253,10 @@ func finalizeActiveReceipt(ctx context.Context, tx *sql.Conn, r claimedReceipt, 
 		r.profile, r.id, r.version+1, decision, string(reasons), string(evidence), activeRuleVersion, now); err != nil {
 		return err
 	}
-	if state != "accepted" || r.source != ingest.ShadowSourceListenBrainz {
+	if state != "accepted" {
 		return nil
 	}
-	destination := "relay:" + strconv.FormatInt(int64(r.profile), 10)
-	if _, err := tx.ExecContext(ctx, `INSERT INTO integrations(id,profile_id,source_type,created_at)
-		SELECT ?,profile_id,'listenbrainz-relay',? FROM profile_relays WHERE profile_id=? AND url<>'' AND token<>''
-		ON CONFLICT(id) DO NOTHING`, destination, now, r.profile); err != nil {
-		return err
-	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,closed_at,result)
-		SELECT ?,profile_id,?,?,'listen',?,'discarded',?,?,'{"reason":"pre_082_best_effort"}'
-		FROM profile_relays WHERE profile_id=? AND url<>'' AND token<>''`,
-		uuid.NewString(), destination, event, event, now, now, r.profile)
-	return err
+	return insertRelayIntent(ctx, tx, r, event.(string), now)
 }
 
 // withIngestWriter takes the SQLite writer lock before any transactional reads.

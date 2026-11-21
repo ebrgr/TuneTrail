@@ -246,8 +246,11 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			r.profile, match.id, r.unix, r.client, event, origin); err != nil {
 			return fmt.Errorf("write occurrence listen: %w", err)
 		}
-		// Converted profiles cannot have relay configuration, so no intent is eligible.
-		return writeOccurrenceDecision(ctx, tx, r, match, "accepted", "distinct_occurrence_event", precision, nil, event, proof.evidence)
+		// Persist the acceptance before creating its relay intent.
+		if err := writeOccurrenceDecision(ctx, tx, r, match, "accepted", "distinct_occurrence_event", precision, nil, event, proof.evidence); err != nil {
+			return err
+		}
+		return insertRelayIntent(ctx, tx, r, event, time.Now().Unix())
 	})
 }
 

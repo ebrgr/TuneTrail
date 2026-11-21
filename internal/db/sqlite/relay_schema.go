@@ -63,7 +63,7 @@ func canonicalRelay(raw string) (string, string, error) {
 		return "", "", err
 	}
 	u.Host = key
-	if port == defaultPort {
+	if strings.HasSuffix(key, ":"+defaultPort) {
 		u.Host = host
 		if strings.Contains(host, ":") {
 			u.Host = "[" + host + "]"
@@ -160,6 +160,9 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 	if err != nil || version >= 12 {
 		return err
 	}
+	if version != 11 {
+		return errors.New("relay upgrade requires schema v11")
+	}
 	seeds, err := relaySeeds(ctx, db, resolver)
 	if err != nil {
 		return err
@@ -229,4 +232,16 @@ func migrateDatabase(db *sql.DB) error {
 		return err
 	}
 	return upgradeRelaySchema(context.Background(), db, net.DefaultResolver)
+}
+
+// checkRelayWriterPolicy keeps intermediate binaries from serving an activated database.
+func checkRelayWriterPolicy(db *sql.DB) error {
+	var policy string
+	if err := db.QueryRow("SELECT policy FROM relay_delivery_gate WHERE id=1").Scan(&policy); err != nil {
+		return fmt.Errorf("read receipt delivery policy: %w", err)
+	}
+	if policy != "legacy" {
+		return errors.New("database requires the durable relay writer")
+	}
+	return nil
 }

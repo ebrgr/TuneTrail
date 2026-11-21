@@ -340,6 +340,10 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 		if err := checkDatabase(db); err != nil {
 			return "", err
 		}
+		// E2 can only serve a database whose active writer still uses legacy delivery.
+		if err := checkRelayWriterPolicy(db); err != nil {
+			return "", err
+		}
 		return target, nil
 	}
 	if !old && !allowCreate {

@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/netip"
 
@@ -32,10 +33,24 @@ func (s *Sqlite) SetRelayPermission(ctx context.Context, profile int32, permissi
 	if (!permission.HTTP && !permission.Private) || (permission.Private && cidr == "") {
 		return errors.New("invalid relay permissions")
 	}
-	_, err = s.db.ExecContext(ctx, `INSERT INTO relay_allowlist VALUES(?,?,?,?,?,'manual')
-		ON CONFLICT(profile_id,host_port,cidr,origin) DO UPDATE SET allow_http=excluded.allow_http,allow_private=excluded.allow_private`,
-		profile, host, cidr, permission.HTTP, permission.Private)
-	return err
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		result, err := tx.ExecContext(ctx, `INSERT INTO relay_allowlist VALUES(?,?,?,?,?,'manual')
+			ON CONFLICT(profile_id,host_port,cidr,origin) DO UPDATE SET allow_http=excluded.allow_http,allow_private=excluded.allow_private
+			WHERE allow_http<>excluded.allow_http OR allow_private<>excluded.allow_private`,
+			profile, host, cidr, permission.HTTP, permission.Private)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil || n == 0 {
+			return err
+		}
+		// An operator policy change clears a policy block and fences old transport results.
+		_, err = tx.ExecContext(ctx, `UPDATE relay_destinations SET config_version=config_version+1,
+			paused_until=CASE WHEN pause_class='policy_blocked' THEN NULL ELSE paused_until END,
+			pause_class=nullif(pause_class,'policy_blocked') WHERE profile_id=?`, profile)
+		return err
+	})
 }
 
 // RelayPermissions reads a profile-scoped permission snapshot without exposing credentials.
