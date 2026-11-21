@@ -143,39 +143,43 @@
   </html>
 {{end}}
 
-{{define "admin/relay-exception-fields"}}
-  <label>{{tr "admin.relay.host_port" "Host and port"}}
-    <input name="host_port" value="{{.HostPort}}" placeholder="relay.example:443" required></label>
-  <label>{{tr "admin.relay.cidr" "Reserved CIDR"}}
-    <input name="cidr" value="{{.CIDR}}" placeholder="192.168.1.10/32"></label>
-  <p>{{tr "admin.relay.cidr_tip" "Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network."}}</p>
-  {{if .BroadCIDR}}<p role="status">{{tr "admin.relay.cidr_broad" "This exception covers a broad network."}}</p>{{end}}
-  <label><input type="checkbox" name="allow_http" value="1"{{if .HTTP}} checked{{end}}>
-    {{tr "admin.relay.http" "Permit HTTP"}}</label>
-  <label><input type="checkbox" name="allow_private" value="1"{{if .Private}} checked{{end}}>
-    {{tr "admin.relay.private" "Permit private network"}}</label>
+{{define "admin/relay-grant-kind"}}
+  {{if .HTTP}}{{if .Private}}{{tr "admin.relay.grant_both" "HTTP and private network"}}
+    {{else}}{{tr "admin.relay.grant_http" "HTTP"}}{{end}}
+  {{else}}{{tr "admin.relay.grant_private" "Private network"}}{{end}}
+{{end}}
+
+{{define "admin/relay-state"}}
+  <p><code>{{.Diagnostic.Scheme}}://{{.Diagnostic.HostPort}}</code>
+    {{if .Paused}}{{tr "admin.relay.paused" "Paused"}}{{else}}{{tr "admin.relay.active" "Active"}}{{end}}
+  </p>
+  {{if .Grant.Available}}
+    <p>{{tr "admin.relay.grant_required" "Permission required"}}
+      <strong>{{template "admin/relay-grant-kind" .Grant}}</strong></p>
+  {{else if .Paused}}
+    <p>{{tr (printf "admin.relay.reason_%s" .Diagnostic.Code) "Check the relay configuration and try again."}}</p>
+  {{end}}
 {{end}}
 
 {{define "admin/relay-exceptions"}}
   {{if .RelayProfiles}}
     <section aria-labelledby="relay-exceptions">
       <h2 id="relay-exceptions">{{tr "admin.relay.exceptions" "Relay exceptions by destination"}}</h2>
+      <p>{{tr "admin.relay.grant_scope" "Global settings apply to every profile. This button allows only this destination."}}</p>
       {{range .RelayProfiles}}
         <article class="server-setting">
           <h3>{{.Name}}</h3>
           {{if .Configured}}
-            <p><code>{{.Diagnostic.Scheme}} · {{.Diagnostic.HostPort}}</code>
-              {{if .Paused}}{{tr "admin.relay.paused" "Paused"}}{{else}}{{tr "admin.relay.active" "Active"}}{{end}}
-            </p>
-            {{if .Paused}}
-              <p><code>{{.Diagnostic.Code}} {{.Diagnostic.Category}}</code>
-                {{tr (printf "admin.relay.reason_%s" .Diagnostic.Code) "Check the relay configuration and try again."}}</p>
-            {{end}}
+            {{template "admin/relay-state" .}}
             <form method="post" action="/admin/settings/relay">
               <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
               <input type="hidden" name="submission_token" value="{{$.Submission}}">
               <input type="hidden" name="profile" value="{{.ID}}">
-              <button name="operation" value="resume">{{tr "admin.relay.resume" "Revalidate and resume"}}</button>
+              {{if .Grant.Available}}
+                <button name="operation" value="preview">{{tr "admin.relay.allow" "Allow this relay"}}</button>
+              {{else}}
+                <button name="operation" value="resume">{{tr "admin.relay.resume" "Revalidate and resume"}}</button>
+              {{end}}
             </form>
           {{else}}<p>{{tr "admin.relay.not_configured" "No relay configured"}}</p>{{end}}
           {{$profile := .ID}}
@@ -188,22 +192,46 @@
               <input type="hidden" name="old_cidr" value="{{.CIDR}}">
               <input type="hidden" name="old_origin" value="{{.Origin}}">
               <p>{{if eq .Origin "seeded"}}{{tr "admin.relay.seeded" "Seeded during setup"}}{{else}}{{tr "admin.relay.manual" "Added manually"}}{{end}}</p>
-              {{template "admin/relay-exception-fields" .}}
-              <button name="operation" value="edit">{{tr "admin.relay.edit" "Save exception"}}</button>
+              <p><code>{{.HostPort}}{{if .CIDR}} · {{.CIDR}}{{end}}</code> · {{template "admin/relay-grant-kind" .}}</p>
               <div class="danger-zone">
                 <button name="operation" value="remove" formnovalidate>{{tr "admin.relay.remove" "Remove exception"}}</button>
               </div>
             </form>
           {{end}}
-          <form method="post" action="/admin/settings/relay">
-            <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
-            <input type="hidden" name="submission_token" value="{{$.Submission}}">
-            <input type="hidden" name="profile" value="{{.ID}}">
-            {{template "admin/relay-exception-fields" $.RelayBlank}}
-            <button name="operation" value="add">{{tr "admin.relay.add" "Add exception"}}</button>
-          </form>
         </article>
       {{end}}
     </section>
   {{end}}
+{{end}}
+
+{{define "admin/relay-grant"}}
+  <!doctype html>
+  <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
+    <head>{{template "partial/head" (head "admin" (tr "admin.relay.confirm" "Confirm relay permission"))}}</head>
+    <body data-admin-ui="go">
+      {{template "partial/sidebar" .Nav}}
+      <div class="admin-shell">
+        <main class="admin-main">
+          <h1>{{tr "admin.relay.confirm" "Confirm relay permission"}}</h1>
+          {{with .RelayGrant}}
+            <p><code>{{.Scheme}}://{{.Authority}}</code> · {{template "admin/relay-grant-kind" .}}</p>
+            {{if .Named}}
+              <p>{{tr "admin.relay.resolves_now" "This name currently resolves to"}}</p>
+              <ul>{{range .Addresses}}<li><code>{{.}}</code></li>{{end}}</ul>
+              <p>{{tr "admin.relay.dns_scope" "If granted, HTTP permission follows this name. Private access is limited to the listed addresses."}}</p>
+            {{end}}
+            {{if .Local}}<p><strong>{{tr "admin.relay.local_warning" "This exception opens access to loopback or link-local addresses."}}</strong></p>{{end}}
+          {{end}}
+          <form method="post" action="/admin/settings/relay">
+            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+            <input type="hidden" name="submission_token" value="{{.Submission}}">
+            <input type="hidden" name="profile" value="{{.RelayGrant.Profile}}">
+            <input type="hidden" name="fence" value="{{.RelayGrant.Fence}}">
+            <button name="operation" value="allow">{{tr "admin.relay.confirm" "Confirm relay permission"}}</button>
+            <a href="/admin/settings#relay-exceptions">{{tr "admin.relay.cancel" "Cancel"}}</a>
+          </form>
+        </main>
+      </div>
+    </body>
+  </html>
 {{end}}

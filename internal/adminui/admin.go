@@ -109,6 +109,7 @@ type view struct {
 	Profile                             *models.ListeningProfile
 	Keys                                []models.ApiKey
 	RelayURL, CSRF, Next, Notice, Error string
+	RelayState                          *relay.ProfileView
 	Login, LogoutOnly, SignOut          bool
 	Section                             string
 	Submission                          string
@@ -537,6 +538,12 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		if err != nil {
 			h.fail(w, err)
 			return
+		}
+		if store, ok := h.store.(relayPanelStore); ok && admin.AuthorizeAction(id.User, admin.ManageServer, nil) == nil {
+			profiles, _ := store.RelayPolicyProfiles(r.Context(), id.SessionID, n)
+			if len(profiles) != 0 && profiles[0].Configured {
+				v.RelayState = &profiles[0]
+			}
 		}
 		v.Notice = h.takeNotice(id.SessionID, n, i18n.ViewOf(w))
 	} else {

@@ -1,23 +1,25 @@
 package adminui
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/http"
-	"net/netip"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/google/uuid"
 )
 
 type relayPanelStore interface {
-	RelayPolicyProfiles(context.Context, uuid.UUID) ([]relay.ProfileView, error)
-	SetRelayPermissionAsRoot(context.Context, uuid.UUID, int32, relay.Permission) error
-	EditRelayExceptionAsRoot(context.Context, uuid.UUID, int32, relay.Exception, relay.Permission) error
+	RelayPolicyProfiles(context.Context, uuid.UUID, int32) ([]relay.ProfileView, error)
+	RelayGrant(context.Context, uuid.UUID, int32) (relay.Grant, error)
+	ConfirmRelayGrant(context.Context, uuid.UUID, int32, string) error
 	RemoveRelayExceptionAsRoot(context.Context, uuid.UUID, int32, relay.Exception) error
 	ResumeRelay(context.Context, uuid.UUID, int32) error
 }
@@ -33,7 +35,7 @@ func (h *Handler) relaySettingsAction(w http.ResponseWriter, r *http.Request, id
 		h.fail(w, db.ErrNotFound)
 		return
 	}
-	if !fields(f, "profile", "operation", "host_port", "cidr", "allow_http", "allow_private", "old_host", "old_cidr", "old_origin") {
+	if !fields(f, "profile", "operation", "fence", "old_host", "old_cidr", "old_origin") {
 		h.fail(w, db.ErrInvalidInput)
 		return
 	}
@@ -49,21 +51,18 @@ func (h *Handler) relaySettingsAction(w http.ResponseWriter, r *http.Request, id
 		err = store.ResumeRelay(ctx, identity.SessionID, profile)
 	case "remove":
 		err = store.RemoveRelayExceptionAsRoot(ctx, identity.SessionID, profile, old)
-	case "add", "edit":
-		permission := relay.Permission{HostPort: f.SingleValue("host_port"), HTTP: f.SingleValue("allow_http") == "1", Private: f.SingleValue("allow_private") == "1"}
-		if cidr := f.SingleValue("cidr"); cidr != "" {
-			permission.Prefix, err = netip.ParsePrefix(cidr)
-			if err != nil {
-				err = db.ErrInvalidInput
-			}
+	case "preview":
+		var grant relay.Grant
+		grant, err = store.RelayGrant(ctx, identity.SessionID, profile)
+		if err == nil && grant.Available() {
+			h.renderRelayGrant(w, r, identity, grant)
+			return
 		}
 		if err == nil {
-			if f.SingleValue("operation") == "edit" {
-				err = store.EditRelayExceptionAsRoot(ctx, identity.SessionID, profile, old, permission)
-			} else {
-				err = store.SetRelayPermissionAsRoot(ctx, identity.SessionID, profile, permission)
-			}
+			err = db.ErrConflict
 		}
+	case "allow":
+		err = store.ConfirmRelayGrant(ctx, identity.SessionID, profile, f.SingleValue("fence"))
 	default:
 		err = db.ErrInvalidInput
 	}
@@ -73,8 +72,12 @@ func (h *Handler) relaySettingsAction(w http.ResponseWriter, r *http.Request, id
 		relay.LogDiagnostic(ctx, profile, diagnostic.Diagnostic, time.Now())
 		code := diagnostic.Diagnostic.Code
 		h.putNoticeData(identity.SessionID, 0, "admin.relay.reason_"+code, relay.Remedy(code), nil)
+	case errors.Is(err, db.ErrConflict):
+		h.putNoticeData(identity.SessionID, 0, "admin.relay.grant_changed", "Destination or policy changed. Review the destination and confirm again.", nil)
+	case errors.Is(err, db.ErrForbidden):
+		h.putNoticeData(identity.SessionID, 0, "admin.relay.reason_forbidden_range", "This destination is forbidden.", nil)
 	case errors.Is(err, db.ErrInvalidInput):
-		h.putNoticeData(identity.SessionID, 0, "admin.relay.invalid_exception", "Check the host and port, the permission flags and the reserved CIDR.", nil)
+		h.putNoticeData(identity.SessionID, 0, "admin.relay.invalid_exception", "Check the saved relay destination.", nil)
 	case err != nil:
 		h.fail(w, err)
 		return
@@ -82,4 +85,30 @@ func (h *Handler) relaySettingsAction(w http.ResponseWriter, r *http.Request, id
 		h.putNoticeData(identity.SessionID, 0, "admin.relay.saved", "Relay policy updated.", nil)
 	}
 	http.Redirect(w, r, "/admin/settings#relay-exceptions", http.StatusSeeOther)
+}
+
+// renderRelayGrant issues a fresh form ticket for the root-only confirmation.
+func (h *Handler) renderRelayGrant(w http.ResponseWriter, r *http.Request, identity admin.Identity, grant relay.Grant) {
+	csrf, err := h.csrf.SessionToken(identity)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	ticket, err := h.newSubmission(identity.SessionID)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	view := settingsView{Nav: h.navigation(r, identity, nil, "settings"), Locale: i18n.ViewOf(w), CSRF: csrf, Submission: ticket, RelayGrant: grant}
+	tmpl, err := h.adminTemplate(view.Locale)
+	var output bytes.Buffer
+	if err == nil {
+		err = tmpl.ExecuteTemplate(&output, "admin/relay-grant", view)
+	}
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_, _ = io.Copy(w, &output)
 }

@@ -42,7 +42,7 @@ type settingsView struct {
 	CSRF, Submission, Revision, Notice, Error, LocalTimezone string
 	Fields                                                   []settingField
 	RelayProfiles                                            []relay.ProfileView
-	RelayBlank                                               relay.Exception
+	RelayGrant                                               relay.Grant
 	RestartRequired, StateAvailable                          bool
 }
 
@@ -175,7 +175,7 @@ func (h *Handler) renderSettings(r *http.Request, w http.ResponseWriter, id admi
 		v.Fields = append(v.Fields, field)
 	}
 	if store, ok := h.store.(relayPanelStore); ok {
-		profiles, err := store.RelayPolicyProfiles(r.Context(), id.SessionID)
+		profiles, err := store.RelayPolicyProfiles(r.Context(), id.SessionID, 0)
 		if err == nil {
 			v.RelayProfiles = profiles
 		}

@@ -243,3 +243,9 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Um relay legado de administrador na LAN pode ficar em `private_network_not_allowed` após a primeira tentativa se o DNS falhou na semeadura. O root precisa cadastrar a exceção. A ressalva sobre `LIKE` com `_` como curinga é inofensiva para os códigos controlados de pausa atuais.
 - Decisão futura do usuário: avaliar uma tarefa para cifrar em repouso as credenciais de relay.
 - Retorno do Reviewer pós-E4: documentação do backup relida no commit `310bc6f`. O commit `f6d1589` mantém aliases Compose com sublinhado na canonicalização, semeadura, dialer e diagnóstico. O commit `525dcf4` preserva as pausas de loopback, link-local e semeadura reservada sem classificação precisa. `go test` dirigido, `-race`, graphify AST e `make check` (13/13 E2E) passaram. A tarefa segue Em andamento para releitura do Reviewer.
+
+## ESTADO — Permitir este relay (21/11/2026)
+
+- Decisão do usuário: trocar a edição visual de HTTP/CIDR por confirmação nativa para a URL salva, exclusiva do root. A 012 e a API avançada mantêm as validações e a precedência existentes.
+- Feito: painel Servidor/perfil, prévia com DNS para root, cerca por perfil, versão, URL e endereços, remoção seletiva e log sanitizado. Para nomes, o HTTP acompanha a autoridade; rede privada exige o IP exato mostrado, limitado pelo armazenamento atual. O botão grava origem `manual`, conforme o domínio `manual|seeded` da 012.
+- Pendente: testes dirigidos, referência visual, documentação e verificação completa.

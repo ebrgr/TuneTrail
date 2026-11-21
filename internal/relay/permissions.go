@@ -51,17 +51,17 @@ type Exception struct {
 	HTTP, Private          bool
 }
 
-// BroadCIDR warns about broad exceptions without changing their validation.
-func (e Exception) BroadCIDR() bool {
-	prefix, err := netip.ParsePrefix(e.CIDR)
-	if err != nil {
-		return false
-	}
-	if prefix.Addr().Is4() {
-		return prefix.Bits() < 24
-	}
-	return prefix.Bits() < 56
+// Grant describes a root-only preview tied to a specific destination and DNS answer.
+type Grant struct {
+	Profile                  int32
+	Version                  int64
+	Authority, Scheme, Fence string
+	Addresses, Private       []string
+	HTTP, Named, Local       bool
 }
+
+// Available reports whether the destination needs an exception.
+func (g Grant) Available() bool { return g.HTTP || len(g.Private) > 0 }
 
 // ProfileView contains only root-visible policy configuration and diagnostics.
 type ProfileView struct {
@@ -70,4 +70,5 @@ type ProfileView struct {
 	Configured, Paused bool
 	Diagnostic         Diagnostic
 	Exceptions         []Exception
+	Grant              Grant
 }

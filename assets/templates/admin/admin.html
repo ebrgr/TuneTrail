@@ -269,6 +269,17 @@
                     "admin.text.enter_both_the_server_url_and_token_use_remove_relay_to_disable_it"
                     "Enter both the server URL and token. Use Remove relay to disable it."
                   }}</p>
+                  {{with $.RelayState}}
+                    {{template "admin/relay-state" .}}
+                    {{if .Grant.Available}}
+                      <form method="post" action="/admin/settings/relay">
+                        <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+                        <input type="hidden" name="submission_token" value="{{$.Submission}}">
+                        <input type="hidden" name="profile" value="{{.ID}}">
+                        <button name="operation" value="preview">{{tr "admin.relay.allow" "Allow this relay"}}</button>
+                      </form>
+                    {{end}}
+                  {{end}}
                   <form method="post">
                     <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
                     <input type="hidden" name="submission_token" value="{{$.Submission}}">
