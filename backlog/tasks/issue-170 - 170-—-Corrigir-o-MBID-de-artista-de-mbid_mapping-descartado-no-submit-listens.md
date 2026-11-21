@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T16:15:00Z'
-updated_date: '2026-11-21T16:22:00Z'
+updated_date: '2026-11-21T16:23:00Z'
 labels:
   - api
 milestone: m-11
@@ -64,6 +64,15 @@ created: 2026-11-21T16:22:00Z
 ---
 
 Aceite: aprovada pelo usuário em 21/11/2026.
+
+---
+
+author: ebrgr
+created: 2026-11-21T16:23:00Z
+
+---
+
+Publicação: versão 0.53 (tag `v0.53`), branch `fix/issue-170-corrigir-o-mbid-de-artista` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

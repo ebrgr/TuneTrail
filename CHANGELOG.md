@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.53] - 2026-11-21
+
 - ListenBrainz submissions whose artist ID appears only in `mbid_mapping` now match the existing artist by that ID instead of creating a duplicate artist, in both the legacy writer and the active resolver. IDs in `additional_info` keep priority (ISSUE-170).
 
 ## [0.52] - 2026-11-21
