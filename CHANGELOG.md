@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.51] - 2026-11-21
+
 - The sign-out item in the menu is now labeled “Sign out” without the ellipsis and shows the exit icon like the other items (ISSUE-180).
 
 ## [0.50] - 2026-11-21

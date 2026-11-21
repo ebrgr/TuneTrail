@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T14:04:00Z'
-updated_date: '2026-11-21T14:11:00Z'
+updated_date: '2026-11-21T14:12:00Z'
 labels:
   - ui
 dependencies: []
@@ -58,6 +58,15 @@ created: 2026-11-21T14:11:00Z
 ---
 
 Verificação: a referência visual backlog/evidencias/ISSUE-075/reference foi regenerada; a diferença é só o item Sair (rótulo sem reticências e ícone LogOut) e o hash de geração da UI.
+
+---
+
+author: ebrgr
+created: 2026-11-21T14:12:00Z
+
+---
+
+Publicação: versão 0.51 (tag `v0.51`), branch `feat/issue-180-item-sair-do-menu-sem` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
