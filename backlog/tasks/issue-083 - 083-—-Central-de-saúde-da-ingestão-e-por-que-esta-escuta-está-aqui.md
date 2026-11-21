@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T15:43:00Z'
+updated_date: '2026-11-21T15:47:00Z'
 labels:
   - admin
   - ingestao
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/evidencias/ISSUE-075/reference/admin/ingest-health.html
   - backlog/evidencias/ISSUE-075/reference/admin/listen.html
+  - backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md
 priority: medium
 type: feature
 ordinal: 83000
@@ -87,6 +88,15 @@ created: 2026-11-21T15:43:00Z
 ---
 
 Verificação: central por perfil e explicação na página de gestão da escuta, com testes de dono, root, visitante e chave de ingestão, incluindo ausência de segredos nas respostas e nos logs do teste. Projeção SQLite conferida nos schemas v11 e v12. make check passou (13/13 jornadas E2E), make ui.reference.check não apontou diferenças e o Graphify foi atualizado. Chrome validou foco, Enter/Espaço e ausência de rolagem horizontal a 320, 768 e 1440 px, nos temas Yuu e Pearl.
+
+---
+
+author: claude
+created: 2026-11-21T15:47:00Z
+
+---
+
+Reviewer (claude, 21/11/2026): APROVADO COM RESSALVAS, sem BUG. Verificado: go vet, testes de engine/adminui/adminweb/db/webui e make ui.reference.check verdes; isolamento e ausência de segredos cobertos por TestIngestHealthIsolation. RISCOS: (1) consultas de healthSources/healthDecisions varrem todos os eventos do perfil, sem medição; (2) a Saúde ficou no seletor admin-sections e não na segunda barra citada no comentário #2; (3) AC #2 ainda diz 'admin', mas o acesso é dono e root. Parecer: backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md. Não verificado: tela no navegador.
 
 ---
 <!-- COMMENTS:END -->
