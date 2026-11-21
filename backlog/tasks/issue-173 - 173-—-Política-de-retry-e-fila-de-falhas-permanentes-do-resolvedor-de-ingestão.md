@@ -1,11 +1,11 @@
 ---
 id: ISSUE-173
 title: 173 — Política de retry e fila de falhas permanentes do resolvedor de ingestão
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T18:20:00Z'
-updated_date: '2026-11-21T21:58:00Z'
+updated_date: '2026-11-21T21:59:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -106,6 +106,15 @@ created: 2026-11-21T21:58:00Z
 ---
 
 Verificação: go test -race (sqlite, adminui, engine) OK; make check 13/13 E2E (Codex); Reviewer sem BUG; Advisor (effort high) APROVADO com ressalvas, follow-up ISSUE-182. Todos os ACs marcados.
+
+---
+
+author: ebrgr
+created: 2026-11-21T21:59:00Z
+
+---
+
+Aceite do usuário em 21/11/2026: aceito e autorizado a publicar (sem push).
 
 ---
 <!-- COMMENTS:END -->
