@@ -306,7 +306,9 @@ func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time
 			var valid bool
 			if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM outbox
 				WHERE id=? AND profile_id=? AND destination_id='relay:'||? AND lease_owner=?
-				AND work_version=? AND relay_generation=? AND `+relayDue+")",
+				AND work_version=? AND relay_generation=? AND `+relayDue+`
+				AND EXISTS(SELECT 1 FROM ingest_events e WHERE e.profile_id=outbox.profile_id AND e.event_id=outbox.event_id
+					AND e.state='accepted' AND e.delivery_policy='durable'))`,
 				item.ID, batch.Profile, batch.Profile, batch.Owner, item.Version, batch.Generation).Scan(&valid); err != nil {
 				return err
 			}

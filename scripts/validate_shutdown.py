@@ -28,20 +28,39 @@ def main():
     relay=ThreadingHTTPServer(('127.0.0.1',0),Receiver);thread=threading.Thread(target=relay.serve_forever,daemon=True);thread.start()
     try:
         with tempfile.TemporaryDirectory(prefix='koito-shutdown-020-') as root:
-            server=Server(args.binary.resolve(),Path(root)/'data',environment={'KOITO_WEB_UI':'go'})
+            server=Server(args.binary.resolve(),Path(root)/'data',environment={'TUNETRAIL_INGEST_ACTIVE':'true'})
             try:
                 server.start();server.login();key=server.request('GET',WEB+'/profiles/default/user/apikeys',admin=True)[0]['key']
-                server.request('PUT',WEB+'/profiles/default/relay',{'url':f'http://127.0.0.1:{relay.server_port}','token':'fictional-relay-token'},admin=True,expected=204)
+                path=WEB+'/profiles/default'
+                host=f'127.0.0.1:{relay.server_port}'
+                server.request('PUT',path+'/relay/permissions',{'host_port':host,'allow_http':True},admin=True,expected=204)
+                server.request('PUT',path+'/relay/permissions',{'host_port':host,'cidr':'127.0.0.1/32','allow_private':True},admin=True,expected=204)
+                server.request('PUT',path+'/relay',{'url':f'http://{host}','token':'fictional-relay-token'},admin=True,expected=204)
+                state=server.request('GET',path+'/ingest-activation',admin=True)
+                server.request('PUT',path+'/ingest-activation',
+                               {'active':True,'review':False,'digest':state['digest']},admin=True,expected=204)
                 stamp=int(time.time())-60;server.request('POST',LBZ+'/submit-listens',scrobble(stamp),token=key)
                 assert entered.wait(5),'relay request did not reach local receiver'
-                start=time.monotonic();server.process.send_signal(signal.SIGINT)
+                start=time.monotonic();server.process.send_signal(signal.SIGTERM)
                 returncode=server.process.wait(timeout=11);duration=time.monotonic()-start
                 assert returncode==0,'server did not exit cleanly'
                 with sqlite3.connect(server.directory/'tunetrail.db') as db:
                     assert db.execute('SELECT count(*) FROM listens').fetchone()[0]==1
+                    assert db.execute("SELECT state,attempt_count,lease_owner FROM outbox").fetchall()==[('retryable',0,None)]
+                    assert db.execute("SELECT pause_class FROM relay_destinations").fetchall()==[(None,)]
                     assert db.execute('PRAGMA integrity_check').fetchall()==[('ok',)]
                     assert db.execute('PRAGMA foreign_key_check').fetchall()==[]
-                print(json.dumps({'local_listens':1,'relay':'in-flight at shutdown; delivery not guaranteed','shutdown_seconds':round(duration,3),'integrity':'ok'}))
+                server.stop()
+                release.set()
+                server.start()
+                deadline=time.monotonic()+8
+                while True:
+                    with sqlite3.connect(server.directory/'tunetrail.db') as db:
+                        delivered=db.execute("SELECT count(*) FROM outbox WHERE state='sent'").fetchone()[0]
+                    if delivered:break
+                    assert time.monotonic()<deadline, 'persisted delivery was not retried'
+                    time.sleep(.1)
+                print(json.dumps({'local_listens':1,'relay':'resumed after SIGTERM','shutdown_seconds':round(duration,3),'integrity':'ok'}))
             finally:server.stop()
     finally:
         release.set();finished.wait(2);relay.shutdown();relay.server_close();thread.join()
