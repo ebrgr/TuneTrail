@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-21T22:11:00Z'
+updated_date: '2026-11-21T22:21:00Z'
 labels:
   - catalogo
   - ui
@@ -84,6 +84,15 @@ created: 2026-11-21T22:11:00Z
 ---
 
 Verificação: ranking por gravação e por lançamento, soma com o balde sem lançamento, isolamento das novidades por perfil e escutas no mesmo segundo cobertos por testes SQLite e HTTP. Oito planos medidos em fixture de 600.004 escutas com índices existentes. make check passou com 13/13 jornadas E2E. Referência ISSUE-075 regenerada. Revisão local sem bloqueios.
+
+---
+
+author: claude
+created: 2026-11-21T22:21:00Z
+
+---
+
+Reviewer: sem BUG; 3 RISCOs (desempenho por lançamento, contadores por gravação, histórico lendo occurrences). Ver backlog/evidencias/issue-135/parecer-reviewer.md. Testes -race OK. Advisor (effort high) pendente, a pedido do usuário.
 
 ---
 <!-- COMMENTS:END -->
