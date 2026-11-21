@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T02:29:00Z'
+updated_date: '2026-11-21T02:45:00Z'
 labels:
   - ingestao
   - api
@@ -125,6 +125,15 @@ created: 2026-11-21T02:29:00Z
 ---
 
 Retorno E3 à revisão: obrigatórios corrigidos em 954d174 (pausa após 2xx sem prazo do servidor) e c905e37 (espera após falha pré-POST, source_invalid e config_invalid). Ressalvas aplicadas, com decisão R5 registrada no plano, código e CHANGELOG. Testes dirigidos com race e make check passaram, com 13/13 E2E. Worktree permanece na E3 para nova revisão e posterior parecer do Advisor sobre encerramento e falhas ambíguas. AC4 segue aberto.
+
+---
+
+author: Codex
+created: 2026-11-21T02:45:00Z
+
+---
+
+Decisão do usuário de 20/11/2026 aplicada: novas opções de runtime da 082 via Servidor root e conf.toml, sem nova variável de ambiente. Auditoria e constantes documentadas no PLANO. allow_http e allow_private_network são globais e desligadas por padrão, com reinício. Exceções por destino editáveis em formulários nativos com política root e CSRF. Host e porta configurados autorizados em avisos; DNS resolvido e segredos continuam excluídos. Diagnóstico de validação detalhado para root e somente classe para os demais. Jornada administrativa, testes dirigidos com race e make check passaram (13/13 E2E). Parada para Advisor sobre configuração, encerramento e falhas ambíguas.
 
 ---
 <!-- COMMENTS:END -->
