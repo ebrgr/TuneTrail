@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T22:02:00Z'
-updated_date: '2026-11-21T22:59:00Z'
+updated_date: '2026-11-21T23:04:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -67,6 +67,15 @@ created: 2026-11-21T22:59:00Z
 ---
 
 Correções verificadas: o importador restringe o reuso de ocorrências locais pelo dono; a exportação fixa o teto na primeira página; o desfazer de fusões expira em 30 dias. Na fixture de 5.001 ocorrências e 10.000 recibos, fusão e desfazer levaram 184 ms e 201 ms, com todas as revisões preservadas. make check passou (13/13 jornadas). Referência ISSUE-075 regenerada e 39 respostas HTTP equivalentes após migração para v15 e ativação.
+
+---
+
+author: claude
+created: 2026-11-21T23:04:00Z
+
+---
+
+Reviewer (reauditoria do commit 99c51fa): sem BUG; falha de segurança do Advisor corrigida e testada; cursor de export com teto, fusão 184 ms, desfazer com expiração. Ver PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->
