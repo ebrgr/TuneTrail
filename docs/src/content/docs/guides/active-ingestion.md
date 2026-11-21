@@ -90,6 +90,36 @@ remain pending and are excluded from listening counts.
 Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
 TuneTrail 0.46 and earlier cannot open a v11 database.
 
+## Ingestion health
+
+**Health** shows what ingestion has done for one profile. Open it from the
+**+** menu: root finds it under **Administration**, above **Server
+configuration**, and profile owners find it with their account links. The page
+is also at `/admin/health?profile=<id>`. Only the profile's owner and root can
+open it, always signed in, even when the profile is public. It is read-only:
+it does not accept or change any decision.
+
+- **Sources and last submission** lists the latest submission for each
+  integration, source format and declared client, with the received time, the
+  time precision, and the relay delivery state.
+- **Relay queue and failures** shows the number of queued deliveries, the pause
+  reason when the destination is paused, and the most recent open or failed
+  deliveries with their attempt count and reason code.
+- **Recent deduplication decisions** lists the latest 25 decisions with the
+  mode, decision, reason code, rule version, time precision, and the recorded
+  evidence: candidate count, time difference, matching recording ID, trusted
+  external ID, and whether the album title differs from MusicBrainz.
+
+The management page of a listen adds **Why is this listen here?** with its
+source, received time, time precision, rule, reason code, and delivery state.
+Listens saved before receipts existed show only their recorded origin, and the
+missing fields read **Not recorded**. Times are shown in UTC.
+
+The pages never show API keys, relay URLs or tokens, raw request bodies, or the
+stored evidence documents. Deliveries and decisions of one profile never appear
+on another profile's page. Ambiguous submissions still wait as pending and stay
+out of the counts. There is no screen to resolve them yet.
+
 ## Durable ListenBrainz relay
 
 For active profiles, the submission acknowledgement means the local receipts

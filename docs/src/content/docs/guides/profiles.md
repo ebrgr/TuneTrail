@@ -37,7 +37,12 @@ its profile; it does not authorize profile management or other administration.
 See [Setting up the Scrobbler](/guides/scrobbler).
 
 Administrators can import/export a selected profile's history and configure its
-ListenBrainz forwarding. Deleting a profile requires confirmation of its name
+ListenBrainz forwarding.
+
+The **Health** page of a profile shows recent submissions, relay failures and
+deduplication decisions. See [Active ingestion pilot](/guides/active-ingestion#ingestion-health).
+
+Deleting a profile requires confirmation of its name
 and listen count and removes that profile's listens, keys and relay. Other
 profiles and shared catalog entries remain intact. Deleting a profile does not
 delete the administrator account.
