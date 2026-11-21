@@ -1,11 +1,11 @@
 ---
 id: ISSUE-173
 title: 173 — Política de retry e fila de falhas permanentes do resolvedor de ingestão
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T18:20:00Z'
-updated_date: '2026-11-21T21:20:00Z'
+updated_date: '2026-11-21T21:58:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -97,6 +97,15 @@ created: 2026-11-21T21:20:00Z
 ---
 
 Advisor (effort high): APROVADO com ressalvas não bloqueantes; ver backlog/evidencias/issue-173/PARECER-ADVISOR.md. Melhorias 1 e 2 (recibo que excede a lease nunca estaciona; interrupção longa estaciona a fila, sem reprocessar todos) ficam para follow-up.
+
+---
+
+author: ebrgr
+created: 2026-11-21T21:58:00Z
+
+---
+
+Verificação: go test -race (sqlite, adminui, engine) OK; make check 13/13 E2E (Codex); Reviewer sem BUG; Advisor (effort high) APROVADO com ressalvas, follow-up ISSUE-182. Todos os ACs marcados.
 
 ---
 <!-- COMMENTS:END -->
