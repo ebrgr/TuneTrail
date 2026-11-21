@@ -82,6 +82,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 13 {
 		pattern = ".pre-occurrence-archive-*.bak"
 	}
+	// Preserve v14 before backfilling stable export sequence numbers.
+	if version == 14 {
+		pattern = ".pre-archive-export-boundary-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err

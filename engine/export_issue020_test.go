@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -29,8 +30,8 @@ func (s *pauseExport) GetExportPage(ctx context.Context, o db.GetExportPageOpts)
 	return rows, err
 }
 
-// TestDynamicExportUnderConcurrentIngestion documents cursor consistency without a snapshot.
-func TestDynamicExportUnderConcurrentIngestion(t *testing.T) {
+// TestBoundedExportUnderConcurrentIngestion checks the first-page insertion boundary.
+func TestBoundedExportUnderConcurrentIngestion(t *testing.T) {
 	a := newProfileTestApp(t)
 	for _, q := range []string{
 		`INSERT INTO artists(id) VALUES(1)`, `INSERT INTO artist_aliases VALUES(1,'Artist','fixture',1)`,
@@ -52,7 +53,9 @@ func TestDynamicExportUnderConcurrentIngestion(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("export did not reach first page")
 	}
-	// One new row is behind the cursor and one is ahead; only the latter is visible.
+	// Remove the largest rowid to exercise reuse in SQLite's ordinary listen table.
+	require.NoError(t, a.store.Exec(`DELETE FROM listens WHERE event_id='00001002'`))
+	// One new event sorts before the cursor and the other after it. Both belong to the next export.
 	require.NoError(t, a.store.Exec(`INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,0,'00000000')`))
 	require.NoError(t, a.store.Exec(`INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1003,'00001003')`))
 	close(wrapper.resume)
@@ -64,10 +67,18 @@ func TestDynamicExportUnderConcurrentIngestion(t *testing.T) {
 	}
 	var doc export.KoitoExport
 	require.NoError(t, json.Unmarshal(out.Bytes(), &doc))
-	require.Len(t, doc.Listens, 1003)
+	require.Len(t, doc.Listens, 1001)
 	require.Equal(t, int64(1), doc.Listens[0].ListenedAt.Unix())
-	require.Equal(t, int64(1003), doc.Listens[len(doc.Listens)-1].ListenedAt.Unix())
+	for i, listen := range doc.Listens {
+		require.Equal(t, fmt.Sprintf("%08d", i+1), listen.Identity.EventID)
+	}
+	out.Reset()
+	require.NoError(t, export.ExportData(t.Context(), p, a.store, &out))
+	require.NoError(t, json.Unmarshal(out.Bytes(), &doc))
+	require.Len(t, doc.Listens, 1003)
+	require.Equal(t, "00000000", doc.Listens[0].Identity.EventID)
+	require.Equal(t, "00001003", doc.Listens[len(doc.Listens)-1].Identity.EventID)
 	n, err := a.store.ProfileListenCount(context.Background(), 1)
 	require.NoError(t, err)
-	require.EqualValues(t, 1004, n)
+	require.EqualValues(t, 1003, n)
 }

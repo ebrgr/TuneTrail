@@ -177,9 +177,10 @@ type TimeListenedOpts struct {
 }
 
 type GetExportPageOpts struct {
-	ProfileID    int32
-	AfterEventID string
-	Limit        int32
+	ProfileID       int32
+	AfterEventID    string
+	ThroughSequence int64
+	Limit           int32
 }
 
 type GetInterestOpts struct {

@@ -90,9 +90,16 @@ func (c archiveCatalog) mapID(ctx context.Context, table string, source int64, c
 			return 0, err
 		}
 	}
-	// A local occurrence can be reused without granting catalog editing permissions.
-	if c.namespace == c.localNamespace && (trusted || table == "occurrences") {
-		err = c.tx.QueryRowContext(ctx, `SELECT id FROM `+table+` WHERE id=?`, source).Scan(&local)
+	// A local source ID is authoritative for root. Profile owners can only reuse
+	// a local occurrence already visible through their own listening history.
+	if c.namespace == c.localNamespace {
+		switch {
+		case trusted:
+			err = c.tx.QueryRowContext(ctx, `SELECT id FROM `+table+` WHERE id=?`, source).Scan(&local)
+		case table == "occurrences":
+			err = c.tx.QueryRowContext(ctx, `SELECT o.id FROM occurrences o WHERE o.id=? AND EXISTS (
+				SELECT 1 FROM listens WHERE profile_id=? AND track_id=o.id)`, source, c.profile).Scan(&local)
+		}
 		if !errors.Is(err, sql.ErrNoRows) {
 			return local, err
 		}

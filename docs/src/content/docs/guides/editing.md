@@ -35,16 +35,16 @@ Note that you can only edit images on an artist or album page, as the image show
 #### Merging Items
 
 Open **Merge** on a track and choose the occurrence you want to reconcile.
-The review shows the affected profiles. A track merge groups equivalent
-occurrences under one recording. Each occurrence keeps its release, metadata
-and listens, including multiple events in the same second. A known
+The review shows the affected profiles. Merging tracks joins only their
+recording identity. Both the source and destination tracks keep their releases,
+metadata and listens, including multiple events in the same second. A known
 MusicBrainz recording ID takes precedence over a provisional identity. Tracks
 with conflicting recording IDs require separate review.
 
-An administrator can undo a track merge using
+An administrator can undo a track merge for 30 days using
 `POST /apis/web/v1/track/{destination_id}/merge/undo` with the original
 `{"merge_from_id": source_id}` body. If a later merge moved the same
-occurrences again, undo that later merge first. Artist and album merges move
+occurrences again, undo that later merge first. Metadata edits preserve the undo window. Deleting an occurrence removes its entry from the undo history. Later track merge and undo operations prune expired entries. Artist and album merges move
 catalog associations into the destination and cannot be undone through this endpoint.
 
 #### Deleting Items

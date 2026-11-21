@@ -39,14 +39,16 @@ func TestOccurrenceArchiveRoundTrip(t *testing.T) {
 			ON CONFLICT(profile_id) DO UPDATE SET active=1, occurrence_write=1`, profile)
 		var items []*db.ExportItem
 		cursor := ""
+		var ceiling int64
 		for {
-			page, err := source.GetExportPage(ctx, db.GetExportPageOpts{ProfileID: profile, AfterEventID: cursor, Limit: 1})
+			page, err := source.GetExportPage(ctx, db.GetExportPageOpts{ProfileID: profile, AfterEventID: cursor, ThroughSequence: ceiling, Limit: 1})
 			require.NoError(t, err)
 			if len(page) == 0 {
 				break
 			}
 			require.Greater(t, page[0].Cursor, cursor)
 			cursor = page[0].Cursor
+			ceiling = page[0].ThroughSequence
 			items = append(items, page...)
 		}
 		count, err := target.RestoreArchive(ctx, profile, items)
@@ -101,7 +103,7 @@ func TestOccurrenceExportPlan(t *testing.T) {
 		SELECT 1+n%2,1,100,printf('event-%09d',n),'listenbrainz_api' FROM seq;
 		ANALYZE`)
 	for _, cursor := range []string{"", "event-000290000"} {
-		rows, err := s.db.QueryContext(t.Context(), "EXPLAIN QUERY PLAN "+exportPageQuery, 1, cursor, 1000)
+		rows, err := s.db.QueryContext(t.Context(), "EXPLAIN QUERY PLAN "+exportPageQuery, 1, cursor, 300004, 1000)
 		require.NoError(t, err)
 		var plan []string
 		for rows.Next() {
@@ -117,7 +119,7 @@ func TestOccurrenceExportPlan(t *testing.T) {
 		require.NotContains(t, joined, "TEMP B-TREE")
 		t.Logf("cursor %q\n%s", cursor, joined)
 		start := time.Now()
-		page, err := s.GetExportPage(t.Context(), db.GetExportPageOpts{ProfileID: 1, AfterEventID: cursor, Limit: 1000})
+		page, err := s.GetExportPage(t.Context(), db.GetExportPageOpts{ProfileID: 1, AfterEventID: cursor, ThroughSequence: 300004, Limit: 1000})
 		require.NoError(t, err)
 		require.Len(t, page, 1000)
 		t.Logf("page with aliases and credits: %s", time.Since(start))

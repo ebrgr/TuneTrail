@@ -52,7 +52,7 @@ func TestCatalogReviewStaleAndOneUse(t *testing.T) {
 	w := review()
 	require.Equal(t, 200, w.Code, w.Body.String())
 	require.Contains(t, w.Body.String(), "Destination (ID 13)")
-	require.Contains(t, w.Body.String(), "Each occurrence, release and listen is preserved.")
+	require.Contains(t, w.Body.String(), "Both tracks keep their releases and listens. Administrators can undo it within 30 days.")
 	v := url.Values{"csrf_token": {extract(w, "csrf_token")}, "profile_id": {"2"}, "profile_slug": {"second"}, "plan": {extract(w, "plan")}, "confirm": {"1"}}
 	user, err := a.store.GetAdminUser(ctx)
 	require.NoError(t, err)

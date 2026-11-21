@@ -47,7 +47,7 @@
           {{- if and (eq .Kind "track") (eq .Plan.Action "merge")}}
             <p>{{tr
               "admin.review.recording_reconciliation"
-              "This groups the occurrences under one recording for all profiles. Each occurrence, release and listen is preserved."
+              "This merges only the recording identity. Both tracks keep their releases and listens. Administrators can undo it within 30 days."
             }}</p>
           {{- else}}
           <p>{{tr

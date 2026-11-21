@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repeat ISSUE-133's HTTP comparison across schema v13/v14 and the writer cut."""
+"""Repeat ISSUE-133's HTTP comparison across schema v13/v15 and the writer cut."""
 
 import argparse
 import hashlib
@@ -69,7 +69,7 @@ def run(baseline, current, listens):
             old.stop()
         try:
             new.start()
-            check_schema(db, 14)
+            check_schema(db, 15)
             upgraded = read(new, legacy=False)
             with sqlite3.connect(db) as conn:
                 # Remove synthetic unresolved shadow receipts before the guarded cut.
@@ -88,7 +88,7 @@ def run(baseline, current, listens):
                 raise AssertionError(f"{label}: {differences[:25]}")
         return {
             "source_schema": 13,
-            "target_schema": 14,
+            "target_schema": 15,
             "listens": listens,
             "read_responses_per_pass": len(before),
             "activated_profiles": [1, 2],

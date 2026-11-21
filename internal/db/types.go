@@ -35,6 +35,7 @@ type RankedItem[T any] struct {
 }
 
 type ExportItem struct {
+	ThroughSequence    int64
 	Cursor             string
 	EventID            string
 	EventNamespace     string

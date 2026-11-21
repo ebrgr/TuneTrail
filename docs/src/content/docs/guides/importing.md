@@ -58,14 +58,17 @@ Use `?version=1` on the HTTP export endpoint for a Koito-compatible download.
 TuneTrail continues to import v1. The v1 format omits release-less listens
 and lacks stable event identities.
 
-Export reads pages in event ID order. Each page is consistent, and writes
-between pages can affect the download. Pause writes or use a SQLite backup
-when a full point-in-time copy is required. An archive restores accepted listens in
+Export reads pages in event ID order and fixes the insertion boundary with
+the first page. Events added later appear in a subsequent export. Deletions
+and changes to catalog metadata can still affect pages that have yet to be
+read. Use a SQLite backup for a full point-in-time copy. An archive restores accepted listens in
 one transaction. Pending receipts, relay queues and raw ingest logs are
 part of the database backup.
 
 Upgrading from SQLite schema v13 saves a `.pre-occurrence-archive-*.bak`
-backup next to the database. Older binaries require the corresponding backup.
+backup next to the database. Upgrading from v14 saves a
+`.pre-archive-export-boundary-*.bak` backup and initializes a 30-day undo
+window for existing track merges. Older binaries require the corresponding backup.
 
 ## Spotify
 

@@ -527,7 +527,7 @@
   "admin.review.title": "Revisar {{.Action}}: {{.Kind}}",
   "admin.review.confirm": "Confirmar {{.Action}}",
   "admin.review.source": "Origem:",
-  "admin.review.recording_reconciliation": "As ocorrências passam a compartilhar uma gravação em todos os perfis. Cada ocorrência, lançamento e reprodução é preservado.",
+  "admin.review.recording_reconciliation": "A fusão une apenas a identidade da gravação. As duas faixas mantêm seus lançamentos e reproduções. Administradores podem desfazer a fusão em até 30 dias.",
   "admin.review.recording_destination": "Ocorrência de destino:",
   "admin.review.destination": "Destino e ID mantido:",
   "admin.review.source_tracks": "Faixas vinculadas à origem:",

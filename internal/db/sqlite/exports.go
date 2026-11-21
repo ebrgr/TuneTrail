@@ -27,13 +27,14 @@ const exportPageQuery = `
 	       rec.musicbrainz_id, rec.mbid_source, COALESCE(t.duration,0),
 	       COALESCE(o.release_id,0), r.musicbrainz_id, r.image_source, COALESCE(r.various_artists,0)
 	FROM listens l
+	JOIN listen_export_order x ON x.event_id=l.event_id
 	JOIN occurrences o ON l.track_id=o.id
 	JOIN recordings rec ON rec.id=o.recording_id
 	JOIN archive_identity n ON n.singleton=1
 	LEFT JOIN tracks t ON t.id=o.legacy_track_id
 	LEFT JOIN releases r ON r.id=o.release_id
 	LEFT JOIN archive_events a ON (a.profile_id,a.event_id)=(l.profile_id,l.event_id)
-	WHERE l.profile_id=? AND l.event_id>?
+	WHERE l.profile_id=? AND l.event_id>? AND x.sequence<=?
 	ORDER BY l.event_id
 	LIMIT ?`
 
@@ -47,7 +48,14 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 		return nil, err
 	}
 	defer tx.Rollback()
-	rows, err := tx.QueryContext(ctx, exportPageQuery, opts.ProfileID, opts.AfterEventID, opts.Limit)
+	// Freeze membership against inserts in the same read snapshot as the first page.
+	ceiling := opts.ThroughSequence
+	if ceiling == 0 {
+		if err := tx.QueryRowContext(ctx, `SELECT coalesce(max(sequence),0) FROM listen_export_order`).Scan(&ceiling); err != nil {
+			return nil, fmt.Errorf("GetExportPage: read ceiling: %w", err)
+		}
+	}
+	rows, err := tx.QueryContext(ctx, exportPageQuery, opts.ProfileID, opts.AfterEventID, ceiling, opts.Limit)
 	if err != nil {
 		return nil, fmt.Errorf("GetExportPage: %w", err)
 	}
@@ -58,7 +66,7 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 	var items []*db.ExportItem
 	var presentations []presentation
 	for rows.Next() {
-		var item db.ExportItem
+		item := db.ExportItem{ThroughSequence: ceiling}
 		var p presentation
 		var listenedAt int64
 		var client, provenance string

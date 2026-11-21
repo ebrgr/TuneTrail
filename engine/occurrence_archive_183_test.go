@@ -92,3 +92,64 @@ func TestOccurrenceHTTPCompatibility183(t *testing.T) {
 	require.Equal(t, before, read("default"))
 	require.Equal(t, other, read("second"))
 }
+
+// TestOccurrenceArchiveLocalNamespaceScope checks the owner upload and the trusted root path.
+func TestOccurrenceArchiveLocalNamespaceScope(t *testing.T) {
+	a := newProfileTestApp(t)
+	cookie, owner := owner160(t, a)
+	const otherTrack = 2
+	require.NoError(t, a.store.Exec(fmt.Sprintf(`
+		INSERT INTO artists(id) VALUES(1);
+		INSERT INTO artist_aliases VALUES(1,'Artist','Canonical',1);
+		INSERT INTO releases(id) VALUES(1);
+		INSERT INTO release_aliases VALUES(1,'Album','Canonical',1);
+		INSERT INTO tracks(id,release_id,duration) VALUES(1,1,120),(2,1,130);
+		INSERT INTO track_aliases VALUES(1,'Owner track','Canonical',1),(2,'Other track','Canonical',1);
+		INSERT INTO artist_tracks VALUES(1,1,1),(1,2,1);
+		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(%d,1,1700000000,'owner-original'),
+			(2,2,1700000000,'other-original')`, owner.ID)))
+
+	actor := &profileTestApp{store: a.store, router: a.router, cookie: cookie}
+	prefix := "/apis/web/v1/profiles/" + owner.Slug
+	otherPage := "/" + owner.Slug + "/track/2"
+	require.Equal(t, 404, actor.request("GET", otherPage, "", "", true).Code)
+	out := actor.request("GET", prefix+"/export", "", "", true)
+	require.Equal(t, 200, out.Code, out.Body.String())
+	var doc export.KoitoExport
+	require.NoError(t, json.Unmarshal(out.Body.Bytes(), &doc))
+	require.Len(t, doc.Listens, 1)
+	original := doc.Listens[0].Identity
+	require.NotEmpty(t, original.CatalogNamespace)
+	importArchive := func(who *profileTestApp, target string, id int32, event string) {
+		t.Helper()
+		original.OccurrenceID, original.EventID = id, event
+		data, err := json.Marshal(doc)
+		require.NoError(t, err)
+		w := who.upload(t, "POST", target+"/import", map[string]string{"format": "tunetrail"}, "file", "history.json", data, true)
+		require.Equal(t, 204, w.Code, w.Body.String())
+	}
+	importedTrack := func(profile int32, event string) int32 {
+		t.Helper()
+		var track int32
+		require.NoError(t, a.store.QueryRow(`SELECT l.track_id FROM listens l JOIN archive_events e USING(profile_id,event_id)
+			WHERE l.profile_id=? AND e.source_event_id=?`, profile, event).Scan(&track))
+		return track
+	}
+
+	importArchive(actor, prefix, 1, "owner-known")
+	require.EqualValues(t, 1, importedTrack(owner.ID, "owner-known"))
+	importArchive(actor, prefix, otherTrack, "owner-edited")
+	created := importedTrack(owner.ID, "owner-edited")
+	require.Greater(t, created, int32(otherTrack))
+	require.Equal(t, 404, actor.request("GET", otherPage, "", "", true).Code)
+	require.Equal(t, 404, actor.request("GET", prefix+"/track/2", "", "", true).Code)
+
+	// The existing profile mapping remains valid even if its first listen is removed.
+	require.Equal(t, 204, actor.request("DELETE", prefix+"/listens?event_id=owner-edited", "", "", true).Code)
+	importArchive(actor, prefix, otherTrack, "owner-mapped")
+	require.Equal(t, created, importedTrack(owner.ID, "owner-mapped"))
+	require.Equal(t, 404, actor.request("GET", otherPage, "", "", true).Code)
+
+	importArchive(a, "/apis/web/v1/profiles/empty", otherTrack, "root-edited")
+	require.EqualValues(t, otherTrack, importedTrack(3, "root-edited"))
+}

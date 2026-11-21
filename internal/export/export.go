@@ -111,6 +111,7 @@ func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store 
 	}
 	out = checkedWriter{out}
 	var cursor string
+	var ceiling int64
 	pageSize := int32(1000)
 
 	l := logger.FromContext(ctx)
@@ -134,9 +135,10 @@ func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store 
 			return err
 		}
 		rows, err := store.GetExportPage(ctx, db.GetExportPageOpts{
-			ProfileID:    profile.ID,
-			AfterEventID: cursor,
-			Limit:        pageSize,
+			ProfileID:       profile.ID,
+			AfterEventID:    cursor,
+			ThroughSequence: ceiling,
+			Limit:           pageSize,
 		})
 		if err != nil {
 			return fmt.Errorf("ExportData: %w", err)
@@ -145,6 +147,8 @@ func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store 
 			break
 		}
 
+		// Both wire versions reuse the first page's insertion ceiling.
+		ceiling = rows[0].ThroughSequence
 		for _, r := range rows {
 			if err := ctx.Err(); err != nil {
 				return err

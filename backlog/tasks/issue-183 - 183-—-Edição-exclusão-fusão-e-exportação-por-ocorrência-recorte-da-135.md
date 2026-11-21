@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T22:02:00Z'
-updated_date: '2026-11-21T22:50:00Z'
+updated_date: '2026-11-21T22:59:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -13,6 +13,7 @@ dependencies:
   - ISSUE-135
 references:
   - backlog/evidencias/issue-183/VERIFICATION.md
+  - backlog/evidencias/issue-183/REVIEW-FOLLOWUP.md
 type: feature
 ordinal: 196000
 ---
@@ -57,6 +58,15 @@ created: 2026-11-21T22:50:00Z
 ---
 
 Reviewer: sem BUG confirmado; 4 RISCOs. Advisor (effort high): REPROVADO COM RESSALVAS — vazamento entre perfis na restauração de arquivo (archive.go mapID, namespace local) a corrigir; melhorias: cursor de export vs escritas concorrentes, fusão em transação longa. Ver backlog/evidencias/issue-183/PARECER-ADVISOR.md e PARECER-REVIEWER.md.
+
+---
+
+author: Codex
+created: 2026-11-21T22:59:00Z
+
+---
+
+Correções verificadas: o importador restringe o reuso de ocorrências locais pelo dono; a exportação fixa o teto na primeira página; o desfazer de fusões expira em 30 dias. Na fixture de 5.001 ocorrências e 10.000 recibos, fusão e desfazer levaram 184 ms e 201 ms, com todas as revisões preservadas. make check passou (13/13 jornadas). Referência ISSUE-075 regenerada e 39 respostas HTTP equivalentes após migração para v15 e ativação.
 
 ---
 <!-- COMMENTS:END -->

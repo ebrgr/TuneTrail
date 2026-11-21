@@ -527,7 +527,7 @@
   "admin.review.title": "Review {{.Action}}: {{.Kind}}",
   "admin.review.confirm": "Confirm {{.Action}}",
   "admin.review.source": "Source:",
-  "admin.review.recording_reconciliation": "This groups the occurrences under one recording for all profiles. Each occurrence, release and listen is preserved.",
+  "admin.review.recording_reconciliation": "This merges only the recording identity. Both tracks keep their releases and listens. Administrators can undo it within 30 days.",
   "admin.review.recording_destination": "Destination occurrence:",
   "admin.review.destination": "Destination and surviving ID:",
   "admin.review.source_tracks": "Source-linked tracks:",

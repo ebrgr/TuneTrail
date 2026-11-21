@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
@@ -744,6 +745,10 @@ func (s *Sqlite) MergeTracks(ctx context.Context, fromId, toId int32) error {
 	return tx.Commit()
 }
 
+// Undo entries expire after 30 days. Catalog edits keep unexpired entries,
+// occurrence deletion cascades, and track merge/undo transactions prune expired rows.
+const recordingUndoSeconds = 30 * 24 * 60 * 60
+
 // mergeTracksIn joins recording identity while leaving occurrences and listens in place.
 func mergeTracksIn(ctx context.Context, tx *sql.Tx, fromId, toId int32) error {
 	lookup := func(id int32) (int64, sql.NullString, error) {
@@ -770,8 +775,12 @@ func mergeTracksIn(ctx context.Context, tx *sql.Tx, fromId, toId int32) error {
 	if fromMBID.Valid {
 		from, to = to, from
 	}
+	now := time.Now().Unix()
+	if _, err := tx.ExecContext(ctx, `DELETE FROM recording_moves WHERE stage=1 AND expires_at<=?`, now); err != nil {
+		return err
+	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO recording_moves
-		SELECT ?,?,id,?,?,0 FROM occurrences WHERE recording_id=?`, fromId, toId, from, to, from); err != nil {
+		SELECT ?,?,id,?,?,0,? FROM occurrences WHERE recording_id=?`, fromId, toId, from, to, now+recordingUndoSeconds, from); err != nil {
 		return err
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE occurrences SET recording_id=? WHERE recording_id=?`, to, from); err != nil {
@@ -791,6 +800,10 @@ func (s *Sqlite) UndoTrackMerge(ctx context.Context, from, to int32) error {
 		return err
 	}
 	defer tx.Rollback()
+	// Clear expired entries before checking for an available undo.
+	if _, err := tx.ExecContext(ctx, `DELETE FROM recording_moves WHERE stage=1 AND expires_at<=?`, time.Now().Unix()); err != nil {
+		return err
+	}
 	var overlap bool
 	if err := tx.QueryRowContext(ctx, `SELECT EXISTS(
 		SELECT 1 FROM recording_moves m JOIN occurrences o ON o.id=m.occurrence_id
@@ -809,6 +822,9 @@ func (s *Sqlite) UndoTrackMerge(ctx context.Context, from, to int32) error {
 	if count, err := result.RowsAffected(); err != nil {
 		return err
 	} else if count == 0 {
+		if err := tx.Commit(); err != nil {
+			return err
+		}
 		return db.ErrNotFound
 	}
 	if _, err := tx.ExecContext(ctx, `UPDATE occurrences AS o SET recording_id=m.original_recording FROM recording_moves m
