@@ -122,6 +122,12 @@ func (s *Sqlite) GetProfileRelay(ctx context.Context, id int32) (string, string,
 // Record the migration decision once. Revoking a relay or deleting its profile
 // must never cause the old credentials to be reassigned on a later restart.
 func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) error {
+	return s.initializeLegacyRelay(ctx, url, token, net.DefaultResolver)
+}
+
+// initializeLegacyRelay allows migration fixtures to supply an isolated DNS resolver.
+func (s *Sqlite) initializeLegacyRelay(ctx context.Context, url, token string, resolver relayResolver) error {
+
 	// Resolve outside the writer transaction, and skip DNS when the bootstrap insert is a no-op.
 	var needsSeed bool
 	if err := s.db.QueryRowContext(ctx, `SELECT NOT EXISTS(SELECT 1 FROM legacy_relay_binding)
@@ -132,7 +138,7 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 	}
 	seeds := []relaySeed{{raw: url, admin: true, blocked: true}}
 	if needsSeed {
-		resolveRelaySeeds(ctx, seeds, net.DefaultResolver)
+		resolveRelaySeeds(ctx, seeds, resolver)
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {

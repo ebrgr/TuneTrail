@@ -101,7 +101,8 @@ func TestRelayUpgrade(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE origin='seeded'"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE profile_id=2 AND host_port='clear.test:80' AND allow_http=1 AND allow_private=0"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE profile_id=3 AND cidr='10.1.2.3/32' AND allow_private=1 AND allow_http=0"))
-	require.Equal(t, 4, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id IN (4,5,6,7) AND pause_class LIKE 'policy_blocked:%'"))
+	require.Equal(t, 3, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id IN (4,6,7) AND pause_class LIKE 'policy_blocked:%'"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=5 AND pause_class='transient:dns_resolution_failed:' AND paused_until BETWEEN unixepoch()+25 AND unixepoch()+30"))
 	for _, table := range []string{"relay_destinations", "relay_allowlist", "outbox", "ingest_events", "integrations"} {
 		rows, err := s.db.Query("SELECT * FROM " + table)
 		require.NoError(t, err)
@@ -1007,4 +1008,14 @@ func TestRelayObsoleteArchiveLayout(t *testing.T) {
 	require.Equal(t, 12, scalar(t, s, "SELECT max(version_id) FROM goose_db_version"))
 	require.Zero(t, scalar(t, s, "SELECT count(*) FROM sqlite_master WHERE name='idx_relay_sent_archive_profile'"))
 	require.Regexp(t, "incompatible v12 schema: altered (table relay_sent_archive|trigger trg_relay_archive_sent)", checkDatabase(s.db).Error())
+}
+
+// TestRelayLegacyDNSFailureKeepsRetryScheduled covers a blank install before DNS is available.
+func TestRelayLegacyDNSFailureKeepsRetryScheduled(t *testing.T) {
+	s, _, _ := migrationDB(t, 12)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")
+	require.NoError(t, s.initializeLegacyRelay(t.Context(), "https://offline.test", "fixture", lookupFixture{}))
+	require.Zero(t, scalar(t, s, "SELECT count(*) FROM relay_allowlist"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=1 AND pause_class='transient:dns_resolution_failed:' AND paused_until BETWEEN unixepoch()+25 AND unixepoch()+30"))
 }

@@ -212,3 +212,9 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Pendente: Advisor para configuração, encerramento e falhas ambíguas. E4 e AC4 seguem pendentes.
 
 - Diagnóstico em progresso: o usuário autorizou host e porta **configurados** em WARN, inclusive na validação. IP resolvido, caminho, query, userinfo, token e corpo continuam proibidos. O limitador usa perfil + código de motivo.
+
+
+## ESTADO — Retorno do Advisor pós-E3 (21/11/2026)
+
+- Obrigatório 1 concluído. Falha de DNS no upgrade ou no bootstrap via ambiente pausa como transitória por 30 s, sem exceção semeada. O dialer decide de novo em cada tentativa.
+- Pendente: política global, texto de segurança, encerramento, diagnósticos e verificação.

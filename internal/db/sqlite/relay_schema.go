@@ -230,10 +230,16 @@ func (seed *relaySeed) applyAddresses(addresses []netip.Addr) {
 // applyRelaySeed records a policy block or narrowly scoped operator exceptions.
 func applyRelaySeed(ctx context.Context, tx *sql.Tx, seed relaySeed) error {
 	var pause any
+	var deadline any
 	if seed.blocked {
 		pause = "policy_blocked:" + seed.reason + ":" + seed.category
+		if seed.reason == "dns_resolution_failed" {
+			// DNS at startup may be temporarily unavailable. The dialer checks each retry.
+			pause = "transient:dns_resolution_failed:"
+			deadline = time.Now().Add(30 * time.Second).Unix()
+		}
 	}
-	if _, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=?,paused_until=NULL WHERE profile_id=?", pause, seed.profile); err != nil {
+	if _, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=?,paused_until=? WHERE profile_id=?", pause, deadline, seed.profile); err != nil {
 		return err
 	}
 	if seed.blocked {
@@ -285,9 +291,15 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 	}
 	for _, seed := range seeds {
 		if seed.blocked {
-			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=? WHERE profile_id=? AND EXISTS(SELECT 1 FROM profile_relays WHERE profile_id=? AND url=?)", "policy_blocked:"+seed.reason+":"+seed.category, seed.profile, seed.profile, seed.raw)
+			var unchanged bool
+			err := tx.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM profile_relays WHERE profile_id=? AND url=?)", seed.profile, seed.raw).Scan(&unchanged)
 			if err != nil {
 				return err
+			}
+			if unchanged {
+				if err := applyRelaySeed(ctx, tx, seed); err != nil {
+					return err
+				}
 			}
 			continue
 		}
@@ -342,6 +354,10 @@ func (s *Sqlite) ActivateRelayDelivery(ctx context.Context) error {
 func (s *Sqlite) activateRelayDelivery(ctx context.Context, httpAllowed, privateAllowed bool) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		if _, err := tx.ExecContext(ctx, "UPDATE relay_delivery_gate SET policy='durable' WHERE id=1 AND policy='legacy'"); err != nil {
+			return err
+		}
+		// Recover databases initialized by an earlier unpublished build.
+		if _, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class='transient:dns_resolution_failed:',paused_until=unixepoch()+30 WHERE pause_class LIKE 'policy_blocked:dns_resolution_failed:%'"); err != nil {
 			return err
 		}
 		if !httpAllowed && !privateAllowed {
