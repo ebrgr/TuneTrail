@@ -7,90 +7,150 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/models"
 )
 
+const exportPageQuery = `
+	SELECT l.event_id, COALESCE(a.source_event_id,l.event_id),
+	       COALESCE(a.namespace,n.namespace), n.namespace, COALESCE(a.origin,l.origin),
+	       COALESCE(a.provenance, (
+	           SELECT json_group_array(json_object('receipt_id',e.receipt_id,'source',e.source_type,
+	               'received_at',e.received_at,'original_time',e.original_time,
+		               'time_precision',e.time_precision,'rule_version',e.rule_version,
+	               'external_namespace',e.external_namespace,'external_event_id',e.external_event_id,
+	               'resolution_version',e.resolution_version,'decision',e.duplicate_decision,
+	               'reason_codes',json(e.reason_codes)))
+	           FROM ingest_events e WHERE (e.profile_id,e.event_id)=(l.profile_id,l.event_id)
+	       )),
+	       l.listened_at, l.client, o.id, o.recording_id, o.presented_title, o.legacy_track_id,
+	       COALESCE(o.track_mbid,''), COALESCE(o.disc_number,0), COALESCE(o.track_number,0),
+	       rec.musicbrainz_id, rec.mbid_source, COALESCE(t.duration,0),
+	       COALESCE(o.release_id,0), r.musicbrainz_id, r.image_source, COALESCE(r.various_artists,0)
+	FROM listens l
+	JOIN occurrences o ON l.track_id=o.id
+	JOIN recordings rec ON rec.id=o.recording_id
+	JOIN archive_identity n ON n.singleton=1
+	LEFT JOIN tracks t ON t.id=o.legacy_track_id
+	LEFT JOIN releases r ON r.id=o.release_id
+	LEFT JOIN archive_events a ON (a.profile_id,a.event_id)=(l.profile_id,l.event_id)
+	WHERE l.profile_id=? AND l.event_id>?
+	ORDER BY l.event_id
+	LIMIT ?`
+
+// GetExportPage seeks inside one profile's event index, including standalone occurrences.
 func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) ([]*db.ExportItem, error) {
-	if opts.ProfileID <= 0 {
-		return nil, fmt.Errorf("profile required for export")
+	if opts.ProfileID <= 0 || opts.Limit <= 0 {
+		return nil, db.ErrInvalidInput
 	}
-	rows, err := s.db.QueryContext(ctx, `
-		SELECT l.listened_at, COALESCE(l.user_id,0), l.client,
-		       t.id AS track_id, t.musicbrainz_id AS track_mbid, t.duration,
-		       t.release_id,
-		       r.musicbrainz_id AS release_mbid, r.image, r.image_source, r.various_artists
-		FROM listens l
-		JOIN tracks t ON l.track_id = t.id
-		JOIN releases r ON t.release_id = r.id
-		WHERE l.profile_id = ?
-		  AND (? OR l.listened_at > ? OR (l.listened_at = ? AND l.track_id > ?))
-		ORDER BY l.listened_at, l.track_id
-		LIMIT ?`,
-		opts.ProfileID,
-		opts.FirstPage,
-		opts.ListenedAt.Unix(), opts.ListenedAt.Unix(), opts.TrackID,
-		opts.Limit,
-	)
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	rows, err := tx.QueryContext(ctx, exportPageQuery, opts.ProfileID, opts.AfterEventID, opts.Limit)
 	if err != nil {
 		return nil, fmt.Errorf("GetExportPage: %w", err)
 	}
-	defer rows.Close()
-
+	type presentation struct {
+		legacy sql.NullInt32
+		title  sql.NullString
+	}
 	var items []*db.ExportItem
+	var presentations []presentation
 	for rows.Next() {
 		var item db.ExportItem
+		var p presentation
 		var listenedAt int64
-		var client sql.NullString
-		var trackMbid, releaseMbid, releaseImage, releaseImageSrc sql.NullString
-		var variousArtists int
-
-		if err := rows.Scan(
-			&listenedAt, &item.UserID, &client,
-			&item.TrackID, &trackMbid, &item.TrackDuration,
-			&item.ReleaseID,
-			&releaseMbid, &releaseImage, &releaseImageSrc, &variousArtists,
-		); err != nil {
+		var client, provenance string
+		var trackMBID, releaseMBID, releaseImageSrc sql.NullString
+		if err := rows.Scan(&item.Cursor, &item.EventID, &item.EventNamespace, &item.CatalogNamespace, &item.Origin, &provenance,
+			&listenedAt, &client, &item.TrackID, &item.RecordingID, &p.title, &p.legacy,
+			&item.TrackReference, &item.DiscNumber, &item.TrackNumber,
+			&trackMBID, &item.MBIDSource, &item.TrackDuration,
+			&item.ReleaseID, &releaseMBID, &releaseImageSrc, &item.VariousArtists); err != nil {
+			rows.Close()
 			return nil, fmt.Errorf("GetExportPage: scan: %w", err)
 		}
-
 		item.ListenedAt = time.Unix(listenedAt, 0).UTC()
-		if client.Valid && client.String != "" {
-			item.Client = &client.String
-		}
-		item.TrackMbid = parseNullableUUID(trackMbid)
-		item.ReleaseMbid = parseNullableUUID(releaseMbid)
-		item.ReleaseImage = parseNullableUUID(releaseImage)
+		item.Client = &client
+		item.Provenance = []byte(provenance)
+		item.TrackMbid = parseNullableUUID(trackMBID)
+		item.ReleaseMbid = parseNullableUUID(releaseMBID)
 		item.ReleaseImageSource = releaseImageSrc.String
-		item.VariousArtists = variousArtists == 1
-
 		items = append(items, &item)
+		presentations = append(presentations, p)
 	}
 	if err := rows.Err(); err != nil {
+		rows.Close()
 		return nil, err
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
 	}
-	for _, item := range items {
-
-		trackAliases, err := s.getAliasesForEntity(ctx, "track_aliases", "track_id", item.TrackID)
-		if err != nil {
-			return nil, fmt.Errorf("GetExportPage: track aliases: %w", err)
+	// A page commonly contains repeated plays of the same occurrence and release.
+	occurrences := make(map[int32]*db.ExportItem)
+	releases := make(map[int32]*db.ExportItem)
+	for i, item := range items {
+		p := presentations[i]
+		if existing := occurrences[item.TrackID]; existing != nil {
+			item.TrackAliases = existing.TrackAliases
+			item.ReleaseAliases = existing.ReleaseAliases
+			item.ReleaseArtists = existing.ReleaseArtists
+			item.Artists = existing.Artists
+			continue
 		}
-		item.TrackAliases = trackAliases
-
-		releaseAliases, err := s.getAliasesForEntity(ctx, "release_aliases", "release_id", item.ReleaseID)
-		if err != nil {
-			return nil, fmt.Errorf("GetExportPage: release aliases: %w", err)
+		occurrences[item.TrackID] = item
+		if p.legacy.Valid {
+			item.TrackAliases, err = queryEntityAliases(ctx, tx, "track_aliases", "track_id", p.legacy.Int32)
+			if err != nil {
+				return nil, err
+			}
+			item.Artists, err = exportArtists(ctx, tx, "artist_tracks", "track_id", p.legacy.Int32)
+			if err != nil {
+				return nil, err
+			}
 		}
-		item.ReleaseAliases = releaseAliases
-
-		artists, err := s.artistsWithAliasesForTrack(ctx, item.TrackID)
-		if err != nil {
-			return nil, fmt.Errorf("GetExportPage: artists: %w", err)
+		if p.title.Valid {
+			for j := range item.TrackAliases {
+				item.TrackAliases[j].Primary = false
+			}
+			item.TrackAliases = append([]models.Alias{{Alias: p.title.String, Primary: true}}, item.TrackAliases...)
 		}
-		item.Artists = artists
-
+		if item.ReleaseID != 0 {
+			if existing := releases[item.ReleaseID]; existing != nil {
+				item.ReleaseAliases = existing.ReleaseAliases
+				item.ReleaseArtists = existing.ReleaseArtists
+			} else {
+				item.ReleaseAliases, err = queryEntityAliases(ctx, tx, "release_aliases", "release_id", item.ReleaseID)
+				if err != nil {
+					return nil, err
+				}
+				item.ReleaseArtists, err = exportArtists(ctx, tx, "artist_releases", "release_id", item.ReleaseID)
+				if err != nil {
+					return nil, err
+				}
+				releases[item.ReleaseID] = item
+			}
+		}
+		if !p.legacy.Valid {
+			credits, err := tx.QueryContext(ctx, `SELECT name FROM occurrence_credits WHERE occurrence_id=? ORDER BY position`, item.TrackID)
+			if err != nil {
+				return nil, err
+			}
+			for credits.Next() {
+				var name string
+				if err := credits.Scan(&name); err != nil {
+					credits.Close()
+					return nil, err
+				}
+				item.Artists = append(item.Artists, models.ArtistWithFullAliases{Name: name, IsPrimary: len(item.Artists) == 0, Aliases: []models.Alias{{Alias: name, Primary: true}}})
+			}
+			if err := credits.Err(); err != nil {
+				credits.Close()
+				return nil, err
+			}
+			credits.Close()
+		}
 	}
-
-	return items, nil
+	return items, tx.Commit()
 }

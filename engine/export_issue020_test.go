@@ -37,7 +37,7 @@ func TestDynamicExportUnderConcurrentIngestion(t *testing.T) {
 		`INSERT INTO releases(id) VALUES(1)`, `INSERT INTO release_aliases VALUES(1,'Album','fixture',1)`,
 		`INSERT INTO artist_releases VALUES(1,1,1)`, `INSERT INTO tracks(id,release_id,duration) VALUES(1,1,180)`,
 		`INSERT INTO track_aliases VALUES(1,'Track','fixture',1)`, `INSERT INTO artist_tracks VALUES(1,1,1)`,
-		`WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<1002) INSERT INTO listens(profile_id,track_id,listened_at) SELECT 1,1,x FROM n`,
+		`WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<1002) INSERT INTO listens(profile_id,track_id,listened_at,event_id) SELECT 1,1,x,printf('%08d',x) FROM n`,
 	} {
 		require.NoError(t, a.store.Exec(q))
 	}
@@ -53,8 +53,8 @@ func TestDynamicExportUnderConcurrentIngestion(t *testing.T) {
 		t.Fatal("export did not reach first page")
 	}
 	// One new row is behind the cursor and one is ahead; only the latter is visible.
-	require.NoError(t, a.store.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(0, 0)}))
-	require.NoError(t, a.store.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(1003, 0)}))
+	require.NoError(t, a.store.Exec(`INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,0,'00000000')`))
+	require.NoError(t, a.store.Exec(`INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1003,'00001003')`))
 	close(wrapper.resume)
 	select {
 	case err := <-done:

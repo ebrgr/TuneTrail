@@ -78,6 +78,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 11 {
 		pattern = ".pre-relay-delivery-*.bak"
 	}
+	// Preserve a rollback copy before adding occurrence archive mappings.
+	if version == 13 {
+		pattern = ".pre-occurrence-archive-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err

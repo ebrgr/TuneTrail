@@ -439,7 +439,7 @@ func TestRelaySourceRevisionAndMerge(t *testing.T) {
 		FROM ingest_events WHERE receipt_id='source-revised';
 		UPDATE ingest_events SET resolution_version=resolution_version+1 WHERE receipt_id='source-revised'`)
 	require.NoError(t, s.MergeTracks(t.Context(), 1, 70))
-	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='source-revised' AND occurrence_id=70 AND state='accepted'"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='source-revised' AND occurrence_id=1 AND state='accepted'"))
 	after, err := s.RelayPayload(t.Context(), batch, batch.Items[0])
 	require.NoError(t, err)
 	require.Equal(t, payload, after)

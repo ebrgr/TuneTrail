@@ -19,13 +19,28 @@ type KoitoExport struct {
 	User       string        `json:"user"`        // username
 	Listens    []KoitoListen `json:"listens"`
 }
+
+const ArchiveVersion = "2"
+
+type ArchiveIdentity struct {
+	EventID          string          `json:"event_id"`
+	EventNamespace   string          `json:"event_namespace"`
+	CatalogNamespace string          `json:"catalog_namespace"`
+	OccurrenceID     int32           `json:"occurrence_id"`
+	RecordingID      int64           `json:"recording_id"`
+	ReleaseID        *int32          `json:"release_id"`
+	Origin           string          `json:"origin"`
+	Provenance       json.RawMessage `json:"provenance"`
+}
+
 type KoitoListen struct {
-	OriginalListenedAt string        `json:"-"`
-	ListenedAt         time.Time     `json:"listened_at"`
-	Client             string        `json:"client"`
-	Track              KoitoTrack    `json:"track"`
-	Album              KoitoAlbum    `json:"album"`
-	Artists            []KoitoArtist `json:"artists"`
+	Identity           *ArchiveIdentity `json:"identity,omitempty"`
+	OriginalListenedAt string           `json:"-"`
+	ListenedAt         time.Time        `json:"listened_at"`
+	Client             string           `json:"client"`
+	Track              KoitoTrack       `json:"track"`
+	Album              KoitoAlbum       `json:"album"`
+	Artists            []KoitoArtist    `json:"artists"`
 }
 
 // UnmarshalJSON retains the original timestamp for occurrence import receipts.
@@ -59,12 +74,14 @@ type KoitoTrack struct {
 	Aliases        []models.Alias `json:"aliases"`
 }
 type KoitoAlbum struct {
+	Artists        []KoitoArtist  `json:"artists,omitempty"`
 	ImageUrl       string         `json:"image_url"`
 	MBID           *uuid.UUID     `json:"mbid"`
 	Aliases        []models.Alias `json:"aliases"`
 	VariousArtists bool           `json:"various_artists"`
 }
 type KoitoArtist struct {
+	ID        int32          `json:"id,omitempty"`
 	ImageUrl  string         `json:"image_url"`
 	MBID      *uuid.UUID     `json:"mbid"`
 	IsPrimary bool           `json:"is_primary"`
@@ -82,51 +99,48 @@ func (w checkedWriter) Write(p []byte) (int, error) {
 	return n, err
 }
 
+// ExportData writes the current TuneTrail archive.
 func ExportData(ctx context.Context, profile *models.ListeningProfile, store db.ExportStore, out io.Writer) error {
+	return ExportVersion(ctx, profile, store, out, ArchiveVersion)
+}
+
+// ExportVersion writes the selected wire format using the same event cursor.
+func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store db.ExportStore, out io.Writer, version string) error {
+	if version != "1" && version != ArchiveVersion {
+		return db.ErrInvalidInput
+	}
 	out = checkedWriter{out}
-	lastTime := time.Unix(0, 0)
-	lastTrackId := int32(0)
+	var cursor string
 	pageSize := int32(1000)
 
 	l := logger.FromContext(ctx)
-	// The export keeps the Koito JSON format for interoperability; only the wording is TuneTrail's.
-	l.Info().Msg("ExportData: generating export file in the Koito format...")
-
+	// Version 2 adds native identities while retaining the Koito presentation fields.
+	l.Info().Msg("ExportData: generating TuneTrail archive")
 	exportedAt := time.Now()
-	// exportFile := path.Join(cfg.ConfigDir(), fmt.Sprintf("koito_export_%d.json", exportedAt.Unix()))
-	// f, err := os.Create(exportFile)
-	// if err != nil {
-	// 	return fmt.Errorf("ExportData: %w", err)
-	// }
-	// defer f.Close()
 
 	encodedName, err := json.Marshal(profile.DisplayName)
 	if err != nil {
 		return err
 	}
 	// Write the opening of the JSON manually
-	_, err = fmt.Fprintf(out, "{\n  \"version\": \"1\",\n  \"exported_at\": \"%s\",\n  \"user\": %s,\n  \"listens\": [\n", exportedAt.UTC().Format(time.RFC3339), encodedName)
+	_, err = fmt.Fprintf(out, "{\n  \"version\": \""+version+"\",\n  \"exported_at\": \"%s\",\n  \"user\": %s,\n  \"listens\": [\n", exportedAt.UTC().Format(time.RFC3339), encodedName)
 	if err != nil {
 		return fmt.Errorf("ExportData: %w", err)
 	}
 
 	first := true
-	firstPage := true
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 		rows, err := store.GetExportPage(ctx, db.GetExportPageOpts{
-			ProfileID:  profile.ID,
-			FirstPage:  firstPage,
-			ListenedAt: lastTime,
-			TrackID:    lastTrackId,
-			Limit:      pageSize,
+			ProfileID:    profile.ID,
+			AfterEventID: cursor,
+			Limit:        pageSize,
 		})
 		if err != nil {
 			return fmt.Errorf("ExportData: %w", err)
 		}
-		firstPage = false
 		if len(rows) == 0 {
 			break
 		}
@@ -134,6 +148,11 @@ func ExportData(ctx context.Context, profile *models.ListeningProfile, store db.
 		for _, r := range rows {
 			if err := ctx.Err(); err != nil {
 				return err
+			}
+			cursor = r.Cursor
+			// The legacy format requires an album and has no event identity fields.
+			if version == "1" && r.ReleaseID == 0 {
+				continue
 			}
 			// Adds a comma after each listen item
 			if !first {
@@ -144,6 +163,16 @@ func ExportData(ctx context.Context, profile *models.ListeningProfile, store db.
 			first = false
 
 			exported := convertToExportFormat(r)
+			if version == "1" {
+				exported.Identity = nil
+				exported.Album.Artists = nil
+				exported.Track.TrackMBID = ""
+				exported.Track.DiscNumber, exported.Track.TrackNumber = 0, 0
+				exported.Track.MBIDSource = ""
+				for i := range exported.Artists {
+					exported.Artists[i].ID = 0
+				}
+			}
 
 			raw, err := json.MarshalIndent(exported, "    ", "  ")
 
@@ -158,9 +187,6 @@ func ExportData(ctx context.Context, profile *models.ListeningProfile, store db.
 			if _, err := out.Write(raw); err != nil {
 				return fmt.Errorf("ExportData: %w", err)
 			}
-
-			lastTrackId = r.TrackID
-			lastTime = r.ListenedAt
 		}
 	}
 
@@ -180,9 +206,15 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 		client = *item.Client
 	}
 	ret := &KoitoListen{
+		Identity: &ArchiveIdentity{
+			EventID: item.EventID, EventNamespace: item.EventNamespace, CatalogNamespace: item.CatalogNamespace,
+			OccurrenceID: item.TrackID, RecordingID: item.RecordingID, Origin: item.Origin,
+			Provenance: item.Provenance,
+		},
 		ListenedAt: item.ListenedAt.UTC(),
 		Track: KoitoTrack{
-			MBID:     item.TrackMbid,
+			MBID:      item.TrackMbid,
+			TrackMBID: item.TrackReference, DiscNumber: item.DiscNumber, TrackNumber: item.TrackNumber, MBIDSource: item.MBIDSource,
 			Duration: int(item.TrackDuration),
 			Aliases:  item.TrackAliases,
 		},
@@ -194,13 +226,22 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 			Aliases:        item.ReleaseAliases,
 		},
 	}
-	for i := range item.Artists {
-		ret.Artists = append(ret.Artists, KoitoArtist{
-			IsPrimary: item.Artists[i].IsPrimary,
-			MBID:      item.Artists[i].MbzID,
-			Aliases:   item.Artists[i].Aliases,
-			ImageUrl:  item.Artists[i].ImageSource,
+	if item.ReleaseID != 0 {
+		ret.Identity.ReleaseID = &item.ReleaseID
+	}
+	ret.Artists = exportCredits(item.Artists)
+	ret.Album.Artists = exportCredits(item.ReleaseArtists)
+	return ret
+}
+
+// exportCredits serializes album and occurrence credits with independent roles.
+func exportCredits(artists []models.ArtistWithFullAliases) []KoitoArtist {
+	var credits []KoitoArtist
+	for _, artist := range artists {
+		credits = append(credits, KoitoArtist{
+			ID: artist.ID, IsPrimary: artist.IsPrimary, MBID: artist.MbzID,
+			Aliases: artist.Aliases, ImageUrl: artist.ImageSource,
 		})
 	}
-	return ret
+	return credits
 }

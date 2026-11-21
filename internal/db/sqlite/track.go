@@ -458,7 +458,7 @@ func (s *Sqlite) DeleteTrack(ctx context.Context, id int32) error {
 	}
 	defer tx.Rollback()
 
-	result, err := tx.ExecContext(ctx, `DELETE FROM tracks WHERE id = ?`, id)
+	result, err := deleteOccurrenceIn(ctx, tx, id)
 	if err != nil {
 		return fmt.Errorf("DeleteTrack: delete: %w", err)
 	}
@@ -470,6 +470,19 @@ func (s *Sqlite) DeleteTrack(ctx context.Context, id int32) error {
 		return db.ErrNotFound
 	}
 	return tx.Commit()
+}
+
+// deleteOccurrenceIn uses the bridge cascade only for occurrences with a legacy track.
+func deleteOccurrenceIn(ctx context.Context, tx *sql.Tx, id int32) (sql.Result, error) {
+	result, err := tx.ExecContext(ctx, `DELETE FROM tracks WHERE id=?`, id)
+	if err != nil {
+		return nil, err
+	}
+	n, err := result.RowsAffected()
+	if err != nil || n != 0 {
+		return result, err
+	}
+	return tx.ExecContext(ctx, `DELETE FROM occurrences WHERE id=? AND legacy_track_id IS NULL`, id)
 }
 
 // DeleteTrackAlias never removes a primary alias or reports success for a missing alias.
@@ -731,70 +744,81 @@ func (s *Sqlite) MergeTracks(ctx context.Context, fromId, toId int32) error {
 	return tx.Commit()
 }
 
+// mergeTracksIn joins recording identity while leaving occurrences and listens in place.
 func mergeTracksIn(ctx context.Context, tx *sql.Tx, fromId, toId int32) error {
-	if err := requireMergeRows(ctx, tx, "tracks", fromId, toId); err != nil {
+	lookup := func(id int32) (int64, sql.NullString, error) {
+		var recording int64
+		var mbid sql.NullString
+		err := tx.QueryRowContext(ctx, `SELECT r.id,r.musicbrainz_id FROM occurrences o
+			JOIN recordings r ON r.id=o.recording_id WHERE o.id=?`, id).Scan(&recording, &mbid)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = db.ErrNotFound
+		}
+		return recording, mbid, err
+	}
+	from, fromMBID, err := lookup(fromId)
+	if err != nil {
 		return err
 	}
-
-	// check if tracks are in different releases
-	var fromRelease, toRelease int32
-	if err := tx.QueryRowContext(ctx, `SELECT release_id FROM tracks WHERE id = ?`, fromId).Scan(&fromRelease); err != nil {
-		return fmt.Errorf("merge release: %w", err)
-	}
-	if err := tx.QueryRowContext(ctx, `SELECT release_id FROM tracks WHERE id = ?`, toId).Scan(&toRelease); err != nil {
-		return fmt.Errorf("merge release: %w", err)
-	}
-
-	// redirect all listens (ignore conflicts — same timestamp already exists for toId)
-	if _, err := tx.ExecContext(ctx,
-		`UPDATE OR IGNORE listens SET track_id = ? WHERE track_id = ?`, toId, fromId); err != nil {
-		if isOccurrenceGuard(err, "Cannot move an occurrence-resolved listen") {
-			return fmt.Errorf("MergeTracks: %w: %w", db.ErrConflict, err)
-		}
-		return fmt.Errorf("MergeTracks: redirect listens: %w", err)
-	}
-
-	// Remaining conflicts are duplicates only inside the same profile.
-	if _, err := tx.ExecContext(ctx, `DELETE FROM listens WHERE track_id=? AND EXISTS
-   (SELECT 1 FROM listens target WHERE target.track_id=? AND target.profile_id=listens.profile_id AND target.listened_at=listens.listened_at)`, fromId, toId); err != nil {
+	to, toMBID, err := lookup(toId)
+	if err != nil {
 		return err
 	}
-
-	if fromRelease != toRelease {
-		// associate fromId's artists with toId's release
-		rows, err := tx.QueryContext(ctx,
-			`SELECT artist_id FROM artist_tracks WHERE track_id = ?`, fromId)
-		if err != nil {
-			return fmt.Errorf("MergeTracks: fetch artists: %w", err)
-		}
-		var artistIDs []int32
-		for rows.Next() {
-			var aid int32
-			if err := rows.Scan(&aid); err != nil {
-				rows.Close()
-				return err
-			}
-			artistIDs = append(artistIDs, aid)
-		}
-		if err := rows.Err(); err != nil {
-			rows.Close()
-			return err
-		}
-		rows.Close()
-		for _, aid := range artistIDs {
-			if _, err := tx.ExecContext(ctx,
-				`INSERT OR IGNORE INTO artist_releases (artist_id, release_id, is_primary) VALUES (?,?,0)`,
-				aid, toRelease); err != nil {
-				return fmt.Errorf("MergeTracks: associate artist to release: %w", err)
-			}
-		}
+	if from == to || (fromMBID.Valid && toMBID.Valid) {
+		return db.ErrConflict
 	}
-
-	// Only the source is deleted after its listens were moved or deduplicated.
-	if _, err := tx.ExecContext(ctx, `DELETE FROM tracks WHERE id=?`, fromId); err != nil {
-		return fmt.Errorf("MergeTracks: delete source: %w", err)
+	if fromMBID.Valid {
+		from, to = to, from
 	}
-	return nil
+	if _, err := tx.ExecContext(ctx, `INSERT INTO recording_moves
+		SELECT ?,?,id,?,?,0 FROM occurrences WHERE recording_id=?`, fromId, toId, from, to, from); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE occurrences SET recording_id=? WHERE recording_id=?`, to, from); err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `UPDATE recording_moves SET stage=1 WHERE source_track=? AND destination_track=?`, fromId, toId)
+	return err
+}
+
+// UndoTrackMerge restores the affected occurrences and revises any receipts linked since the merge.
+func (s *Sqlite) UndoTrackMerge(ctx context.Context, from, to int32) error {
+	if from <= 0 || to <= 0 || from == to {
+		return db.ErrInvalidInput
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var overlap bool
+	if err := tx.QueryRowContext(ctx, `SELECT EXISTS(
+		SELECT 1 FROM recording_moves m JOIN occurrences o ON o.id=m.occurrence_id
+		WHERE m.source_track=? AND m.destination_track=? AND
+		(o.recording_id<>m.merged_recording OR NOT EXISTS (
+			SELECT 1 FROM recordings r WHERE r.id=m.original_recording)))`, from, to).Scan(&overlap); err != nil {
+		return err
+	}
+	if overlap {
+		return db.ErrConflict
+	}
+	result, err := tx.ExecContext(ctx, `UPDATE recording_moves SET stage=2 WHERE source_track=? AND destination_track=?`, from, to)
+	if err != nil {
+		return err
+	}
+	if count, err := result.RowsAffected(); err != nil {
+		return err
+	} else if count == 0 {
+		return db.ErrNotFound
+	}
+	if _, err := tx.ExecContext(ctx, `UPDATE occurrences AS o SET recording_id=m.original_recording FROM recording_moves m
+		WHERE m.stage=2 AND m.occurrence_id=o.id AND m.source_track=? AND m.destination_track=?`, from, to); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `DELETE FROM recording_moves WHERE source_track=? AND destination_track=?`, from, to); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // CountTracks counts distinct heard recordings in the selected profile and period.

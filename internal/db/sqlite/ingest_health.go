@@ -175,20 +175,30 @@ func (s *Sqlite) healthDeliveries(ctx context.Context, profile int32) ([]db.Inge
 
 // ListenProvenance uses the canonical accepted receipt and exact event link.
 // Distinct events for the same track and second can each have their own explanation.
-func (s *Sqlite) ListenProvenance(ctx context.Context, profile, track int32, at int64) ([]db.ListenProvenance, error) {
+func (s *Sqlite) ListenProvenance(ctx context.Context, profile, track int32, at int64, eventIDs ...string) ([]db.ListenProvenance, error) {
 	version, err := ingestSchemaVersion(ctx, s.db)
 	if err != nil {
 		return nil, err
 	}
 	delivery, join := healthDeliverySQL(version)
+	var event string
+	if len(eventIDs) > 0 {
+		event = eventIDs[0]
+	}
+	archiveJoin := `LEFT JOIN archive_events a ON (a.profile_id,a.event_id)=(l.profile_id,l.event_id)`
+	if version < 14 {
+		archiveJoin = `LEFT JOIN (SELECT NULL AS origin,NULL AS provenance) a ON 0`
+	}
+	// Archived receipts are historical evidence and cannot enter the live processing queue.
 	// The v9 writer keeps the legacy origin enum even when a receipt identifies the source.
 	rows, err := s.db.QueryContext(ctx, `SELECT
-		CASE WHEN l.origin='legacy' AND e.receipt_id IS NOT NULL THEN coalesce(e.file_format,e.source_type) ELSE l.origin END,
-		e.received_at,coalesce(e.time_precision,''),
-		`+delivery+`,coalesce(json_extract(e.reason_codes,'$[0]'),''),coalesce(e.rule_version,'')
+		CASE WHEN l.origin='legacy' AND e.receipt_id IS NOT NULL THEN coalesce(e.file_format,e.source_type) ELSE coalesce(a.origin,l.origin) END,
+		coalesce(e.received_at,CAST(json_extract(a.provenance,'$[0].received_at') AS INTEGER)),coalesce(e.time_precision,json_extract(a.provenance,'$[0].time_precision'),''),
+		`+delivery+`,coalesce(json_extract(e.reason_codes,'$[0]'),json_extract(a.provenance,'$[0].reason_codes[0]'),''),coalesce(e.rule_version,json_extract(a.provenance,'$[0].rule_version'),'')
 		FROM listens l LEFT JOIN ingest_events e ON e.profile_id=l.profile_id AND e.event_id=l.event_id AND e.state='accepted'
 		`+join+`
-		WHERE l.profile_id=? AND l.track_id=? AND l.listened_at=? ORDER BY l.event_id`, profile, track, at)
+		`+archiveJoin+`
+		WHERE l.profile_id=? AND l.track_id=? AND l.listened_at=? AND (?='' OR l.event_id=?) ORDER BY l.event_id`, profile, track, at, event, event)
 	if err != nil {
 		return nil, err
 	}

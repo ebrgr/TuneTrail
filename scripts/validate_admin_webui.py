@@ -207,7 +207,7 @@ def validate(server):
     _,redirect=f.request('GET',manage+'?merge_query=Track',expected=303)
     searched,_=f.request('GET',redirect['Location']);assert b'Review merge into' in searched
     dest=tracks[1]['item']['id'];review=manage+f'/review?action=merge&to={dest}'
-    body,_=f.request('GET',review);assert b'Destination and surviving ID' in body
+    body,_=f.request('GET',review);assert b'Destination occurrence:' in body and b'Each occurrence, release and listen is preserved.' in body
     plan=re.search(rb'name="plan" value="([^"]+)"',body)[1].decode();confirm=dict(mc,csrf_token=csrf(body),plan=plan,confirm='1')
     f.request('POST',manage+'/alias-add',dict(mc,alias='Change after review'),expected=303)
     f.request('POST',manage+'/confirm',confirm,expected=409)

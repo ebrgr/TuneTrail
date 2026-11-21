@@ -149,6 +149,7 @@ func bindRoutes(
 			r.Delete("/track/{id}/aliases", handlers.DeleteTrackAliasHandler(db))
 			r.Delete("/track/{id}/artists/{artist_id}", handlers.DeleteTrackArtistHandler(db))
 			r.Post("/track/{id}/merge", handlers.MergeTracksHandler(db))
+			r.Post("/track/{id}/merge/undo", handlers.UndoTrackMergeHandler(db))
 			r.Post("/track/{id}/aliases", handlers.CreateTrackAliasHandler(db))
 			r.Post("/track/{id}/artists", handlers.AddTrackArtistsHandler(db))
 			r.Patch("/track/{id}", handlers.UpdateTrackHandler(db))

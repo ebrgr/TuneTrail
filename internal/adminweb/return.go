@@ -74,7 +74,7 @@ func SafeReturn(raw string) string {
 		// Management returns accept the same context keys as the task document.
 		if mediaManage {
 			switch k {
-			case "merge_query", "artist_query", "listen_at", "history_return", "tz":
+			case "merge_query", "artist_query", "listen_at", "event_id", "history_return", "tz":
 			default:
 				return ""
 			}
@@ -106,6 +106,11 @@ func SafeReturn(raw string) string {
 				return ""
 			}
 			if _, e := strconv.ParseInt(v, 10, 64); e != nil {
+				return ""
+			}
+		case "event_id":
+			// A selected event belongs to a track management URL and its timestamp.
+			if !trackManage || !q.Has("listen_at") || v == "" || len(v) > 256 {
 				return ""
 			}
 		case "history_return":

@@ -192,17 +192,16 @@ func albumArtistsIn(ctx context.Context, q catalogQuerier, releaseID int32, rela
 	return artists, rows.Err()
 }
 
-// artistsWithAliasesForTrack fetches fully-detailed artists (with aliases) for a track.
-// Used for export.
-func (s *Sqlite) artistsWithAliasesForTrack(ctx context.Context, trackID int32) ([]models.ArtistWithFullAliases, error) {
-	rows, err := s.db.QueryContext(ctx, `
+// exportArtists reads detailed credits from either the track or release association table.
+func exportArtists(ctx context.Context, q catalogQuerier, relation, column string, id int32) ([]models.ArtistWithFullAliases, error) {
+	rows, err := q.QueryContext(ctx, `
 		SELECT a.id, awn.name, a.musicbrainz_id, a.image, a.image_source, at2.is_primary
-		FROM artist_tracks at2
+		FROM `+relation+` at2
 		JOIN artists_with_name awn ON awn.id = at2.artist_id
 		JOIN artists a ON a.id = at2.artist_id
-		WHERE at2.track_id = ?
-		ORDER BY at2.is_primary DESC, awn.name`,
-		trackID,
+		WHERE at2.`+column+` = ?
+		ORDER BY at2.is_primary DESC, awn.name,a.id`,
+		id,
 	)
 	if err != nil {
 		return nil, err
@@ -231,7 +230,7 @@ func (s *Sqlite) artistsWithAliasesForTrack(ctx context.Context, trackID int32) 
 		return nil, err
 	}
 	for i := range artists {
-		aliases, err := s.getAliasesForEntity(ctx, "artist_aliases", "artist_id", artists[i].ID)
+		aliases, err := queryEntityAliases(ctx, q, "artist_aliases", "artist_id", artists[i].ID)
 		if err != nil {
 			return nil, err
 		}
@@ -241,9 +240,9 @@ func (s *Sqlite) artistsWithAliasesForTrack(ctx context.Context, trackID int32) 
 }
 
 // getAliasesForEntity fetches all aliases for an entity from the given alias table.
-func (s *Sqlite) getAliasesForEntity(ctx context.Context, table, idCol string, id int32) ([]models.Alias, error) {
-	rows, err := s.db.QueryContext(ctx,
-		`SELECT alias, source, is_primary FROM `+table+` WHERE `+idCol+` = ?`, id)
+func queryEntityAliases(ctx context.Context, q catalogQuerier, table, idCol string, id int32) ([]models.Alias, error) {
+	rows, err := q.QueryContext(ctx,
+		`SELECT alias, source, is_primary FROM `+table+` WHERE `+idCol+` = ? ORDER BY is_primary DESC, alias`, id)
 	if err != nil {
 		return nil, err
 	}

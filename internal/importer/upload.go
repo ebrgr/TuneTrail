@@ -85,6 +85,20 @@ func (s countingStore) SaveListen(ctx context.Context, o db.SaveListenOpts) erro
 	return nil
 }
 
+// RestoreArchive forwards the atomic restore and counts idempotent events.
+func (s countingStore) RestoreArchive(ctx context.Context, profile int32, items []*db.ExportItem) (int, error) {
+	store, ok := s.UploadStore.(archiveRestorer)
+	if !ok {
+		return 0, fmt.Errorf("archive restore is unavailable")
+	}
+	count, err := store.RestoreArchive(ctx, profile, items)
+	if err == nil {
+		s.result.Imported += count
+		s.result.Duplicates += len(items) - count
+	}
+	return count, err
+}
+
 var suffixes = map[string]string{"tunetrail": "tunetrail.json", "koito": "koito.json", "spotify": "Streaming_History_Audio.json", "maloja": "maloja.json", "lastfm": "recenttracks.json", "listenbrainz": "listenbrainz.zip"}
 
 // Upload executes synchronously against the selected profile; staged files are never boot inputs.

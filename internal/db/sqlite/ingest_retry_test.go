@@ -153,7 +153,7 @@ func TestIngestRetryUpgradeFromV12(t *testing.T) {
 	migrated := &Sqlite{db: conn}
 	version, err := schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, 13, version)
+	require.Equal(t, currentSchemaVersion, version)
 	require.Equal(t, 1, scalar(t, migrated, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND
 		client_idempotency_key='v12-key' AND attempt_count=3 AND retry_attempt_base=0 AND parked_at IS NULL`, id))
 	claimed, _, _, err := migrated.claimNextIngest(t.Context())

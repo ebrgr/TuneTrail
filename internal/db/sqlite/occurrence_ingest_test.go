@@ -30,12 +30,18 @@ func seedOccurrenceLinks(t *testing.T, s *Sqlite) {
 		FROM ingest_events WHERE event_id IS NOT NULL`)
 }
 
+// simulateLegacyOccurrenceMerge reproduces v9 drift for the migration fixtures.
+func simulateLegacyOccurrenceMerge(t *testing.T, s *Sqlite) {
+	t.Helper()
+	execSQL(t, s, `UPDATE OR IGNORE listens SET track_id=1 WHERE track_id=70;
+		DELETE FROM tracks WHERE id=70`)
+}
+
 // TestOccurrenceUpgrade repairs drift from the old merge and preserves committed WAL data in the backup.
 func TestOccurrenceUpgrade(t *testing.T) {
-	ctx := context.Background()
 	s, _, source := migrationDB(t, 9)
 	seedOccurrenceLinks(t, s)
-	require.NoError(t, s.MergeTracks(ctx, 70, 1))
+	simulateLegacyOccurrenceMerge(t, s)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='linked-43' AND occurrence_id IS NULL`))
 
 	// Copy the quiescent fixture and its committed WAL while the original connection remains open.
@@ -84,7 +90,7 @@ func TestOccurrenceUpgradeRollback(t *testing.T) {
 			ctx := context.Background()
 			s, _, _ := migrationDB(t, 9)
 			seedOccurrenceLinks(t, s)
-			require.NoError(t, s.MergeTracks(ctx, 70, 1))
+			simulateLegacyOccurrenceMerge(t, s)
 			files := fstest.MapFS{}
 			names, err := fs.Glob(migrations.Files, "*.sql")
 			require.NoError(t, err)
@@ -122,7 +128,7 @@ func TestOccurrenceRepairAssertions(t *testing.T) {
 			ctx := context.Background()
 			s, provider, _ := migrationDB(t, 9)
 			seedOccurrenceLinks(t, s)
-			require.NoError(t, s.MergeTracks(ctx, 70, 1))
+			simulateLegacyOccurrenceMerge(t, s)
 			execSQL(t, s, tc.query)
 			_, err := provider.Up(ctx)
 			require.ErrorContains(t, err, tc.message)
@@ -208,26 +214,26 @@ func TestOccurrenceGuardCascades(t *testing.T) {
 	}
 }
 
-// TestOccurrenceMergeSync keeps the surviving link aligned and deletes the colliding one.
+// TestOccurrenceMergeSync revises both receipts without changing the linked occurrence.
 func TestOccurrenceMergeSync(t *testing.T) {
-	s, _, _ := migrationDB(t, 10)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedOccurrenceLinks(t, s)
 	require.NoError(t, s.MergeTracks(context.Background(), 70, 1))
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='linked-42'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='linked-42'`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN occurrences o ON o.id=e.occurrence_id
-		WHERE e.receipt_id='linked-43' AND o.id=1 AND e.recording_id=o.recording_id AND e.resolution_version=2`))
+		WHERE e.receipt_id='linked-43' AND o.id=70 AND e.recording_id=o.recording_id AND e.resolution_version=2`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions
-		WHERE receipt_id='linked-43' AND resolution_version=2 AND reason_codes='["legacy_listen_moved"]'`))
+		WHERE receipt_id='linked-43' AND resolution_version=2 AND reason_codes='["recording_reconciled"]'`))
 	require.NoError(t, checkDatabase(s.db))
 }
 
-// TestOccurrenceMergeRequiresRevision catches an insert skipped under UPDATE OR IGNORE.
+// TestOccurrenceMergeRequiresRevision rolls back when a receipt cannot be revised.
 func TestOccurrenceMergeRequiresRevision(t *testing.T) {
-	s, _, _ := migrationDB(t, 10)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedOccurrenceLinks(t, s)
 	// A NULL decision is legal on the ledger but violates the revision's NOT NULL.
 	execSQL(t, s, `UPDATE ingest_events SET duplicate_decision=NULL,resolution_version=2 WHERE receipt_id='linked-43'`)
-	require.ErrorContains(t, s.MergeTracks(context.Background(), 70, 1), "Missing link revision")
+	require.ErrorContains(t, s.MergeTracks(context.Background(), 70, 1), "NOT NULL")
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id=70 AND listened_at=43`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events
 		WHERE receipt_id='linked-43' AND occurrence_id=70 AND resolution_version=2`))
@@ -258,7 +264,7 @@ func TestOccurrenceGuards(t *testing.T) {
 		_, err := s.db.Exec(tc.query)
 		require.ErrorContains(t, err, tc.message, tc.query)
 	}
-	require.ErrorContains(t, s.MergeTracks(context.Background(), 70, 1), "Cannot move")
+
 	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id=70`))
 	execSQL(t, s, `INSERT INTO occurrences(id,recording_id,presented_title) SELECT 90,recording_id,'Observed' FROM occurrences WHERE id=1;
 		INSERT INTO occurrence_credits VALUES(90,0,'Artist',1);

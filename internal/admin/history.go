@@ -14,12 +14,16 @@ import (
 func ExportHistory(ctx context.Context, store interface {
 	db.ProfileStore
 	db.ExportStore
-}, user *models.User, id int32, out io.Writer) error {
+}, user *models.User, id int32, out io.Writer, versions ...string) error {
+	version := export.ArchiveVersion
+	if len(versions) != 0 {
+		version = versions[0]
+	}
 	profile, err := AuthorizeProfile(ctx, store, user, id)
 	if err != nil {
 		return err
 	}
-	return export.ExportData(ctx, profile, store, out)
+	return export.ExportVersion(ctx, profile, store, out, version)
 }
 
 // ImportHistory authorizes a server-selected destination before staging or parsing.

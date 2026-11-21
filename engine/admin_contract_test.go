@@ -62,8 +62,12 @@ func TestAdminMergeAPIContracts(t *testing.T) {
 			}
 			require.NoError(t, a.store.Exec(`DROP TRIGGER injected`))
 			require.Equal(t, 204, a.request("POST", endpoint, `{"merge_from_id":1}`, "", true).Code)
-			// A repeated merge cannot apply the same destructive change twice.
-			require.Equal(t, 404, a.request("POST", endpoint, `{"merge_from_id":1}`, "", true).Code)
+			// A repeated operation cannot reapply an existing reconciliation.
+			repeatStatus := 404
+			if kind == "track" {
+				repeatStatus = 409
+			}
+			require.Equal(t, repeatStatus, a.request("POST", endpoint, `{"merge_from_id":1}`, "", true).Code)
 		})
 	}
 }

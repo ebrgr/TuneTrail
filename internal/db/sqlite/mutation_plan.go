@@ -32,7 +32,9 @@ func catalogFingerprint(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (stri
 		`SELECT id,musicbrainz_id,release_id,duration FROM tracks ORDER BY id`,
 		`SELECT track_id,alias,source,is_primary FROM track_aliases ORDER BY track_id,alias`,
 		`SELECT artist_id,track_id,is_primary FROM artist_tracks ORDER BY artist_id,track_id`,
-		`SELECT profile_id,track_id,listened_at,client FROM listens ORDER BY profile_id,track_id,listened_at`,
+		`SELECT profile_id,event_id,track_id,listened_at,client FROM listens ORDER BY profile_id,event_id`,
+		`SELECT id,recording_id,release_id,presented_title FROM occurrences ORDER BY id`,
+		`SELECT id,musicbrainz_id FROM recordings ORDER BY id`,
 		`SELECT id,slug,display_name FROM listening_profiles ORDER BY id`,
 	} {
 		if err := enc.Encode(q); err != nil {
@@ -79,6 +81,7 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 	p.Profiles = nil
 	p.DestinationProfiles = nil
 	p.AffectedTrackIDs = nil
+	p.DuplicateListens = 0
 	p.SourceAliases = nil
 	p.DestinationAliases = nil
 	p.SourceArtists = nil
@@ -100,11 +103,13 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 	name := func(id int32) (string, string, string, error) {
 		q := `SELECT COALESCE((SELECT alias FROM ` + aliases + ` WHERE ` + foreign + `=x.id AND is_primary=1 LIMIT 1),''),`
 		if p.Kind == "track" {
-			q += `COALESCE((SELECT image FROM releases WHERE id=x.release_id),'')`
+			// An occurrence can have its own title and no release or legacy bridge.
+			q = `SELECT COALESCE(x.presented_title,(SELECT alias FROM track_aliases WHERE track_id=x.legacy_track_id AND is_primary=1 LIMIT 1),''),
+				COALESCE(r.image,''),COALESCE(rec.musicbrainz_id,'') FROM occurrences x
+				JOIN recordings rec ON rec.id=x.recording_id LEFT JOIN releases r ON r.id=x.release_id WHERE x.id=?`
 		} else {
-			q += `COALESCE(x.image,'')`
+			q += `COALESCE(x.image,''),COALESCE(x.musicbrainz_id,'') FROM ` + table + ` x WHERE x.id=?`
 		}
-		q += `,COALESCE(x.musicbrainz_id,'') FROM ` + table + ` x WHERE x.id=?`
 		var n, img, mbid string
 		e := tx.QueryRowContext(ctx, q, id).Scan(&n, &img, &mbid)
 		if errors.Is(e, sql.ErrNoRows) {
@@ -190,7 +195,10 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 	var args []any
 	switch p.Kind {
 	case "track":
-		tracks = `SELECT id FROM tracks WHERE id=?`
+		tracks = `SELECT id FROM occurrences WHERE id=?`
+		if p.Action == "merge" {
+			tracks = `SELECT id FROM occurrences WHERE recording_id=(SELECT recording_id FROM occurrences WHERE id=?)`
+		}
 		args = []any{p.From}
 	case "album":
 		tracks = `SELECT id FROM tracks WHERE release_id=?`
@@ -206,7 +214,7 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 		e := tx.QueryRowContext(ctx, q, a...).Scan(&n)
 		return n, e
 	}
-	trackRows, e := tx.QueryContext(ctx, `SELECT id FROM tracks WHERE id IN (`+tracks+`) ORDER BY id`, args...)
+	trackRows, e := tx.QueryContext(ctx, `SELECT id FROM occurrences WHERE id IN (`+tracks+`) ORDER BY id`, args...)
 	if e != nil {
 		return p, e
 	}
@@ -270,7 +278,7 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 			destinationTracks = `SELECT id FROM tracks WHERE release_id=?`
 			destArgs = []any{p.To}
 		case "track":
-			destinationTracks = `SELECT id FROM tracks WHERE release_id=(SELECT release_id FROM tracks WHERE id=?)`
+			destinationTracks = `SELECT id FROM occurrences WHERE recording_id=(SELECT recording_id FROM occurrences WHERE id=?)`
 			destArgs = []any{p.To}
 		}
 		destRows, e := tx.QueryContext(ctx, `SELECT p.id,p.display_name,COUNT(*) FROM listens l JOIN listening_profiles p ON p.id=l.profile_id WHERE l.track_id IN (`+destinationTracks+`) GROUP BY p.id,p.display_name ORDER BY p.id`, destArgs...)
@@ -311,12 +319,6 @@ func planCatalogIn(ctx context.Context, tx *sql.Tx, p db.CatalogPlan) (db.Catalo
 			return p, err
 		}
 		p.RemovedListens, err = count(`SELECT COUNT(*) FROM listens WHERE track_id IN (`+removed+`)`, removedArgs...)
-		if err != nil {
-			return p, err
-		}
-	}
-	if p.Action == "merge" && p.Kind == "track" {
-		p.DuplicateListens, err = count(`SELECT COUNT(*) FROM listens a JOIN listens b ON b.profile_id=a.profile_id AND b.listened_at=a.listened_at WHERE a.track_id=? AND b.track_id=?`, p.From, p.To)
 		if err != nil {
 			return p, err
 		}
@@ -383,7 +385,12 @@ func (s *Sqlite) ApplyCatalogMutation(ctx context.Context, p db.CatalogPlan) err
 	} else {
 		table := map[string]string{"artist": "artists", "album": "releases", "track": "tracks"}[p.Kind]
 		var result sql.Result
-		result, err = tx.ExecContext(ctx, `DELETE FROM `+table+` WHERE id=?`, p.From)
+		// Track deletion follows the occurrence bridge and handles standalone entries.
+		if p.Kind == "track" {
+			result, err = deleteOccurrenceIn(ctx, tx, p.From)
+		} else {
+			result, err = tx.ExecContext(ctx, `DELETE FROM `+table+` WHERE id=?`, p.From)
+		}
 		if err == nil {
 			var n int64
 			n, err = result.RowsAffected()

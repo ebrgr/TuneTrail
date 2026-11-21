@@ -95,7 +95,7 @@ func TestMediaDialogSecurity140(t *testing.T) {
 	form := url.Values{"csrf_token": {taskField139(t, review, "csrf_token")}, "plan": {taskField139(t, review, "plan")}, "profile_id": {"2"}, "profile_slug": {"second"}, "confirm": {"1"}}
 	confirmed := taskRequest139(a, "POST", base+"/confirm", a.cookie, form, headers)
 	require.Equal(t, 204, confirmed.Code, confirmed.Body.String())
-	require.Equal(t, "/second/track/13", confirmed.Header().Get("X-TuneTrail-Navigate"))
+	require.Equal(t, "/second/manage/track/13", confirmed.Header().Get("X-TuneTrail-Navigate"))
 	require.Equal(t, 409, taskRequest139(a, "POST", base+"/confirm", a.cookie, form, headers).Code)
 	// A real expired server-side session must not restore forms or administrator controls.
 	require.NoError(t, a.store.Exec(`UPDATE sessions SET expires_at=1 WHERE id=?`, a.cookie))
@@ -104,7 +104,7 @@ func TestMediaDialogSecurity140(t *testing.T) {
 	require.Empty(t, expired.Header().Get("X-TuneTrail-Fragment"))
 	require.NotContains(t, expired.Body.String(), "submission_token")
 	require.Equal(t, 401, taskRequest139(a, "POST", base+"/confirm", a.cookie, form, headers).Code)
-	public := taskRequest139(a, "GET", "/second/track/13", a.cookie, nil, nil)
+	public := taskRequest139(a, "GET", "/second/track/12", a.cookie, nil, nil)
 	require.Equal(t, 200, public.Code)
 	require.NotContains(t, public.Body.String(), "data-media-task")
 	require.Equal(t, "false", public.Header().Get("X-TuneTrail-Admin"))

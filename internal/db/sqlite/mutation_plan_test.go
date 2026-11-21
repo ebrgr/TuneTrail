@@ -23,7 +23,7 @@ func TestCatalogPlanStaleAndScopedMerge(t *testing.T) {
 			require.Equal(t, "One", plan.SourceName)
 			require.Equal(t, "Two", plan.DestinationName)
 			if kind == "track" {
-				require.EqualValues(t, 2, plan.DuplicateListens)
+				require.Zero(t, plan.DuplicateListens)
 			}
 			table := map[string]string{"artist": "artist_aliases", "album": "release_aliases", "track": "track_aliases"}[kind]
 			require.NoError(t, s.Exec(`UPDATE `+table+` SET source='changed' WHERE alias='One'`))
@@ -54,7 +54,7 @@ func TestPlanRollbackAndIntegrity(t *testing.T) {
 	plan, err := s.PreviewCatalogMutation(ctx, db.CatalogPlan{Action: "merge", Kind: "track", From: 1, To: 2})
 	require.NoError(t, err)
 	before := mergeSnapshot(t, s)
-	require.NoError(t, s.Exec(`CREATE TRIGGER fail_confirmed_merge BEFORE UPDATE ON listens BEGIN SELECT RAISE(ABORT,'injected'); END`))
+	require.NoError(t, s.Exec(`CREATE TRIGGER fail_confirmed_merge BEFORE UPDATE OF recording_id ON occurrences BEGIN SELECT RAISE(ABORT,'injected'); END`))
 	require.Error(t, s.ApplyCatalogMutation(ctx, plan))
 	require.Equal(t, before, mergeSnapshot(t, s))
 	for _, p := range []db.CatalogPlan{{Action: "merge", Kind: "track", From: 1, To: 1}, {Action: "merge", Kind: "album", From: 1, To: 999}, {Action: "delete", Kind: "artist", From: -1}} {
@@ -64,7 +64,7 @@ func TestPlanRollbackAndIntegrity(t *testing.T) {
 }
 
 func TestWALSnapshotRaceMapsToConflict(t *testing.T) {
-	s, _, filename := migrationDB(t, 5)
+	s, _, filename := migrationDB(t, currentSchemaVersion)
 	ctx := context.Background()
 	testfixtures.Profile(t, s, 1, "wal-test", "WAL", 1)
 	for _, q := range []string{`INSERT INTO artists(id) VALUES(1)`, `INSERT INTO artist_aliases VALUES(1,'Artist','User',1)`, `INSERT INTO releases(id,various_artists) VALUES(1,0)`, `INSERT INTO release_aliases VALUES(1,'Album','User',1)`, `INSERT INTO artist_releases VALUES(1,1,1)`, `INSERT INTO tracks(id,release_id,duration) VALUES(1,1,1),(2,1,1)`, `INSERT INTO track_aliases VALUES(1,'Source','User',1),(2,'Target','User',1)`, `INSERT INTO artist_tracks VALUES(1,1,1),(1,2,1)`, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,100)`} {
@@ -114,8 +114,11 @@ func TestCatalogMergeBothDirectionsPerProfile(t *testing.T) {
 			ctx := context.Background()
 			plan, err := s.PreviewCatalogMutation(ctx, db.CatalogPlan{Action: "merge", Kind: "track", From: ids[0], To: ids[1]})
 			require.NoError(t, err)
-			require.EqualValues(t, 2, plan.DuplicateListens)
+			require.Zero(t, plan.DuplicateListens)
 			require.NoError(t, s.ApplyCatalogMutation(ctx, plan))
+			require.Equal(t, 1, scalar(t, s, `SELECT count(DISTINCT recording_id) FROM occurrences`))
+			require.NoError(t, s.UndoTrackMerge(ctx, ids[0], ids[1]))
+			require.Equal(t, 2, scalar(t, s, `SELECT count(DISTINCT recording_id) FROM occurrences`))
 			require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM tracks WHERE id=?`, ids[1]))
 			for _, p := range []int{1, 2} {
 				require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=? AND track_id=?`, p, ids[1]))

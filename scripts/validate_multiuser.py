@@ -209,8 +209,10 @@ def validate_journey(server):
     assert all(k["key"] not in metadata for k in keys + [second_key])
     exported = server.request("GET", alpha + "/export", admin=True)
     assert len(exported["listens"]) == 2
-    server.upload(beta + "/import", "koito", json.dumps(exported).encode())
-    assert server.request("GET", beta + "/stats")["listen_count"] == 2
+    assert exported["version"] == "2"
+    for _ in range(2):
+        server.upload(beta + "/import", "tunetrail", json.dumps(exported).encode())
+        assert server.request("GET", beta + "/stats")["listen_count"] == 3
     renamed = server.request("PATCH", alpha, {"display_name": "Alpha renamed", "slug": "validation-renamed"}, admin=True)
     assert renamed["id"] == profiles[0]["id"]
     server.request("GET", alpha + "/stats", expected=404)
@@ -221,7 +223,7 @@ def validate_journey(server):
     assert server.request("GET", alpha + "/stats")["listen_count"] == 2
     server.request("POST", LBZ + "/submit-listens", scrobble(timestamp + 2), token=second_key["key"])
     assert server.request("GET", alpha + "/stats")["listen_count"] == 3
-    server.request("DELETE", beta, {"display_name": profiles[1]["display_name"], "listen_count": 2}, admin=True, expected=204)
+    server.request("DELETE", beta, {"display_name": profiles[1]["display_name"], "listen_count": 3}, admin=True, expected=204)
     server.request("GET", beta + "/stats", expected=404)
     assert server.request("GET", alpha + "/stats")["listen_count"] == 3
     for p in before:

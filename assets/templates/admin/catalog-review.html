@@ -44,30 +44,36 @@
             "Kind"
             (tr (printf "admin.kind.%s" .Kind) .Kind)
           }}{{if .Dialog}}</h2>{{else}}</h1>{{end}}
+          {{- if and (eq .Kind "track") (eq .Plan.Action "merge")}}
+            <p>{{tr
+              "admin.review.recording_reconciliation"
+              "This groups the occurrences under one recording for all profiles. Each occurrence, release and listen is preserved."
+            }}</p>
+          {{- else}}
           <p>{{tr
             "admin.text.this_changes_the_shared_catalog_for_all_profiles_this_action_cannot_be_undone"
             "This changes the shared catalog for all profiles. This action cannot be undone."
           }}</p>
+          {{- end}}
           <p>
-            {{- tr "admin.review.source" "Source:"}} {{.Plan.SourceName}} (ID {{.Plan.From}}).{{if eq .Plan.Action "merge"}} {{tr "admin.review.destination"
-            "Destination and surviving ID:"}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
+            {{- tr "admin.review.source" "Source:"}} {{.Plan.SourceName}} (ID {{.Plan.From}}).
+            {{- if eq .Plan.Action "merge"}} {{if eq .Kind "track"}}
+              {{- tr "admin.review.recording_destination" "Destination occurrence:"}}
+            {{- else}}{{tr "admin.review.destination" "Destination and surviving ID:"}}{{end}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
           <p>{{tr "admin.review.source_tracks" "Source-linked tracks:"}} {{.Plan.SourceTracks}}{{tr "admin.review.albums" "; albums:"}} {{.Plan.SourceAlbums}}
             {{- tr "admin.review.listens" "; listens:"}} {{.Plan.SourceListens}}.</p>
-            <p>{{tr "admin.review.duplicates" "Duplicate listens in the same profile and second:"}} {{.Plan.DuplicateListens}}
-              {{- tr "admin.review.profiles_separate" ". Listens from different profiles stay separate."}}</p>
+          {{- if and (eq .Plan.Action "merge") (ne .Kind "track")}}
             <p>{{tr
               "admin.review.alias_policy"
               "The destination retains its aliases, MusicBrainz ID and other metadata; aliases from the source are removed."
             }}{{if eq .Kind "artist"}} {{tr
               "admin.review.artist_policy"
               "Source artist relations move to the destination; existing destination relations take precedence."
-            }}{{else if eq .Kind "album"}} {{tr
+            }}{{else}} {{tr
               "admin.review.album_policy"
               "Tracks move to the destination and source album artists are added as secondary artists."
-            }}{{else}} {{tr
-              "admin.review.track_policy"
-              "Source listens move to the destination track. Track artist relations, duration and aliases are not transferred; source artists may be associated with the destination album."
             }}{{end}}</p>
+          {{- end}}
           <h2>{{tr "admin.text.source_metadata_and_relations" "Source metadata and relations"}}</h2>
           <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.SourceMBID}}{{.Plan.SourceMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
           <p>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}

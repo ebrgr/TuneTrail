@@ -5,7 +5,7 @@ description: How to import your existing listening history from other services i
 
 Koito currently supports the following sources to import data from:
 
-- Koito JSON exports
+- TuneTrail JSON archives and Koito JSON exports
 - Spotify
 - Maloja
 - LastFM (using https://lastfm.ghan.nl/export/)
@@ -44,9 +44,28 @@ inspect the result before retrying. Closing the connection can cancel work, and
 there is no persistent job or recoverable progress report. Completed input is
 archived; failed HTTP uploads do not enter the startup import queue.
 
-Export streams only the selected profile. It is a dynamic paginated read rather
-than a database snapshot: concurrent backdated imports, deletion or metadata edits
-can affect its contents. If a download is interrupted, generate it again.
+## TuneTrail archives
+
+Export the selected profile and import the file using the TuneTrail format.
+Version 2 preserves accepted event identities, occurrences, recording groups,
+release credits and listen provenance, including listens with no release.
+Reimporting the same event into the same profile skips it even after renaming or
+splitting the file. Existing catalog entries can be reused and are not overwritten.
+Profile owners' uploads preserve presentation under the existing catalog policy.
+Assigning canonical MusicBrainz IDs requires an administrator.
+
+Use `?version=1` on the HTTP export endpoint for a Koito-compatible download.
+TuneTrail continues to import v1. The v1 format omits release-less listens
+and lacks stable event identities.
+
+Export reads pages in event ID order. Each page is consistent, and writes
+between pages can affect the download. Pause writes or use a SQLite backup
+when a full point-in-time copy is required. An archive restores accepted listens in
+one transaction. Pending receipts, relay queues and raw ingest logs are
+part of the database backup.
+
+Upgrading from SQLite schema v13 saves a `.pre-occurrence-archive-*.bak`
+backup next to the database. Older binaries require the corresponding backup.
 
 ## Spotify
 

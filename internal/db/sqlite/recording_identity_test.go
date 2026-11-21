@@ -122,10 +122,11 @@ func TestRecordingIdentityBridge(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences o JOIN recordings r ON r.id=o.recording_id
 		WHERE o.id=100 AND o.release_id=1 AND r.musicbrainz_id IS NOT NULL`))
 	require.NoError(t, s.MergeTracks(ctx, 70, 1))
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM occurrences WHERE id=70`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences WHERE id=70`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND track_id=1`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=2 AND track_id=1`))
-	execSQL(t, s, `DELETE FROM releases WHERE id=1`)
+	require.NoError(t, s.UndoTrackMerge(ctx, 70, 1))
+	execSQL(t, s, `DELETE FROM releases`)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens`))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM recordings`))
 	require.NoError(t, checkDatabase(s.db))

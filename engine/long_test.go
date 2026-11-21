@@ -333,14 +333,14 @@ func TestMerge(t *testing.T) {
 
 	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/track/2/merge", strings.NewReader(`{"merge_from_id":1}`))
 	require.NoError(t, err)
-	require.Equal(t, 204, resp.StatusCode)
+	require.Equal(t, 409, resp.StatusCode)
 
 	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/track/2")
 	require.NoError(t, err)
 	var track models.Track
 	err = json.NewDecoder(resp.Body).Decode(&track)
 	require.NoError(t, err)
-	assert.EqualValues(t, 2, track.ListenCount)
+	assert.EqualValues(t, 1, track.ListenCount)
 
 	truncateTestData(t)
 

@@ -43,7 +43,7 @@ func MergeAlbums(ctx context.Context, store interface {
 	return store.MergeAlbums(ctx, from, to, replace)
 }
 
-// MergeTracks preserves the store's per-profile duplicate handling.
+// MergeTracks reconciles recording identity across occurrences.
 func MergeTracks(ctx context.Context, store interface {
 	MergeTracks(context.Context, int32, int32) error
 }, user *models.User, from, to int32) error {
@@ -54,4 +54,17 @@ func MergeTracks(ctx context.Context, store interface {
 		return err
 	}
 	return store.MergeTracks(ctx, from, to)
+}
+
+// UndoTrackMerge checks the same authorization as the original merge.
+func UndoTrackMerge(ctx context.Context, store interface {
+	UndoTrackMerge(context.Context, int32, int32) error
+}, user *models.User, from, to int32) error {
+	if err := AuthorizeService(ctx, store, user, ManageCatalog, nil); err != nil {
+		return err
+	}
+	if err := ValidateMerge(user, from, to); err != nil {
+		return err
+	}
+	return store.UndoTrackMerge(ctx, from, to)
 }

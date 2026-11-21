@@ -236,11 +236,14 @@
                 <input type="hidden" name="return_to" value="{{$.ReturnTo}}">
                 <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
                 <input type="hidden" name="unix" value="{{.Time.Unix}}">
+                <input type="hidden" name="event_id" value="{{.EventID}}">
                 <time datetime="{{(.Time.In $.Location).Format "2006-01-02T15:04:05Z07:00"}}">{{(.Time.In $.Location).Format "2006-01-02 15:04:05 MST"}}</time>
                 <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen"
                   "Confirm removal of this listen"}}</label>
                 <button>{{tr "admin.text.delete_listen" "Delete listen"}}</button>
-                <a href="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/listen?listen_at={{.Time.Unix}}&amp;tz={{$.Timezone}}#why-this-listen">
+                <a
+                  href="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/listen?listen_at={{.Time.Unix}}&amp;event_id={{.EventID}}&amp;tz={{$.Timezone}}#why-this-listen"
+                >
                   {{tr "admin.health.why" "Why is this listen here?"}}
                 </a>
               </form>
@@ -364,6 +367,7 @@
                 <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
                 <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
                 <input type="hidden" name="unix" value="{{.FocusListen.Time.Unix}}">
+                <input type="hidden" name="event_id" value="{{.FocusListen.EventID}}">
                 <input
                   type="hidden"
                   name="return_to"
@@ -447,6 +451,7 @@
 {{define "manage/search-context"}}
   <input type="hidden" name="tz" value="{{.Timezone}}">
   {{if .Query.Get "listen_at"}}<input type="hidden" name="listen_at" value="{{.Query.Get "listen_at"}}">{{end}}
+  {{if .Query.Get "event_id"}}<input type="hidden" name="event_id" value="{{.Query.Get "event_id"}}">{{end}}
   {{if .HistoryReturn}}<input type="hidden" name="history_return" value="{{.HistoryReturn}}">{{end}}
 {{end}}
 

@@ -25,6 +25,20 @@ func DeleteListenHandler(store interface {
 
 		l.Debug().Msg("DeleteListenHandler: Received request to delete listen record")
 
+		// Native history can have multiple events with the same legacy tuple.
+		if event := r.URL.Query().Get("event_id"); event != "" {
+			profile := db.ProfileID(ctx)
+			_, err := admin.AuthorizeProfile(ctx, store, middleware.GetUserFromContext(ctx), profile)
+			if err == nil {
+				err = store.DeleteListenEvent(ctx, event)
+			}
+			if err != nil && !errors.Is(err, db.ErrNotFound) {
+				utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
+				return
+			}
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 		trackIDStr := r.URL.Query().Get("track_id")
 		if trackIDStr == "" {
 			l.Debug().Msg("DeleteListenHandler: Missing track ID in request")

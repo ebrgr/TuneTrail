@@ -401,7 +401,8 @@ func (h *Pages) ranking(ctx context.Context, slug, kind string, o db.GetItemsOpt
 func (h *Pages) listens(slug string, items []*models.Listen, loc *time.Location, locale *i18n.View) []ListenView {
 	out := make([]ListenView, 0, len(items))
 	for _, v := range items {
-		out = append(out, ListenView{Item: Item{ID: v.Track.ID, Title: v.Track.Title, URL: mediaURL(slug, "track", v.Track.ID), Image: v.Track.Image, Artists: itemLinks(slug, v.Track.Artists)}, Time: v.Time.In(loc), Unix: v.Time.Unix(), Relative: localizedRelativeTime(locale, h.options.Now(), v.Time.In(loc))})
+		// The event ID disambiguates management links for same-second listens.
+		out = append(out, ListenView{EventID: v.EventID, Item: Item{ID: v.Track.ID, Title: v.Track.Title, URL: mediaURL(slug, "track", v.Track.ID), Image: v.Track.Image, Artists: itemLinks(slug, v.Track.Artists)}, Time: v.Time.In(loc), Unix: v.Time.Unix(), Relative: localizedRelativeTime(locale, h.options.Now(), v.Time.In(loc))})
 	}
 	return out
 }

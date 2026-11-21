@@ -37,7 +37,7 @@ func mergeFixture(t *testing.T) *Sqlite {
 func mergeSnapshot(t *testing.T, s *Sqlite) map[string][32]byte {
 	t.Helper()
 	ret := map[string][32]byte{}
-	for _, table := range []string{"artists", "artist_aliases", "releases", "release_aliases", "tracks", "track_aliases", "artist_tracks", "artist_releases", "listens", "listening_profiles"} {
+	for _, table := range []string{"occurrences", "recordings", "recording_moves", "artists", "artist_aliases", "releases", "release_aliases", "tracks", "track_aliases", "artist_tracks", "artist_releases", "listens", "listening_profiles"} {
 		ret[table] = queryDigest(t, s.db, "SELECT * FROM "+table+" ORDER BY 1,2")
 	}
 	return ret
@@ -70,16 +70,14 @@ func TestMergeIdentitiesAndRollback(t *testing.T) {
 				require.Equal(t, before, mergeSnapshot(t, s))
 			}
 			// Trigger failures occur after a preceding mutation and must roll everything back.
-			trigger := map[string]string{"artist": `CREATE TRIGGER fail_merge BEFORE UPDATE ON artist_releases BEGIN SELECT RAISE(ABORT,'injected'); END`, "album": `CREATE TRIGGER fail_merge BEFORE INSERT ON artist_releases BEGIN SELECT RAISE(ABORT,'injected'); END`, "track": `CREATE TRIGGER fail_merge BEFORE INSERT ON artist_releases BEGIN SELECT RAISE(ABORT,'injected'); END`}[kind]
+			trigger := map[string]string{"artist": `CREATE TRIGGER fail_merge BEFORE UPDATE ON artist_releases BEGIN SELECT RAISE(ABORT,'injected'); END`, "album": `CREATE TRIGGER fail_merge BEFORE INSERT ON artist_releases BEGIN SELECT RAISE(ABORT,'injected'); END`, "track": `CREATE TRIGGER fail_merge BEFORE UPDATE OF recording_id ON occurrences BEGIN SELECT RAISE(ABORT,'injected'); END`}[kind]
 			require.NoError(t, s.Exec(trigger))
 			require.Error(t, merge(1, 2))
 			require.Equal(t, before, mergeSnapshot(t, s))
 			require.NoError(t, s.Exec(`DROP TRIGGER fail_merge`))
 			require.NoError(t, merge(1, 2))
 			want := 4
-			if kind == "track" {
-				want = 2
-			}
+
 			require.Equal(t, want, scalar(t, s, `SELECT COUNT(*) FROM listens`))
 			require.Equal(t, want/2, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=1`))
 			require.Equal(t, want/2, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=2`))
@@ -117,7 +115,11 @@ func TestMergesPreserveUnrelatedAndUnplayedSurvivors(t *testing.T) {
 			}
 			table := map[string]string{"artist": "artists", "album": "releases", "track": "tracks"}[kind]
 			require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM `+table+` WHERE id=2`))
-			require.Equal(t, 0, scalar(t, s, `SELECT COUNT(*) FROM `+table+` WHERE id=1`))
+			if kind == "track" {
+				require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM tracks WHERE id=1`))
+			} else {
+				require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM `+table+` WHERE id=1`))
+			}
 		})
 	}
 }

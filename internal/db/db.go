@@ -61,6 +61,7 @@ type TrackStore interface {
 	DeleteTrack(ctx context.Context, id int32) error
 	DeleteTrackAlias(ctx context.Context, id int32, alias string) error
 	MergeTracks(ctx context.Context, fromId, toId int32) error
+	UndoTrackMerge(ctx context.Context, fromId, toId int32) error
 	SearchTracks(ctx context.Context, q string) ([]*models.Track, error)
 	CountTracks(ctx context.Context, timeframe Timeframe) (int64, error)
 	CountNewTracks(ctx context.Context, timeframe Timeframe) (int64, error)
@@ -73,6 +74,7 @@ type ListenStore interface {
 	GetInterest(ctx context.Context, opts GetInterestOpts) ([]InterestBucket, error)
 	SaveListen(ctx context.Context, opts SaveListenOpts) error
 	DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time) error
+	DeleteListenEvent(ctx context.Context, eventID string) error
 	CountListens(ctx context.Context, timeframe Timeframe) (int64, error)
 	CountListensToItem(ctx context.Context, opts TimeListenedOpts) (int64, error)
 	CountTimeListened(ctx context.Context, timeframe Timeframe) (int64, error)

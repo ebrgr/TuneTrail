@@ -27,6 +27,7 @@ type Item struct {
 	ShowRelease bool
 }
 type ListenView struct {
+	EventID   string
 	Item      Item
 	Time      time.Time
 	Unix      int64

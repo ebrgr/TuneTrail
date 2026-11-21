@@ -254,7 +254,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 				// Public history filters remain in ReturnTo; only management context populates this view.
 				query = url.Values{}
 				savedQuery := parsed.Query()
-				for _, key := range []string{"tz", "artist_query", "merge_query", "listen_at", "history_return"} {
+				for _, key := range []string{"tz", "artist_query", "merge_query", "listen_at", "event_id", "history_return"} {
 					if values, ok := savedQuery[key]; ok {
 						query[key] = values
 					}
@@ -265,6 +265,9 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 	// A rejected deletion keeps the selected listen and its original history context.
 	if r.Method == "POST" && task == "listen" && form != nil {
 		query.Set("listen_at", form.SingleValue("unix"))
+		if event := form.SingleValue("event_id"); event != "" {
+			query.Set("event_id", event)
+		}
 		if back := adminweb.SafeHistoryReturn(form.SingleValue("return_to"), profile.Slug); back != "" {
 			query.Set("history_return", back)
 		}
@@ -351,7 +354,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			err = db.ErrInvalidInput
 		} else {
 			for key, values := range q {
-				if (key != "artist_query" && key != "tz" && key != "merge_query" && key != "listen_at" && key != "history_return" && key != "partial") || len(values) != 1 || len(values[0]) > 4096 || (key == "artist_query" && kind != "track") {
+				if (key != "artist_query" && key != "tz" && key != "merge_query" && key != "listen_at" && key != "event_id" && key != "history_return" && key != "partial") || len(values) != 1 || len(values[0]) > 4096 || (key == "artist_query" && kind != "track") {
 					err = db.ErrInvalidInput
 					break
 				}
@@ -397,7 +400,7 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 			if task == "listen" && !q.Has("listen_at") {
 				err = db.ErrInvalidInput
 			}
-			for _, key := range []string{"listen_at", "history_return", "tz"} {
+			for _, key := range []string{"listen_at", "event_id", "history_return", "tz"} {
 				if q.Has(key) && q.Get(key) == "" {
 					err = db.ErrInvalidInput
 				}
@@ -412,14 +415,17 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 					} else if task == "listen" || task == "" {
 						at := time.Unix(stamp, 0)
 						var found *db.PaginatedResponse[*models.Listen]
-						found, err = h.store.GetListensPaginated(db.WithProfile(r.Context(), profile.ID), db.GetItemsOpts{TrackID: int(id), Page: 1, Limit: 1, Timeframe: db.Timeframe{Resolved: true, From: at, To: at}})
+						found, err = h.store.GetListensPaginated(db.WithProfile(r.Context(), profile.ID), db.GetItemsOpts{TrackID: int(id), EventID: q.Get("event_id"), Page: 1, Limit: 1, Timeframe: db.Timeframe{Resolved: true, From: at, To: at}})
 						if err == nil {
 							if len(found.Items) != 1 {
 								err = db.ErrNotFound
+							} else if found.TotalCount > 1 {
+								// A legacy selection cannot choose between distinct events.
+								err = db.ErrConflict
 							} else {
 								v.FocusListen = found.Items[0]
 								// Read provenance with the authorized profile, even for a public history.
-								v.Provenance, err = h.store.ListenProvenance(ctx, profile.ID, id, stamp)
+								v.Provenance, err = h.store.ListenProvenance(ctx, profile.ID, id, stamp, v.FocusListen.EventID)
 							}
 						}
 					}
@@ -689,7 +695,7 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 			h.putNotice(identity.SessionID, p.ID, "This listen already exists.")
 		}
 	case "listen-delete":
-		if kind != "track" || !fields(f, "profile_id", "profile_slug", "unix", "confirm") || f.SingleValue("confirm") != "1" {
+		if kind != "track" || !fields(f, "profile_id", "profile_slug", "unix", "event_id", "confirm") || f.SingleValue("confirm") != "1" {
 			err = db.ErrInvalidInput
 			break
 		}
@@ -698,7 +704,24 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 			err = db.ErrInvalidInput
 			break
 		}
-		err = admin.RemovePersonalListen(r.Context(), h.store, identity.User, p.ID, id, time.Unix(unix, 0))
+		// Forms with an event ID address an exact event even when the second is shared.
+		if event := f.SingleValue("event_id"); event != "" {
+			ctx := db.WithProfile(r.Context(), p.ID)
+			var found *db.PaginatedResponse[*models.Listen]
+			at := time.Unix(unix, 0)
+			found, err = h.store.GetListensPaginated(ctx, db.GetItemsOpts{TrackID: int(id), EventID: event, Page: 1, Limit: 1, Timeframe: db.Timeframe{Resolved: true, From: at, To: at}})
+			if err == nil && len(found.Items) != 1 {
+				err = db.ErrNotFound
+			}
+			if err == nil {
+				_, err = admin.AuthorizeProfile(ctx, h.store, identity.User, p.ID)
+			}
+			if err == nil {
+				err = h.store.DeleteListenEvent(ctx, event)
+			}
+		} else {
+			err = admin.RemovePersonalListen(r.Context(), h.store, identity.User, p.ID, id, time.Unix(unix, 0))
+		}
 		if err == nil {
 			h.putNotice(identity.SessionID, p.ID, "Listen deleted.")
 		}
@@ -793,6 +816,7 @@ func (h *Handler) mediaAction(w http.ResponseWriter, r *http.Request, identity a
 			}
 			q := u.Query()
 			q.Del("listen_at")
+			q.Del("event_id")
 			u.RawQuery = q.Encode()
 			target = u.String()
 		}

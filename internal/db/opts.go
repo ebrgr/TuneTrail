@@ -151,6 +151,7 @@ type GetItemsOpts struct {
 
 	// Used for getting listens
 	TrackID int
+	EventID string
 }
 
 type ListenActivityOpts struct {
@@ -176,12 +177,9 @@ type TimeListenedOpts struct {
 }
 
 type GetExportPageOpts struct {
-	FirstPage  bool
-	ProfileID  int32
-	UserID     int32
-	ListenedAt time.Time
-	TrackID    int32
-	Limit      int32
+	ProfileID    int32
+	AfterEventID string
+	Limit        int32
 }
 
 type GetInterestOpts struct {

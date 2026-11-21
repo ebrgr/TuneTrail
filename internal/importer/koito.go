@@ -43,12 +43,15 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		return fmt.Errorf("ImportKoitoFile: Decode: %w", err)
 	}
 
-	if data.Version != "1" {
-		return invalidFile(fmt.Errorf("unsupported TuneTrail/Koito export version"))
-	}
-
+	// Native archives bypass heuristic history matching. Koito v1 keeps its existing path.
 	if len(data.Listens) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
+	}
+	if data.Version == export.ArchiveVersion {
+		return importArchive(ctx, store, profileID, data, filename)
+	}
+	if data.Version != "1" {
+		return invalidFile(fmt.Errorf("unsupported TuneTrail/Koito export version"))
 	}
 	ctx, err = withFileShadow(ctx, store, profileID, "koito", f)
 	if err != nil {

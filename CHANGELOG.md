@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Track merges can be undone and keep each release occurrence and listen, including simultaneous plays across profiles (ISSUE-183).
+- Download and restore TuneTrail v2 history archives with event identity, release information and provenance, including listens without a release (ISSUE-183).
+
 ## [0.55] - 2026-11-21
 
 - Top tracks are grouped by recording by default and can be split by release, including listens with an unknown release (ISSUE-135).

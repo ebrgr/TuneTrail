@@ -36,7 +36,7 @@ func (s *Sqlite) SaveListenWithResult(ctx context.Context, opts db.SaveListenOpt
 	}
 	result, err := s.db.ExecContext(ctx,
 		`INSERT INTO listens (track_id, listened_at, user_id, profile_id, client) VALUES (?,?,?,?,?)
-         ON CONFLICT (profile_id, track_id, listened_at) DO NOTHING`,
+         ON CONFLICT DO NOTHING`,
 		opts.TrackID, opts.Time.Unix(), nullableLegacyUserID(opts.UserID), profileID, client,
 	)
 	// Manual legacy writes cannot bypass a converted profile's admission.
@@ -78,8 +78,42 @@ func (s *Sqlite) DeleteListen(ctx context.Context, trackId int32, listenedAt tim
 	if n == 0 {
 		return db.ErrNotFound
 	}
+	// The legacy tuple cannot identify a single event when several share a second.
+	if n > 1 {
+		return db.ErrConflict
+	}
 	if err := deleteListenReceipts(ctx, tx, profile, trackId, listenedAt); err != nil {
 		return err
+	}
+	return tx.Commit()
+}
+
+// DeleteListenEvent addresses a single event within the authorized profile.
+func (s *Sqlite) DeleteListenEvent(ctx context.Context, event string) error {
+	profile := db.ProfileID(ctx)
+	if profile <= 0 || event == "" {
+		return db.ErrInvalidInput
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var track int32
+	var at int64
+	var origin string
+	err = tx.QueryRowContext(ctx, `DELETE FROM listens WHERE profile_id=? AND event_id=?
+		RETURNING track_id,listened_at,origin`, profile, event).Scan(&track, &at, &origin)
+	if errors.Is(err, sql.ErrNoRows) {
+		return db.ErrNotFound
+	}
+	if err != nil {
+		return err
+	}
+	if origin == "legacy" {
+		if err := deleteListenReceipts(ctx, tx, profile, track, time.Unix(at, 0)); err != nil {
+			return err
+		}
 	}
 	return tx.Commit()
 }
@@ -93,6 +127,7 @@ type listenRow struct {
 	trackID    int32
 	title      string
 	client     string
+	eventID    string
 }
 
 // GetListensPaginated includes the original client in each profile-scoped history record.
@@ -120,6 +155,12 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		args = append(args, opts.ArtistID)
 	}
 
+	// Management lookups can identify one event even when it shares a timestamp.
+	if opts.EventID != "" {
+		where += " AND l.event_id=?"
+		args = append(args, opts.EventID)
+	}
+
 	var count int64
 	if err := s.queryRowContext(ctx, "SELECT COUNT(*)"+from+where, args...).Scan(&count); err != nil {
 		return nil, fmt.Errorf("count listens: %w", err)
@@ -129,7 +170,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		SELECT l.listened_at, l.track_id, COALESCE(o.presented_title, (
 		    SELECT alias FROM track_aliases
 		    WHERE track_id = o.legacy_track_id AND is_primary = 1 ORDER BY alias LIMIT 1
-		), ''), l.client`+from+where+`
+		), ''), l.client, l.event_id`+from+where+`
 		ORDER BY l.listened_at DESC, l.track_id DESC, l.event_id DESC LIMIT ? OFFSET ?`,
 		append(args, opts.Limit, offset)...)
 
@@ -140,7 +181,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 	var raw []listenRow
 	for rows.Next() {
 		var r listenRow
-		if err := rows.Scan(&r.listenedAt, &r.trackID, &r.title, &r.client); err != nil {
+		if err := rows.Scan(&r.listenedAt, &r.trackID, &r.title, &r.client, &r.eventID); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -158,7 +199,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 	for _, r := range raw {
 		l := &models.Listen{
 			Time:   time.Unix(r.listenedAt, 0).UTC(),
-			Client: r.client,
+			Client: r.client, EventID: r.eventID,
 			Track: models.SimpleTrack{
 				ID:    r.trackID,
 				Title: r.title,

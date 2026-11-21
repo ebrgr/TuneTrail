@@ -232,11 +232,11 @@ def run_legacy_and_merge(binary,root):
     server=seed_server(binary,root/'legacy','go')
     try:
         server.start();server.login()
-        # Merge removes one cached source while another profile keeps its destination.
+        # Both now-playing occurrences stay valid after a recording reconciliation.
         server.request('POST',LBZ+'/submit-listens',scrobble('Outra Alpha',0,'playing_now'),token='fixture-alpha-key')
         server.request('POST',LBZ+'/submit-listens',scrobble('Faixa comum',0,'playing_now'),token='fixture-beta-key')
         server.request('POST',WEB+'/track/1/merge',{'merge_from_id':4},admin=True,expected=204)
-        assert not checked_json(server,'alpha','/now-playing')['currently_playing']
+        assert checked_json(server,'alpha','/now-playing')['track']['id']==4
         assert checked_json(server,'beta','/now-playing')['track']['id']==1
         server.request('POST',LBZ+'/submit-listens',scrobble('Faixa comum',0,'playing_now'),token='fixture-alpha-key')
         forms=Forms(server);page=forms.request('GET','/admin?profile=2')[0]

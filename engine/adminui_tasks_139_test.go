@@ -268,7 +268,7 @@ func TestManagementCatalogDestinations139(t *testing.T) {
 			a := taskApp139(t)
 			base := "/second/manage/track/12"
 			query := "?action=merge&to=13"
-			want := "/second/track/13"
+			want := "/second/manage/track/13"
 			if reverse {
 				query += "&reverse=1"
 				want = "/second/track/12"
@@ -400,8 +400,8 @@ func TestManagementUnplayedSurvivor139(t *testing.T) {
 				out := taskRequest139(a, "POST", base+"/confirm", a.cookie, form, nil)
 				require.Equal(t, 303, out.Code, out.Body.String())
 				want := "/" + slug + "/" + kind + "/" + to
-				if slug == "default" {
-					want = "/default/manage/" + kind + "/" + to
+				if slug == "default" || kind == "track" {
+					want = "/" + slug + "/manage/" + kind + "/" + to
 				}
 				require.Equal(t, want, out.Header().Get("Location"))
 				require.Equal(t, 200, taskRequest139(a, "GET", want, a.cookie, nil, nil).Code)

@@ -46,8 +46,8 @@ func TestIngestActivationUpgrade(t *testing.T) {
 	require.Equal(t, currentSchemaVersion, version)
 	for name, digest := range before {
 		if name == "event_origins" {
-			// Migration 010 appends origins while keeping the legacy one.
-			require.Equal(t, 7, scalar(t, s, `SELECT count(*) FROM event_origins`))
+			// Migrations 010 and 014 append origins while keeping the legacy one.
+			require.Equal(t, 8, scalar(t, s, `SELECT count(*) FROM event_origins`))
 			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM event_origins WHERE origin='legacy'`))
 			continue
 		}

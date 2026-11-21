@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/models"
@@ -34,6 +35,17 @@ type RankedItem[T any] struct {
 }
 
 type ExportItem struct {
+	Cursor             string
+	EventID            string
+	EventNamespace     string
+	CatalogNamespace   string
+	RecordingID        int64
+	TrackReference     string
+	DiscNumber         int
+	TrackNumber        int
+	MBIDSource         string
+	Origin             string
+	Provenance         json.RawMessage
 	ListenedAt         time.Time
 	UserID             int32
 	Client             *string
@@ -47,6 +59,7 @@ type ExportItem struct {
 	ReleaseImageSource string
 	VariousArtists     bool
 	ReleaseAliases     []models.Alias
+	ReleaseArtists     []models.ArtistWithFullAliases
 	Artists            []models.ArtistWithFullAliases
 }
 

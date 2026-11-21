@@ -427,11 +427,9 @@
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
           <h1>Review merge: track</h1>
-          <p>This changes the shared catalog for all profiles. This action cannot be undone.</p>
-          <p>Source: Alpha Track (ID 1). Destination and surviving ID: Other Alpha Track (ID 2).</p>
+            <p>This groups the occurrences under one recording for all profiles. Each occurrence, release and listen is preserved.</p>
+          <p>Source: Alpha Track (ID 1). Destination occurrence: Other Alpha Track (ID 2).</p>
           <p>Source-linked tracks: 1; albums: 1; listens: 2.</p>
-            <p>Duplicate listens in the same profile and second: 1. Listens from different profiles stay separate.</p>
-            <p>The destination retains its aliases, MusicBrainz ID and other metadata; aliases from the source are removed. Source listens move to the destination track. Track artist relations, duration and aliases are not transferred; source artists may be associated with the destination album.</p>
           <h2>Source metadata and relations</h2>
           <p>MusicBrainz ID: none.</p>
           <p>Source aliases: <span>Alpha Track; </span>.</p>
@@ -450,8 +448,7 @@
             <h2>Profiles with destination-linked listens</h2>
             <ul>
               
-                <li>Fictional Alpha (ID 1): 2 destination-linked listens</li>
-                <li>Beta (ID 2): 1 destination-linked listens</li>
+                <li>Fictional Alpha (ID 1): 1 destination-linked listens</li>
             </ul>
           <form method="post" action="/alpha/manage/track/1/confirm">
             <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">

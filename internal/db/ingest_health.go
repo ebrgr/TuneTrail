@@ -9,7 +9,7 @@ import (
 type IngestHealthStore interface {
 	IngestHealth(context.Context, int32) (IngestHealth, error)
 	ReprocessIngest(context.Context, int32, string) error
-	ListenProvenance(context.Context, int32, int32, int64) ([]ListenProvenance, error)
+	ListenProvenance(context.Context, int32, int32, int64, ...string) ([]ListenProvenance, error)
 }
 
 type IngestHealth struct {

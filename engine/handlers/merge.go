@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/ebrgr/TuneTrail/engine/middleware"
@@ -135,6 +136,28 @@ func MergeTracksHandler(store db.TrackStore) http.HandlerFunc {
 		}
 
 		l.Debug().Msgf("MergeTracksHandler: Successfully merged tracks from ID %d to ID %d", body.MergeFromID, toId)
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// UndoTrackMergeHandler reverses the recording merge for the supplied pair.
+func UndoTrackMergeHandler(store interface {
+	UndoTrackMerge(context.Context, int32, int32) error
+}) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, 4096)
+		body, err := utils.DecodeBody[struct {
+			MergeFromID int32 `json:"merge_from_id"`
+		}](r)
+		to, idErr := utils.ParseIDParam(r, "id")
+		if err != nil || idErr != nil {
+			utils.WriteError(w, "invalid merge pair", http.StatusBadRequest)
+			return
+		}
+		if err := admin.UndoTrackMerge(r.Context(), store, middleware.GetUserFromContext(r.Context()), body.MergeFromID, to); err != nil {
+			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
+			return
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

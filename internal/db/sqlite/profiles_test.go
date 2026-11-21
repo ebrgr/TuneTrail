@@ -331,9 +331,10 @@ func TestProfileKeysCannotMoveAndRelayDoesNotReassign(t *testing.T) {
 }
 
 func TestMergeTracksPreservesProfilesAtSameTimestamp(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	ctx := context.Background()
-	execSQL(t, s, `INSERT INTO users(username,password) VALUES ('one',X'1234'),('two',X'1234')`)
+	testfixtures.Profile(t, s, 1, "one", "One", 1)
+	testfixtures.Profile(t, s, 2, "two", "Two", 1)
 	seedMusic(t, s)
 	execSQL(t, s, `INSERT INTO tracks(id,release_id,duration) VALUES (2,1,180)`)
 	execSQL(t, s, `INSERT INTO artist_tracks(artist_id,track_id) VALUES (1,1),(1,2)`)
@@ -343,15 +344,15 @@ func TestMergeTracksPreservesProfilesAtSameTimestamp(t *testing.T) {
 	}
 	require.NoError(t, s.MergeTracks(ctx, 1, 2))
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=2`))
-	require.Zero(t, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=1`))
+	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=1`))
 	require.Error(t, s.MergeTracks(ctx, 2, 2))
-	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM listens`))
+	require.Equal(t, 3, scalar(t, s, `SELECT COUNT(*) FROM listens`))
 	assertForeignKeys(t, s)
 }
 
 func TestProfileExportPaginationDoesNotSkipSameTimestamp(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
-	execSQL(t, s, `INSERT INTO users(username,password) VALUES ('listener',X'1234')`)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	testfixtures.Profile(t, s, 1, "listener", "Listener", 1)
 	seedMusic(t, s)
 	execSQL(t, s, `INSERT INTO tracks(id,release_id,duration) VALUES (2,1,180)`)
 	execSQL(t, s, `WITH RECURSIVE seq(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM seq WHERE n<1000)
@@ -363,7 +364,11 @@ func TestProfileExportPaginationDoesNotSkipSameTimestamp(t *testing.T) {
 	var result export.KoitoExport
 	require.NoError(t, json.Unmarshal(out.Bytes(), &result))
 	require.Len(t, result.Listens, 1001)
-	require.True(t, time.Unix(1700001000, 0).Equal(result.Listens[1000].ListenedAt))
+	events := map[string]bool{}
+	for _, item := range result.Listens {
+		require.False(t, events[item.Identity.EventID])
+		events[item.Identity.EventID] = true
+	}
 }
 
 // TestConsolidatedProfileMigrationRollsBackLateFailure preserves v2 on failure and retries through the latest schema.

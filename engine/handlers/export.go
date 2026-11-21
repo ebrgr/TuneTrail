@@ -7,6 +7,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 )
@@ -44,8 +45,16 @@ func ExportHandler(store interface {
 			return
 		}
 		w.Header().Set("Cache-Control", "no-store")
+		version := r.URL.Query().Get("version")
+		if version == "" {
+			version = export.ArchiveVersion
+		}
+		if version != "1" && version != export.ArchiveVersion {
+			utils.WriteError(w, "unsupported export version", http.StatusBadRequest)
+			return
+		}
 		stream := &exportResponse{ResponseWriter: w}
-		err := admin.ExportHistory(ctx, store, middleware.GetUserFromContext(ctx), u.ID, stream)
+		err := admin.ExportHistory(ctx, store, middleware.GetUserFromContext(ctx), u.ID, stream, version)
 		if err != nil {
 			l.Err(err).Msg("ExportHandler: Failed to create export file")
 			if !stream.started {

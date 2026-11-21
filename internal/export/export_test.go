@@ -20,12 +20,12 @@ type pages struct{ calls int }
 func (s *pages) GetExportPage(ctx context.Context, o db.GetExportPageOpts) ([]*db.ExportItem, error) {
 	s.calls++
 	if s.calls == 1 {
-		if !o.FirstPage {
+		if o.AfterEventID != "" {
 			return nil, errors.New("missing first page")
 		}
-		return []*db.ExportItem{{TrackID: 1, ListenedAt: time.Unix(-100, 0)}, {TrackID: 2, ListenedAt: time.Unix(-100, 0)}}, nil
+		return []*db.ExportItem{{Cursor: "first", TrackID: 1, ListenedAt: time.Unix(-100, 0)}, {Cursor: "second", TrackID: 2, ListenedAt: time.Unix(-100, 0)}}, nil
 	}
-	if o.FirstPage || o.TrackID != 2 || o.ListenedAt.Unix() != -100 {
+	if o.AfterEventID != "second" {
 		return nil, errors.New("bad cursor")
 	}
 	return nil, nil

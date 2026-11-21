@@ -67,8 +67,13 @@ func TestPreparedUploadsCountAndScope(t *testing.T) {
 	var doc export.KoitoExport
 	require.NoError(t, json.Unmarshal(output.Bytes(), &doc))
 	require.Len(t, doc.Listens, 1013) // six formats (tunetrail added in ISSUE-111) plus 1007 inserted
-	require.Equal(t, int64(-100), doc.Listens[0].ListenedAt.Unix())
-	require.Equal(t, int64(-100), doc.Listens[1].ListenedAt.Unix())
+	negative := 0
+	for _, l := range doc.Listens {
+		if l.ListenedAt.Unix() == -100 {
+			negative++
+		}
+	}
+	require.Equal(t, 2, negative)
 	count, err := a.store.ProfileListenCount(ctx, 2)
 	require.NoError(t, err)
 	require.EqualValues(t, 1013, count)

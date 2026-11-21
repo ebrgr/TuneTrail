@@ -183,6 +183,9 @@ func (p *LivePage) prepareActions() {
 		row := &p.Listens[i]
 		row.ManageURL = fmt.Sprintf("/%s/manage/track/%d/listen?listen_at=%d&tz=%s&history_return=%s",
 			p.Profile.Slug, row.Item.ID, row.Unix, url.QueryEscape(p.Timezone), url.QueryEscape(p.CurrentURL))
+		if row.EventID != "" {
+			row.ManageURL += "&event_id=" + url.QueryEscape(row.EventID)
+		}
 	}
 	if p.Media == nil {
 		return
