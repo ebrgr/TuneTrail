@@ -150,7 +150,7 @@ const relayCandidate = `SELECT d.profile_id FROM relay_destinations d JOIN profi
 
 // ExpireRelayWork marks a bounded number of aged items, including paused destinations.
 func (s *Sqlite) ExpireRelayWork(ctx context.Context, profile int32, now time.Time) (int64, error) {
-	result, err := s.db.ExecContext(ctx, expireRelayWork, profile, profile, now.Add(-relayMaxAge).Unix(), now.Unix())
+	result, err := s.db.ExecContext(ctx, expireRelayWork, profile, profile, now.Add(-relayMaxAge).Unix())
 	if err != nil {
 		return 0, err
 	}
@@ -159,7 +159,7 @@ func (s *Sqlite) ExpireRelayWork(ctx context.Context, profile int32, now time.Ti
 
 const expireRelayWork = `UPDATE outbox SET state='failed',result='{"reason":"expired"}',next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL
 	WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND created_at<=?
-	AND coalesce(lease_until,0)<=? AND ((` + relayDue + `) OR (` + relayCapacity + `)) LIMIT 100)`
+	AND lease_owner IS NULL AND ((` + relayDue + `) OR (` + relayCapacity + `)) LIMIT 100)`
 
 // maintainRelayQueue expires bounded work and readmits the oldest capacity failures.
 func maintainRelayQueue(ctx context.Context, tx *sql.Conn, profile int32, now int64) error {

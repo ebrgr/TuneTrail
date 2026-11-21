@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise normal v3-to-v5 startup, backup and restore on disposable copies.
+"""Exercise startup from v3 to the current schema, backup and restore on disposable copies.
 
 Optional --source files are copied with all SQLite sidecars before SQLite opens
 anything. Only temporary copies are used; stdout contains aggregate counts only.
@@ -46,6 +46,10 @@ def check(path, version):
     with connect(path) as conn:
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (version,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
+        if version >= 12:
+            assert conn.execute("SELECT policy FROM relay_delivery_gate WHERE id=1").fetchone() == ("legacy",)
+            columns = {row[1] for row in conn.execute("PRAGMA table_info(ingest_events)")}
+            assert "delivery_policy" in columns
         assert conn.execute('PRAGMA foreign_key_check').fetchall() == []
 
 
