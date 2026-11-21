@@ -24,3 +24,10 @@ Resultado: **APROVADO COM RESSALVAS** (nenhum `[BUG]`; três `[RISCO]` para deci
 
 ## Escalonamento
 O diff só lê o estado do relay (mensageria), sem alterar entrega nem criptografia. Recomendo ao usuário avaliar o Advisor (`effort` conforme AGENTS.md) apenas se quiser uma segunda leitura de isolamento/segredos.
+
+## Atualização (21/11/2026, após o aceite e a publicação da v0.52)
+
+- Risco 1 (desempenho de `healthSources` e `healthDecisions`): **transferido para a ISSUE-181**, que passa a medir com volume realista e a limitar a janela ou indexar se preciso. Continua sem medição.
+- Risco 2 (posição de Saúde no menu): **resolvido**. Saúde entrou no menu (+), acima de Configuração do servidor para root e junto dos links de conta para donos, além do seletor de seções da página.
+- Risco 3 (texto do AC #2): **resolvido**. O critério agora diz "dono do perfil e root".
+- Observação sobre horários em UTC: mantida, sem decisão.

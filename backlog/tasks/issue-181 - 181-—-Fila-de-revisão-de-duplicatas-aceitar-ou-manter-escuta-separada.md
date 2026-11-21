@@ -4,12 +4,14 @@ title: '181 — Fila de revisão de duplicatas: aceitar ou manter escuta separad
 status: Aberta
 assignee: []
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-21T16:07:00Z'
+updated_date: '2026-11-21T16:17:00Z'
 labels:
   - ingestao
 milestone: m-11
 dependencies:
   - ISSUE-083
+references:
+  - backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md
 priority: medium
 type: feature
 ordinal: 194000
@@ -32,4 +34,18 @@ Escopo proposto: seção Pendências de revisão na central de saúde (/admin/he
 - [ ] #3 Aceitar como duplicata e Manter como escuta separada gravam a decisão em uma única transação, com CSRF
 - [ ] #4 Testes de isolamento entre perfis e de decisão repetida ou concorrente
 - [ ] #5 Visual consistente com a central de saúde, responsivo e com hover
+- [ ] #6 Medir o custo das consultas da central de saúde (fontes e decisões) com volume realista de eventos e, se necessário, limitar a janela de tempo ou indexar; risco 1 do parecer da ISSUE-083
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-21T16:17:00Z
+
+---
+
+Herdado do parecer do Reviewer da ISSUE-083 (21/11/2026): o risco 1 (healthSources e healthDecisions percorrem todos os eventos do perfil a cada abertura da página, sem medição) passou para esta tarefa, pois a fila de revisão vai ler as mesmas tabelas. Os riscos 2 e 3 do parecer foram resolvidos na 083 (item no menu; AC do acesso reescrito). Parecer atualizado em backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md.
+
+---
+<!-- COMMENTS:END -->
