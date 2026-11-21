@@ -211,6 +211,19 @@ def upgrade(binary, baseline, root):
                 pauses = dict(upgraded.execute('SELECT p.slug,d.pause_class FROM relay_destinations d JOIN listening_profiles p ON p.id=d.profile_id'))
                 assert pauses['default'] is None and pauses['fixture-member'].startswith('policy_blocked')
                 assert upgraded.execute("SELECT count(*) FROM relay_allowlist WHERE origin='seeded'").fetchone()[0] == 2
+            current.login()
+            panel = current.request('GET', '/admin/settings', admin=True, headers={'Accept-Language': 'en'})
+            assert b'Ask an instance administrator to add the required exception.' in panel
+            assert b'upgrade-fictional-token' not in panel
+            member_relay = profile + 'fixture-member/relay'
+            response = current.request('GET', member_relay, admin=True)
+            assert 'token' not in response
+            for permission in ({'host_port': '127.0.0.1:1', 'allow_http': True},
+                               {'host_port': '127.0.0.1:1', 'cidr': '127.0.0.1/32', 'allow_private': True}):
+                current.request('PUT', member_relay + '/permissions', permission, admin=True, expected=204)
+            with closing(sqlite3.connect(path)) as upgraded:
+                assert upgraded.execute("""SELECT d.pause_class FROM relay_destinations d
+                    JOIN listening_profiles p ON p.id=d.profile_id WHERE p.slug='fixture-member'""").fetchone() == (None,)
             log = (app.directory / 'server.log').read_text()
             assert 'seed_skipped_non_admin' in log and 'upgrade-fictional-token' not in log
             backup, = app.directory.glob('tunetrail.db.pre-relay-delivery-*.bak')
