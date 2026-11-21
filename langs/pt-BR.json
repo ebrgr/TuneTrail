@@ -628,11 +628,11 @@
   "home.change.same": "Igual",
   "home.change.less": "{{.N}}% Menos",
   "admin.setting.RELAY_ALLOW_HTTP.label": "Permitir relay por HTTP",
-  "admin.setting.RELAY_ALLOW_HTTP.description": "Permite requisições do relay sem TLS em toda a instância. Reinicie para aplicar.",
+  "admin.setting.RELAY_ALLOW_HTTP.description": "Permite HTTP para entrega durável e validação em todos os perfis, inclusive de donos não-root. Prefira exceções por destino. Reinicie para aplicar.",
   "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.label": "Permitir relay em redes privadas",
-  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.description": "Permite requisições a redes reservadas em toda a instância. Endereços proibidos continuam bloqueados. Reinicie para aplicar.",
+  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.description": "Permite a qualquer dono de perfil acessar a LAN via GET /validate-token e POST /submit-listens. Loopback e link-local exigem exceção por destino. Prefira exceções. Reinicie para aplicar.",
   "admin.relay.title": "Relay",
-  "admin.relay.precedence": "Faixas proibidas continuam bloqueadas. Permissões globais têm prioridade sobre exceções por destino. Sem permissão, HTTP e redes reservadas ficam bloqueados.",
+  "admin.relay.precedence": "Faixas proibidas continuam bloqueadas. As permissões globais valem para todos os perfis. Loopback e link-local sempre exigem exceção por destino.",
   "admin.relay.exceptions": "Exceções do relay por destino",
   "admin.relay.host_port": "Host e porta",
   "admin.relay.cidr": "CIDR reservado",
@@ -662,5 +662,6 @@
   "admin.relay.reason_url_invalid": "Confira a URL base do relay.",
   "admin.relay.reason_policy_blocked": "Confira a configuração do relay e tente novamente.",
   "admin.relay.class_policy": "Relay bloqueado pela política.",
-  "admin.relay.class_network": "A validação de rede do relay falhou."
+  "admin.relay.class_network": "A validação de rede do relay falhou.",
+  "admin.relay.legacy_warning": "O encaminhamento legado, o modo sombra e Tocando agora usam o transporte padrão da v0.48, fora destas opções e exceções."
 }

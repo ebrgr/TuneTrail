@@ -1,9 +1,6 @@
 package relay
 
-import (
-	"github.com/ebrgr/TuneTrail/internal/cfg"
-	"net/netip"
-)
+import "net/netip"
 
 // Permission separates cleartext from access to a specific reserved network.
 type Permission struct {
@@ -15,14 +12,26 @@ type Permission struct {
 // Permissions is an immutable, profile-scoped snapshot for a single claim.
 type Permissions []Permission
 
-// Allows requires both permissions when a cleartext request reaches a reserved IP.
+// NetworkPolicy combines the profile exceptions with an instance configuration snapshot.
+type NetworkPolicy struct {
+	Permissions             Permissions
+	AllowHTTP, AllowPrivate bool
+}
+
+// Allows checks exceptions without granting instance-wide permissions.
 func (permissions Permissions) Allows(scheme, hostPort string, ip netip.Addr) bool {
+	return (NetworkPolicy{Permissions: permissions}).Allows(scheme, hostPort, ip)
+}
+
+// Allows requires both permissions when cleartext reaches a reserved address.
+func (policy NetworkPolicy) Allows(scheme, hostPort string, ip netip.Addr) bool {
+	ip = ip.Unmap().WithZone("")
 	if IsForbiddenAddress(ip) {
 		return false
 	}
-	globalHTTP, globalPrivate := cfg.RelayNetworkPolicy()
-	cleartext, reserved := scheme != "http" || globalHTTP, !IsReservedAddress(ip) || globalPrivate
-	for _, p := range permissions {
+	globalPrivate := policy.AllowPrivate && !ip.IsLoopback() && !ip.IsLinkLocalUnicast()
+	cleartext, reserved := scheme != "http" || policy.AllowHTTP, !IsReservedAddress(ip) || globalPrivate
+	for _, p := range policy.Permissions {
 		if p.HostPort != hostPort {
 			continue
 		}

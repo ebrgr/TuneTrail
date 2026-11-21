@@ -53,7 +53,11 @@
                 <h2>{{tr "admin.relay.title" "Relay"}}</h2>
                 <p>{{tr
                   "admin.relay.precedence"
-                  "Forbidden ranges stay blocked. Global permissions override destination exceptions. HTTP and reserved networks are blocked by default."
+                  "Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions."
+                }}</p>
+                <p>{{tr
+                  "admin.relay.legacy_warning"
+                  "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions."
                 }}</p>
               {{end}}
               <section class="server-setting">

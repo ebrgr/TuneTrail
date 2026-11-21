@@ -38,3 +38,24 @@ func TestPolicyDiagnosticSanitizesAndRatesByReason(t *testing.T) {
 	require.True(t, errors.As(blocked, &denial))
 	require.Equal(t, "metadata_endpoint", denial.code)
 }
+
+// TestGlobalPrivatePolicyKeepsLocalExceptionsRequired checks both IP families.
+func TestGlobalPrivatePolicyKeepsLocalExceptionsRequired(t *testing.T) {
+	policy := NetworkPolicy{AllowHTTP: true, AllowPrivate: true}
+	for _, raw := range []string{"192.168.1.1", "10.1.2.3", "172.16.1.1", "172.31.1.1", "100.64.1.1"} {
+		require.True(t, policy.Allows("http", "relay.test:80", netip.MustParseAddr(raw)), raw)
+	}
+	for _, raw := range []string{"127.1.2.3", "::1", "169.254.8.3", "fe80::1"} {
+		ip := netip.MustParseAddr(raw)
+		require.False(t, policy.Allows("http", "relay.test:80", ip), raw)
+		explicit := policy
+		explicit.Permissions = Permissions{{HostPort: "relay.test:80", Private: true, Prefix: netip.PrefixFrom(ip, ip.BitLen())}}
+		require.True(t, explicit.Allows("http", "relay.test:80", ip), raw)
+	}
+	for _, raw := range []string{"169.254.169.254", "fd00:ec2::254"} {
+		ip := netip.MustParseAddr(raw)
+		explicit := policy
+		explicit.Permissions = Permissions{{HostPort: "relay.test:80", Private: true, Prefix: netip.PrefixFrom(ip, ip.BitLen())}}
+		require.False(t, explicit.Allows("http", "relay.test:80", ip), raw)
+	}
+}

@@ -628,11 +628,11 @@
   "home.change.same": "Same",
   "home.change.less": "{{.N}}% Less",
   "admin.setting.RELAY_ALLOW_HTTP.label": "Allow relay over HTTP",
-  "admin.setting.RELAY_ALLOW_HTTP.description": "Allows cleartext relay requests instance-wide. Restart to apply.",
+  "admin.setting.RELAY_ALLOW_HTTP.description": "Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.",
   "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.label": "Allow relay on private networks",
-  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.description": "Allows relay requests to reserved networks instance-wide. Permanently forbidden endpoints stay blocked. Restart to apply.",
+  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.description": "Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.",
   "admin.relay.title": "Relay",
-  "admin.relay.precedence": "Forbidden ranges stay blocked. Global permissions take precedence over destination exceptions. Without permission, HTTP and reserved networks are blocked.",
+  "admin.relay.precedence": "Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions.",
   "admin.relay.exceptions": "Relay exceptions by destination",
   "admin.relay.host_port": "Host and port",
   "admin.relay.cidr": "Reserved CIDR",
@@ -662,5 +662,6 @@
   "admin.relay.reason_url_invalid": "Check the relay base URL.",
   "admin.relay.reason_policy_blocked": "Check the relay configuration and try again.",
   "admin.relay.class_policy": "Relay blocked by policy.",
-  "admin.relay.class_network": "Relay network validation failed."
+  "admin.relay.class_network": "Relay network validation failed.",
+  "admin.relay.legacy_warning": "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions."
 }

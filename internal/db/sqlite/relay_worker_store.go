@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 )
 
@@ -14,24 +15,31 @@ import (
 var ErrRelayConfigInvalid = errors.New("invalid stored relay configuration")
 
 // RelayTarget checks that the credential and permission snapshot still belongs to the claim.
-func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, string, relay.Permissions, error) {
+func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, string, relay.NetworkPolicy, error) {
 	var endpoint, token string
 	err := s.db.QueryRowContext(ctx, `SELECT p.url,p.token FROM profile_relays p JOIN relay_destinations d USING(profile_id)
 		WHERE p.profile_id=? AND d.generation=? AND d.config_version=? AND d.work_version=? AND d.lease_owner=?`,
 		batch.Profile, batch.Generation, batch.ConfigVersion, batch.Version, batch.Owner).Scan(&endpoint, &token)
 	if err != nil {
-		return "", "", nil, err
+		return "", "", relay.NetworkPolicy{}, err
 	}
 	diagnostic := relay.StoredTargetDiagnostic(endpoint, token)
 	if _, _, err := canonicalRelay(endpoint); err != nil {
 		diagnostic = relay.Describe(endpoint, "url_invalid", "")
 	}
 	if diagnostic.Code != "" {
-		return "", "", nil, errors.Join(ErrRelayConfigInvalid, &relay.ValidationError{Class: relay.ConfigInvalid, Diagnostic: diagnostic})
+		return "", "", relay.NetworkPolicy{}, errors.Join(ErrRelayConfigInvalid, &relay.ValidationError{Class: relay.ConfigInvalid, Diagnostic: diagnostic})
 	}
-	permissions, err := s.RelayPermissions(ctx, batch.Profile)
+	policy, err := s.RelayNetworkPolicyForProfile(ctx, batch.Profile)
 	// Renewal rechecks config_version after these reads, fencing concurrent configuration changes.
-	return endpoint, token, permissions, err
+	return endpoint, token, policy, err
+}
+
+// RelayNetworkPolicyForProfile snapshots the startup flags and scoped exceptions.
+func (s *Sqlite) RelayNetworkPolicyForProfile(ctx context.Context, profile int32) (relay.NetworkPolicy, error) {
+	httpAllowed, privateAllowed := cfg.RelayNetworkPolicy()
+	permissions, err := s.RelayPermissions(ctx, profile)
+	return relay.NetworkPolicy{Permissions: permissions, AllowHTTP: httpAllowed, AllowPrivate: privateAllowed}, err
 }
 
 // RelayProfiles lists all destination records, including paused and removed configurations.

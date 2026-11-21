@@ -53,11 +53,11 @@ func TestRelay(ctx context.Context, store db.ProfileStore, user *models.User, id
 	if client.Transport != nil {
 		return client.Test(ctx, raw, token)
 	}
-	var permissions relay.Permissions
+	var permissions relay.NetworkPolicy
 	if scoped, ok := store.(interface {
-		RelayPermissions(context.Context, int32) (relay.Permissions, error)
+		RelayNetworkPolicyForProfile(context.Context, int32) (relay.NetworkPolicy, error)
 	}); ok {
-		permissions, err = scoped.RelayPermissions(ctx, id)
+		permissions, err = scoped.RelayNetworkPolicyForProfile(ctx, id)
 		if err != nil {
 			return "", err
 		}

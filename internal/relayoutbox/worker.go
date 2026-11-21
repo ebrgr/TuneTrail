@@ -16,7 +16,7 @@ import (
 // Store exposes only transactional claims and sanitized delivery state.
 type Store interface {
 	ClaimRelayBatch(context.Context, time.Time) (sqlite.RelayBatch, error)
-	RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.Permissions, error)
+	RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.NetworkPolicy, error)
 	RelayPayload(context.Context, sqlite.RelayBatch, sqlite.RelayItem) ([]byte, error)
 	FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem, error) error
 	RenewRelayBatch(context.Context, sqlite.RelayBatch, time.Time, ...sqlite.RelayItem) (bool, error)

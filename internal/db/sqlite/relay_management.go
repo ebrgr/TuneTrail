@@ -37,7 +37,7 @@ func (s *Sqlite) probeSavedRelay(ctx context.Context, profile int32, requireHeal
 			return version, false, db.ErrConflict
 		}
 	}
-	permissions, err := s.RelayPermissions(ctx, profile)
+	permissions, err := s.RelayNetworkPolicyForProfile(ctx, profile)
 	if err != nil {
 		return version, false, err
 	}
@@ -131,7 +131,7 @@ func (s *Sqlite) validateOccurrenceRelay(ctx context.Context, profile int32, bas
 	if err != nil {
 		return false, 0, err
 	}
-	permissions, err := s.RelayPermissions(ctx, profile)
+	permissions, err := s.RelayNetworkPolicyForProfile(ctx, profile)
 	if err != nil {
 		return false, 0, err
 	}

@@ -24,12 +24,12 @@ type fixtureStore struct {
 	releases, missing int
 }
 
-func (s *fixtureStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.Permissions, error) {
+func (s *fixtureStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.NetworkPolicy, error) {
 	host := strings.TrimPrefix(s.base, "http://")
-	return s.base, "fictional-token", relay.Permissions{
+	return s.base, "fictional-token", relay.NetworkPolicy{Permissions: relay.Permissions{
 		{HostPort: host, HTTP: true},
 		{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")},
-	}, nil
+	}}, nil
 }
 
 func (*fixtureStore) RelayPayload(_ context.Context, _ sqlite.RelayBatch, item sqlite.RelayItem) ([]byte, error) {
@@ -116,8 +116,8 @@ func (s *failingClaimStore) ClaimRelayBatch(_ context.Context, at time.Time) (sq
 	return sqlite.RelayBatch{Items: []sqlite.RelayItem{{ID: "fixture"}}}, s.claimErr
 }
 
-func (s *failingClaimStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.Permissions, error) {
-	return "", "", nil, s.targetErr
+func (s *failingClaimStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.NetworkPolicy, error) {
+	return "", "", relay.NetworkPolicy{}, s.targetErr
 }
 
 func (s *failingClaimStore) FinishRelayBatch(_ context.Context, _ sqlite.RelayBatch, _ []sqlite.RelayItem, result relay.Result, _ time.Time, _ bool) (bool, error) {

@@ -125,11 +125,21 @@ allow_http = false
 allow_private_network = false
 ```
 
+Both flags apply to **every profile, including non-root owners**. With
+`allow_private_network` enabled, any profile owner can reach LAN services
+via GET `{base}/validate-token` and POST `{base}/submit-listens`. Prefer
+destination exceptions. Loopback and link-local addresses still need
+per-destination exceptions. Permanently forbidden ranges remain blocked.
+
+These restrictions apply only to durable delivery and the connection test.
+The legacy/shadow raw relay and `playing_now` use the v0.48 Sender with
+the default transport, outside the global flags and destination exceptions.
+
 The dialer checks permissions in this order:
 
 1. Forbidden endpoints and ranges always stay blocked, including cloud metadata
    and the blocked IPv6 translation ranges.
-2. An enabled global permission applies to its corresponding restriction.
+2. A global permission applies to its corresponding restriction, except that loopback and link-local access always needs a destination exception.
 3. A matching host:port exception can allow HTTP or a specific reserved CIDR.
 4. Without permission, cleartext and reserved networks stay blocked.
 

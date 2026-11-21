@@ -218,3 +218,5 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 
 - Obrigatório 1 concluído. Falha de DNS no upgrade ou no bootstrap via ambiente pausa como transitória por 30 s, sem exceção semeada. O dialer decide de novo em cada tentativa.
 - Pendente: política global, texto de segurança, encerramento, diagnósticos e verificação.
+
+- Obrigatório 2 e D1: permissões globais valem inclusive para donos não-root na entrega durável e no teste de conexão. Prefira exceções. Faixas proibidas nunca são liberadas. Loopback e link-local sempre exigem exceção por destino. Para outros endereços vale global → exceção → bloqueio padrão. A via bruta legada/sombra e playing_now estão fora dessas regras (risco aceito).
