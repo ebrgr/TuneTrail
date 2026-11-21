@@ -153,11 +153,11 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 			}
 			active = pinned.Active && version >= 10
 		} else if master && version >= 10 {
-			var err error
-			active, err = activeIngestMode(ctx, tx, batch.ProfileID)
+			profileActive, err := activeIngestMode(ctx, tx, batch.ProfileID)
 			if err != nil {
 				return err
 			}
+			active = profileActive
 		}
 		modeKnown = true
 		deliveryPolicy := ""
@@ -210,7 +210,9 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 		return nil
 	})
 	if err != nil {
-		return active || !modeKnown, nil, "", ingestStorageError(err, active || !modeKnown || (pinned != nil && pinned.Active))
+		// Unknown-mode generic failures fall through to legacy. Unavailable storage
+		// still fails closed, as does a profile already known to be active.
+		return active, nil, "", ingestStorageError(err, active || !modeKnown || (pinned != nil && pinned.Active))
 	}
 	return active, results, policy, nil
 }

@@ -50,7 +50,34 @@ func (s *Sqlite) IngestHealth(ctx context.Context, profile int32) (db.IngestHeal
 	if !until.Valid || until.Time.After(time.Now()) {
 		health.Pause = pause
 	}
-	return health, nil
+	if version >= 13 {
+		health.Failures, health.FailureCount, err = s.healthFailures(ctx, profile)
+	}
+	return health, err
+}
+
+// healthFailures reads the queue count and the most recent receipts from one snapshot.
+func (s *Sqlite) healthFailures(ctx context.Context, profile int32) ([]db.IngestFailure, int, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT receipt_id,coalesce(file_format,source_type),park_reason,attempt_count,parked_at,
+		(SELECT count(*) FROM ingest_events WHERE profile_id=? AND parked_at IS NOT NULL)
+		FROM ingest_events WHERE profile_id=? AND parked_at IS NOT NULL
+		ORDER BY parked_at DESC,receipt_id DESC LIMIT 25`, profile, profile)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	var failures []db.IngestFailure
+	var count int
+	for rows.Next() {
+		var item db.IngestFailure
+		var parked int64
+		if err := rows.Scan(&item.Receipt, &item.Source, &item.Reason, &item.Attempts, &parked, &count); err != nil {
+			return nil, 0, err
+		}
+		item.Parked = time.Unix(parked, 0).UTC()
+		failures = append(failures, item)
+	}
+	return failures, count, rows.Err()
 }
 
 // healthSources selects the latest receipt per integration, adapter format and declared client.
@@ -64,7 +91,9 @@ func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int) 
 	rows, err := s.db.QueryContext(ctx, `WITH sources AS (
 		SELECT e.profile_id,e.receipt_id,e.source_instance_id,e.received_at,e.time_precision,e.event_id,`+policy+`,
 			substr(coalesce(nullif(e.client_name,''),
-			CASE WHEN json_type(e.original_snapshot,'$.client')='text' THEN json_extract(e.original_snapshot,'$.client') END,''),1,120) AS client,
+			CASE WHEN json_valid(e.original_snapshot) THEN
+				CASE WHEN json_type(e.original_snapshot,'$.client')='text' THEN json_extract(e.original_snapshot,'$.client') END
+			END,''),1,120) AS client,
 			coalesce(e.file_format,e.source_type) AS source
 		FROM ingest_events e WHERE e.profile_id=?
 	), latest AS (

@@ -256,3 +256,18 @@ If the application cannot be recovered, stop TuneTrail and restore the
 SQLite-consistent `.pre-relay-delivery-*.bak` snapshot into a clean data
 directory before starting the schema 11 build. Keep the newer database
 separately because restoring the backup rolls back later local changes.
+
+## Permanent failures
+
+The active resolver makes up to five automatic attempts for transient failures,
+with waits of 1, 2, 4, and 8 minutes. After the fifth failure it parks the
+receipt and keeps the original submission and its idempotency key. An unreadable
+listen time or snapshot is recorded as invalid and closes without further
+automatic attempts.
+
+Open **Health** in the administration menu and look under **Permanent failures**.
+The heading shows the total and the list shows the 25 most recently parked
+receipts. The profile owner can view their own queue, and root can select any
+profile. After correcting the cause, select **Reprocess** to queue the receipt
+immediately with a fresh five-attempt budget. The displayed attempt count tracks
+all claims for that receipt, including recoveries after an interrupted attempt.

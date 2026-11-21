@@ -2,6 +2,7 @@ package adminui
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/ebrgr/TuneTrail/internal/admin"
@@ -9,6 +10,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
+	"github.com/google/uuid"
 )
 
 // healthProfile resolves the explicit profile or defaults to the session owner's profile.
@@ -33,7 +35,7 @@ func (h *Handler) healthProfile(r *http.Request, actor *models.User, profiles []
 // healthPage authenticates and authorizes the profile before reading any diagnostics.
 func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 	identity, err := adminweb.SessionIdentity(r, h.store)
-	if errors.Is(err, admin.ErrUnauthorized) && r.Header.Get("Authorization") == "" {
+	if r.Method == http.MethodGet && errors.Is(err, admin.ErrUnauthorized) && r.Header.Get("Authorization") == "" {
 		h.loginPage(w, r, "")
 		return
 	}
@@ -51,6 +53,15 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 		h.failForSession(w, r, identity, err)
 		return
 	}
+	if r.Method == http.MethodPost {
+		h.reprocessHealthReceipt(w, r, identity, profile.ID)
+		return
+	}
+	token, err := h.csrf.SessionToken(identity)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
 	health, err := h.store.IngestHealth(r.Context(), profile.ID)
 	if err != nil {
 		h.fail(w, err)
@@ -61,6 +72,26 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 	}
 	h.render(w, http.StatusOK, view{
 		Nav: h.navigation(r, identity, profile, "health"), Health: &health,
-		Profile: profile, Profiles: profiles, User: identity.User,
+		Profile: profile, Profiles: profiles, User: identity.User, CSRF: token,
 	})
+}
+
+// reprocessHealthReceipt accepts a session-bound form for the already authorized profile.
+func (h *Handler) reprocessHealthReceipt(w http.ResponseWriter, r *http.Request, identity admin.Identity, profile int32) {
+	form, err := h.csrf.ParseSessionForm(w, r, identity, adminweb.FormLimits{MaxBytes: 8192, TempDir: h.tempDir})
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	defer form.Close()
+	receipt, err := uuid.Parse(form.SingleValue("receipt"))
+	if err != nil || !fields(form, "receipt") {
+		h.fail(w, db.ErrInvalidInput)
+		return
+	}
+	if err := h.store.ReprocessIngest(r.Context(), profile, receipt.String()); err != nil {
+		h.fail(w, err)
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("/admin/health?profile=%d#health-failures", profile), http.StatusSeeOther)
 }

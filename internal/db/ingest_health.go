@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
-// IngestHealthStore exposes only the projections used in profile management.
+// IngestHealthStore provides profile diagnostics and manual recovery.
 type IngestHealthStore interface {
 	IngestHealth(context.Context, int32) (IngestHealth, error)
+	ReprocessIngest(context.Context, int32, string) error
 	ListenProvenance(context.Context, int32, int32, int64) ([]ListenProvenance, error)
 }
 
@@ -18,6 +19,15 @@ type IngestHealth struct {
 	Open         int
 	Pause        string
 	RelayTracked bool
+	Failures     []IngestFailure
+	FailureCount int
+}
+
+// IngestFailure is the credential-free projection of a parked receipt.
+type IngestFailure struct {
+	Receipt, Source, Reason string
+	Attempts                int64
+	Parked                  time.Time
 }
 
 type IngestSource struct {

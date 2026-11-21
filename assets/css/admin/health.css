@@ -26,7 +26,12 @@
   transition:background-color .1s,color .1s,border-color .1s;
 }
 .admin-main .ingestion-health button:hover { background:var(--color-bg-tertiary); }
-.admin-main .ingestion-health .card { padding:var(--space-5); margin-bottom:var(--space-5); }
+/* Independent health cards share columns as space becomes available. */
+.admin-main .ingestion-health-grid {
+  display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:var(--space-5);
+}
+.admin-main .ingestion-health .card { min-width:0; padding:var(--space-5); margin:0; overflow-wrap:anywhere; }
+.admin-main .ingestion-health .ingestion-reprocess { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .card > h2 {
   margin:0 0 var(--space-3); font-size:18px; font-weight:400; text-transform:uppercase; color:var(--color-fg-secondary);
 }
@@ -51,5 +56,11 @@
   }
   .admin-main .ingestion-health dd,.admin-main details.ingestion-diagnostics dd { margin:0; }
   .admin-main .ingestion-health form button { width:auto; }
+}
+@media(min-width:64rem) {
+  .admin-main .ingestion-health-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(min-width:90rem) {
+  .admin-main .ingestion-health-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
 }

@@ -183,7 +183,7 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.resolver_variant='occurrence'
 			  AND e.closed_at IS NULL AND e.state IN ('received','retryable') AND e.resolution_version=?
 			  AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
-			r.id, r.profile, r.version, r.work, r.lease, time.Now().Unix()).Scan(&precision, &admissionReason)
+			r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&precision, &admissionReason)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}

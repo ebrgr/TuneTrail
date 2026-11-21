@@ -220,7 +220,7 @@ func relayReceipt(t *testing.T, s *Sqlite, profile int32, id, variant string, tr
 // relayStoreFixture supplies catalog rows and profiles for the two independent writers.
 func relayStoreFixture(t *testing.T) (*Sqlite, string) {
 	t.Helper()
-	s, _, path := migrationDB(t, 12)
+	s, _, path := migrationDB(t, currentSchemaVersion)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, "UPDATE relay_delivery_gate SET policy='durable'")
 	require.NoError(t, s.SetProfileRelay(t.Context(), 1, "https://RELAY.test:443/prefix", "relay-fixture"))

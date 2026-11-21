@@ -3,9 +3,15 @@ package engine
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/require"
 )
 
@@ -86,4 +92,94 @@ func TestIngestHealthIsolation(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestIngestHealthReprocess uses the same profile authorization for the queue and its action.
+func TestIngestHealthReprocess(t *testing.T) {
+	a := newProfileTestApp(t)
+	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2;
+		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)`))
+	const payload = "PRIVATE_SNAPSHOT_TITLE"
+	const idempotencyKey = "PRIVATE_IDEMPOTENCY_KEY"
+	keyDigest := ingest.Digest([]byte(idempotencyKey))
+	for _, key := range []string{"first-key", "second-key"} {
+		r := httptest.NewRequest(http.MethodPost, "/apis/listenbrainz/1/submit-listens", strings.NewReader(listenBody("single", payload, 1714564800)))
+		r.Header.Set("Authorization", "Token "+key)
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Idempotency-Key", idempotencyKey)
+		w := httptest.NewRecorder()
+		a.router.ServeHTTP(w, r)
+		require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+	}
+	// Advance to the fifth claim. The trigger aborts the decision and its listen together.
+	require.NoError(t, a.store.Exec(`UPDATE ingest_events SET attempt_count=4,work_version=4;
+		CREATE TRIGGER health_fixture_failure BEFORE INSERT ON ingest_revisions
+		BEGIN SELECT RAISE(ABORT, 'persistent fixture failure'); END`))
+	for range 2 {
+		found, err := a.store.ResolveNextIngest(t.Context(), &mbz.MbzErrorCaller{})
+		require.True(t, found)
+		require.ErrorContains(t, err, "persistent fixture failure")
+	}
+	listens, err := a.store.Count(`SELECT count(*) FROM listens`)
+	require.NoError(t, err)
+	require.Zero(t, listens)
+	var first, second string
+	require.NoError(t, a.store.QueryRow(`SELECT receipt_id FROM ingest_events WHERE profile_id=1`).Scan(&first))
+	require.NoError(t, a.store.QueryRow(`SELECT receipt_id FROM ingest_events WHERE profile_id=2`).Scan(&second))
+	session, err := a.store.SaveSession(t.Context(), 2, time.Now().Add(time.Hour), false)
+	require.NoError(t, err)
+	owner := *a
+	owner.cookie = session.ID.String()
+	csrf := regexp.MustCompile(`name="csrf_token" value="([^"]+)"`)
+	ownerPage := owner.request("GET", "/admin/health?profile=2", "", "", true)
+	require.Equal(t, http.StatusOK, ownerPage.Code)
+	require.Contains(t, ownerPage.Body.String(), second)
+	require.NotContains(t, ownerPage.Body.String(), first)
+	require.NotContains(t, ownerPage.Body.String(), "PRIVATE_")
+	require.NotContains(t, ownerPage.Body.String(), keyDigest)
+	ownerToken := csrf.FindStringSubmatch(ownerPage.Body.String())
+	require.Len(t, ownerToken, 2)
+	rootPage := a.request("GET", "/admin/health?profile=1", "", "", true)
+	require.Equal(t, http.StatusOK, rootPage.Code)
+	require.Contains(t, rootPage.Body.String(), first)
+	require.NotContains(t, rootPage.Body.String(), second)
+	require.NotContains(t, rootPage.Body.String(), "PRIVATE_")
+	require.NotContains(t, rootPage.Body.String(), keyDigest)
+	rootToken := csrf.FindStringSubmatch(rootPage.Body.String())
+	require.Len(t, rootToken, 2)
+
+	post := func(app *profileTestApp, profile int, receipt, token string) int {
+		t.Helper()
+		form := url.Values{"csrf_token": {token}, "receipt": {receipt}}
+		r := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/admin/health/reprocess?profile=%d", profile), strings.NewReader(form.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: app.cookie})
+		w := httptest.NewRecorder()
+		app.router.ServeHTTP(w, r)
+		return w.Code
+	}
+	require.Equal(t, http.StatusForbidden, post(&owner, 1, first, ownerToken[1]))
+	require.Equal(t, http.StatusForbidden, post(&owner, 2, second, ""))
+	require.Equal(t, http.StatusForbidden, post(&owner, 2, second, rootToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(&owner, 2, first, ownerToken[1]))
+	parked, err := a.store.Count(`SELECT count(*) FROM ingest_events WHERE parked_at IS NOT NULL`)
+	require.NoError(t, err)
+	require.Equal(t, 2, parked)
+	require.Equal(t, http.StatusSeeOther, post(&owner, 2, second, ownerToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(&owner, 2, second, ownerToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(a, 1, first, rootToken[1]))
+	requeued, err := a.store.Count(`SELECT count(*) FROM ingest_events WHERE parked_at IS NULL
+		AND next_attempt_at IS NOT NULL AND attempt_count=5 AND retry_attempt_base=5 AND work_version=6`)
+	require.NoError(t, err)
+	require.Equal(t, 2, requeued)
+	require.NoError(t, a.store.Exec(`DROP TRIGGER health_fixture_failure`))
+	for range 2 {
+		found, err := a.store.ResolveNextIngest(t.Context(), &mbz.MbzErrorCaller{})
+		require.NoError(t, err)
+		require.True(t, found)
+	}
+	listens, err = a.store.Count(`SELECT count(*) FROM ingest_events e JOIN listens l USING(profile_id,event_id)
+		WHERE e.state='accepted' AND e.attempt_count=6 AND e.client_idempotency_key=?`, keyDigest)
+	require.NoError(t, err)
+	require.Equal(t, 2, listens)
 }

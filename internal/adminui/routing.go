@@ -38,8 +38,8 @@ func IsAction(path string) bool {
 		return false
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
-	// Redemption is the only public action added to the admin routes.
-	if path == "/admin/redeem" || path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" || path == "/admin/settings/relay" {
+	// Health can requeue a receipt only through the protected POST dispatcher.
+	if path == "/admin/health/reprocess" || path == "/admin/redeem" || path == "/admin/login" || path == "/admin/logout" || path == "/admin/account/username" || path == "/admin/account/password" || path == "/admin/profile/create" || path == "/admin/settings/save" || path == "/admin/settings/subsonic/test" || path == "/admin/settings/relay" {
 		return true
 	}
 	if len(p) >= 4 && p[0] == "admin" && p[1] == "profile" {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 	"time"
 
 	migrations_sqlite "github.com/ebrgr/TuneTrail/db/migrations_sqlite"
@@ -24,6 +25,9 @@ type Sqlite struct {
 	allowStandaloneOccurrences bool
 	occurrenceProofCache       occurrenceReleaseCache
 	relayJitter                func(int64) int64
+	ingestClock                func() time.Time
+	ingestAlertMu              sync.Mutex
+	ingestAlerts               map[ingestAlertKey]time.Time
 }
 
 func New() (*Sqlite, error) {

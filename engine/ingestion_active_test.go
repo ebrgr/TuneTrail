@@ -188,3 +188,28 @@ func TestActiveKoitoValidatesBeforeCatalog(t *testing.T) {
 		require.Zero(t, n, table)
 	}
 }
+
+// TestListenAdmissionErrorClasses checks whether a failure permits the legacy writer.
+func TestListenAdmissionErrorClasses(t *testing.T) {
+	for _, tc := range []struct {
+		name, setup     string
+		status, listens int
+	}{
+		{"generic before mode", `ALTER TABLE profile_ingest_flags RENAME TO fixture_flags`, 200, 1},
+		{"generic after active mode", `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1);
+			CREATE TRIGGER fixture_admission_abort BEFORE INSERT ON ingest_events
+			BEGIN SELECT RAISE(ABORT, 'generic fixture error'); END`, 500, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			a := newProfileTestApp(t)
+			require.True(t, cfg.ActiveIngestEnabled())
+			require.NoError(t, a.store.Exec(tc.setup))
+			out := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Retry Fixture", 1714564800), "first-key", false)
+			require.Equal(t, tc.status, out.Code, out.Body.String())
+			require.Empty(t, out.Header().Get("Retry-After"))
+			n, err := a.store.Count(`SELECT count(*) FROM listens`)
+			require.NoError(t, err)
+			require.Equal(t, tc.listens, n)
+		})
+	}
+}

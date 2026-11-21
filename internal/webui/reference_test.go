@@ -197,6 +197,12 @@ func TestUIReference(t *testing.T) {
 		VALUES('reference-receipt',1,'reference-source',1,'listenbrainz','1','reference',0,'single',1714564800,'second','start',
 			'{"client":"Fictional client"}','reference','1','review','["ambiguous_time_candidate"]',
 			'shadow-v1','{"delta_seconds":3,"recording_mbid_match":true}');
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
+			mode,state,attempt_count,parked_at,park_reason,delivery_policy)
+		VALUES('f0000000-0000-4000-8000-000000000173',1,'reference-source',1,'listenbrainz','1','reference-failed',0,'single',
+			1714564800,'second','start','{"client":"Fictional client"}','reference','1','active','retryable',5,
+			1714565700,'retry_exhausted','durable');
 		INSERT INTO integrations(id,profile_id,source_type,created_at)
 		VALUES('relay:1',1,'listenbrainz-relay',0);
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,

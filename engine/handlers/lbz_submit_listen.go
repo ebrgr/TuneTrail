@@ -220,9 +220,8 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 			switch {
 			case errors.As(err, &unavailable):
 				l.Warn().Msg("ListenBrainz receipt storage unavailable")
-				if active {
-					w.Header().Set("Retry-After", "1")
-				}
+				// Storage failures can occur before the profile mode is known.
+				w.Header().Set("Retry-After", "1")
 				utils.WriteError(w, "listen receipt storage unavailable", http.StatusServiceUnavailable)
 				return
 			case active && invalid != nil && errors.Is(err, invalid):
@@ -241,7 +240,7 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 				}
 				return
 			case err != nil:
-				l.Warn().Msg("ListenBrainz shadow receipt failed")
+				l.Warn().Msg("ListenBrainz receipt admission fell back to legacy")
 			}
 		}
 

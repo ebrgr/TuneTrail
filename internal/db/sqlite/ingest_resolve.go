@@ -12,7 +12,6 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
-	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
 )
@@ -36,12 +35,15 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	}
 	at, err := time.Parse(receiptTime, instant)
 	if err != nil {
-		return true, s.retryIngest(ctx, receipt, err)
+		return true, s.rejectIngest(ctx, receipt, "invalid_listened_at")
 	}
 	receipt.unix = at.Unix()
-	if err := json.Unmarshal([]byte(snapshot), &receipt.snapshot); err != nil {
-		return true, s.retryIngest(ctx, receipt, err)
+	// Decode as an object so a JSON null is rejected as well as syntax and type errors.
+	var decoded *ingest.Snapshot
+	if err := json.Unmarshal([]byte(snapshot), &decoded); err != nil || decoded == nil {
+		return true, s.rejectIngest(ctx, receipt, "invalid_snapshot")
 	}
+	receipt.snapshot = *decoded
 	receipt.client = receipt.snapshot.Client
 	if receipt.variant == "occurrence" {
 		// Normalize comparisons without changing the persisted observations.
@@ -86,13 +88,14 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 
 // claimNextIngest reads a due receipt and atomically reserves its lease.
 func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, string, error) {
-	now := time.Now().Unix()
+	now := s.ingestNow().Unix()
 	receipt := claimedReceipt{lease: uuid.NewString()}
 	var snapshot, instant string
-	const nextReceipt = `SELECT receipt_id FROM ingest_events WHERE mode='active' AND closed_at IS NULL
-		AND state IN ('received','retryable') AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
+	const nextReceipt = `SELECT receipt_id FROM ingest_events INDEXED BY idx_ingest_resolver_queue
+		WHERE mode='active' AND closed_at IS NULL
+		AND parked_at IS NULL AND state IN ('received','retryable') AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
 		ORDER BY received_at,receipt_id LIMIT 1`
-	// An idle worker does not take the writer lock. The claim still rechecks the lease.
+	// Preserve FIFO among due receipts without scanning parked rows or taking an idle writer lock.
 	var next string
 	err := s.db.QueryRowContext(ctx, nextReceipt, now, now).Scan(&next)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -101,10 +104,13 @@ func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, s
 	if err != nil {
 		return claimedReceipt{}, "", "", err
 	}
-	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,attempt_count=attempt_count+1
-		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND state IN ('received','retryable')
+	// An expired lease resumes the interrupted attempt while still recording another claim.
+	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,
+		attempt_count=attempt_count+1,retry_attempt_base=retry_attempt_base+
+		CASE WHEN lease_until IS NOT NULL AND attempt_count>retry_attempt_base THEN 1 ELSE 0 END
+		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND parked_at IS NULL AND state IN ('received','retryable')
 		AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
-		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,''),attempt_count,delivery_policy`,
+		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,''),attempt_count-retry_attempt_base,delivery_policy`,
 		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format, &receipt.attempts, &receipt.deliveryPolicy)
 	if errors.Is(err, sql.ErrNoRows) {
 		return claimedReceipt{}, "", "", nil
@@ -157,16 +163,6 @@ func uuidFromSnapshot(values ...string) uuid.UUID {
 	return uuid.Nil
 }
 
-// retryIngest releases this claim while preserving any newer claim or decision.
-func (s *Sqlite) retryIngest(ctx context.Context, r claimedReceipt, cause error) error {
-	logger.FromContext(ctx).Warn().Int64("attempt", r.attempts).Str("variant", r.variant).
-		Msg("Ingest receipt scheduled for retry")
-	_, err := s.db.ExecContext(ctx, `UPDATE ingest_events SET state='retryable',next_attempt_at=?,lease_owner=NULL,lease_until=NULL
-		WHERE receipt_id=? AND mode='active' AND resolution_version=? AND work_version=? AND lease_owner=?`,
-		time.Now().Add(time.Minute).Unix(), r.id, r.version, r.work, r.lease)
-	return errors.Join(cause, err)
-}
-
 // finishIngest rechecks the claim and legacy identity under the same writer reservation as the decision.
 func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
@@ -178,7 +174,7 @@ func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt) error {
 			LEFT JOIN profile_ingest_flags f ON f.profile_id=e.profile_id
 			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.closed_at IS NULL
 			AND e.resolution_version=? AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
-			r.track, r.id, r.profile, r.version, r.work, r.lease, time.Now().Unix()).Scan(&recording, &review, &precision, &admissionReason)
+			r.track, r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&recording, &review, &precision, &admissionReason)
 		if err != nil {
 			return err
 		}

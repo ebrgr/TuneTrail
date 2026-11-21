@@ -15,6 +15,27 @@
       <button>{{tr "admin.text.apply" "Apply"}}</button>
     </form>
   {{end}}
+  <div class="ingestion-health-grid">
+  <section class="card ingestion-diagnostics" aria-labelledby="health-failures">
+    <h2 id="health-failures">{{tr "admin.health.failures" "Permanent failures"}} <span>({{.Health.FailureCount}})</span></h2>
+    {{- range .Health.Failures}}
+      <details>
+        <summary>{{.Source}} · {{template "admin/health-time" .Parked}}</summary>
+        <dl>
+          <dt>{{tr "admin.health.receipt" "Receipt"}}</dt><dd><samp>{{.Receipt}}</samp></dd>
+          <dt>{{tr "admin.health.reason" "Reason code"}}</dt><dd><samp>{{.Reason}}</samp></dd>
+          <dt>{{tr "admin.health.attempts" "Attempts"}}</dt><dd>{{.Attempts}}</dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/reprocess?profile={{$.Profile.ID}}">
+          <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+          <input type="hidden" name="receipt" value="{{.Receipt}}">
+          <button type="submit">{{tr "admin.health.reprocess" "Reprocess"}}</button>
+        </form>
+      </details>
+    {{- else}}
+      <p>{{tr "admin.health.no_failures" "No permanent failures."}}</p>
+    {{- end}}
+  </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
     <h2 id="health-sources">{{tr "admin.health.sources" "Sources and last submission"}}</h2>
     {{range .Health.Sources}}
@@ -84,6 +105,7 @@
       <p>{{tr "admin.health.no_decisions" "No deduplication decisions recorded."}}</p>
     {{end}}
   </section>
+  </div>
   </div>
 {{end}}
 
