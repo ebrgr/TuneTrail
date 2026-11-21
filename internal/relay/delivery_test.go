@@ -23,7 +23,7 @@ import (
 
 type allowFunc func(string, netip.Addr) bool
 
-func (f allowFunc) Allows(hostPort string, ip netip.Addr) bool { return f(hostPort, ip) }
+func (f allowFunc) Allows(_ string, hostPort string, ip netip.Addr) bool { return f(hostPort, ip) }
 
 const fixtureToken = "fictional-relay-token"
 

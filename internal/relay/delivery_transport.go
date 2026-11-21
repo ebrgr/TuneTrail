@@ -15,7 +15,7 @@ import (
 // Allowlist grants exceptions by endpoint host:port or resolved IP/CIDR.
 // Implementations must be safe for concurrent calls.
 type Allowlist interface {
-	Allows(hostPort string, ip netip.Addr) bool
+	Allows(scheme, hostPort string, ip netip.Addr) bool
 }
 
 var errDialPolicy = errors.New("relay destination blocked by policy")
@@ -72,7 +72,11 @@ func dialAllowed(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) boo
 		host, port, err := net.SplitHostPort(hostPort)
 		if err == nil && port != "" {
 			canonical := net.JoinHostPort(strings.ToLower(strings.TrimSuffix(host, ".")), port)
-			if allow.Allows(canonical, ip) {
+			scheme := "https"
+			if plainHTTP {
+				scheme = "http"
+			}
+			if allow.Allows(scheme, canonical, ip) {
 				return true
 			}
 		}

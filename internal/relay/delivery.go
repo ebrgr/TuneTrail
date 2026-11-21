@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"io"
 	"net"
@@ -68,29 +69,9 @@ func newDeliverer(allow Allowlist, now func() time.Time, resolver *net.Resolver)
 
 // Deliver posts to the full submission endpoint and reports only sanitized metadata.
 func (d *Deliverer) Deliver(ctx context.Context, endpoint, token string, body []byte) Result {
-	_, token, err := Normalize(endpoint, token)
-	if err != nil {
-		return Result{Class: PolicyBlocked}
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimSpace(endpoint), bytes.NewReader(body))
-	if err != nil {
-		return Result{Class: PolicyBlocked}
-	}
-	authorization := "Token " + token
-	if !validAuthorization(authorization) {
-		return Result{Class: PolicyBlocked}
-	}
-	req.Header.Set("Authorization", authorization)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-
-	client := d.https
-	if req.URL.Scheme == "http" {
-		client = d.http
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return Result{Class: deliveryErrorClass(err)}
+	resp, class := d.request(ctx, http.MethodPost, endpoint, token, body)
+	if resp == nil {
+		return Result{Class: class}
 	}
 	result := Result{
 		Status:        resp.StatusCode,
@@ -102,6 +83,65 @@ func (d *Deliverer) Deliver(ctx context.Context, endpoint, token string, body []
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, MaxResponse))
 	_ = resp.Body.Close() // A close error does not change the HTTP outcome.
 	return result
+}
+
+// Test validates a credential with the same dialer and permissions as delivery.
+func (d *Deliverer) Test(ctx context.Context, base, token string) (string, error) {
+	base, token, err := Normalize(base, token)
+	if err != nil {
+		return "", err
+	}
+	resp, _ := d.request(ctx, http.MethodGet, base+"/validate-token", token, nil)
+	if resp == nil {
+		return "", ErrUpstream
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", ErrUpstream
+	}
+	data, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponse+1))
+	if err != nil || len(data) > MaxResponse {
+		return "", ErrUpstream
+	}
+	var result struct {
+		Valid    bool   `json:"valid"`
+		Username string `json:"user_name"`
+	}
+	if err := json.Unmarshal(data, &result); err != nil || !result.Valid {
+		return "", ErrUpstream
+	}
+	return result.Username, nil
+}
+
+// request builds a bounded request without returning raw transport errors.
+func (d *Deliverer) request(ctx context.Context, method, endpoint, token string, body []byte) (*http.Response, Class) {
+	_, token, err := Normalize(endpoint, token)
+	if err != nil {
+		return nil, PolicyBlocked
+	}
+	req, err := http.NewRequestWithContext(ctx, method, strings.TrimSpace(endpoint), bytes.NewReader(body))
+	if err != nil {
+		return nil, PolicyBlocked
+	}
+	authorization := "Token " + token
+	if !validAuthorization(authorization) {
+		return nil, PolicyBlocked
+	}
+	req.Header.Set("Authorization", authorization)
+	req.Header.Set("Accept", "application/json")
+	if method == http.MethodPost {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	client := d.https
+	if req.URL.Scheme == "http" {
+		client = d.http
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, deliveryErrorClass(err)
+	}
+	return resp, ""
 }
 
 // validAuthorization rejects control bytes that net/http cannot send in a header value.

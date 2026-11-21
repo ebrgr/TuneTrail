@@ -10,11 +10,7 @@ import (
 )
 
 // RelayPermission separates cleartext permission from access to reserved addresses.
-type RelayPermission struct {
-	HostPort      string
-	Prefix        netip.Prefix
-	HTTP, Private bool
-}
+type RelayPermission = relay.Permission
 
 // SetRelayPermission saves a validated operator exception for one profile.
 func (s *Sqlite) SetRelayPermission(ctx context.Context, profile int32, permission RelayPermission) error {
@@ -54,13 +50,13 @@ func (s *Sqlite) SetRelayPermission(ctx context.Context, profile int32, permissi
 }
 
 // RelayPermissions reads a profile-scoped permission snapshot without exposing credentials.
-func (s *Sqlite) RelayPermissions(ctx context.Context, profile int32) ([]RelayPermission, error) {
+func (s *Sqlite) RelayPermissions(ctx context.Context, profile int32) (relay.Permissions, error) {
 	rows, err := s.db.QueryContext(ctx, "SELECT host_port,cidr,allow_http,allow_private FROM relay_allowlist WHERE profile_id=?", profile)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var permissions []RelayPermission
+	var permissions relay.Permissions
 	for rows.Next() {
 		var p RelayPermission
 		var cidr string
