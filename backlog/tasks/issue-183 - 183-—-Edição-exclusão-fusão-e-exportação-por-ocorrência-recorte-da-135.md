@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T22:02:00Z'
-updated_date: '2026-11-21T22:49:00Z'
+updated_date: '2026-11-21T22:50:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -48,6 +48,15 @@ created: 2026-11-21T22:49:00Z
 ---
 
 Implementação verificada: edição e exclusão por ocorrência, fusão de gravações reversível e exportação/reimportação v2 idempotente por perfil. make check passou (13/13 jornadas de ponta a ponta), a comparação HTTP com a v0.55 confirmou 39 respostas equivalentes após a migração e a ativação, e o EXPLAIN confirmou paginação indexada em 300 mil eventos. Referência ISSUE-075 regenerada.
+
+---
+
+author: advisor
+created: 2026-11-21T22:50:00Z
+
+---
+
+Reviewer: sem BUG confirmado; 4 RISCOs. Advisor (effort high): REPROVADO COM RESSALVAS — vazamento entre perfis na restauração de arquivo (archive.go mapID, namespace local) a corrigir; melhorias: cursor de export vs escritas concorrentes, fusão em transação longa. Ver backlog/evidencias/issue-183/PARECER-ADVISOR.md e PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->
