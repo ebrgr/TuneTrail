@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T22:02:00Z'
-updated_date: '2026-11-21T23:08:00Z'
+updated_date: '2026-11-21T23:09:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -94,6 +94,15 @@ created: 2026-11-21T23:08:00Z
 ---
 
 Aceite do usuário em 21/11/2026: aceito com a reauditoria do Reviewer (sem nova revisão do Advisor) e autorizado a publicar (sem push).
+
+---
+
+author: ebrgr
+created: 2026-11-21T23:09:00Z
+
+---
+
+Publicação: versão 0.56 (tag `v0.56`), branch `feat/issue-183-edicao-exclusao-fusao-e-exportacao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
