@@ -3,11 +3,11 @@ id: ISSUE-135
 title: >-
   135 — Consultas, edição, exclusão e exportação por ocorrência, com ranking por
   gravação ou lançamento
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-21T22:21:00Z'
+updated_date: '2026-11-21T22:24:00Z'
 labels:
   - catalogo
   - ui
@@ -93,6 +93,15 @@ created: 2026-11-21T22:21:00Z
 ---
 
 Reviewer: sem BUG; 3 RISCOs (desempenho por lançamento, contadores por gravação, histórico lendo occurrences). Ver backlog/evidencias/issue-135/parecer-reviewer.md. Testes -race OK. Advisor (effort high) pendente, a pedido do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-21T22:24:00Z
+
+---
+
+Verificação: go test -race (webui, webquery, adminweb, db) OK; make check 13/13 E2E (Codex); Reviewer sem BUG; Advisor dispensado pelo usuário (mudança fora das categorias obrigatórias). ACs 1 a 3 marcados.
 
 ---
 <!-- COMMENTS:END -->
