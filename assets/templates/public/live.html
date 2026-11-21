@@ -133,10 +133,13 @@
         </div>
       {{end}}
     </div>
-    {{with .Nav.Login}}{{template "partial/nav-link" .}}{{end}}
-    {{with .Nav.Account}}{{template "partial/nav-link" .}}{{end}}
-    {{range .Nav.RootLinks}}{{template "partial/nav-link" .}}{{end}}
-    {{with .Nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
+    {{/* ISSUE-083: spaced, centered account actions below the profile cards. */}}
+    <div class="directory-actions">
+      {{with .Nav.Login}}{{template "partial/nav-link" .}}{{end}}
+      {{with .Nav.Account}}{{template "partial/nav-link" .}}{{end}}
+      {{range .Nav.RootLinks}}{{template "partial/nav-link" .}}{{end}}
+      {{with .Nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
+    </div>
   </main>
 {{end}}
 

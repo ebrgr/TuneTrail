@@ -44,10 +44,28 @@ func AccessNavigation(actor *models.User, own, visited *models.ListeningProfile,
 		nav.ManageListening = true
 		nav.ProfileSettings = &NavLink{fmt.Sprintf("/admin?profile=%d", visited.ID), "nav.profile_settings", "Profile settings", "UserRoundCog", section == "profiles"}
 	}
+	// ISSUE-083: ingestion health targets the visited profile when manageable, otherwise the actor's own profile.
+	var health *NavLink
+	healthProfile := own
+	if visited != nil && admin.AuthorizeAction(actor, admin.ManageProfile, visited) == nil {
+		healthProfile = visited
+	}
+	if healthProfile != nil && admin.AuthorizeAction(actor, admin.ManageProfile, healthProfile) == nil {
+		health = &NavLink{fmt.Sprintf("/admin/health?profile=%d", healthProfile.ID), "nav.health", "Health", "HeartPulse", section == "health"}
+	}
 	nav.ManageCatalog = admin.AuthorizeAction(actor, admin.ManageCatalog, nil) == nil
 	nav.AdminBadge = nav.ManageCatalog && visited != nil && visited.UserID == actor.ID
 	if admin.AuthorizeAction(actor, admin.ManageAccounts, nil) == nil {
 		nav.RootLinks = append(nav.RootLinks, NavLink{"/admin?section=profiles", "ui.manage_profiles", "Manage profiles", "UserRoundCog", section == "profiles" && visited == nil})
+		// Root sees Health in the Administration group, above server configuration.
+		if health != nil {
+			nav.RootLinks = append(nav.RootLinks, *health)
+			health = nil
+		}
+	}
+	// Profile owners without root keep Health with their account links.
+	if health != nil {
+		nav.AccountLinks = append(nav.AccountLinks, *health)
 	}
 	if admin.AuthorizeAction(actor, admin.ManageServer, nil) == nil {
 		settings := "/admin/settings"

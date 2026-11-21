@@ -1,5 +1,6 @@
 {{/* Only the profile-authorized diagnostic projection is rendered here. */}}
 {{define "admin/ingest-health"}}
+  <div class="ingestion-health">
   <nav class="admin-sections" aria-label="{{tr "admin.text.profile_administration" "Profile administration"}}">
     <a href="/admin?profile={{.Profile.ID}}">{{tr "nav.profile_settings" "Profile settings"}}</a>
     <a href="/admin/health?profile={{.Profile.ID}}" aria-current="page">{{tr "admin.health.nav" "Health"}}</a>
@@ -83,6 +84,7 @@
       <p>{{tr "admin.health.no_decisions" "No deduplication decisions recorded."}}</p>
     {{end}}
   </section>
+  </div>
 {{end}}
 
 {{define "admin/health-time"}}<time datetime="{{.Format "2006-01-02T15:04:05Z07:00"}}">{{.Format "2006-01-02 15:04:05 MST"}}</time>{{end}}

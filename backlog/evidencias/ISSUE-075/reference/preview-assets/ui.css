@@ -1820,6 +1820,16 @@ h2.search-section-title,
     grid-template-columns: repeat(2,minmax(0,1fr))
   }
 }
+/* ISSUE-083: account actions under the profile cards are spaced out and centered. */
+.directory-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3) var(--space-6);
+  margin-top: var(--space-6)
+}
+
 @media(min-width:64rem) {
   .profile-grid {
     grid-template-columns: repeat(3,minmax(0,1fr))

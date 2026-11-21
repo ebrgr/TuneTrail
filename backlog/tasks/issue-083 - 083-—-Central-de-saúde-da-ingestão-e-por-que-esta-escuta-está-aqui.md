@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T15:47:00Z'
+updated_date: '2026-11-21T16:02:00Z'
 labels:
   - admin
   - ingestao
@@ -97,6 +97,15 @@ created: 2026-11-21T15:47:00Z
 ---
 
 Reviewer (claude, 21/11/2026): APROVADO COM RESSALVAS, sem BUG. Verificado: go vet, testes de engine/adminui/adminweb/db/webui e make ui.reference.check verdes; isolamento e ausência de segredos cobertos por TestIngestHealthIsolation. RISCOS: (1) consultas de healthSources/healthDecisions varrem todos os eventos do perfil, sem medição; (2) a Saúde ficou no seletor admin-sections e não na segunda barra citada no comentário #2; (3) AC #2 ainda diz 'admin', mas o acesso é dono e root. Parecer: backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md. Não verificado: tela no navegador.
+
+---
+
+author: claude
+created: 2026-11-21T16:02:00Z
+
+---
+
+Ajustes pós-revisão visual (21/11/2026, a pedido do usuário): (1) item Saúde no menu (+), acima de Configuração do servidor para root e junto dos links de conta para donos, com o novo ícone HeartPulse; (2) página de saúde reestilizada como o diálogo de edição de mídia (títulos de seção em caixa alta, linhas preenchidas, botões com borda, hover com transição, layout responsivo verificado em 390 px sem rolagem horizontal); (3) links de conta abaixo dos perfis no diretório espaçados e centralizados. Referência visual ISSUE-075 regenerada. Não verificado: aparência nos demais temas e hover com o mouse (só o estilo no CSS). O ícone HeartPulse foi escrito a partir do Lucide heart-pulse de memória, sem comparar com o pacote.
 
 ---
 <!-- COMMENTS:END -->
