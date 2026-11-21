@@ -411,10 +411,11 @@ func TestRelaySourceRevisionAndMerge(t *testing.T) {
 
 // TestRelayHistoryDeletion removes open claims and keeps only source-free sent diagnostics.
 func TestRelayHistoryDeletion(t *testing.T) {
-	for _, operation := range []string{"single", "profile-history", "purge"} {
+	for _, operation := range []string{"single", "track", "album", "artist", "purge"} {
 		t.Run(operation, func(t *testing.T) {
 			s, _ := relayStoreFixture(t)
 			ctx := db.WithProfile(t.Context(), 1)
+			execSQL(t, s, `INSERT INTO release_aliases VALUES(1,'Album','Fixture',1)`)
 			now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
 			relayReceipt(t, s, 1, "sent-source", "v9", 1, now)
 			relayReceipt(t, s, 1, "open-source", "v9", 1, now.Add(time.Hour))
@@ -438,8 +439,8 @@ func TestRelayHistoryDeletion(t *testing.T) {
 			case "single":
 				require.NoError(t, s.DeleteListen(ctx, 1, now))
 				require.NoError(t, s.DeleteListen(ctx, 1, now.Add(time.Hour)))
-			case "profile-history":
-				plan, err := s.PreviewProfileDelete(ctx, 1, "track", 1)
+			case "track", "album", "artist":
+				plan, err := s.PreviewProfileDelete(ctx, 1, operation, 1)
 				require.NoError(t, err)
 				_, err = s.ApplyProfileDelete(ctx, plan)
 				require.NoError(t, err)
@@ -448,7 +449,12 @@ func TestRelayHistoryDeletion(t *testing.T) {
 			}
 			require.Zero(t, scalar(t, s, "SELECT count(*) FROM outbox"))
 			require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
-			require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_sent_archive WHERE id=? AND http_status=200", sent.ID))
+			want := 1
+			if operation == "purge" {
+				want = 0
+			}
+			require.Equal(t, want, scalar(t, s, "SELECT coalesce(sum(sent_count),0) FROM relay_sent_archive WHERE sent_day=?", now.Unix()/86400))
+			require.Zero(t, scalar(t, s, "SELECT count(*) FROM pragma_table_info('relay_sent_archive') WHERE name IN ('id','event_id','sent_at')"))
 			_, err = s.RelayPayload(ctx, batch, open)
 			require.ErrorIs(t, err, sql.ErrNoRows)
 			renewed, err := s.RenewRelayBatch(ctx, batch, now)
@@ -456,7 +462,10 @@ func TestRelayHistoryDeletion(t *testing.T) {
 			require.False(t, renewed)
 			_, err = s.FinishRelayBatch(ctx, batch, []RelayItem{open}, relay.Result{Class: relay.Success, Status: 200}, now, true)
 			require.NoError(t, err)
-			require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_sent_archive"))
+			require.Equal(t, want, scalar(t, s, "SELECT count(*) FROM relay_sent_archive"))
+			_, err = s.ExpireRelayWork(ctx, 1, now.Add(30*24*time.Hour))
+			require.NoError(t, err)
+			require.Zero(t, scalar(t, s, "SELECT count(*) FROM relay_sent_archive"))
 			require.NoError(t, checkIntegrity(s.db))
 		})
 	}

@@ -298,6 +298,7 @@ func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 	// The remaining cascades clean up junction and alias tables.
 	for _, stmt := range []string{
 		`DELETE FROM listens`,
+		`DELETE FROM relay_sent_archive`,
 		`DELETE FROM ingest_events`,
 		`DELETE FROM tracks`,
 		`DELETE FROM releases`,

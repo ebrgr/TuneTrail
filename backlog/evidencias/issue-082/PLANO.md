@@ -183,3 +183,9 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Montar payload fora de `withIngestWriter`. Renovar o lease e conferir elegibilidade antes de cada POST. Confirmar 2xx de cada sublote antes do POST seguinte. Ao esgotar `PostBudget`, liberar com `release=true`, sem inventar um erro de transporte. No shutdown, usar o caminho cancelado. Agendar `ExpireRelayWork` inclusive para destinos pausados ou removidos.
 - Log de `PolicyBlocked` contém apenas a classe e o `profile_id`, com frequência limitada. URL, token, host resolvido e corpo ficam fora do log.
 - Registrar em inglês no CHANGELOG da E3/E4 que o GET administrativo mostra a URL canônica salva por SetProfileRelay/InitializeLegacyRelay. A documentação de recuperação da configuração descreve a dependência de `tt_relay_canonical` e a restauração do backup em vez de editar com sqlite3/Python.
+
+
+## ESTADO DA E3
+
+- D1(a): a 012 pré-publicação guarda apenas contadores diários UTC de envios após exclusão de histórico, com retenção de 30 dias. PurgeAllData limpa também os agregados. Recriar bases locais v12 anteriores a esta emenda.
+- Pendente: transporte com permissões por esquema, worker e shutdown, ativação atômica da política e D4, testes e Reviewer. Custo conhecido: excluir perfil de 100 mil itens com histórico e cascatas levou 2,13 s numa transação.

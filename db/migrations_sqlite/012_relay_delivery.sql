@@ -26,24 +26,21 @@ CREATE TABLE relay_destinations (
     CHECK((lease_owner IS NULL)=(lease_until IS NULL))
 );
 
--- Keep sent diagnostics after event deletion without retaining event keys or payload sources.
+-- Keep only daily aggregate counts after the underlying events are deleted.
 CREATE TABLE relay_sent_archive (
-    id TEXT PRIMARY KEY NOT NULL,
     profile_id INTEGER NOT NULL REFERENCES listening_profiles(id) ON DELETE CASCADE,
-    destination_id TEXT NOT NULL,
-    sent_at INTEGER NOT NULL,
-    attempt_count INTEGER NOT NULL,
-    http_status INTEGER
+    sent_day INTEGER NOT NULL,
+    sent_count INTEGER NOT NULL CHECK(sent_count>0),
+    PRIMARY KEY(profile_id,sent_day)
 );
-CREATE INDEX idx_relay_sent_archive_profile ON relay_sent_archive(profile_id);
 
 -- +goose StatementBegin
 CREATE TRIGGER trg_relay_archive_sent BEFORE DELETE ON outbox
 WHEN OLD.state='sent' AND OLD.format_version>0 AND OLD.destination_id='relay:'||OLD.profile_id
  AND EXISTS (SELECT 1 FROM listening_profiles WHERE id=OLD.profile_id)
 BEGIN
-    INSERT INTO relay_sent_archive
-    VALUES(OLD.id,OLD.profile_id,OLD.destination_id,OLD.closed_at,OLD.attempt_count,json_extract(OLD.result,'$.status'));
+    INSERT INTO relay_sent_archive VALUES(OLD.profile_id,OLD.closed_at/86400,1)
+    ON CONFLICT(profile_id,sent_day) DO UPDATE SET sent_count=sent_count+1;
 END;
 -- +goose StatementEnd
 

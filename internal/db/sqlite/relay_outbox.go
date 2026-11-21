@@ -164,6 +164,10 @@ func (s *Sqlite) ExpireRelayWork(ctx context.Context, profile int32, now time.Ti
 			return err
 		}
 		cutoff := now.Add(-relayMaxAge).Unix()
+		// Retention is evaluated at UTC day precision, matching the archived data.
+		if _, err := tx.ExecContext(ctx, "DELETE FROM relay_sent_archive WHERE profile_id=? AND sent_day<=?", profile, cutoff/86400); err != nil {
+			return err
+		}
 		for _, scope := range []string{relayDue, relayCapacity} {
 			result, err := tx.ExecContext(ctx, expireRelayWork+scope+" LIMIT 100)", profile, profile, generation, cutoff, now.Unix())
 			if err != nil {
