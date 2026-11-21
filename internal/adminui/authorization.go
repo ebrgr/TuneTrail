@@ -43,7 +43,7 @@ func (h *Handler) authorizeAction(r *http.Request, id admin.Identity) error {
 		return admin.AuthorizeAction(id.User, admin.ManageAccount, nil)
 	case "profile/create":
 		return admin.AuthorizeAction(id.User, admin.ManageAccounts, nil)
-	case "settings/save", "settings/subsonic/test":
+	case "settings/save", "settings/subsonic/test", "settings/relay":
 		return admin.AuthorizeAction(id.User, admin.ManageServer, nil)
 	}
 	parts := strings.Split(path, "/")

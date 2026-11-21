@@ -164,7 +164,7 @@ disable_cover_art_archive=true
 	if response.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("API key accessed settings: %d", response.StatusCode)
 	}
-	for _, endpoint := range []string{"/admin/settings/save", "/admin/settings/subsonic/test"} {
+	for _, endpoint := range []string{"/admin/settings/save", "/admin/settings/subsonic/test", "/admin/settings/relay"} {
 		deniedReq, _ := http.NewRequest("POST", base+endpoint, strings.NewReader(""))
 		deniedReq.Header.Set("Authorization", "Token fixture-profile-key")
 		deniedReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
