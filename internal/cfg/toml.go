@@ -48,6 +48,10 @@ type tomlDocument struct {
 		URL    *string `toml:"url"`
 		Params *string `toml:"params"`
 	} `toml:"subsonic"`
+	Relay struct {
+		AllowHTTP    *bool `toml:"allow_http"`
+		AllowPrivate *bool `toml:"allow_private_network"`
+	} `toml:"relay"`
 	Time struct {
 		ForceTZ *string `toml:"force_tz"`
 	} `toml:"time"`
@@ -57,7 +61,7 @@ var managedDefaults = map[string]string{
 	LOG_LEVEL_ENV: "info", MUSICBRAINZ_URL_ENV: defaultMusicBrainzUrl,
 	MUSICBRAINZ_RATE_LIMIT_ENV: "1", DISABLE_MUSICBRAINZ_ENV: "false",
 	DISABLE_DEEZER_ENV: "false", DISABLE_COVER_ART_ARCHIVE_ENV: "false",
-	LASTFM_API_KEY_ENV: "", SUBSONIC_URL_ENV: "", SUBSONIC_PARAMS_ENV: "", FORCE_TZ: "",
+	LASTFM_API_KEY_ENV: "", SUBSONIC_URL_ENV: "", SUBSONIC_PARAMS_ENV: "", FORCE_TZ: "", RelayAllowHTTPKey: "false", RelayAllowPrivateKey: "false",
 }
 
 // envReader keeps empty _FILE content distinct from a missing option.
@@ -75,6 +79,10 @@ type envReader struct {
 
 // get snapshots each source once to keep discovery and loading consistent.
 func (r *envReader) get(key string) (string, Origin) {
+	if key == RelayAllowHTTPKey || key == RelayAllowPrivateKey {
+		return "", OriginDefault
+	}
+
 	if value, ok := r.cache[key]; ok {
 		return value.value, value.origin
 	}
@@ -158,6 +166,8 @@ func documentValues(d *tomlDocument) map[string]string {
 	putString(SUBSONIC_URL_ENV, d.Subsonic.URL)
 	putString(SUBSONIC_PARAMS_ENV, d.Subsonic.Params)
 	putString(FORCE_TZ, d.Time.ForceTZ)
+	putBool(RelayAllowHTTPKey, d.Relay.AllowHTTP)
+	putBool(RelayAllowPrivateKey, d.Relay.AllowPrivate)
 	return out
 }
 
@@ -190,7 +200,7 @@ func validateManaged(v map[string]string) error {
 	if strings.EqualFold(u.Hostname(), "musicbrainz.org") && (port == "" || (u.Scheme == "https" && port == "443") || (u.Scheme == "http" && port == "80")) && rate != 1 {
 		return fmt.Errorf("official MusicBrainz requires rate_limit 1")
 	}
-	for _, key := range []string{DISABLE_MUSICBRAINZ_ENV, DISABLE_DEEZER_ENV, DISABLE_COVER_ART_ARCHIVE_ENV} {
+	for _, key := range []string{DISABLE_MUSICBRAINZ_ENV, DISABLE_DEEZER_ENV, DISABLE_COVER_ART_ARCHIVE_ENV, RelayAllowHTTPKey, RelayAllowPrivateKey} {
 		if v[key] != "true" && v[key] != "false" {
 			return fmt.Errorf("%s must be true or false", key)
 		}

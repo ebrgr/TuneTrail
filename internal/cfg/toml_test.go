@@ -261,3 +261,23 @@ func TestEmptyFileOverrideDistinguishesLegacyAndStrictTOML(t *testing.T) {
 		t.Fatal("empty file fell back to a TOML boolean")
 	}
 }
+
+// TestRelayTOMLSettings verifies defaults, persisted booleans and the lack of an environment override.
+func TestRelayTOMLSettings(t *testing.T) {
+	raw, err := editSettingsDocument(nil, map[string]string{RelayAllowHTTPKey: "true", RelayAllowPrivateKey: "false"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc, err := decodeTOML(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	values := documentValues(doc)
+	if values[RelayAllowHTTPKey] != "true" || values[RelayAllowPrivateKey] != "false" || managedDefaults[RelayAllowHTTPKey] != "false" {
+		t.Fatal("relay settings did not round trip")
+	}
+	reader := &envReader{getenv: func(string) string { return "true" }}
+	if _, origin := reader.get(RelayAllowHTTPKey); origin != OriginDefault {
+		t.Fatal("unexpected relay environment override")
+	}
+}

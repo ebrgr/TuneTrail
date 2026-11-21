@@ -1,6 +1,9 @@
 package relay
 
-import "net/netip"
+import (
+	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"net/netip"
+)
 
 // Permission separates cleartext from access to a specific reserved network.
 type Permission struct {
@@ -14,7 +17,11 @@ type Permissions []Permission
 
 // Allows requires both permissions when a cleartext request reaches a reserved IP.
 func (permissions Permissions) Allows(scheme, hostPort string, ip netip.Addr) bool {
-	cleartext, reserved := scheme != "http", !IsReservedAddress(ip)
+	if IsForbiddenAddress(ip) {
+		return false
+	}
+	globalHTTP, globalPrivate := cfg.RelayNetworkPolicy()
+	cleartext, reserved := scheme != "http" || globalHTTP, !IsReservedAddress(ip) || globalPrivate
 	for _, p := range permissions {
 		if p.HostPort != hostPort {
 			continue

@@ -104,7 +104,7 @@ func managedFromConfig(c *config) map[string]string {
 	if c.forceTZ != nil {
 		tz = c.forceTZ.String()
 	}
-	return map[string]string{LOG_LEVEL_ENV: level, MUSICBRAINZ_URL_ENV: c.musicBrainzUrl, MUSICBRAINZ_RATE_LIMIT_ENV: strconv.Itoa(c.musicBrainzRateLimit), DISABLE_MUSICBRAINZ_ENV: strconv.FormatBool(c.disableMusicBrainz), DISABLE_DEEZER_ENV: strconv.FormatBool(c.disableDeezer), DISABLE_COVER_ART_ARCHIVE_ENV: strconv.FormatBool(c.disableCAA), LASTFM_API_KEY_ENV: c.lastfmApiKey, SUBSONIC_URL_ENV: c.subsonicUrl, SUBSONIC_PARAMS_ENV: c.subsonicParams, FORCE_TZ: tz}
+	return map[string]string{LOG_LEVEL_ENV: level, MUSICBRAINZ_URL_ENV: c.musicBrainzUrl, MUSICBRAINZ_RATE_LIMIT_ENV: strconv.Itoa(c.musicBrainzRateLimit), DISABLE_MUSICBRAINZ_ENV: strconv.FormatBool(c.disableMusicBrainz), DISABLE_DEEZER_ENV: strconv.FormatBool(c.disableDeezer), DISABLE_COVER_ART_ARCHIVE_ENV: strconv.FormatBool(c.disableCAA), LASTFM_API_KEY_ENV: c.lastfmApiKey, SUBSONIC_URL_ENV: c.subsonicUrl, SUBSONIC_PARAMS_ENV: c.subsonicParams, FORCE_TZ: tz, RelayAllowHTTPKey: strconv.FormatBool(c.relayHTTP), RelayAllowPrivateKey: strconv.FormatBool(c.relayPrivate)}
 }
 
 // settingsRevision distinguishes a missing file from every possible file body.

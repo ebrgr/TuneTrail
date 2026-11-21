@@ -626,5 +626,11 @@
   "home.kpi.streak": "Longest streak (days)",
   "home.change.more": "{{.N}}% More",
   "home.change.same": "Same",
-  "home.change.less": "{{.N}}% Less"
+  "home.change.less": "{{.N}}% Less",
+  "admin.setting.RELAY_ALLOW_HTTP.label": "Allow relay over HTTP",
+  "admin.setting.RELAY_ALLOW_HTTP.description": "Allows cleartext relay requests instance-wide. Restart to apply.",
+  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.label": "Allow relay on private networks",
+  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.description": "Allows relay requests to reserved networks instance-wide. Permanently forbidden endpoints stay blocked. Restart to apply.",
+  "admin.relay.title": "Relay",
+  "admin.relay.precedence": "Forbidden ranges stay blocked. Global permissions take precedence over destination exceptions. Without permission, HTTP and reserved networks are blocked."
 }

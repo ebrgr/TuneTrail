@@ -12,6 +12,12 @@ import (
 // settingField maps the supported environment names to their TOML location and type.
 type settingField struct{ section, key, kind string }
 
+// Relay setting identifiers are used by the panel and TOML, without an environment override.
+const (
+	RelayAllowHTTPKey    = "RELAY_ALLOW_HTTP"
+	RelayAllowPrivateKey = "RELAY_ALLOW_PRIVATE_NETWORK"
+)
+
 var settingFields = map[string]settingField{
 	LOG_LEVEL_ENV:                 {"logging", "level", "string"},
 	MUSICBRAINZ_URL_ENV:           {"musicbrainz", "url", "string"},
@@ -22,9 +28,11 @@ var settingFields = map[string]settingField{
 	LASTFM_API_KEY_ENV:            {"images", "lastfm_api_key", "string"},
 	SUBSONIC_URL_ENV:              {"subsonic", "url", "string"},
 	SUBSONIC_PARAMS_ENV:           {"subsonic", "params", "string"},
+	RelayAllowHTTPKey:             {"relay", "allow_http", "bool"},
+	RelayAllowPrivateKey:          {"relay", "allow_private_network", "bool"},
 	FORCE_TZ:                      {"time", "force_tz", "string"},
 }
-var settingSections = []string{"logging", "musicbrainz", "images", "subsonic", "time"}
+var settingSections = []string{"logging", "musicbrainz", "images", "subsonic", "time", "relay"}
 
 type byteEdit struct {
 	start, end int

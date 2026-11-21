@@ -626,5 +626,11 @@
   "home.kpi.streak": "Maior sequência (dias)",
   "home.change.more": "{{.N}}% Mais",
   "home.change.same": "Igual",
-  "home.change.less": "{{.N}}% Menos"
+  "home.change.less": "{{.N}}% Menos",
+  "admin.setting.RELAY_ALLOW_HTTP.label": "Permitir relay por HTTP",
+  "admin.setting.RELAY_ALLOW_HTTP.description": "Permite requisições do relay sem TLS em toda a instância. Reinicie para aplicar.",
+  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.label": "Permitir relay em redes privadas",
+  "admin.setting.RELAY_ALLOW_PRIVATE_NETWORK.description": "Permite requisições a redes reservadas em toda a instância. Endereços proibidos continuam bloqueados. Reinicie para aplicar.",
+  "admin.relay.title": "Relay",
+  "admin.relay.precedence": "Faixas proibidas continuam bloqueadas. Permissões globais têm prioridade sobre exceções por destino. Sem permissão, HTTP e redes reservadas ficam bloqueados."
 }

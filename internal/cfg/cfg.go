@@ -55,10 +55,11 @@ const (
 )
 
 type config struct {
-	webUI      string
-	bindAddr   string
-	listenPort int
-	configDir  string
+	relayHTTP, relayPrivate bool
+	webUI                   string
+	bindAddr                string
+	listenPort              int
+	configDir               string
 	// baseUrl              string
 	sqliteEnabled          bool
 	databaseUrl            string
@@ -230,6 +231,8 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 
 	cfg.importThrottleMs, _ = strconv.Atoi(getenv(THROTTLE_IMPORTS_MS))
 
+	cfg.relayHTTP = parseBool(getenv(RelayAllowHTTPKey))
+	cfg.relayPrivate = parseBool(getenv(RelayAllowPrivateKey))
 	cfg.disableRateLimit = parseBool(getenv(DISABLE_RATE_LIMIT_ENV))
 
 	cfg.structuredLogging = parseBool(getenv(ENABLE_STRUCTURED_LOGGING_ENV))

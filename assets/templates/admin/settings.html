@@ -49,6 +49,10 @@
             <input type="hidden" name="submission_token" value="{{.Submission}}">
             <input type="hidden" name="revision" value="{{.Revision}}">
             {{range .Fields}}
+              {{if eq .Name "RELAY_ALLOW_HTTP"}}
+                <h2>{{tr "admin.relay.title" "Relay"}}</h2>
+                <p>{{tr "admin.relay.precedence" "Forbidden ranges stay blocked. Global permissions take precedence over destination exceptions. Without permission, HTTP and reserved networks are blocked."}}</p>
+              {{end}}
               <section class="server-setting">
                 <label for="setting-{{.Name}}">{{.Label}}</label>
                 {{if .Options}}

@@ -44,6 +44,8 @@ type settingsView struct {
 }
 
 var settingsFields = []settingSpec{
+	{cfg.RelayAllowHTTPKey, "Allow relay over HTTP", "Allows cleartext relay requests instance-wide. Restart to apply.", "bool"},
+	{cfg.RelayAllowPrivateKey, "Allow relay on private networks", "Allows relay requests to reserved networks instance-wide. Permanently forbidden endpoints stay blocked. Restart to apply.", "bool"},
 	{cfg.LOG_LEVEL_ENV, "Log level", "Controls the detail written to the application log.", "level"},
 	{cfg.MUSICBRAINZ_URL_ENV, "MusicBrainz URL", "Base URL of the MusicBrainz server.", "text"},
 	{cfg.MUSICBRAINZ_RATE_LIMIT_ENV, "MusicBrainz rate limit", "Requests per second; the official server requires 1.", "number"},

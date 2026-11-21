@@ -53,6 +53,9 @@ func NewDeliverer(allow Allowlist, now func() time.Time) *Deliverer {
 
 // newDeliverer also supports an isolated DNS resolver for transport tests.
 func newDeliverer(allow Allowlist, now func() time.Time, resolver *net.Resolver) *Deliverer {
+	if allow == nil {
+		allow = Permissions(nil)
+	}
 	if now == nil {
 		now = time.Now
 	}

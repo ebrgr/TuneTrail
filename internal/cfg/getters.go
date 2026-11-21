@@ -231,3 +231,13 @@ func ActiveIngestEnabled() bool {
 	defer lock.RUnlock()
 	return globalConfig.ingestActive
 }
+
+// RelayNetworkPolicy returns both flags from the running configuration snapshot.
+func RelayNetworkPolicy() (allowHTTP, allowPrivate bool) {
+	lock.RLock()
+	defer lock.RUnlock()
+	if globalConfig == nil {
+		return false, false
+	}
+	return globalConfig.relayHTTP, globalConfig.relayPrivate
+}

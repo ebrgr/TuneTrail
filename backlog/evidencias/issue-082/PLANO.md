@@ -198,3 +198,11 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Retorno do Reviewer E3: a recuperação do resolvedor recebe 2 s adicionais no encerramento e registra aviso se o prazo expirar. Para a 083, fila sem destino retorna `sql.ErrNoRows` e apenas a geração atual fica elegível. A 012 obsoleta é rejeitada pela forma de tabela/trigger, mesmo sem o índice antigo.
 - Decisão R5 aceita pelo usuário: replay ativo de recibo `legacy` após o upgrade suprime o POST bruto. Se o envio falhou na v0.48, esse recibo nunca será entregue pela via ativa.
 - Retorno concluído: obrigatórios em `954d174` e `c905e37`, com ressalvas em `c422f0f` e validação adicional em `a08d36e`. Testes dirigidos com `-race` e `make check` passaram, incluindo 13/13 jornadas E2E. Parada para nova revisão, seguida do Advisor sobre encerramento e falhas ambíguas. AC4 e E4 seguem pendentes.
+
+
+## ESTADO — Configuração Relay solicitada em 20/11/2026
+
+- Auditoria: antes desta mudança, a 082 não adicionou variável de ambiente de produção. `TUNETRAIL_RELAY_GOLDEN_CHILD`, `TUNETRAIL_RELAY_CRASH_DB` e `TUNETRAIL_RELAY_MEASURE` são exclusivas de testes/ensaios. As novas chaves são de TOML e painel, sem variável nova.
+- Parametrizadas: `[relay].allow_http` e `[relay].allow_private_network`, padrão false, com aplicação após reinício como as demais opções do painel. Ordem: faixa proibida → chave global → exceção por destino → bloqueio padrão.
+- Constantes mantidas: 100 mil itens/destino, 100 por lote, backoff 30 s/fator 2/teto 1 h, 8 tentativas de item, idade e arquivo de 30 dias, DNS de semeadura (4 workers, 2 s/host e 10 s total), dial 5 s, TLS 5 s, cabeçalhos 8 s, requisição 10 s, lease de 2 min, 4 workers de entrega, poll de 250 ms, manutenção de 1 min e shutdown faseado (4 s admissão, 3 s HTTP, 2 s liberação com contexto independente, 2 s resolvedor). Capacidade, concorrência e janela de retry podem merecer configuração após medir E4. Lote, prazo de transporte e lease ficam juntos para preservar limites e margem operacional.
+- Pendente: tela de exceções e diagnóstico estruturado, docs e verificação.
