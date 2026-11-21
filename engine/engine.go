@@ -302,29 +302,29 @@ func Run(
 	ready.Store(false)
 	l.Info().Msg("Engine: Received server shutdown notice")
 
-	// Stop admission first; budget each subsequent phase independently.
-	admissionCtx, stopAdmission := context.WithTimeout(context.WithoutCancel(ctx), 4*time.Second)
+	// Share one deadline across admission and workers after the shutdown signal.
+	started := time.Now()
+	stopClaims()
+	stopIngest()
+	grace := time.AfterFunc(time.Until(started.Add(4*time.Second)), cancelRelay)
+	defer grace.Stop()
+	admissionCtx, stopAdmission := context.WithDeadline(context.WithoutCancel(ctx), started.Add(4*time.Second))
 	if err := httpServer.Shutdown(admissionCtx); err != nil {
 		runErr = errors.Join(runErr, err, httpServer.Close())
 	}
 	stopAdmission()
-	stopClaims()
-	stopIngest()
-	grace := time.NewTimer(3 * time.Second)
-	select {
-	case <-relayDone:
-	case <-grace.C:
-		cancelRelay()
-		<-relayDone
+	workerCtx, stopWaiting := context.WithDeadline(context.WithoutCancel(ctx), started.Add(8*time.Second))
+	defer stopWaiting()
+	for _, worker := range []struct {
+		name string
+		done <-chan struct{}
+	}{{"relay delivery", relayDone}, {"receipt recovery", ingestDone}} {
+		select {
+		case <-worker.done:
+		case <-workerCtx.Done():
+			l.Warn().Str("worker", worker.name).Msg("Engine: Worker did not stop before shutdown deadline")
+		}
 	}
-	grace.Stop()
-	ingestGrace := time.NewTimer(2 * time.Second)
-	select {
-	case <-ingestDone:
-	case <-ingestGrace.C:
-		l.Warn().Msg("Engine: Active receipt recovery did not stop before shutdown deadline")
-	}
-	ingestGrace.Stop()
 	mbzC.Shutdown()
 	images.Shutdown()
 	if runErr == nil {

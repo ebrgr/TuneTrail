@@ -220,3 +220,4 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Pendente: política global, texto de segurança, encerramento, diagnósticos e verificação.
 
 - Obrigatório 2 e D1: permissões globais valem inclusive para donos não-root na entrega durável e no teste de conexão. Prefira exceções. Faixas proibidas nunca são liberadas. Loopback e link-local sempre exigem exceção por destino. Para outros endereços vale global → exceção → bloqueio padrão. A via bruta legada/sombra e playing_now estão fora dessas regras (risco aceito).
+- D6: o sinal interrompe novos claims e sinaliza o resolvedor imediatamente. Admissão e HTTP em voo têm até 4 s em paralelo, e a espera dos workers compartilha o prazo de 8 s. O Compose mantém 30 s de tolerância.
