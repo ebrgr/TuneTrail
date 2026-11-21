@@ -276,7 +276,7 @@ func invalidateRelayBatch(ctx context.Context, tx *sql.Conn, batch RelayBatch, i
 }
 
 // RenewRelayBatch extends ownership before a POST. Changed credentials require a new claim.
-func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time.Time) (bool, error) {
+func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time.Time, sending ...RelayItem) (bool, error) {
 	ids, err := relayBatchIDs(batch)
 	if err != nil {
 		return false, err
@@ -302,6 +302,18 @@ func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time
 			return err
 		}
 		n, err = res.RowsAffected()
+		for _, item := range sending {
+			var valid bool
+			if err := tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM outbox
+				WHERE id=? AND profile_id=? AND destination_id='relay:'||? AND lease_owner=?
+				AND work_version=? AND relay_generation=? AND `+relayDue+")",
+				item.ID, batch.Profile, batch.Profile, batch.Owner, item.Version, batch.Generation).Scan(&valid); err != nil {
+				return err
+			}
+			if !valid {
+				return nil
+			}
+		}
 		renewed = n > 0
 		return err
 	})
@@ -420,7 +432,7 @@ func pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, 
 		return false, err
 	case relay.BadRequest:
 		if !result.RemainingZero {
-			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET backoff_count=0 WHERE profile_id=?", batch.Profile)
+			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET backoff_count=0,pause_class=NULL,paused_until=NULL WHERE profile_id=?", batch.Profile)
 			return false, err
 		}
 		class = relay.RateLimited
