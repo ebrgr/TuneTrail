@@ -55,7 +55,7 @@ CREATE TABLE relay_allowlist (
     allow_private INTEGER NOT NULL CHECK(allow_private IN (0,1)),
     origin TEXT NOT NULL CHECK(origin IN ('manual','seeded')),
     CHECK(allow_http=1 OR (allow_private=1 AND cidr<>'')),
-    CHECK(allow_private=0 OR cidr<>''),
+    CHECK((allow_private=1)=(cidr<>'')),
     PRIMARY KEY(profile_id,host_port,cidr,origin)
 );
 

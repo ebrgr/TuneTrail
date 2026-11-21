@@ -24,6 +24,7 @@ var reservedPrefixes = [...]netip.Prefix{
 	netip.MustParsePrefix("0.0.0.0/8"),
 	netip.MustParsePrefix("10.0.0.0/8"),
 	netip.MustParsePrefix("100.64.0.0/10"),
+	netip.MustParsePrefix("127.0.0.0/8"),
 	netip.MustParsePrefix("169.254.0.0/16"),
 	netip.MustParsePrefix("172.16.0.0/12"),
 	netip.MustParsePrefix("192.0.0.0/24"),
@@ -101,6 +102,16 @@ func IsReservedAddress(ip netip.Addr) bool {
 	}
 	for _, prefix := range reservedPrefixes {
 		if prefix.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsReservedPrefix reports whether a whole prefix falls under the reserved-network policy.
+func IsReservedPrefix(prefix netip.Prefix) bool {
+	for _, reserved := range reservedPrefixes {
+		if prefix.Bits() >= reserved.Bits() && reserved.Contains(prefix.Masked().Addr()) {
 			return true
 		}
 	}
