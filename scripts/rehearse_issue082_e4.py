@@ -7,6 +7,7 @@ from contextlib import closing
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import shutil
 import socket
 import sqlite3
 import subprocess
@@ -15,6 +16,7 @@ import threading
 import time
 
 from rehearse_issue081 import percentiles, sample_resources
+from rehearse_issue134_e4 import large_history
 from validate_multiuser import LBZ, WEB, Server, scrobble
 
 
@@ -109,7 +111,7 @@ def exercise(binary, directory, scenario):
                     imports = [job.result() for job in jobs]
                 ready.set()
                 acks = [submit(files * size + i, 1) for i in range(40)]
-                final = settle(db, files * size + 40, 115)
+                final = settle(db, files * size + 40, 400)
                 duration = time.monotonic() - start
                 if scenario != 'refused':
                     assert final == ({'sent': 4039, 'failed': 1} if scenario == 'healthy' else {'sent': 160}), final
@@ -131,6 +133,65 @@ def exercise(binary, directory, scenario):
             thread.join()
 
 
+def upgrade(binary, baseline, root):
+    app = Server(baseline, root / 'upgrade')
+    app.start()
+    try:
+        app.login()
+        profile = WEB + '/profiles/'
+        app.request('POST', WEB + '/profiles', {'slug': 'fixture-member', 'display_name': 'Fixture member'},
+                    admin=True, expected=201)
+        for slug in ('default', 'fixture-member'):
+            app.request('PUT', profile + slug + '/relay',
+                        {'url': 'http://127.0.0.1:1/fixture', 'token': 'upgrade-fictional-token'},
+                        admin=True, expected=204)
+    finally:
+        app.stop()
+
+    current = Server(binary, app.directory)
+    path = app.directory / 'tunetrail.db'
+    with closing(sqlite3.connect(path)) as db:
+        db.execute("UPDATE users SET role='user' WHERE id=(SELECT user_id FROM listening_profiles WHERE slug='fixture-member')")
+        large_history(db)
+        db.commit()
+        wal_bytes = Path(str(path) + '-wal').stat().st_size
+        assert wal_bytes > 0
+        start = time.monotonic()
+        try:
+            current.start()
+            seconds = time.monotonic() - start
+            with closing(sqlite3.connect(path)) as upgraded:
+                assert upgraded.execute('SELECT max(version_id) FROM goose_db_version').fetchone()[0] == 12
+                assert upgraded.execute('SELECT count(*) FROM ingest_events').fetchone()[0] == 300000
+                pauses = dict(upgraded.execute('SELECT p.slug,d.pause_class FROM relay_destinations d JOIN listening_profiles p ON p.id=d.profile_id'))
+                assert pauses['default'] is None and pauses['fixture-member'].startswith('policy_blocked')
+                assert upgraded.execute("SELECT count(*) FROM relay_allowlist WHERE origin='seeded'").fetchone()[0] == 2
+            log = (app.directory / 'server.log').read_text()
+            assert 'seed_skipped_non_admin' in log and 'upgrade-fictional-token' not in log
+            backup, = app.directory.glob('tunetrail.db.pre-relay-delivery-*.bak')
+            backup_bytes = backup.stat().st_size
+            # Physical backups preserve credentials needed to restore v11.
+            with closing(sqlite3.connect(backup)) as saved:
+                assert saved.execute('SELECT count(*) FROM ingest_events').fetchone()[0] == 300000
+                assert saved.execute('SELECT count(*) FROM profile_relays WHERE token=?', ('upgrade-fictional-token',)).fetchone()[0] == 2
+        finally:
+            current.stop()
+    restore = Server(baseline, root / 'restore')
+    restore.directory.mkdir()
+    shutil.copy2(backup, restore.directory / 'tunetrail.db')
+    try:
+        restore.start()
+        with closing(sqlite3.connect(restore.directory / 'tunetrail.db')) as saved:
+            assert saved.execute('SELECT max(version_id) FROM goose_db_version').fetchone()[0] == 11
+            assert saved.execute('SELECT count(*) FROM ingest_events').fetchone()[0] == 300000
+    finally:
+        restore.stop()
+    return dict(scenario='upgrade', seconds=round(seconds, 3), wal_v11_bytes=wal_bytes,
+                backup_bytes=backup_bytes, database_v12_bytes=path.stat().st_size,
+                member_paused=True, admin_seeded=True, restore_v11=True)
+
+
+
 def cpu_time(server):
     elapsed = subprocess.check_output(['ps', '-o', 'time=', '-p', str(server.process.pid)], text=True)
     total = 0.0
@@ -142,12 +203,20 @@ def cpu_time(server):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--binary', type=Path, required=True)
-    parser.add_argument('--cases', nargs='+', choices=['healthy', 'slow', 'refused', 'oscillating'],
+    parser.add_argument('--baseline', type=Path)
+    parser.add_argument('--cases', nargs='+', choices=['healthy', 'slow', 'refused', 'oscillating', 'upgrade'],
                         default=['healthy', 'slow', 'refused', 'oscillating'])
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='tunetrail-relay-e4-') as root:
         for case in args.cases:
-            print(json.dumps(exercise(args.binary.resolve(strict=True), Path(root) / case, case)), flush=True)
+            binary = args.binary.resolve(strict=True)
+            if case == 'upgrade':
+                if args.baseline is None:
+                    parser.error('--cases upgrade requires --baseline')
+                result = upgrade(binary, args.baseline.resolve(strict=True), Path(root))
+            else:
+                result = exercise(binary, Path(root) / case, case)
+            print(json.dumps(result), flush=True)
 
 
 if __name__ == '__main__':

@@ -231,3 +231,6 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 ## ESTADO DA E4
 
 - Script de carga em loopback preparado para quatro cenários com bases descartáveis. Em andamento: executar e registrar medições, segurança, paridade, upgrade e falhas ambíguas.
+- Medido: expiração de 100 mil itens com 300 mil recibos, 15,55–16,29 ms em sete ticks. Índice adicional dispensado neste host. Remoção de histórico no mesmo cenário e espaço da fila medidos.
+- Verificado: SIGTERM em 4,004 s; paridade v0.48; SIGKILL em três fronteiras e recusa injetada na gravação do 2xx. O mock observou uma reentrega após aceite remoto sem CAS e uma após falha da gravação, ambas deduplicáveis.
+- Medido: TLS real em loopback com CA de teste. Pendente registrar síntese dos cenários, upgrade e verificação final.
