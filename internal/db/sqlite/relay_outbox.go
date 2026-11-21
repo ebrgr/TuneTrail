@@ -172,6 +172,13 @@ func maintainRelayQueue(ctx context.Context, tx *sql.Conn, profile int32, now in
 	if err != nil {
 		return err
 	}
+	// Expire overflow entries before checking whether any can be readmitted.
+	_, err = tx.ExecContext(ctx, `UPDATE outbox SET result='{"reason":"expired"}'
+		WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND `+relayCapacity+`
+		AND created_at<=? ORDER BY created_at,id LIMIT 100)`, profile, profile, cutoff)
+	if err != nil {
+		return err
+	}
 	_, err = tx.ExecContext(ctx, `UPDATE outbox SET state='pending',result='{}',next_attempt_at=?
 		WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND `+relayCapacity+`
 		AND created_at>? ORDER BY created_at,id LIMIT (SELECT min(100,100000-open_count) FROM relay_destinations WHERE profile_id=?))`, now, profile, profile, cutoff, profile)
