@@ -3,7 +3,7 @@ id: ISSUE-135
 title: >-
   135 — Consultas, edição, exclusão e exportação por ocorrência, com ranking por
   gravação ou lançamento
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
@@ -102,6 +102,15 @@ created: 2026-11-21T22:24:00Z
 ---
 
 Verificação: go test -race (webui, webquery, adminweb, db) OK; make check 13/13 E2E (Codex); Reviewer sem BUG; Advisor dispensado pelo usuário (mudança fora das categorias obrigatórias). ACs 1 a 3 marcados.
+
+---
+
+author: ebrgr
+created: 2026-11-21T22:24:00Z
+
+---
+
+Aceite do usuário em 21/11/2026: aceito sem Advisor e autorizado a publicar (sem push).
 
 ---
 <!-- COMMENTS:END -->
