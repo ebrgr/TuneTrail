@@ -191,7 +191,7 @@ disable_cover_art_archive=true
 	}
 	page1 := getPage()
 	page2 := getPage()
-	for _, name := range []string{cfg.LOG_LEVEL_ENV, cfg.MUSICBRAINZ_URL_ENV, cfg.MUSICBRAINZ_RATE_LIMIT_ENV, cfg.DISABLE_MUSICBRAINZ_ENV, cfg.DISABLE_DEEZER_ENV, cfg.DISABLE_COVER_ART_ARCHIVE_ENV, cfg.LASTFM_API_KEY_ENV, cfg.SUBSONIC_URL_ENV, cfg.SUBSONIC_PARAMS_ENV, cfg.FORCE_TZ} {
+	for _, name := range []string{cfg.LOG_LEVEL_ENV, cfg.MUSICBRAINZ_URL_ENV, cfg.MUSICBRAINZ_RATE_LIMIT_ENV, cfg.DISABLE_MUSICBRAINZ_ENV, cfg.DISABLE_DEEZER_ENV, cfg.DISABLE_COVER_ART_ARCHIVE_ENV, cfg.LASTFM_API_KEY_ENV, cfg.SUBSONIC_URL_ENV, cfg.SUBSONIC_PARAMS_ENV, cfg.FORCE_TZ, cfg.RelayAllowHTTPKey, cfg.RelayAllowPrivateKey} {
 		if !strings.Contains(page1, `name="`+name+`"`) {
 			t.Fatalf("field missing: %s", name)
 		}
@@ -200,7 +200,7 @@ disable_cover_art_archive=true
 		t.Fatal("parameters must be visible")
 	}
 	values := func(page string) url.Values {
-		return url.Values{"csrf_token": {extract(page, "csrf_token")}, "submission_token": {extract(page, "submission_token")}, "revision": {extract(page, "revision")}, cfg.MUSICBRAINZ_URL_ENV: {"https://musicbrainz.org"}, cfg.MUSICBRAINZ_RATE_LIMIT_ENV: {"1"}, cfg.DISABLE_MUSICBRAINZ_ENV: {"true"}, cfg.DISABLE_COVER_ART_ARCHIVE_ENV: {"true"}, cfg.LASTFM_API_KEY_ENV: {""}, cfg.SUBSONIC_URL_ENV: {""}, cfg.SUBSONIC_PARAMS_ENV: {""}, cfg.FORCE_TZ: {""}}
+		return url.Values{"csrf_token": {extract(page, "csrf_token")}, "submission_token": {extract(page, "submission_token")}, "revision": {extract(page, "revision")}, cfg.MUSICBRAINZ_URL_ENV: {"https://musicbrainz.org"}, cfg.MUSICBRAINZ_RATE_LIMIT_ENV: {"1"}, cfg.DISABLE_MUSICBRAINZ_ENV: {"true"}, cfg.DISABLE_COVER_ART_ARCHIVE_ENV: {"true"}, cfg.LASTFM_API_KEY_ENV: {""}, cfg.SUBSONIC_URL_ENV: {""}, cfg.SUBSONIC_PARAMS_ENV: {""}, cfg.FORCE_TZ: {""}, cfg.RelayAllowHTTPKey: {"false"}, cfg.RelayAllowPrivateKey: {"false"}}
 	}
 	for _, name := range []string{cfg.LOG_LEVEL_ENV, cfg.DISABLE_DEEZER_ENV} {
 		pattern := `(?s)<select[^>]*name="` + regexp.QuoteMeta(name) + `"[^>]* disabled`
@@ -345,6 +345,8 @@ disable_cover_art_archive=true
 	saveDraft.Set(cfg.DISABLE_COVER_ART_ARCHIVE_ENV, "false")
 	saveDraft.Set(cfg.LASTFM_API_KEY_ENV, "fixture-after-restart")
 	saveDraft.Set(cfg.FORCE_TZ, "America/Sao_Paulo")
+	saveDraft.Set(cfg.RelayAllowHTTPKey, "true")
+	saveDraft.Set(cfg.RelayAllowPrivateKey, "true")
 	saveDraft.Set(cfg.SUBSONIC_URL_ENV, mock.URL)
 	saveDraft.Set(cfg.SUBSONIC_PARAMS_ENV, "u=demo&p=demo")
 	code, _, _ = call("POST", "/admin/settings/save", saveDraft, "")
@@ -382,7 +384,7 @@ disable_cover_art_archive=true
 	expected := map[string]string{
 		cfg.LOG_LEVEL_ENV: "error", cfg.MUSICBRAINZ_URL_ENV: "http://localhost:5000/base", cfg.MUSICBRAINZ_RATE_LIMIT_ENV: "3",
 		cfg.DISABLE_MUSICBRAINZ_ENV: "true", cfg.DISABLE_DEEZER_ENV: "true", cfg.DISABLE_COVER_ART_ARCHIVE_ENV: "false",
-		cfg.LASTFM_API_KEY_ENV: "fixture-after-restart", cfg.SUBSONIC_URL_ENV: mock.URL, cfg.SUBSONIC_PARAMS_ENV: "u=demo&p=demo", cfg.FORCE_TZ: "America/Sao_Paulo",
+		cfg.LASTFM_API_KEY_ENV: "fixture-after-restart", cfg.SUBSONIC_URL_ENV: mock.URL, cfg.SUBSONIC_PARAMS_ENV: "u=demo&p=demo", cfg.FORCE_TZ: "America/Sao_Paulo", cfg.RelayAllowHTTPKey: "true", cfg.RelayAllowPrivateKey: "true",
 	}
 	for name, value := range expected {
 		section := ""

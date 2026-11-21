@@ -660,5 +660,7 @@
   "admin.relay.reason_tls_error": "Confira o certificado HTTPS e a cadeia de confiança.",
   "admin.relay.reason_token_invalid": "Confira o token do relay.",
   "admin.relay.reason_url_invalid": "Confira a URL base do relay.",
-  "admin.relay.reason_policy_blocked": "Confira a configuração do relay e tente novamente."
+  "admin.relay.reason_policy_blocked": "Confira a configuração do relay e tente novamente.",
+  "admin.relay.class_policy": "Relay bloqueado pela política.",
+  "admin.relay.class_network": "A validação de rede do relay falhou."
 }

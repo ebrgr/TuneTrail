@@ -15,6 +15,7 @@ import (
 	"time"
 
 	migrations "github.com/ebrgr/TuneTrail/db/migrations_sqlite"
+	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/pressly/goose/v3"
 	sqlite3 "modernc.org/sqlite"
@@ -333,8 +334,23 @@ func migrateDatabase(db *sql.DB) error {
 
 // ActivateRelayDelivery switches the durable writer on before the service accepts requests.
 func (s *Sqlite) ActivateRelayDelivery(ctx context.Context) error {
+	httpAllowed, privateAllowed := cfg.RelayNetworkPolicy()
+	return s.activateRelayDelivery(ctx, httpAllowed, privateAllowed)
+}
+
+// activateRelayDelivery rechecks permissions-related pauses when a startup policy enables them.
+func (s *Sqlite) activateRelayDelivery(ctx context.Context, httpAllowed, privateAllowed bool) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		_, err := tx.ExecContext(ctx, "UPDATE relay_delivery_gate SET policy='durable' WHERE id=1 AND policy='legacy'")
+		if _, err := tx.ExecContext(ctx, "UPDATE relay_delivery_gate SET policy='durable' WHERE id=1 AND policy='legacy'"); err != nil {
+			return err
+		}
+		if !httpAllowed && !privateAllowed {
+			return nil
+		}
+		_, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET pause_class=NULL,paused_until=NULL,config_version=config_version+1
+			WHERE pause_class='policy_blocked'
+			OR (? AND (pause_class LIKE 'policy_blocked:http_not_allowed:%' OR pause_class='policy_blocked:seed_skipped_non_admin:'))
+			OR (? AND (pause_class LIKE 'policy_blocked:private_network_not_allowed:%' OR pause_class='policy_blocked:seed_skipped_non_admin:reserved'))`, httpAllowed, privateAllowed)
 		return err
 	})
 }

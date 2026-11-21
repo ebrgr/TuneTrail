@@ -116,11 +116,7 @@ func writeRelayDiagnostic(w http.ResponseWriter, r *http.Request, d *relay.Valid
 	if p := middleware.ProfileFromContext(ctx); p != nil {
 		relay.LogDiagnostic(ctx, p.ID, d.Diagnostic, time.Now())
 	}
-	class := "network"
-	if d.Class == relay.PolicyBlocked || d.Class == relay.Auth || d.Class == relay.Redirect {
-		class = "policy"
-	}
-	body := map[string]string{"class": class}
+	body := map[string]string{"class": d.PublicClass()}
 	if admin.AuthorizeAction(middleware.GetUserFromContext(ctx), admin.ManageServer, nil) == nil {
 		body["reason"] = d.Diagnostic.Code
 		body["instruction"] = relay.Remedy(d.Diagnostic.Code)

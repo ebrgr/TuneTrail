@@ -107,23 +107,43 @@ an old URL that arrives after the change leaves the item failed as
 `destination_changed`, even if the old server accepted it. Explicit retry
 can send it to the new destination.
 
-For delivery and connection tests, HTTP and access to private addresses need
-separate administrator permissions. Application-level TLS validation remains
-enabled. The legacy raw relay retains its previous network behavior. An
-administrator can use the profile API:
+For a relay on your local network, sign in as an instance administrator and
+open **Server → Relay exceptions by destination**. Add the relay's configured
+host and port. Enable HTTP with an exception that has an empty CIDR if the relay
+uses cleartext. For a private address, add the narrowest reserved CIDR that
+contains the destination, such as a single address with `/32` or `/128`.
+A private HTTP relay needs both permissions. Use **Revalidate and resume**
+after saving the relay and its exceptions.
 
-- `PUT /apis/web/v1/profiles/{slug}/relay/permissions` with
-  `{"host_port":"relay.example:80","allow_http":true}` to permit HTTP.
-- Use the same endpoint with `cidr` and `allow_private:true` to permit
-  a reserved IP or network. HTTP to a private address requires both permissions.
-- Send `DELETE` to the same endpoint with `host_port` and the original CIDR
-  (empty for the cleartext-only permission) to revoke the exception.
-- `POST /apis/web/v1/profiles/{slug}/relay/resume` validates the saved
-  configuration and clears its pause.
-- `POST /apis/web/v1/profiles/{slug}/ingest-activation/occurrence` converts an
-  already-active profile. A relay must pass validation under its current
-  allowlist and have no current pause. The checks for open v9 receipts and
-  unlinked shadow receipts still apply.
+The **Relay** section above the exceptions offers two instance-wide permissions.
+Each defaults to false and requires restart. The saved and running values and
+their origins are displayed in the panel. The file equivalent is:
+
+```toml
+[relay]
+allow_http = false
+allow_private_network = false
+```
+
+The dialer checks permissions in this order:
+
+1. Forbidden endpoints and ranges always stay blocked, including cloud metadata
+   and the blocked IPv6 translation ranges.
+2. An enabled global permission applies to its corresponding restriction.
+3. A matching host:port exception can allow HTTP or a specific reserved CIDR.
+4. Without permission, cleartext and reserved networks stay blocked.
+
+The API also supports changing exceptions and resuming a saved relay under
+`/apis/web/v1/profiles/{slug}/relay`. Root can convert an already-active profile
+at `POST /apis/web/v1/profiles/{slug}/ingest-activation/occurrence` once its
+configured relay passes validation and has no current pause. Open v9 receipts
+and unlinked shadow receipts still block the cut.
+
+Relay warnings include the configured scheme, host and port, a stable reason,
+and the range category when applicable. They omit DNS answers, paths, queries
+and credentials. The root panel shows the last pause reason and an instruction
+after failed revalidation. Non-root users receive only the policy or network
+class. The legacy raw relay retains its previous network behavior.
 
 The saved token is omitted from the admin response and from the HTML field.
 Leave it blank to keep the same credential for the displayed URL, or supply a

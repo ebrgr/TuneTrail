@@ -115,14 +115,27 @@ def validate(server):
     server.request('GET',LBZ+'/validate-token',token=key['key'],expected=401)
     with relay_server() as origin:
         host_port = origin.removeprefix("http://")
-        server.request('PUT', WEB+'/profiles/mara/relay/permissions',
-                       {'host_port':host_port,'allow_http':True}, admin=True, expected=204)
-        server.request('PUT', WEB+'/profiles/mara/relay/permissions',
-                       {'host_port':host_port,'cidr':'127.0.0.1/32','allow_private':True}, admin=True, expected=204)
+        relay_settings = '/admin/settings/relay'
+        panel = f.request('GET','/admin/settings')[0]
+        assert b'RELAY_ALLOW_HTTP' in panel and b'RELAY_ALLOW_PRIVATE_NETWORK' in panel
+        token_settings = f.token('/admin/settings')
+        form = {'csrf_token':token_settings,'profile':p['id'],'host_port':host_port}
+        f.request('POST',relay_settings,dict(form,operation='add',allow_http='1'),expected=403,
+                  headers={'Origin':'https://untrusted.example'})
+        f.request('POST',relay_settings,dict(form,operation='add',allow_http='1'),expected=303)
+        f.request('POST',relay_settings,dict(form,operation='edit',old_host=host_port,
+                  old_cidr='',old_origin='manual',allow_http='1'),expected=303)
+        f.request('POST',relay_settings,dict(form,operation='add',cidr='127.0.0.1/32',allow_private='1'),expected=303)
         draft=dict(common,url=origin,token='fictional-token')
         f.request('POST',prefix+'relay/test',draft,expected=303)
         assert not server.request('GET',WEB+'/profiles/mara/relay',admin=True)['enabled']
         f.request('POST',prefix+'relay/save',draft,expected=303)
+        panel=f.request('GET','/admin/settings')[0]
+        assert b'127.0.0.1/32' in panel and b'fictional-token' not in panel
+        f.request('POST',relay_settings,dict(form,operation='resume'),expected=303)
+        f.request('POST',relay_settings,dict(form,operation='remove',old_host=host_port,
+                  old_cidr='127.0.0.1/32',old_origin='manual'),expected=303)
+
         f.request('POST',prefix+'relay/remove',common,expected=303)
     # Five fictional source formats; file identity cannot change the target.
     fixtures={

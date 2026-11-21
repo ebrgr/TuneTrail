@@ -10,11 +10,13 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // action validates the complete body, including CSRF, before calling any service.
@@ -300,6 +302,18 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			_, err = admin.TestRelay(r.Context(), h.store, identity.User, id, slug, raw, token, h.relayClient)
 			if err == nil {
 				h.putNotice(identity.SessionID, id, "Relay connection successful; configuration was not changed.")
+			}
+			var diagnostic *relay.ValidationError
+			if errors.As(err, &diagnostic) {
+				relay.LogDiagnostic(r.Context(), id, diagnostic.Diagnostic, time.Now())
+				if admin.AuthorizeAction(identity.User, admin.ManageServer, nil) == nil {
+					code := diagnostic.Diagnostic.Code
+					h.putNoticeData(identity.SessionID, id, "admin.relay.reason_"+code, relay.Remedy(code), nil)
+				} else {
+					class := diagnostic.PublicClass()
+					h.putNoticeData(identity.SessionID, id, "admin.relay.class_"+class, class, nil)
+				}
+				err = nil
 			}
 		}
 	default:

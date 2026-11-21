@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- The root Server panel now saves relay settings in `conf.toml`. Instance-wide `allow_http` and `allow_private_network` default to off and apply after restart. Root can also manage destination exceptions and revalidate a paused relay using native forms (ISSUE-082).
+- Relay warnings now include a stable reason and the configured host and port, with one warning per profile and reason per minute. Resolved addresses, paths, query strings and tokens are kept out of logs. Root receives actionable validation details; other profiles receive the policy or network class (ISSUE-082).
+
 - Active ListenBrainz ingestion queues accepted events for durable relay delivery. The worker sends bounded batches, retries transient failures with backoff and server rate-limit hints, pauses each destination independently, and preserves queued work on shutdown (ISSUE-082).
 - Replaying a pre-upgrade receipt through active ingestion does not repeat the original raw relay POST. A failed pre-upgrade delivery remains undelivered through the active path (ISSUE-082).
 - Durable relay delivery and connection tests use a direct, redirect-free transport. Administrators can edit HTTP and reserved-network exceptions separately through the profile API. The upgrade seeds eligible existing exceptions only for administrator profiles. Testing a relay over HTTP or at a private address returns 502 until an administrator grants the required exceptions. The admin relay GET returns the canonical URL and omits the saved token (ISSUE-082).

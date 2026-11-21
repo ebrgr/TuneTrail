@@ -54,6 +54,16 @@ type ValidationError struct {
 func (e *ValidationError) Error() string { return string(e.Class) }
 func (e *ValidationError) Unwrap() error { return ErrUpstream }
 
+// PublicClass is the only diagnostic exposed to non-root callers.
+func (e *ValidationError) PublicClass() string {
+	switch e.Class {
+	case PolicyBlocked, Auth, Redirect, ConfigInvalid:
+		return "policy"
+	default:
+		return "network"
+	}
+}
+
 type blockedAddress struct{ code, category string }
 
 func (e blockedAddress) Error() string { return e.code }

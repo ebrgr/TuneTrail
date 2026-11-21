@@ -375,6 +375,98 @@
             <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
             <input type="hidden" name="revision" value="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
             
+              
+                <h2>Relay</h2>
+                <p>Forbidden ranges stay blocked. Global permissions take precedence over destination exceptions. Without permission, HTTP and reserved networks are blocked.</p>
+              
+              <section class="server-setting">
+                <label for="setting-RELAY_ALLOW_HTTP">Allow relay over HTTP</label>
+                
+                  <select
+                    id="setting-RELAY_ALLOW_HTTP"
+                    name="RELAY_ALLOW_HTTP"
+                    aria-describedby="hint-RELAY_ALLOW_HTTP"
+                  >
+                    
+                      <option value="" selected>Invalid: </option>
+                    
+                      <option value="false">No</option>
+                    
+                      <option value="true">Yes</option>
+                    
+                  </select>
+                
+                <p id="hint-RELAY_ALLOW_HTTP">Allows cleartext relay requests instance-wide. Restart to apply.</p>
+                
+                
+                  <dl class="server-setting-state">
+                    <div>
+                      <dt>Saved</dt>
+                      <dd>
+                        Not set
+                        <small>(Default)</small>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Effective after restart</dt>
+                      <dd>
+                        Not set
+                        <small>(Default)</small>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Running</dt>
+                      <dd>Not set</dd>
+                    </div>
+                  </dl>
+                
+              </section>
+            
+              
+              <section class="server-setting">
+                <label for="setting-RELAY_ALLOW_PRIVATE_NETWORK">Allow relay on private networks</label>
+                
+                  <select
+                    id="setting-RELAY_ALLOW_PRIVATE_NETWORK"
+                    name="RELAY_ALLOW_PRIVATE_NETWORK"
+                    aria-describedby="hint-RELAY_ALLOW_PRIVATE_NETWORK"
+                  >
+                    
+                      <option value="" selected>Invalid: </option>
+                    
+                      <option value="false">No</option>
+                    
+                      <option value="true">Yes</option>
+                    
+                  </select>
+                
+                <p id="hint-RELAY_ALLOW_PRIVATE_NETWORK">Allows relay requests to reserved networks instance-wide. Permanently forbidden endpoints stay blocked. Restart to apply.</p>
+                
+                
+                  <dl class="server-setting-state">
+                    <div>
+                      <dt>Saved</dt>
+                      <dd>
+                        Not set
+                        <small>(Default)</small>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Effective after restart</dt>
+                      <dd>
+                        Not set
+                        <small>(Default)</small>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Running</dt>
+                      <dd>Not set</dd>
+                    </div>
+                  </dl>
+                
+              </section>
+            
+              
               <section class="server-setting">
                 <label for="setting-KOITO_LOG_LEVEL">Log level</label>
                 
@@ -424,6 +516,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_MUSICBRAINZ_URL">MusicBrainz URL</label>
                 
@@ -461,6 +554,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_MUSICBRAINZ_RATE_LIMIT">MusicBrainz rate limit</label>
                 
@@ -499,6 +593,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_DISABLE_MUSICBRAINZ">Disable MusicBrainz</label>
                 
@@ -542,6 +637,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_DISABLE_DEEZER">Disable Deezer images</label>
                 
@@ -585,6 +681,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_DISABLE_COVER_ART_ARCHIVE">Disable Cover Art Archive</label>
                 
@@ -628,6 +725,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_LASTFM_API_KEY">Last.fm API key</label>
                 
@@ -665,6 +763,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_SUBSONIC_URL">Subsonic URL</label>
                 
@@ -702,6 +801,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_SUBSONIC_PARAMS">Subsonic parameters</label>
                 
@@ -739,6 +839,7 @@
                 
               </section>
             
+              
               <section class="server-setting">
                 <label for="setting-KOITO_FORCE_TZ">Application time zone</label>
                 
@@ -782,6 +883,106 @@
               <button type="submit" formaction="/admin/settings/subsonic/test">Test Subsonic without saving</button>
             </div>
           </form>
+          
+  
+    <section aria-labelledby="relay-exceptions">
+      <h2 id="relay-exceptions">Relay exceptions by destination</h2>
+      
+        <article class="server-setting">
+          <h3>Fictional Alpha</h3>
+          <p>No relay configured</p>
+          
+          
+          <form method="post" action="/admin/settings/relay">
+            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="profile" value="1">
+            
+  <label>Host and port
+    <input name="host_port" value="" placeholder="relay.example:443" required></label>
+  <label>Reserved CIDR
+    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <label><input type="checkbox" name="allow_http" value="1">
+    Permit HTTP</label>
+  <label><input type="checkbox" name="allow_private" value="1">
+    Permit private network</label>
+
+            <button name="operation" value="add">Add exception</button>
+          </form>
+        </article>
+      
+        <article class="server-setting">
+          <h3>Beta</h3>
+          <p>No relay configured</p>
+          
+          
+          <form method="post" action="/admin/settings/relay">
+            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="profile" value="2">
+            
+  <label>Host and port
+    <input name="host_port" value="" placeholder="relay.example:443" required></label>
+  <label>Reserved CIDR
+    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <label><input type="checkbox" name="allow_http" value="1">
+    Permit HTTP</label>
+  <label><input type="checkbox" name="allow_private" value="1">
+    Permit private network</label>
+
+            <button name="operation" value="add">Add exception</button>
+          </form>
+        </article>
+      
+        <article class="server-setting">
+          <h3>Empty</h3>
+          <p>No relay configured</p>
+          
+          
+          <form method="post" action="/admin/settings/relay">
+            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="profile" value="3">
+            
+  <label>Host and port
+    <input name="host_port" value="" placeholder="relay.example:443" required></label>
+  <label>Reserved CIDR
+    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <label><input type="checkbox" name="allow_http" value="1">
+    Permit HTTP</label>
+  <label><input type="checkbox" name="allow_private" value="1">
+    Permit private network</label>
+
+            <button name="operation" value="add">Add exception</button>
+          </form>
+        </article>
+      
+        <article class="server-setting">
+          <h3>reference-admin</h3>
+          <p>No relay configured</p>
+          
+          
+          <form method="post" action="/admin/settings/relay">
+            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+            <input type="hidden" name="profile" value="4">
+            
+  <label>Host and port
+    <input name="host_port" value="" placeholder="relay.example:443" required></label>
+  <label>Reserved CIDR
+    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <label><input type="checkbox" name="allow_http" value="1">
+    Permit HTTP</label>
+  <label><input type="checkbox" name="allow_private" value="1">
+    Permit private network</label>
+
+            <button name="operation" value="add">Add exception</button>
+          </form>
+        </article>
+      
+    </section>
+  
+
           <p><a href="/admin/settings">Reload saved configuration</a> · <a href="/admin">Back to administration</a></p>
         </main>
         <footer class="admin-footer">

@@ -587,3 +587,23 @@ func TestSettingsRejectsOverrideAppearingBeforePublish(t *testing.T) {
 		t.Fatal("late override changed the file")
 	}
 }
+
+// TestRelaySettingsSave keeps the runtime snapshot separate from persisted policy.
+func TestRelaySettingsSave(t *testing.T) {
+	store, path := testSettingsStore(t, "", nil)
+	before, err := store.Read(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved, err := store.Save(t.Context(), before.Revision, map[string]string{RelayAllowHTTPKey: "true", RelayAllowPrivateKey: "true"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !saved.RestartRequired || saved.Active[RelayAllowHTTPKey] != "false" || saved.Effective[RelayAllowHTTPKey] != "true" || saved.Origins[RelayAllowHTTPKey] != OriginTOML {
+		t.Fatal("relay policy source or restart state is incorrect")
+	}
+	doc, _, present, err := readTOML(path)
+	if err != nil || !present || documentValues(doc)[RelayAllowPrivateKey] != "true" {
+		t.Fatalf("relay policy was not persisted: %v", err)
+	}
+}
