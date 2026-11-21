@@ -25,7 +25,7 @@ require (
 
 require github.com/tdewolff/parse/v2 v2.8.20
 
-require golang.org/x/net v0.40.0 // indirect
+require golang.org/x/net v0.40.0
 
 require (
 	github.com/BurntSushi/toml v1.6.0
