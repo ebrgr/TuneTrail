@@ -270,6 +270,60 @@ func TestRelayOutboxClaims(t *testing.T) {
 	require.EqualValues(t, late.Add(time.Minute).Unix(), scalar(t, s, "SELECT paused_until FROM relay_destinations WHERE profile_id=1"))
 }
 
+// TestRelayBatchWritesUseIDs leaves an unrelated row untouched even if it has the same lease owner.
+func TestRelayBatchWritesUseIDs(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().Add(time.Minute).UTC()
+	relayReceipt(t, s, 1, "first", "v9", 1, now)
+	resolveRelayV9(t, s)
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
+	relayReceipt(t, s, 1, "other", "v9", 1, now.Add(time.Hour))
+	resolveRelayV9(t, s)
+	execSQL(t, s, `UPDATE outbox SET lease_owner=?,lease_until=1 WHERE id<>?`, batch.Owner, batch.Items[0].ID)
+	renewed, err := s.RenewRelayBatch(t.Context(), batch, now)
+	require.NoError(t, err)
+	require.True(t, renewed)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE lease_until=1"))
+	_, err = s.FinishRelayBatch(t.Context(), batch, nil, relay.Result{}, now, true)
+	require.NoError(t, err)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE lease_until=1"))
+}
+
+// TestRelayLeaseQueryPlans records the scan and indexed forms for renewal and release.
+func TestRelayLeaseQueryPlans(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	cases := []struct {
+		name, query string
+		args        []any
+	}{
+		{"renew-before", `UPDATE outbox SET lease_until=? WHERE profile_id=? AND lease_owner=?`, []any{1, 1, "fixture"}},
+		{"release-before", `UPDATE outbox SET state='retryable',next_attempt_at=?,lease_owner=NULL,lease_until=NULL WHERE profile_id=? AND lease_owner=? AND ` + relayDue, []any{1, 1, "fixture"}},
+		{"renew-after", renewRelayItems, []any{1, `["item"]`, 1, 1, 1, "fixture"}},
+		{"release-after", releaseRelayItems, []any{1, `["item"]`, 1, 1, 1, "fixture"}},
+		{"expire-due", expireRelayWork + relayDue + " LIMIT 100)", []any{1, 1, 1, 1, 1}},
+		{"expire-capacity", expireRelayWork + relayCapacity + " LIMIT 100)", []any{1, 1, 1, 1, 1}},
+	}
+	for _, tc := range cases {
+		rows, err := s.db.Query("EXPLAIN QUERY PLAN "+tc.query, tc.args...)
+		require.NoError(t, err)
+		var steps []string
+		for rows.Next() {
+			var a, b, c int
+			var detail string
+			require.NoError(t, rows.Scan(&a, &b, &c, &detail))
+			steps = append(steps, detail)
+		}
+		require.NoError(t, rows.Err())
+		require.NoError(t, rows.Close())
+		t.Logf("%s: %s", tc.name, strings.Join(steps, " | "))
+		if strings.HasSuffix(tc.name, "-after") {
+			require.Contains(t, steps[0], "sqlite_autoindex_outbox_1 (id=?)")
+		}
+	}
+}
+
 // TestRelayPauseAndCancellation distinguishes destination failures from item rejection.
 func TestRelayPauseAndCancellation(t *testing.T) {
 	s, _ := relayStoreFixture(t)

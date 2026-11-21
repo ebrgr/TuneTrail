@@ -188,7 +188,7 @@ const expireRelayWork = `UPDATE outbox SET state='failed',result='{"reason":"exp
 	WHERE id IN (SELECT id FROM outbox WHERE profile_id=? AND destination_id='relay:'||? AND relay_generation=?
 	AND created_at<=? AND coalesce(lease_until,0)<=? AND `
 
-const staleRelayUpdate = `UPDATE outbox SET state='failed',result='{"reason":"destination_changed"}',
+const staleRelayUpdate = `UPDATE outbox INDEXED BY sqlite_autoindex_outbox_1 SET state='failed',result='{"reason":"destination_changed"}',
 	next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL,work_version=work_version+1 WHERE `
 
 // invalidateStaleRelayItems materializes old-generation failures in bounded groups.
@@ -244,10 +244,39 @@ func (s *Sqlite) RetryRelayItem(ctx context.Context, profile int32, id string, n
 	return n == 1, err
 }
 
+const relayBatchScope = ` WHERE id IN (SELECT value FROM json_each(?)) AND profile_id=? AND destination_id='relay:'||?
+	AND relay_generation=? AND lease_owner=? AND ` + relayDue
+const renewRelayItems = `UPDATE outbox INDEXED BY sqlite_autoindex_outbox_1 SET lease_until=?` + relayBatchScope
+const releaseRelayItems = `UPDATE outbox INDEXED BY sqlite_autoindex_outbox_1 SET state='retryable',next_attempt_at=?,lease_owner=NULL,lease_until=NULL` + relayBatchScope
+
+// relayBatchIDs encodes the finite primary-key set for bounded writes under the lease.
+func relayBatchIDs(batch RelayBatch) (string, error) {
+	ids := make([]string, len(batch.Items))
+	for i, item := range batch.Items {
+		ids[i] = item.ID
+	}
+	body, err := json.Marshal(ids)
+	return string(body), err
+}
+
+// invalidateRelayBatch marks only claimed rows when the destination generation has changed.
+func invalidateRelayBatch(ctx context.Context, tx *sql.Conn, batch RelayBatch, ids string) error {
+	_, err := tx.ExecContext(ctx, staleRelayUpdate+
+		`id IN (SELECT value FROM json_each(?)) AND profile_id=? AND destination_id='relay:'||?
+		AND relay_generation=? AND lease_owner=? AND `+relayDue+
+		` AND EXISTS(SELECT 1 FROM relay_destinations WHERE profile_id=? AND generation>?)`,
+		ids, batch.Profile, batch.Profile, batch.Generation, batch.Owner, batch.Profile, batch.Generation)
+	return err
+}
+
 // RenewRelayBatch extends ownership before a POST. Changed credentials require a new claim.
 func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time.Time) (bool, error) {
+	ids, err := relayBatchIDs(batch)
+	if err != nil {
+		return false, err
+	}
 	var renewed bool
-	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		until := now.Add(relayLease).Unix()
 		res, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET lease_until=? WHERE profile_id=? AND generation=? AND config_version=?
 			AND work_version=? AND lease_owner=?`, until, batch.Profile, batch.Generation, batch.ConfigVersion, batch.Version, batch.Owner)
@@ -255,12 +284,19 @@ func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time
 			return err
 		}
 		n, err := res.RowsAffected()
-		if err != nil || n == 0 {
+		if err != nil {
 			return err
 		}
-		renewed = true
-		// Items already finalized no longer carry this claim owner.
-		_, err = tx.ExecContext(ctx, `UPDATE outbox SET lease_until=? WHERE profile_id=? AND lease_owner=?`, until, batch.Profile, batch.Owner)
+		if n == 0 {
+			return invalidateRelayBatch(ctx, tx, batch, ids)
+		}
+		// Items already finalized no longer carry the claim owner.
+		res, err = tx.ExecContext(ctx, renewRelayItems, until, ids, batch.Profile, batch.Profile, batch.Generation, batch.Owner)
+		if err != nil {
+			return err
+		}
+		n, err = res.RowsAffected()
+		renewed = n > 0
 		return err
 	})
 	return renewed && err == nil, err
@@ -277,14 +313,21 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 		release = true
 		items = nil
 	}
+	ids, err := relayBatchIDs(batch)
+	if err != nil {
+		return false, err
+	}
 	finished := false
-	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		var version, failures int64
 		err := tx.QueryRowContext(ctx, `SELECT config_version,backoff_count FROM relay_destinations
 			WHERE profile_id=? AND generation=? AND work_version=? AND lease_owner=?`,
 			batch.Profile, batch.Generation, batch.Version, batch.Owner).Scan(&version, &failures)
 		if errors.Is(err, sql.ErrNoRows) {
-			// URL changes invalidate items but preserve the physical lease until the old attempt returns.
+			// URL changes preserve the physical lease until the old attempt returns.
+			if err := invalidateRelayBatch(ctx, tx, batch, ids); err != nil {
+				return err
+			}
 			return releaseRelayDestination(ctx, tx, batch)
 		}
 		if err != nil {
@@ -309,8 +352,7 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 		if !release {
 			return nil
 		}
-		_, err = tx.ExecContext(ctx, `UPDATE outbox SET state='retryable',next_attempt_at=?,lease_owner=NULL,lease_until=NULL
-			WHERE profile_id=? AND lease_owner=? AND `+relayDue, now.Unix(), batch.Profile, batch.Owner)
+		_, err = tx.ExecContext(ctx, releaseRelayItems, now.Unix(), ids, batch.Profile, batch.Profile, batch.Generation, batch.Owner)
 		if err != nil {
 			return err
 		}
