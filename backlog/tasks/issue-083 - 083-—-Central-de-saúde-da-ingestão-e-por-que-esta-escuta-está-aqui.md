@@ -30,8 +30,8 @@ Origem: doc-010 §4.2. `/admin/health` por perfil (último envio, cliente, fila,
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [x] #1 Central de saúde por perfil sem expor segredos
-- [x] #2 Explicação por escuta acessível ao admin
-- [x] #3 Testes de isolamento entre perfis
+- [x] #2 Testes de isolamento entre perfis
+- [x] #3 Explicação por escuta acessível ao dono do perfil e ao root
 <!-- AC:END -->
 
 ## Comments
