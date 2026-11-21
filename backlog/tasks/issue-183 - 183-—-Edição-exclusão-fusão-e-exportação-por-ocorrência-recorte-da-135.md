@@ -1,11 +1,11 @@
 ---
 id: ISSUE-183
 title: 183 — Edição, exclusão, fusão e exportação por ocorrência (recorte da 135)
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T22:02:00Z'
-updated_date: '2026-11-21T23:04:00Z'
+updated_date: '2026-11-21T23:08:00Z'
 labels:
   - catalogo
 milestone: m-13
@@ -76,6 +76,15 @@ created: 2026-11-21T23:04:00Z
 ---
 
 Reviewer (reauditoria do commit 99c51fa): sem BUG; falha de segurança do Advisor corrigida e testada; cursor de export com teto, fusão 184 ms, desfazer com expiração. Ver PARECER-REVIEWER.md.
+
+---
+
+author: ebrgr
+created: 2026-11-21T23:08:00Z
+
+---
+
+Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine (Reviewer); 39 respostas HTTP equivalentes à v0.55; Reviewer sem BUG após reauditoria; Advisor reprovou com ressalvas e os 5 itens foram corrigidos (reauditoria pelo Reviewer, aceita pelo usuário). ACs 1 a 3 marcados.
 
 ---
 <!-- COMMENTS:END -->
