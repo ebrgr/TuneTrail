@@ -8,6 +8,9 @@ Data: 2026-11-21. Base: v0.53. Fase 1 (plano), sem código. Revisão do Advisor 
 - Quem reprocessa: **dono do perfil e root** (o AC #2 original dizia só root; reescrito).
 - Telas: a mesma central compartilha a fila de falhas (173) e a de revisão (181), em seções separadas, com **duas ou três colunas no desktop e uma sobre a outra no celular**, como o padrão do sistema. O reprocessamento é uma operação reaproveitada pelas duas.
 
+- Estacionamento: **opção A** (colunas `parked_at` e `park_reason`, mantendo `state='retryable'`; sem reconstruir `ingest_events`), decidida em 21/11/2026.
+- Advisor: não acionado até este ponto. O AC #4 (parecer do Advisor, effort high) segue pendente e não pode ser marcado sem o parecer.
+
 ## Situação atual (lida no código)
 - `claimNextIngest` (`internal/db/sqlite/ingest_resolve.go:88`) pega recibos `mode='active'`, `closed_at IS NULL`, `state IN ('received','retryable')`, e incrementa `attempt_count` junto com o lease de 120 s.
 - `retryIngest` (`:162`) devolve a `retryable` com `next_attempt_at = agora + 1 min`, sem olhar o contador. Falhas de leitura do instante ou do snapshot também só reagendam.
@@ -21,7 +24,7 @@ Data: 2026-11-21. Base: v0.53. Fase 1 (plano), sem código. Revisão do Advisor 
 3. **Como estacionar (decisão para o Advisor).**
    - Opção A: nova coluna `parked_at INTEGER` e `park_reason TEXT` (ALTER TABLE ADD COLUMN, sem reconstruir a tabela), mantendo `state='retryable'`; o claim passa a exigir `parked_at IS NULL`. Migração 013 pequena e reversível por backup.
    - Opção B: novo estado `failed` no CHECK. Exige reconstruir `ingest_events`, com triggers e FKs; maior risco de migração.
-   - Recomendação inicial: A. O Advisor decide.
+   - **Decidido pelo usuário: opção A.**
 4. **Reprocessar.** Operação única `ReprocessIngest(profile, receipt)`: com CAS em `resolution_version` e `work_version`, volta a `retryable`, `next_attempt_at = agora`, limpa `parked_at`, e zera o orçamento de tentativas sem apagar o histórico (guardar `total_attempts` ou registrar em `reason_codes`). Idempotente: dois cliques seguidos reprocessam uma vez. Reaproveita `finishOccurrence` (mesma resolução transacional).
 5. **Alerta.** Log WARN com motivo estável, no máximo uma vez por perfil e motivo por minuto (padrão do relay da 082), e contagem visível no topo da seção.
 6. **Tela.** Seção "Falhas permanentes" na central de saúde: recibo, fonte, motivo, tentativas, quando estacionou, botão Reprocessar (POST, CSRF). Acesso do dono ao próprio perfil e root a todos, sem expor snapshot bruto, tokens nem chave de idempotência. Leitura limitada (LIMIT) e indexada. A central passa a organizar as seções em colunas no desktop (2 a 3) e empilhadas no celular, sem rolagem horizontal.

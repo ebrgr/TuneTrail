@@ -4,7 +4,7 @@ title: 173 — Política de retry e fila de falhas permanentes do resolvedor de 
 status: Aberta
 assignee: []
 created_date: '2026-11-20T18:20:00Z'
-updated_date: '2026-11-21T16:26:00Z'
+updated_date: '2026-11-21T16:28:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -42,6 +42,15 @@ created: 2026-11-21T16:26:00Z
 ---
 
 Decisões do usuário (21/11/2026): 5 tentativas com esperas de 1/2/4/8 min; fila como seção da central de saúde; reprocessam dono do perfil e root (AC #2 reescrito); mesma central com a fila de revisão da 181, em seções separadas, com 2 a 3 colunas no desktop e empilhadas no celular. Plano para o Advisor (effort high) em backlog/evidencias/issue-173/PLANO.md. Nenhum código escrito.
+
+---
+
+author: claude
+created: 2026-11-21T16:28:00Z
+
+---
+
+Decisão do usuário (21/11/2026): estacionar com a opção A (colunas parked_at e park_reason, state continua retryable, sem reconstruir ingest_events). Despachado ao Codex pelo Orca. O parecer do Advisor (AC #4) continua pendente.
 
 ---
 <!-- COMMENTS:END -->
