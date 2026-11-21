@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T14:04:00Z'
-updated_date: '2026-11-21T14:09:00Z'
+updated_date: '2026-11-21T14:11:00Z'
 labels:
   - ui
 dependencies: []
@@ -49,6 +49,15 @@ created: 2026-11-21T14:09:00Z
 ---
 
 Aceite: aprovada pelo usuário em 21/11/2026, após ver a mudança num build temporário com a ISSUE-179.
+
+---
+
+author: claude
+created: 2026-11-21T14:11:00Z
+
+---
+
+Verificação: a referência visual backlog/evidencias/ISSUE-075/reference foi regenerada; a diferença é só o item Sair (rótulo sem reticências e ícone LogOut) e o hash de geração da UI.
 
 ---
 <!-- COMMENTS:END -->
