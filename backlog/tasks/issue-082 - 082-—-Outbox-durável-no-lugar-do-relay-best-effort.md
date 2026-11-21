@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T01:47:00Z'
+updated_date: '2026-11-21T02:14:00Z'
 labels:
   - ingestao
   - api
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/evidencias/issue-082/PLANO.md
   - backlog/evidencias/issue-082/MEDICOES-E2.md
+  - backlog/evidencias/issue-082/VERIFICACAO-E3.md
 priority: high
 type: feature
 ordinal: 82000
@@ -28,9 +29,9 @@ Origem: doc-010 §4.2 e doc-017 (ISSUE-020/034). Worker com backoff exponencial 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Relay vira destino da outbox. Na via legada/sombra e em playing_now, preserva URL, cabeçalhos e corpo byte a byte em relação à v0.47. Na via ativa, somente eventos aceitos da API ListenBrainz são elegíveis para entrega durável por evento em micro-lotes, com ACK independente da fila.
-- [ ] #2 Falhas e 429 são repetidas com backoff e Retry-After
-- [ ] #3 Encerramento drena ou persiste a fila sem perda
+- [x] #1 Relay vira destino da outbox. Na via legada/sombra e em playing_now, preserva URL, cabeçalhos e corpo byte a byte em relação à v0.47. Na via ativa, somente eventos aceitos da API ListenBrainz são elegíveis para entrega durável por evento em micro-lotes, com ACK independente da fila.
+- [x] #2 Falhas e 429 são repetidas com backoff e Retry-After
+- [x] #3 Encerramento drena ou persiste a fila sem perda
 - [ ] #4 Parecer do Advisor registrado
 <!-- AC:END -->
 
@@ -106,6 +107,15 @@ created: 2026-11-21T01:47:00Z
 ---
 
 Retorno da revisão E2 (Opus high, REPROVADO COM RESSALVAS): emendas aplicadas após aprovação das decisões a–e. Semeadura com DNS deduplicado e concorrência limitada, exceções apenas para administrador e bootstrap novo coberto. A 012 foi emendada antes da publicação para invalidar por geração. Em 100 mil itens, troca e remoção caíram de 532/514 ms para 174/125 µs. Renovação e liberação usam a chave por ID no EXPLAIN. Exclusão descarta abertos e preserva diagnóstico de sent sem chave de escuta. MEDICOES-E2 inclui 300 mil marcadores e PLANO v5 registra o corte da E3. make check passou (13/13 E2E), assim como os testes direcionados com race. Parada para revisão antes da E3.
+
+---
+
+author: Codex
+created: 2026-11-21T02:14:00Z
+
+---
+
+E3 concluída. D1(a) emendada na 012 pré-publicação com agregados diários, retenção de 30 dias e purga total. Gate durável ativo no mesmo corte do handler e do worker. Replay byte a byte contra v0.48, pausas e bisseção, SIGTERM com HTTP em voo e três cenários SIGKILL verificados. SQLite cheio conserva a claim para recuperação. go test direcionado com race e make check passaram (13/13 E2E). Sem alteração de status. Parada para Reviewer, depois Advisor Opus high sobre encerramento e falhas ambíguas.
 
 ---
 <!-- COMMENTS:END -->
