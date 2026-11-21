@@ -301,7 +301,7 @@ func queryDigest(t *testing.T, conn *sql.DB, query string) [32]byte {
 }
 
 func TestProfileKeysCannotMoveAndRelayDoesNotReassign(t *testing.T) {
-	s, _, _ := migrationDB(t, 5)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	ctx := context.Background()
 	_, err := s.SaveUser(ctx, db.SaveUserOpts{Username: "admin", Password: "testpassword", Role: "admin"})
 	require.NoError(t, err)
