@@ -66,8 +66,8 @@ func (s *Sqlite) setRelayPermission(ctx context.Context, session uuid.UUID, prof
 		}
 		// An operator policy change clears a policy block and fences old transport results.
 		_, err = tx.ExecContext(ctx, `UPDATE relay_destinations SET config_version=config_version+1,
-			paused_until=CASE WHEN pause_class='policy_blocked' THEN NULL ELSE paused_until END,
-			pause_class=nullif(pause_class,'policy_blocked') WHERE profile_id=?`, profile)
+			paused_until=CASE WHEN pause_class IN ('policy_blocked','config_invalid') THEN NULL ELSE paused_until END,
+			pause_class=CASE WHEN pause_class IN ('policy_blocked','config_invalid') THEN NULL ELSE pause_class END WHERE profile_id=?`, profile)
 		return err
 	})
 }
@@ -85,6 +85,9 @@ func (s *Sqlite) RelayPermissions(ctx context.Context, profile int32) (relay.Per
 		var cidr string
 		if err := rows.Scan(&p.HostPort, &cidr, &p.HTTP, &p.Private); err != nil {
 			return nil, err
+		}
+		if canonical, err := normalizeRelayHostPort(p.HostPort); err != nil || canonical != p.HostPort {
+			return nil, ErrRelayConfigInvalid
 		}
 		if cidr != "" {
 			p.Prefix, err = netip.ParsePrefix(cidr)
@@ -120,7 +123,9 @@ func (s *Sqlite) RemoveRelayPermissionAsRoot(ctx context.Context, session uuid.U
 			return err
 		}
 		// Do not let an old claim reuse a subsequently revoked policy snapshot.
-		_, err = tx.ExecContext(ctx, "UPDATE relay_destinations SET config_version=config_version+1 WHERE profile_id=?", profile)
+		_, err = tx.ExecContext(ctx, `UPDATE relay_destinations SET config_version=config_version+1,
+			paused_until=CASE WHEN pause_class='config_invalid' THEN NULL ELSE paused_until END,
+			pause_class=nullif(pause_class,'config_invalid') WHERE profile_id=?`, profile)
 		return err
 	})
 }

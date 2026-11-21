@@ -21,7 +21,7 @@ func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, str
 	if err != nil {
 		return "", "", nil, err
 	}
-	if _, _, err := relay.Normalize(endpoint, token); err != nil {
+	if !relay.ValidStoredTarget(endpoint, token) {
 		return "", "", nil, ErrRelayConfigInvalid
 	}
 	permissions, err := s.RelayPermissions(ctx, batch.Profile)
