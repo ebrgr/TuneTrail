@@ -496,6 +496,36 @@ func TestRelayConfigurationTransitions(t *testing.T) {
 	require.Empty(t, list)
 }
 
+// TestRelayGenerationFencesClaim protects new work from a previous URL's lease.
+func TestRelayGenerationFencesClaim(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	ctx := t.Context()
+	now := time.Now().Add(time.Minute).UTC()
+	relayReceipt(t, s, 1, "old", "v9", 1, now)
+	resolveRelayV9(t, s)
+	old, err := s.ClaimRelayBatch(ctx, now)
+	require.NoError(t, err)
+	require.Len(t, old.Items, 1)
+	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://new.test/prefix", "fixture"))
+	relayReceipt(t, s, 1, "new", "v9", 1, now.Add(time.Hour))
+	resolveRelayV9(t, s)
+	busy, err := s.ClaimRelayBatch(ctx, now)
+	require.NoError(t, err)
+	require.Empty(t, busy.Items)
+	renewed, err := s.RenewRelayBatch(ctx, old, now)
+	require.NoError(t, err)
+	require.False(t, renewed)
+	finished, err := s.FinishRelayBatch(ctx, old, old.Items, relay.Result{Class: relay.Success, Status: 200}, now, true)
+	require.NoError(t, err)
+	require.False(t, finished)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM outbox WHERE state='failed' AND json_extract(result,'$.reason')='destination_changed'`))
+	require.Equal(t, 1, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+	next, err := s.ClaimRelayBatch(ctx, now)
+	require.NoError(t, err)
+	require.Len(t, next.Items, 1)
+	require.Equal(t, old.Generation+1, next.Generation)
+}
+
 // TestRelayBootstrapBinding keeps an already configured destination on boot.
 func TestRelayBootstrapBinding(t *testing.T) {
 	s, _, _ := migrationDB(t, 12)

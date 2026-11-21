@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T00:30:00Z'
+updated_date: '2026-11-21T01:47:00Z'
 labels:
   - ingestao
   - api
@@ -97,6 +97,15 @@ created: 2026-11-21T00:30:00Z
 ---
 
 E2 concluída: 012 aditiva com política vigente legacy, guardas D4 efetivas, backup v11, semeadura e pausas transacionais. Store com intenções v9/occurrence, contador sem COUNT na escrita, claim em lote e CAS, encoders v1/v2 e testes de recuperação. Ensaio com 300 mil recibos: 012 em 1,43 s, CHECK isolado em 1,42 s. make check passou com 13/13 E2E, sem bloqueio de sandbox. Race direcionado passou sem a fixture de 100 mil itens, que excedeu o timeout instrumentado e passou na suíte normal. Handler, admissão durável e worker ficam para E3, após revisão de invariantes pelo Advisor Opus high.
+
+---
+
+author: Codex
+created: 2026-11-21T01:47:00Z
+
+---
+
+Retorno da revisão E2 (Opus high, REPROVADO COM RESSALVAS): emendas aplicadas após aprovação das decisões a–e. Semeadura com DNS deduplicado e concorrência limitada, exceções apenas para administrador e bootstrap novo coberto. A 012 foi emendada antes da publicação para invalidar por geração. Em 100 mil itens, troca e remoção caíram de 532/514 ms para 174/125 µs. Renovação e liberação usam a chave por ID no EXPLAIN. Exclusão descarta abertos e preserva diagnóstico de sent sem chave de escuta. MEDICOES-E2 inclui 300 mil marcadores e PLANO v5 registra o corte da E3. make check passou (13/13 E2E), assim como os testes direcionados com race. Parada para revisão antes da E3.
 
 ---
 <!-- COMMENTS:END -->
