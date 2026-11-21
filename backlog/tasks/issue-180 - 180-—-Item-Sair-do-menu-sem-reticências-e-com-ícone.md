@@ -1,11 +1,11 @@
 ---
 id: ISSUE-180
 title: 180 — Item Sair do menu (+) sem reticências e com ícone
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T14:04:00Z'
-updated_date: '2026-11-21T14:04:00Z'
+updated_date: '2026-11-21T14:09:00Z'
 labels:
   - ui
 dependencies: []
@@ -40,6 +40,15 @@ created: 2026-11-21T14:04:00Z
 ---
 
 Início: branch `feat/issue-180-item-sair-do-menu-sem` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-21T14:09:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 21/11/2026, após ver a mudança num build temporário com a ISSUE-179.
 
 ---
 <!-- COMMENTS:END -->
