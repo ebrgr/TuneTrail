@@ -11,3 +11,16 @@ Base: leitura do diff e dos arquivos centrais; testes não reexecutados por mim 
 - [OK] Fusão não descarta mais eventos do mesmo segundo; exclusão limitada à ocorrência; export v1 preservado com `?version=1`; migração com backup do v13 e guarda de downgrade.
 
 Sem BUG confirmado por execução. O item de segurança do importador deve ser resolvido antes do aceite.
+
+## Reauditoria após as correções (commit 99c51fa, schema v15)
+
+Escopo: só o que mudou desde 66e843f (`archive.go`, `exports.go`, migração 015, `track.go`). Rodei `go test -race` em `internal/db/sqlite` (Archive, Export, Merge, Occurrence, Recording) e `engine` (183, Export, Merge): OK.
+
+- [OK] archive.go:mapID — perfil dono só reutiliza ocorrência local já ouvida por ele ou com mapeamento próprio; root inalterado; demais tabelas caem em criação. Teste cobre o caso do Advisor (página da ocorrência do outro perfil segue 404).
+- [OK] exports.go — teto de `listen_export_order.sequence` fixado na primeira página (AUTOINCREMENT, sem reuso após exclusão); eventos novos entram na exportação seguinte; v1 preservado.
+- [OK] track.go — desfazer expira em 30 dias; limpeza em fusão e desfazer; o ramo "nada a desfazer" confirma a limpeza antes de devolver ErrNotFound.
+- [RISCO] db/migrations_sqlite/015_archive_export_boundary.sql — nova tabela e gatilho por INSERT em `listens` (uma escrita extra por escuta) e cópia de todos os eventos na migração; custo pequeno, mas proporcional ao histórico. Há backup do v14 e guarda de downgrade.
+- [RISCO] A fusão medida (184 ms, 5.001 ocorrências/10.000 recibos) está abaixo do limite de 300 ms; históricos maiores devem ser remedidos.
+- Nota: o agente despachado reescreveu `REVIEW-FOLLOWUP.md` como evidência; este parecer permanece o do Reviewer.
+
+Sem BUG. Os itens 1 a 5 do Advisor estão tratados; o parecer do Advisor continua REPROVADO COM RESSALVAS no registro até o usuário aceitar a reauditoria.
