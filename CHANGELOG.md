@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Artist, album and track headers use a color derived from the cover again, instead of always showing the same blue-gray fallback (ISSUE-179).
+
 ## [0.49] - 2026-11-21
 
 - Active ListenBrainz ingestion queues accepted events for durable relay delivery in batches of up to 100. Destinations pause independently and retry transient failures using backoff and server rate-limit hints. Shutdown preserves pending deliveries and uses an approximately eight-second shutdown budget. Outside the supplied Compose setup, allow a longer container stop timeout. Delivery is at least once. A crash after remote acceptance, a failed local commit, or an ambiguous cancellation can cause re-delivery. A late 2xx from a previous URL becomes `destination_changed`; a manual retry uses the new URL. Active replays of pre-upgrade receipts do not repeat the original raw POST (ISSUE-082).

@@ -53,6 +53,34 @@ func TestArtworkColor073(t *testing.T) {
 	require.NoFileExists(t, colorPath(id))
 }
 
+// TestHeaderAccentProfileURL checks the profile-scoped URL served today (ISSUE-179) against the legacy shape.
+func TestHeaderAccentProfileURL(t *testing.T) {
+	cache033(t)
+	ctx := context.Background()
+	id := uuid.New()
+	img := image.NewNRGBA(image.Rect(0, 0, 4, 4))
+	for y := 0; y < 4; y++ {
+		for x := 0; x < 4; x++ {
+			img.SetNRGBA(x, y, color.NRGBA{200, 40, 40, 255})
+		}
+	}
+	var input bytes.Buffer
+	require.NoError(t, png.Encode(&input, img))
+	require.NoError(t, SaveImageContext(ctx, id, &input))
+	legacy := HeaderAccent(ctx, "/image/"+id.String()+"/640x640.webp")
+	require.NotEqual(t, "#253044", legacy)
+	require.Equal(t, legacy, HeaderAccent(ctx, "/image/profile/1/"+id.String()+"/640x640.webp"))
+	for _, url := range []string{
+		"/image/profile/1/nope/640x640.webp",
+		"/image/profile/1/" + uuid.Nil.String() + "/640x640.webp",
+		"/image/other/1/" + id.String() + "/640x640.webp",
+		"/image/profile/1/" + id.String() + "/x/640x640.webp",
+	} {
+		require.Equal(t, "#253044", HeaderAccent(ctx, url), url)
+	}
+	require.NoError(t, DeleteImage(id))
+}
+
 // TestHeaderContrast073 independently verifies WCAG contrast over the full RGB cube sampled by 17.
 func TestHeaderContrast073(t *testing.T) {
 	luminance := func(v uint8) float64 {

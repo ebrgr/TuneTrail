@@ -18,12 +18,8 @@ import (
 // A missing cover is decorative and uses the same safe neutral fallback as invalid metadata.
 func HeaderAccent(ctx context.Context, imageURL string) string {
 	const fallback = "#253044"
-	parts := strings.Split(imageURL, "/")
-	if len(parts) != 4 || parts[1] != "image" {
-		return fallback
-	}
-	id, err := uuid.Parse(parts[2])
-	if err != nil || id == uuid.Nil {
+	id, ok := artworkID(imageURL)
+	if !ok {
 		return fallback
 	}
 	file := colorPath(id)
@@ -51,6 +47,24 @@ func HeaderAccent(ctx context.Context, imageURL string) string {
 		return fallback
 	}
 	return contrastColor(string(data), fallback)
+}
+
+// artworkID extracts the image UUID from the two served URL shapes:
+// /image/<uuid>/<file> (legacy) and /image/profile/<profile>/<uuid>/<file> (ISSUE-161).
+// Any other shape is rejected so arbitrary strings never reach the filesystem.
+func artworkID(imageURL string) (uuid.UUID, bool) {
+	parts := strings.Split(imageURL, "/")
+	var raw string
+	switch {
+	case len(parts) == 4 && parts[1] == "image":
+		raw = parts[2]
+	case len(parts) == 6 && parts[1] == "image" && parts[2] == "profile":
+		raw = parts[4]
+	default:
+		return uuid.Nil, false
+	}
+	id, err := uuid.Parse(raw)
+	return id, err == nil && id != uuid.Nil
 }
 
 // contrastColor darkens the average until white text has at least 7:1 contrast.
