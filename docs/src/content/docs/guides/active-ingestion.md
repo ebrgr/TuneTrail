@@ -90,6 +90,51 @@ remain pending and are excluded from listening counts.
 Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
 TuneTrail 0.46 and earlier cannot open a v11 database.
 
+## Durable ListenBrainz relay
+
+For active profiles, the submission acknowledgement means the local receipts
+were committed. Accepted API events are queued for delivery. Pending,
+invalid and duplicate decisions are skipped. Legacy and shadow submissions
+still forward the original request, as does playing now. Files and integrated
+sources do not create relay deliveries.
+
+The worker sends up to 100 events at a time. A destination that is unavailable
+or rate-limited pauses independently. Shutdown preserves queued work for the
+next run. Delivery is at least once, so a remote service can receive the same
+event twice if it processed a request before TuneTrail could record success.
+Changing the URL stops eligibility for the former destination. A response to
+an old URL that arrives after the change leaves the item failed as
+`destination_changed`, even if the old server accepted it. Explicit retry
+can send it to the new destination.
+
+For delivery and connection tests, HTTP and access to private addresses need
+separate administrator permissions. Application-level TLS validation remains
+enabled. The legacy raw relay retains its previous network behavior. An
+administrator can use the profile API:
+
+- `PUT /apis/web/v1/profiles/{slug}/relay/permissions` with
+  `{"host_port":"relay.example:80","allow_http":true}` to permit HTTP.
+- Use the same endpoint with `cidr` and `allow_private:true` to permit
+  a reserved IP or network. HTTP to a private address requires both permissions.
+- Send `DELETE` to the same endpoint with `host_port` and the original CIDR
+  (empty for the cleartext-only permission) to revoke the exception.
+- `POST /apis/web/v1/profiles/{slug}/relay/resume` validates the saved
+  configuration and clears its pause.
+- `POST /apis/web/v1/profiles/{slug}/ingest-activation/occurrence` converts an
+  already-active profile. A relay must pass validation under its current
+  allowlist and have no current pause. The checks for open v9 receipts and
+  unlinked shadow receipts still apply.
+
+The saved token is omitted from the admin response and from the HTML field.
+Leave it blank to keep the same credential for the displayed URL, or supply a
+new token when changing the URL. A physical SQLite backup contains the saved
+configuration, including the token. Protect it like the live database.
+Logical listen exports and relay diagnostics omit credentials.
+
+Deleting history removes unsent relay work for those events and keeps at most
+30 days of daily aggregate sent counts. Purging all history removes those
+aggregates too.
+
 ### Relay configuration recovery on schema 12
 
 The relay editor saves a canonical URL. Scheme and host are lowercase, the

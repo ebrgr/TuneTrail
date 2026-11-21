@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/testfixtures"
@@ -552,6 +553,22 @@ func TestRelayGenerationFencesClaim(t *testing.T) {
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://new.test/prefix", "fixture"))
 	relayReceipt(t, s, 1, "new", "v9", 1, now.Add(time.Hour))
 	resolveRelayV9(t, s)
+	page, err := s.RelayDeliveries(ctx, 1, "")
+	require.NoError(t, err)
+	require.Len(t, page, 2)
+	var stale, pending int
+	for _, item := range page {
+		switch item.State {
+		case "failed":
+			require.Equal(t, "destination_changed", item.Reason)
+			stale++
+		case "pending":
+			pending++
+		}
+	}
+	require.Equal(t, 1, stale)
+	require.Equal(t, 1, pending)
+
 	busy, err := s.ClaimRelayBatch(ctx, now)
 	require.NoError(t, err)
 	require.Empty(t, busy.Items)
@@ -678,7 +695,15 @@ func TestRelayCapacity(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().UTC().Truncate(time.Second)
 	fillRelayCapacity(t, s, now)
-	relayReceipt(t, s, 1, "overflow", "v9", 1, now.Add(time.Hour))
+	execSQL(t, s, "INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)")
+	active, receipts, policy, err := s.AdmitIngestPolicy(t.Context(), ingest.Batch{
+		ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ReceivedAt: now,
+		Items: []ingest.Item{{Snapshot: ingest.Snapshot{Artist: "Fixture", Title: "Overflow"}, ListenedAt: now.Add(time.Hour)}},
+	}, true, nil, nil)
+	require.NoError(t, err)
+	require.True(t, active)
+	require.Len(t, receipts, 1)
+	require.Equal(t, "durable", policy)
 	resolveRelayV9(t, s)
 	require.Equal(t, 100000, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE json_extract(result,'$.reason')='queue_capacity'"))
@@ -820,4 +845,70 @@ func TestRelayMarkerMeasurements(t *testing.T) {
 	indexWAL, err := os.Stat(backup + "-wal")
 	require.NoError(t, err)
 	t.Logf("indices_parciais=%s wal_indices=%d", indexElapsed, indexWAL.Size())
+}
+
+// TestRelayFullCompletionKeepsClaim proves an accepted HTTP response cannot hide a failed CAS.
+func TestRelayFullCompletionKeepsClaim(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().Add(time.Minute).UTC()
+	relayReceipt(t, s, 1, "full", "v9", 1, now)
+	resolveRelayV9(t, s)
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
+	execSQL(t, s, `CREATE TABLE full_fixture (data BLOB);
+		CREATE TRIGGER full_relay_cas AFTER UPDATE OF state ON outbox WHEN NEW.state='sent'
+		BEGIN INSERT INTO full_fixture VALUES(zeroblob(1048576)); END`)
+	limit := scalar(t, s, "PRAGMA page_count")
+	execSQL(t, s, fmt.Sprintf("PRAGMA max_page_count=%d", limit))
+	finished, err := s.FinishRelayBatch(t.Context(), batch, batch.Items, relay.Result{Class: relay.Success, Status: 200}, now, true)
+	require.ErrorContains(t, err, "full")
+	require.False(t, finished)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='pending' AND lease_owner=?", batch.Owner))
+	require.Equal(t, 1, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+	execSQL(t, s, fmt.Sprintf("PRAGMA max_page_count=%d", limit+1000))
+	execSQL(t, s, "DROP TRIGGER full_relay_cas")
+	reclaimed, err := s.ClaimRelayBatch(t.Context(), now.Add(relayLease+time.Second))
+	require.NoError(t, err)
+	require.Len(t, reclaimed.Items, 1)
+	require.NotEqual(t, batch.Owner, reclaimed.Owner)
+}
+
+// TestRelayTransientPauses combines injected jitter with explicit server waits.
+func TestRelayTransientPauses(t *testing.T) {
+	for _, caseData := range []struct {
+		class            relay.Class
+		server, expected time.Duration
+	}{
+		{relay.Transient, 0, 15 * time.Second},
+		{relay.Server, time.Second, 15 * time.Second},
+		{relay.RateLimited, time.Minute, time.Minute},
+		{relay.TLS, 0, 450 * time.Second},
+		{relay.Redirect, 0, 0},
+		{relay.Route, 0, 0},
+		{relay.PolicyBlocked, 0, 0},
+	} {
+		t.Run(string(caseData.class), func(t *testing.T) {
+			s, _ := relayStoreFixture(t)
+			s.relayJitter = func(limit int64) int64 { return limit / 2 }
+			now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
+			relayReceipt(t, s, 1, "fixture", "v9", 1, now)
+			resolveRelayV9(t, s)
+			batch, err := s.ClaimRelayBatch(t.Context(), now)
+			require.NoError(t, err)
+			_, err = s.FinishRelayBatch(t.Context(), batch, batch.Items, relay.Result{Class: caseData.class, ServerWait: caseData.server}, now, false)
+			require.NoError(t, err)
+			open, until, class, err := s.RelayQueueStatus(t.Context(), 1)
+			require.NoError(t, err)
+			require.Equal(t, 1, open)
+			require.Equal(t, string(caseData.class), class)
+			if caseData.expected == 0 {
+				require.False(t, until.Valid)
+			} else {
+				require.True(t, until.Valid)
+				require.True(t, now.Add(caseData.expected).Equal(until.Time))
+			}
+			require.Zero(t, scalar(t, s, "SELECT attempt_count FROM outbox"))
+		})
+	}
 }

@@ -58,11 +58,15 @@ func TestDurableRelayAdmission(t *testing.T) {
 	require.NoError(t, app.store.SetRelayPermission(ctx, 1, relay.Permission{HostPort: host, HTTP: true}))
 	require.NoError(t, app.store.SetRelayPermission(ctx, 1, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
 	submit(legacy, "old")
+	// Resolve the older receipt first so the mixed batch has a stable duplicate candidate.
+	found, err := app.store.ResolveNextIngest(ctx, &mbz.MbzErrorCaller{})
+	require.NoError(t, err)
+	require.True(t, found)
 	mixed := `{"listen_type":"import","payload":[` + legacyItem + "," + newItem + `]}`
 	submit(mixed, "mixed")
 	submit(mixed, "mixed")
 	require.Empty(t, calls)
-	for range 3 {
+	for range 2 {
 		found, err := app.store.ResolveNextIngest(ctx, &mbz.MbzErrorCaller{})
 		require.NoError(t, err)
 		require.True(t, found)
@@ -87,4 +91,61 @@ func TestDurableRelayAdmission(t *testing.T) {
 		return err == nil && count == 1
 	}, time.Second, 10*time.Millisecond)
 	require.Empty(t, calls)
+}
+
+// TestSlowRelayDoesNotBlockOtherProfile keeps another destination live during a stalled POST.
+func TestSlowRelayDoesNotBlockOtherProfile(t *testing.T) {
+	app := newProfileTestApp(t)
+	ctx := t.Context()
+	require.NoError(t, app.store.ActivateRelayDelivery(ctx))
+	require.NoError(t, app.store.Exec("INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)"))
+	slowEntered := make(chan struct{})
+	fastEntered := make(chan struct{})
+	release := make(chan struct{})
+	slow := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		close(slowEntered)
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+		w.WriteHeader(200)
+	}))
+	defer slow.Close()
+	fast := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		close(fastEntered)
+		w.WriteHeader(200)
+	}))
+	defer fast.Close()
+	defer close(release)
+	for profile, target := range map[int32]string{1: slow.URL, 2: fast.URL} {
+		host := strings.TrimPrefix(target, "http://")
+		require.NoError(t, app.store.SetProfileRelay(ctx, profile, target, "fictional-token"))
+		require.NoError(t, app.store.SetRelayPermission(ctx, profile, relay.Permission{HostPort: host, HTTP: true}))
+		require.NoError(t, app.store.SetRelayPermission(ctx, profile, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
+	}
+	submit := func(key string) {
+		w := app.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Fixture", 1700000000), key, false)
+		require.Equal(t, 200, w.Code, w.Body.String())
+		found, err := app.store.ResolveNextIngest(ctx, &mbz.MbzErrorCaller{})
+		require.NoError(t, err)
+		require.True(t, found)
+	}
+	submit("first-key")
+	attempts, cancel := context.WithCancel(ctx)
+	claims, stopClaims := context.WithCancel(attempts)
+	done := relayoutbox.Run(attempts, claims, app.store)
+	defer func() { stopClaims(); cancel(); <-done }()
+	select {
+	case <-slowEntered:
+	case <-time.After(5 * time.Second):
+		t.Fatal("slow destination did not receive a POST")
+	}
+	submit("second-key")
+	select {
+	case <-fastEntered:
+	case <-time.After(5 * time.Second):
+		t.Fatal("slow destination blocked the second profile")
+	}
 }

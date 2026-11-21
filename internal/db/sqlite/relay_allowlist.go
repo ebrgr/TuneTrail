@@ -96,3 +96,31 @@ func (s *Sqlite) RelayPermissions(ctx context.Context, profile int32) (relay.Per
 	}
 	return permissions, rows.Err()
 }
+
+// RemoveRelayPermissionAsRoot revokes a single manual or seeded exception.
+func (s *Sqlite) RemoveRelayPermissionAsRoot(ctx context.Context, session uuid.UUID, profile int32, hostPort string, prefix netip.Prefix) error {
+	host, err := normalizeRelayHostPort(hostPort)
+	if err != nil {
+		return db.ErrInvalidInput
+	}
+	cidr := ""
+	if prefix.IsValid() {
+		cidr = prefix.Masked().String()
+	}
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		if err := checkIngestRoot(ctx, tx, session); err != nil {
+			return err
+		}
+		result, err := tx.ExecContext(ctx, "DELETE FROM relay_allowlist WHERE profile_id=? AND host_port=? AND cidr=?", profile, host, cidr)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil || n == 0 {
+			return err
+		}
+		// Do not let an old claim reuse a subsequently revoked policy snapshot.
+		_, err = tx.ExecContext(ctx, "UPDATE relay_destinations SET config_version=config_version+1 WHERE profile_id=?", profile)
+		return err
+	})
+}

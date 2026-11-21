@@ -80,6 +80,7 @@ func bindRoutes(
 				r.Get("/relay", handlers.GetProfileRelayHandler(db))
 				if management, ok := db.(handlers.RelayManagementStore); ok {
 					r.With(middleware.RequireAdmin(db)).Put("/relay/permissions", handlers.RelayManagementHandler(management, "permission"))
+					r.With(middleware.RequireAdmin(db)).Delete("/relay/permissions", handlers.RelayManagementHandler(management, "permission"))
 					r.With(middleware.RequireAdmin(db)).Post("/relay/resume", handlers.RelayManagementHandler(management, "resume"))
 					r.With(middleware.RequireAdmin(db)).Post("/ingest-activation/occurrence", handlers.RelayManagementHandler(management, "occurrence"))
 				}

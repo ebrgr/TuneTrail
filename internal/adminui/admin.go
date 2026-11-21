@@ -102,19 +102,19 @@ type Handler struct {
 	catalogPlans      map[uuid.UUID]pendingCatalogPlan
 }
 type view struct {
-	Nav                                             webassets.Nav
-	Locale                                          *i18n.View
-	User                                            *models.User
-	Profiles                                        []models.ListeningProfile
-	Profile                                         *models.ListeningProfile
-	Keys                                            []models.ApiKey
-	RelayURL, RelayToken, CSRF, Next, Notice, Error string
-	Login, LogoutOnly, SignOut                      bool
-	Section                                         string
-	Submission                                      string
-	AccountsRoot, CanIssueToken, Redeem             bool
-	Account                                         db.AccountDetails
-	IssuedToken                                     string
+	Nav                                 webassets.Nav
+	Locale                              *i18n.View
+	User                                *models.User
+	Profiles                            []models.ListeningProfile
+	Profile                             *models.ListeningProfile
+	Keys                                []models.ApiKey
+	RelayURL, CSRF, Next, Notice, Error string
+	Login, LogoutOnly, SignOut          bool
+	Section                             string
+	Submission                          string
+	AccountsRoot, CanIssueToken, Redeem bool
+	Account                             db.AccountDetails
+	IssuedToken                         string
 }
 
 // New constructs the protected handler and a bounded pre-login endpoint.
@@ -533,7 +533,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 			h.fail(w, err)
 			return
 		}
-		v.RelayURL, v.RelayToken, err = admin.Relay(r.Context(), h.store, id.User, n, v.Profile.Slug)
+		v.RelayURL, _, err = admin.Relay(r.Context(), h.store, id.User, n, v.Profile.Slug)
 		if err != nil {
 			h.fail(w, err)
 			return

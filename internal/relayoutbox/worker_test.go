@@ -21,7 +21,6 @@ type fixtureStore struct {
 	base              string
 	outcomes          map[string]relay.Class
 	releases, missing int
-	cancel            context.CancelFunc
 }
 
 func (s *fixtureStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.Permissions, error) {

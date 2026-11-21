@@ -17,6 +17,7 @@ import (
 // RelayManagementStore binds administrative changes to a fresh root session.
 type RelayManagementStore interface {
 	SetRelayPermissionAsRoot(context.Context, uuid.UUID, int32, relay.Permission) error
+	RemoveRelayPermissionAsRoot(context.Context, uuid.UUID, int32, string, netip.Prefix) error
 	ResumeRelay(context.Context, uuid.UUID, int32) error
 	ConvertOccurrence(context.Context, uuid.UUID, int32) error
 }
@@ -46,6 +47,8 @@ func RelayManagementHandler(store RelayManagementStore, action string) http.Hand
 			}
 			if decodeErr != nil {
 				err = db.ErrInvalidInput
+			} else if r.Method == http.MethodDelete {
+				err = store.RemoveRelayPermissionAsRoot(ctx, actor.SessionID, profile.ID, permission.HostPort, permission.Prefix)
 			} else {
 				err = store.SetRelayPermissionAsRoot(ctx, actor.SessionID, profile.ID, permission)
 			}

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Active ListenBrainz ingestion queues accepted events for durable relay delivery. The worker sends bounded batches, retries transient failures with backoff and server rate-limit hints, pauses each destination independently, and preserves queued work on shutdown (ISSUE-082).
+- Durable relay delivery and connection tests use a direct, redirect-free transport. Administrators can allow HTTP and reserved networks separately. Relay settings show the canonical URL and no longer return the saved token (ISSUE-082).
+- SQLite upgrades from v11 to v12 and keeps a `.pre-relay-delivery-*.bak` backup. TuneTrail 0.48 and earlier cannot open v12. Roll back by restoring the v11 backup (ISSUE-082).
+
 ## [0.48] - 2026-11-20
 
 - No user-visible changes (ISSUE-092).

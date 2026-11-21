@@ -23,6 +23,7 @@ type Sqlite struct {
 	// Standalone occurrences are enabled only by disposable resolver fixtures.
 	allowStandaloneOccurrences bool
 	occurrenceProofCache       occurrenceReleaseCache
+	relayJitter                func(int64) int64
 }
 
 func New() (*Sqlite, error) {

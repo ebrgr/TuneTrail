@@ -362,7 +362,7 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 				}
 			}
 			if version == batch.ConfigVersion {
-				paused, err := pauseRelayDestination(ctx, tx, batch, result, now, failures)
+				paused, err := s.pauseRelayDestination(ctx, tx, batch, result, now, failures)
 				if err != nil {
 					return err
 				}
@@ -422,7 +422,7 @@ func releaseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch
 }
 
 // pauseRelayDestination applies server waits and per-destination backoff.
-func pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, result relay.Result, now time.Time, failures int64) (bool, error) {
+func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, result relay.Result, now time.Time, failures int64) (bool, error) {
 	class := result.Class
 	switch class {
 	case relay.Success:
@@ -446,7 +446,11 @@ func pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, 
 	if class == relay.TLS {
 		base = 15 * time.Minute
 	}
-	delay := retry.FullJitter(base, time.Hour, failures, rand.Int64N)
+	sample := s.relayJitter
+	if sample == nil {
+		sample = rand.Int64N
+	}
+	delay := retry.FullJitter(base, time.Hour, failures, sample)
 	until := now.Add(max(delay, result.ServerWait)).Unix()
 	_, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET paused_until=?,pause_class=?,backoff_count=backoff_count+1 WHERE profile_id=?`, until, class, batch.Profile)
 	return true, err
