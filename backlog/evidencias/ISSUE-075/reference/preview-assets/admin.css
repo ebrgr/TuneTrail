@@ -344,7 +344,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 }
 
 }
-
 /* ISSUE-083: ingestion health follows the media task dialog (uppercase section titles, filled rows,
    outlined buttons) and uses theme tokens only, so every theme keeps the same contrast. */
 @layer pages {
@@ -386,14 +385,17 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 }
 .admin-main .ingestion-health summary:hover { background:var(--color-bg-tertiary); }
 .admin-main .ingestion-health details dl,.admin-main details.ingestion-diagnostics dl {
-  display:grid; grid-template-columns:minmax(0,max-content) minmax(0,1fr); gap:6px var(--space-4); margin:0; padding:var(--space-2) 12px var(--space-3);
+  display:grid; grid-template-columns:minmax(0,1fr); gap:2px; margin:0; padding:var(--space-2) 12px var(--space-3);
 }
 .admin-main .ingestion-health dt,.admin-main details.ingestion-diagnostics dt { color:var(--color-fg-secondary); }
-.admin-main .ingestion-health dd,.admin-main details.ingestion-diagnostics dd { margin:0; }
+.admin-main .ingestion-health dd,.admin-main details.ingestion-diagnostics dd { margin:0 0 var(--space-2); }
 .admin-main .ingestion-health .graph-values { margin:var(--space-3) 0 0; }
-@media(max-width:30rem) {
-  .admin-main .ingestion-health details dl,.admin-main details.ingestion-diagnostics dl { grid-template-columns:minmax(0,1fr); gap:2px; }
-  .admin-main .ingestion-health dd,.admin-main details.ingestion-diagnostics dd { margin-bottom:var(--space-2); }
-  .admin-main .ingestion-health form button { width:100%; }
+.admin-main .ingestion-health form button { width:100%; }
+@media(min-width:40rem) {
+  .admin-main .ingestion-health details dl,.admin-main details.ingestion-diagnostics dl {
+    grid-template-columns:minmax(0,max-content) minmax(0,1fr); gap:6px var(--space-4);
+  }
+  .admin-main .ingestion-health dd,.admin-main details.ingestion-diagnostics dd { margin:0; }
+  .admin-main .ingestion-health form button { width:auto; }
 }
 }

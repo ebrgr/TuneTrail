@@ -9,7 +9,10 @@
   "admin/templates/profile-review.html": "templates/admin/profile-review.html",
   "admin/templates/settings.html": "templates/admin/settings.html",
   "public/palettes.json": "themes/palettes.json",
-  "public/static/admin.css": "css/admin/admin.css",
+  "public/static/admin.css": [
+    "css/admin/admin.css",
+    "css/admin/health.css"
+  ],
   "public/static/admin.js": "js/admin.js",
   "public/static/avatar.webp": "preview/avatar.webp",
   "public/static/enhance.js": "js/enhance.js",
