@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/logger"
+	"golang.org/x/net/idna"
 )
 
 // Diagnostic contains only configured authority and stable policy codes.
@@ -22,11 +23,18 @@ type Diagnostic struct {
 // Describe extracts the configured authority without copying request data.
 func Describe(endpoint, code, category string) Diagnostic {
 	d := Diagnostic{Code: code, Category: category}
+	if strings.TrimSpace(endpoint) != "" {
+		d.Host = "invalid"
+	}
 	u, err := url.Parse(strings.TrimSpace(endpoint))
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
 		return d
 	}
-	d.Scheme, d.Host, d.Port = u.Scheme, strings.ToLower(u.Hostname()), u.Port()
+	d.Scheme, d.Port = u.Scheme, u.Port()
+	d.Host = "invalid"
+	if host := u.Hostname(); asciiHostname(host) || unzonedIP(host) {
+		d.Host = strings.ToLower(host)
+	}
 	if d.Port == "" {
 		if d.Scheme == "http" {
 			d.Port = "80"
@@ -35,6 +43,47 @@ func Describe(endpoint, code, category string) Diagnostic {
 		}
 	}
 	return d
+}
+
+// CanonicalHost normalizes a configured DNS name or literal IP for exception matching.
+func CanonicalHost(host string) (string, error) {
+	host = strings.TrimSuffix(host, ".")
+	if ip, err := netip.ParseAddr(host); err == nil {
+		if ip.Zone() == "" {
+			return ip.String(), nil
+		}
+		return "", errors.New("invalid relay host")
+	}
+	ascii, err := idna.Lookup.ToASCII(host)
+	if err != nil || !asciiHostname(ascii) {
+		return "", errors.New("invalid relay host")
+	}
+	return strings.ToLower(ascii), nil
+}
+
+// unzonedIP accepts literal addresses without interface or scope information.
+func unzonedIP(host string) bool {
+	ip, err := netip.ParseAddr(host)
+	return err == nil && ip.Zone() == ""
+}
+
+// asciiHostname accepts LDH labels and IDNA ASCII labels only.
+func asciiHostname(host string) bool {
+	host = strings.TrimSuffix(host, ".")
+	if len(host) > 253 {
+		return false
+	}
+	for _, label := range strings.Split(host, ".") {
+		if len(label) == 0 || len(label) > 63 || label[0] == '-' || label[len(label)-1] == '-' {
+			return false
+		}
+		for _, ch := range label {
+			if !(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '-') {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // HostPort returns the sanitized configured authority.
@@ -49,6 +98,7 @@ func (d Diagnostic) HostPort() string {
 type ValidationError struct {
 	Class      Class
 	Diagnostic Diagnostic
+	PublicPeer bool
 }
 
 func (e *ValidationError) Error() string { return string(e.Class) }
@@ -56,12 +106,13 @@ func (e *ValidationError) Unwrap() error { return ErrUpstream }
 
 // PublicClass is the only diagnostic exposed to non-root callers.
 func (e *ValidationError) PublicClass() string {
-	switch e.Class {
-	case PolicyBlocked, Auth, Redirect, ConfigInvalid:
+	if e.Class == Auth && e.PublicPeer {
 		return "policy"
-	default:
-		return "network"
 	}
+	if e.Diagnostic.Code == "url_invalid" || (e.Class == PolicyBlocked && e.Diagnostic.Code == "token_invalid") {
+		return "policy"
+	}
+	return "network"
 }
 
 type blockedAddress struct{ code, category string }
@@ -115,6 +166,16 @@ type diagnosticKey struct {
 
 // LogDiagnostic emits at most one warning per profile and reason per minute.
 func LogDiagnostic(ctx context.Context, profile int32, d Diagnostic, now time.Time) {
+	logDiagnostic(ctx, profile, d, now, false)
+}
+
+// LogPreventivePause reports a successful response that exhausted a rate limit.
+func LogPreventivePause(ctx context.Context, profile int32, d Diagnostic, now time.Time) {
+	logDiagnostic(ctx, profile, d, now, true)
+}
+
+// logDiagnostic shares reason-based limiting across both severity levels.
+func logDiagnostic(ctx context.Context, profile int32, d Diagnostic, now time.Time, info bool) {
 	if d.Code == "" {
 		return
 	}
@@ -138,7 +199,12 @@ func LogDiagnostic(ctx context.Context, profile int32, d Diagnostic, now time.Ti
 		}
 	}
 	diagnosticLog.next[key] = now.Add(time.Minute)
-	logger.FromContext(ctx).Warn().Int32("profile_id", profile).Str("destination_id", destinationID(profile)).
+	l := logger.FromContext(ctx)
+	event := l.Warn
+	if info {
+		event = l.Info
+	}
+	event().Int32("profile_id", profile).Str("destination_id", destinationID(profile)).
 		Str("reason", d.Code).Str("scheme", d.Scheme).Str("host", d.Host).Str("port", d.Port).Str("range_category", d.Category).
 		Msg("Relay destination")
 }

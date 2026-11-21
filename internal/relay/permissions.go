@@ -51,6 +51,18 @@ type Exception struct {
 	HTTP, Private          bool
 }
 
+// BroadCIDR warns about broad exceptions without changing their validation.
+func (e Exception) BroadCIDR() bool {
+	prefix, err := netip.ParsePrefix(e.CIDR)
+	if err != nil {
+		return false
+	}
+	if prefix.Addr().Is4() {
+		return prefix.Bits() < 24
+	}
+	return prefix.Bits() < 56
+}
+
 // ProfileView contains only root-visible policy configuration and diagnostics.
 type ProfileView struct {
 	ID                 int32

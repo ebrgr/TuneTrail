@@ -1019,3 +1019,15 @@ func TestRelayLegacyDNSFailureKeepsRetryScheduled(t *testing.T) {
 	require.Zero(t, scalar(t, s, "SELECT count(*) FROM relay_allowlist"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=1 AND pause_class='transient:dns_resolution_failed:' AND paused_until BETWEEN unixepoch()+25 AND unixepoch()+30"))
 }
+
+// TestRelayIDNAExceptionAuthority matches a saved Unicode exception to the dial authority.
+func TestRelayIDNAExceptionAuthority(t *testing.T) {
+	want := "xn--bcher-kva.example:443"
+	key, err := normalizeRelayHostPort("Bücher.example:443")
+	require.NoError(t, err)
+	require.Equal(t, want, key)
+	url, key, err := canonicalRelay("https://Bücher.example:443/prefix")
+	require.NoError(t, err)
+	require.Equal(t, want, key)
+	require.Equal(t, "https://xn--bcher-kva.example/prefix", url)
+}

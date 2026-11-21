@@ -663,5 +663,7 @@
   "admin.relay.reason_policy_blocked": "Check the relay configuration and try again.",
   "admin.relay.class_policy": "Relay blocked by policy.",
   "admin.relay.class_network": "Relay network validation failed.",
-  "admin.relay.legacy_warning": "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions."
+  "admin.relay.legacy_warning": "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions.",
+  "admin.relay.cidr_tip": "Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.",
+  "admin.relay.cidr_broad": "This exception covers a broad network."
 }

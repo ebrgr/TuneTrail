@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -86,8 +85,8 @@ func dialPolicy(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) erro
 	}
 	if allow != nil {
 		host, port, err := net.SplitHostPort(hostPort)
-		if err == nil && port != "" {
-			canonical := net.JoinHostPort(strings.ToLower(strings.TrimSuffix(host, ".")), port)
+		if canonicalHost, hostErr := CanonicalHost(host); err == nil && hostErr == nil && port != "" {
+			canonical := net.JoinHostPort(canonicalHost, port)
 			if allow.Allows(scheme, canonical, ip) {
 				return nil
 			}

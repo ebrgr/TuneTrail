@@ -148,6 +148,8 @@
     <input name="host_port" value="{{.HostPort}}" placeholder="relay.example:443" required></label>
   <label>{{tr "admin.relay.cidr" "Reserved CIDR"}}
     <input name="cidr" value="{{.CIDR}}" placeholder="192.168.1.10/32"></label>
+  <p>{{tr "admin.relay.cidr_tip" "Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network."}}</p>
+  {{if .BroadCIDR}}<p role="status">{{tr "admin.relay.cidr_broad" "This exception covers a broad network."}}</p>{{end}}
   <label><input type="checkbox" name="allow_http" value="1"{{if .HTTP}} checked{{end}}>
     {{tr "admin.relay.http" "Permit HTTP"}}</label>
   <label><input type="checkbox" name="allow_private" value="1"{{if .Private}} checked{{end}}>

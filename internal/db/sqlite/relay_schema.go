@@ -51,7 +51,10 @@ func canonicalRelay(raw string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	host := strings.ToLower(strings.TrimSuffix(u.Hostname(), "."))
+	host, err := relay.CanonicalHost(u.Hostname())
+	if err != nil {
+		return "", "", err
+	}
 	port := u.Port()
 	defaultPort := "443"
 	if u.Scheme == "http" {
@@ -78,8 +81,8 @@ func canonicalRelay(raw string) (string, string, error) {
 func normalizeRelayHostPort(raw string) (string, error) {
 	host, port, err := net.SplitHostPort(raw)
 	n, portErr := strconv.ParseUint(port, 10, 16)
-	host = strings.ToLower(strings.TrimSuffix(host, "."))
-	if err != nil || portErr != nil || n == 0 || host == "" || strings.ContainsAny(host, " /?#@\t\r\n") {
+	host, hostErr := relay.CanonicalHost(host)
+	if err != nil || portErr != nil || n == 0 || hostErr != nil {
 		return "", errors.New("invalid relay host and port")
 	}
 	return net.JoinHostPort(host, strconv.FormatUint(n, 10)), nil

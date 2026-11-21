@@ -150,7 +150,11 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		if diagnostic.Code == "" && (result.RemainingZero || (result.Class != relay.Success && result.Class != relay.BadRequest)) {
 			diagnostic = relay.Describe(base, "destination_paused", "")
 		}
-		relay.LogDiagnostic(ctx, batch.Profile, diagnostic, now())
+		if result.Class == relay.Success && result.RemainingZero {
+			relay.LogPreventivePause(ctx, batch.Profile, diagnostic, now())
+		} else {
+			relay.LogDiagnostic(ctx, batch.Profile, diagnostic, now())
+		}
 		if result.Class == relay.Success {
 			result.Diagnostic = relay.Describe(base, "", "")
 		}

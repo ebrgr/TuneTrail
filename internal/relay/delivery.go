@@ -10,7 +10,10 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptrace"
+	"net/netip"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -102,6 +105,15 @@ func (d *Deliverer) Test(ctx context.Context, base, token string) (string, error
 	if err != nil {
 		return "", err
 	}
+	var publicPeer atomic.Bool
+	ctx = httptrace.WithClientTrace(ctx, &httptrace.ClientTrace{GotConn: func(info httptrace.GotConnInfo) {
+		address, ok := info.Conn.RemoteAddr().(*net.TCPAddr)
+		if !ok {
+			return
+		}
+		ip, ok := netip.AddrFromSlice(address.IP)
+		publicPeer.Store(ok && !IsReservedAddress(ip) && !IsForbiddenAddress(ip))
+	}})
 	resp, class, diagnostic := d.request(ctx, http.MethodGet, base+"/validate-token", token, nil)
 	if resp == nil {
 		return "", &ValidationError{Class: class, Diagnostic: diagnostic}
@@ -116,7 +128,7 @@ func (d *Deliverer) Test(ctx context.Context, base, token string) (string, error
 		if class == Auth {
 			code = "token_invalid"
 		}
-		return "", &ValidationError{Class: class, Diagnostic: Describe(base, code, "")}
+		return "", &ValidationError{Class: class, Diagnostic: Describe(base, code, ""), PublicPeer: publicPeer.Load()}
 	}
 	data, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponse+1))
 	if err != nil || len(data) > MaxResponse {
@@ -130,7 +142,7 @@ func (d *Deliverer) Test(ctx context.Context, base, token string) (string, error
 		return "", ErrUpstream
 	}
 	if !result.Valid {
-		return "", &ValidationError{Class: Auth, Diagnostic: Describe(base, "token_invalid", "")}
+		return "", &ValidationError{Class: Auth, Diagnostic: Describe(base, "token_invalid", ""), PublicPeer: publicPeer.Load()}
 	}
 	return result.Username, nil
 }

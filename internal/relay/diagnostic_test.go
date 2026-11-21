@@ -59,3 +59,25 @@ func TestGlobalPrivatePolicyKeepsLocalExceptionsRequired(t *testing.T) {
 		require.False(t, explicit.Allows("http", "relay.test:80", ip), raw)
 	}
 }
+
+// TestDiagnosticHostSafety rejects control characters, Unicode and scoped addresses from logs.
+func TestDiagnosticHostSafety(t *testing.T) {
+	for _, endpoint := range []string{"https://bad<>.test", "https://evil\u2028.test", "https://evil\u202e.test", "https://[fe80::1%25eth0]:443", "https://bücher.example"} {
+		require.Equal(t, "invalid", Describe(endpoint, "url_invalid", "").Host, endpoint)
+	}
+	host, err := CanonicalHost("Bücher.example")
+	require.NoError(t, err)
+	require.Equal(t, "xn--bcher-kva.example", host)
+	require.Equal(t, host, Describe("https://"+host, "", "").Host)
+	require.Equal(t, "2001:db8::1", Describe("https://[2001:db8::1]", "", "").Host)
+}
+
+// TestPrivateDiagnosticsSharePublicClass prevents a non-root network scanning oracle.
+func TestPrivateDiagnosticsSharePublicClass(t *testing.T) {
+	for _, class := range []Class{Auth, Redirect, Transient, PolicyBlocked, TLS, Route, Server} {
+		err := &ValidationError{Class: class, Diagnostic: Diagnostic{Code: "private_network_not_allowed"}}
+		require.Equal(t, "network", err.PublicClass())
+	}
+	require.Equal(t, "policy", (&ValidationError{Class: Auth, PublicPeer: true}).PublicClass())
+	require.Equal(t, "network", (&ValidationError{Class: Redirect, PublicPeer: true}).PublicClass())
+}

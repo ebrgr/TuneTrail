@@ -663,5 +663,7 @@
   "admin.relay.reason_policy_blocked": "Confira a configuração do relay e tente novamente.",
   "admin.relay.class_policy": "Relay bloqueado pela política.",
   "admin.relay.class_network": "A validação de rede do relay falhou.",
-  "admin.relay.legacy_warning": "O encaminhamento legado, o modo sombra e Tocando agora usam o transporte padrão da v0.48, fora destas opções e exceções."
+  "admin.relay.legacy_warning": "O encaminhamento legado, o modo sombra e Tocando agora usam o transporte padrão da v0.48, fora destas opções e exceções.",
+  "admin.relay.cidr_tip": "Prefira um CIDR restrito. Faixas IPv4 mais amplas que /24 ou IPv6 mais amplas que /56 expõem uma rede maior.",
+  "admin.relay.cidr_broad": "Esta exceção abrange uma rede ampla."
 }
