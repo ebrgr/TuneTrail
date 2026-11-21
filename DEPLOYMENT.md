@@ -166,6 +166,11 @@ destination (ISSUE-134).
 
 ### Physical database backups
 
+Plan for longer downtime and more free disk space as the database grows.
+During the upgrade the live database, WAL, and physical backup can coexist.
+Budget for all three and allow time for startup maintenance before serving
+requests.
+
 Treat every physical backup or full database copy as sensitive as the live
 database. It preserves the data present in the source schema, including
 password hashes, API keys, and any configured relay token in plaintext.

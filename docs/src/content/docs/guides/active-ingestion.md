@@ -133,6 +133,12 @@ profiles stop delivering until an instance administrator grants the required
 permissions. The upgrade can seed eligible exceptions for administrator
 profiles only. A DNS lookup failure at startup postpones delivery briefly and
 does not seed an exception. The next attempt applies the current network policy.
+If an existing administrator relay on the LAN needed a seeded exception, root
+must add it when the next attempt reports `private_network_not_allowed`.
+
+Larger databases need more free disk space and may take longer to upgrade.
+Budget for the live database, WAL, and physical backup to coexist, and plan a
+maintenance window before serving requests.
 
 The **Relay** section above the exceptions offers two instance-wide permissions.
 Each defaults to false and requires restart. The saved and running values and

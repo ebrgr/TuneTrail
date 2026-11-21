@@ -232,9 +232,13 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 
 - Executados os cenários saudável, lento, recusado, oscilante e saturado em loopback com bases descartáveis. Os scripts e números estão em ENSAIO-E4.md.
 - Medido: expiração de 100 mil itens com 300 mil recibos, 15,55–16,29 ms em sete ticks. Índice adicional dispensado neste host. Remoção de histórico no mesmo cenário e espaço da fila medidos.
-- Verificado: SIGTERM em 4,004 s; paridade v0.48; SIGKILL em três fronteiras e recusa injetada na gravação do 2xx. O mock observou uma reentrega após aceite remoto sem CAS e uma após falha da gravação, ambas deduplicáveis.
+- Verificado: SIGTERM em 4,011 s; paridade v0.48; SIGKILL em três fronteiras e recusa injetada na gravação do 2xx. O mock observou uma reentrega após aceite remoto sem CAS e uma após falha da gravação, ambas deduplicáveis.
 - Medido: TLS real em loopback com CA de teste. Síntese e limites registrados no relatório.
 - Carga, TLS, paridade, upgrade e segurança registrados em ENSAIO-E4.md. A outbox com 100 mil abertos manteve 200, e uma reserva externa do escritor produziu 503.
 - Verificado: paridade em v0.47/v0.48, diagnóstico do upgrade no painel e no log, exceções liberadas pelo root, ACs 1–3, testes de relay/worker com race e make check com 13/13 jornadas. Pendente: Reviewer e AC4. A tarefa segue Em andamento.
 - Decisão do usuário em 21/11/2026: backups físicos e cópias integrais podem preservar o token necessário à restauração. O token permanece fora da fila, tabelas de entrega, payload, logs, GET administrativo, exportação de histórico e evidências. Tratar backups com a mesma proteção do banco. AC1 reverificado com essa distinção.
 - Verificação da v6: testes dirigidos de backup e upgrade, replay contra v0.48, recuperação após crash com exportação sanitizada e `make check` (13/13 E2E) passaram.
+
+- Releitura da E4: o ensaio TLS mede Python contra Python com CA local, sem exercitar o transporte Go. Se um worker ultrapassar o prazo de 8 s, o retorno de `Run` aciona `store.Close` enquanto o worker ainda está encerrando. O risco foi avaliado como baixo.
+- Um relay legado de administrador na LAN pode ficar em `private_network_not_allowed` após a primeira tentativa se o DNS falhou na semeadura. O root precisa cadastrar a exceção. A ressalva sobre `LIKE` com `_` como curinga é inofensiva para os códigos controlados de pausa atuais.
+- Decisão futura do usuário: avaliar uma tarefa para cifrar em repouso as credenciais de relay.
