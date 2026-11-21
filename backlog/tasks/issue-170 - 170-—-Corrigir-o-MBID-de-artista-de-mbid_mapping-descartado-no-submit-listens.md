@@ -1,11 +1,11 @@
 ---
 id: ISSUE-170
 title: 170 — Corrigir o MBID de artista de mbid_mapping descartado no submit-listens
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T16:15:00Z'
-updated_date: '2026-11-21T16:21:00Z'
+updated_date: '2026-11-21T16:22:00Z'
 labels:
   - api
 milestone: m-11
@@ -46,6 +46,24 @@ created: 2026-11-21T16:19:00Z
 ---
 
 Início: branch `fix/issue-170-corrigir-o-mbid-de-artista` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-21T16:22:00Z
+
+---
+
+Verificação: o MBID de artista de mbid_mapping agora resolve para o artista existente nos caminhos legado e ativo, sem duplicar. Teste de regressão falha sem a correção (2 artistas) e passa com ela (1). Prioridade do additional_info coberta. make check verde. Não verificado: payload real em produção e MusicBrainz online.
+
+---
+
+author: claude
+created: 2026-11-21T16:22:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 21/11/2026.
 
 ---
 <!-- COMMENTS:END -->
