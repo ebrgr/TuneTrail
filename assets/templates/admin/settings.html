@@ -123,6 +123,7 @@
                 {{- tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button>
             </div>
           </form>
+          {{template "admin/relay-exceptions" .}}
           <p><a href="/admin/settings">{{tr "admin.text.reload_saved_configuration" "Reload saved configuration"}}</a> · <a href="/admin">
             {{- tr "admin.text.back_to_administration" "Back to administration"}}</a></p>
         </main>
@@ -133,4 +134,67 @@
       </div>
     </body>
   </html>
+{{end}}
+
+{{define "admin/relay-exception-fields"}}
+  <label>{{tr "admin.relay.host_port" "Host and port"}}
+    <input name="host_port" value="{{.HostPort}}" placeholder="relay.example:443" required></label>
+  <label>{{tr "admin.relay.cidr" "Reserved CIDR"}}
+    <input name="cidr" value="{{.CIDR}}" placeholder="192.168.1.10/32"></label>
+  <label><input type="checkbox" name="allow_http" value="1"{{if .HTTP}} checked{{end}}>
+    {{tr "admin.relay.http" "Permit HTTP"}}</label>
+  <label><input type="checkbox" name="allow_private" value="1"{{if .Private}} checked{{end}}>
+    {{tr "admin.relay.private" "Permit private network"}}</label>
+{{end}}
+
+{{define "admin/relay-exceptions"}}
+  {{if .RelayProfiles}}
+    <section aria-labelledby="relay-exceptions">
+      <h2 id="relay-exceptions">{{tr "admin.relay.exceptions" "Relay exceptions by destination"}}</h2>
+      {{range .RelayProfiles}}
+        <article class="server-setting">
+          <h3>{{.Name}}</h3>
+          {{if .Configured}}
+            <p><code>{{.Diagnostic.Scheme}} · {{.Diagnostic.HostPort}}</code>
+              {{if .Paused}}{{tr "admin.relay.paused" "Paused"}}{{else}}{{tr "admin.relay.active" "Active"}}{{end}}
+            </p>
+            {{if .Paused}}
+              <p><code>{{.Diagnostic.Code}} {{.Diagnostic.Category}}</code>
+                {{tr (printf "admin.relay.reason_%s" .Diagnostic.Code) "Check the relay configuration and try again."}}</p>
+            {{end}}
+            <form method="post" action="/admin/settings/relay">
+              <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+              <input type="hidden" name="submission_token" value="{{$.Submission}}">
+              <input type="hidden" name="profile" value="{{.ID}}">
+              <button name="operation" value="resume">{{tr "admin.relay.resume" "Revalidate and resume"}}</button>
+            </form>
+          {{else}}<p>{{tr "admin.relay.not_configured" "No relay configured"}}</p>{{end}}
+          {{$profile := .ID}}
+          {{range .Exceptions}}
+            <form method="post" action="/admin/settings/relay">
+              <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+              <input type="hidden" name="submission_token" value="{{$.Submission}}">
+              <input type="hidden" name="profile" value="{{$profile}}">
+              <input type="hidden" name="old_host" value="{{.HostPort}}">
+              <input type="hidden" name="old_cidr" value="{{.CIDR}}">
+              <input type="hidden" name="old_origin" value="{{.Origin}}">
+              <p>{{if eq .Origin "seeded"}}{{tr "admin.relay.seeded" "Seeded during setup"}}{{else}}{{tr "admin.relay.manual" "Added manually"}}{{end}}</p>
+              {{template "admin/relay-exception-fields" .}}
+              <button name="operation" value="edit">{{tr "admin.relay.edit" "Save exception"}}</button>
+              <div class="danger-zone">
+                <button name="operation" value="remove" formnovalidate>{{tr "admin.relay.remove" "Remove exception"}}</button>
+              </div>
+            </form>
+          {{end}}
+          <form method="post" action="/admin/settings/relay">
+            <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+            <input type="hidden" name="submission_token" value="{{$.Submission}}">
+            <input type="hidden" name="profile" value="{{.ID}}">
+            {{template "admin/relay-exception-fields" $.RelayBlank}}
+            <button name="operation" value="add">{{tr "admin.relay.add" "Add exception"}}</button>
+          </form>
+        </article>
+      {{end}}
+    </section>
+  {{end}}
 {{end}}

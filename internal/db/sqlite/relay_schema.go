@@ -230,7 +230,7 @@ func (seed *relaySeed) applyAddresses(addresses []netip.Addr) {
 func applyRelaySeed(ctx context.Context, tx *sql.Tx, seed relaySeed) error {
 	var pause any
 	if seed.blocked {
-		pause = "policy_blocked"
+		pause = "policy_blocked:" + seed.reason + ":" + seed.category
 	}
 	if _, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=?,paused_until=NULL WHERE profile_id=?", pause, seed.profile); err != nil {
 		return err
@@ -284,6 +284,10 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 	}
 	for _, seed := range seeds {
 		if seed.blocked {
+			_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET pause_class=? WHERE profile_id=? AND EXISTS(SELECT 1 FROM profile_relays WHERE profile_id=? AND url=?)", "policy_blocked:"+seed.reason+":"+seed.category, seed.profile, seed.profile, seed.raw)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		updated, err := tx.ExecContext(ctx, "UPDATE profile_relays SET url=? WHERE profile_id=? AND url=?", seed.canonical, seed.profile, seed.raw)

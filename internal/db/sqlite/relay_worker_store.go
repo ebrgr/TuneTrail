@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/relay"
@@ -106,5 +107,6 @@ func (s *Sqlite) RelayQueueStatus(ctx context.Context, profile int32) (int, sql.
 	var class string
 	err := s.db.QueryRowContext(ctx, `SELECT open_count,paused_until,coalesce(pause_class,'') FROM relay_destinations WHERE profile_id=?`, profile).
 		Scan(&count, &seconds, &class)
-	return count, sql.NullTime{Time: time.Unix(seconds.Int64, 0), Valid: seconds.Valid}, class, err
+	kind, _, _ := strings.Cut(class, ":")
+	return count, sql.NullTime{Time: time.Unix(seconds.Int64, 0), Valid: seconds.Valid}, kind, err
 }

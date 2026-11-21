@@ -101,7 +101,7 @@ func TestRelayUpgrade(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE origin='seeded'"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE profile_id=2 AND host_port='clear.test:80' AND allow_http=1 AND allow_private=0"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE profile_id=3 AND cidr='10.1.2.3/32' AND allow_private=1 AND allow_http=0"))
-	require.Equal(t, 4, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id IN (4,5,6,7) AND pause_class='policy_blocked'"))
+	require.Equal(t, 4, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id IN (4,5,6,7) AND pause_class LIKE 'policy_blocked:%'"))
 	for _, table := range []string{"relay_destinations", "relay_allowlist", "outbox", "ingest_events", "integrations"} {
 		rows, err := s.db.Query("SELECT * FROM " + table)
 		require.NoError(t, err)

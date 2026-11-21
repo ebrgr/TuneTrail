@@ -15,6 +15,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
@@ -40,6 +41,8 @@ type settingsView struct {
 	Profile                                                  *models.ListeningProfile
 	CSRF, Submission, Revision, Notice, Error, LocalTimezone string
 	Fields                                                   []settingField
+	RelayProfiles                                            []relay.ProfileView
+	RelayBlank                                               relay.Exception
 	RestartRequired, StateAvailable                          bool
 }
 
@@ -170,6 +173,12 @@ func (h *Handler) renderSettings(r *http.Request, w http.ResponseWriter, id admi
 			}
 		}
 		v.Fields = append(v.Fields, field)
+	}
+	if store, ok := h.store.(relayPanelStore); ok {
+		profiles, err := store.RelayPolicyProfiles(r.Context(), id.SessionID)
+		if err == nil {
+			v.RelayProfiles = profiles
+		}
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	var out strings.Builder

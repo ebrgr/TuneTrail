@@ -55,6 +55,9 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		return
 	}
 	switch path {
+	case "settings/relay":
+		h.relaySettingsAction(w, r, identity, f)
+		return
 	case "settings/save", "settings/subsonic/test":
 		h.settingsAction(w, r, identity, f, path)
 		return

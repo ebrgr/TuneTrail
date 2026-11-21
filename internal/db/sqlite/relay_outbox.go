@@ -430,6 +430,10 @@ func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch 
 		sample = rand.Int64N
 	}
 	class := result.Class
+	pauseCode := string(class)
+	if result.Diagnostic.Code != "" {
+		pauseCode += ":" + result.Diagnostic.Code + ":" + result.Diagnostic.Category
+	}
 	switch class {
 	case relay.Success:
 		if result.RemainingZero {
@@ -447,8 +451,9 @@ func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch 
 			return false, err
 		}
 		class = relay.RateLimited
+		pauseCode = string(class)
 	case relay.Auth, relay.Route, relay.Redirect, relay.PolicyBlocked, relay.ConfigInvalid:
-		_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET paused_until=NULL,pause_class=? WHERE profile_id=?", class, batch.Profile)
+		_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET paused_until=NULL,pause_class=? WHERE profile_id=?", pauseCode, batch.Profile)
 		return true, err
 	}
 	base := 30 * time.Second
@@ -457,6 +462,6 @@ func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch 
 	}
 	delay := retry.FullJitter(base, time.Hour, failures, sample)
 	until := now.Add(max(delay, result.ServerWait)).Unix()
-	_, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET paused_until=?,pause_class=?,backoff_count=backoff_count+1 WHERE profile_id=?`, until, class, batch.Profile)
+	_, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET paused_until=?,pause_class=?,backoff_count=backoff_count+1 WHERE profile_id=?`, until, pauseCode, batch.Profile)
 	return true, err
 }

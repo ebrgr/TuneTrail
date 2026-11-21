@@ -12,6 +12,7 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/google/uuid"
 	sqlite3 "modernc.org/sqlite"
 )
@@ -175,6 +176,9 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 	}
 	if err := tx.Commit(); err != nil {
 		return err
+	}
+	if seeds[0].profile > 0 {
+		relay.LogDiagnostic(ctx, seeds[0].profile, relay.Describe(url, seeds[0].reason, seeds[0].category), time.Now())
 	}
 	if !profileID.Valid {
 		return fmt.Errorf("legacy relay not associated: select and configure a profile explicitly")

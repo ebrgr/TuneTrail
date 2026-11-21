@@ -140,7 +140,11 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		if ctx.Err() != nil {
 			return
 		}
-		relay.LogDiagnostic(ctx, batch.Profile, result.Diagnostic, now())
+		diagnostic := result.Diagnostic
+		if diagnostic.Code == "" && (result.RemainingZero || (result.Class != relay.Success && result.Class != relay.BadRequest)) {
+			diagnostic = relay.Describe(base, "destination_paused", "")
+		}
+		relay.LogDiagnostic(ctx, batch.Profile, diagnostic, now())
 		settled, err := store.FinishRelayBatch(ctx, batch, items, result, now(), false)
 		if err != nil || !settled {
 			return

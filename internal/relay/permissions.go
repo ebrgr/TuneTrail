@@ -35,3 +35,18 @@ func (permissions Permissions) Allows(scheme, hostPort string, ip netip.Addr) bo
 	}
 	return cleartext && reserved
 }
+
+// Exception is the stored key and display state of a destination permission.
+type Exception struct {
+	HostPort, CIDR, Origin string
+	HTTP, Private          bool
+}
+
+// ProfileView contains only root-visible policy configuration and diagnostics.
+type ProfileView struct {
+	ID                 int32
+	Name               string
+	Configured, Paused bool
+	Diagnostic         Diagnostic
+	Exceptions         []Exception
+}

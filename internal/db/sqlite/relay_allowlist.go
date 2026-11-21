@@ -16,7 +16,7 @@ type RelayPermission = relay.Permission
 
 // SetRelayPermission saves a validated operator exception for one profile.
 func (s *Sqlite) SetRelayPermission(ctx context.Context, profile int32, permission RelayPermission) error {
-	return s.setRelayPermission(ctx, uuid.Nil, profile, permission)
+	return s.setRelayPermission(ctx, uuid.Nil, profile, permission, nil)
 }
 
 // SetRelayPermissionAsRoot checks a live instance administrator in the write transaction.
@@ -24,11 +24,11 @@ func (s *Sqlite) SetRelayPermissionAsRoot(ctx context.Context, session uuid.UUID
 	if session == uuid.Nil {
 		return db.ErrForbidden
 	}
-	return s.setRelayPermission(ctx, session, profile, permission)
+	return s.setRelayPermission(ctx, session, profile, permission, nil)
 }
 
 // setRelayPermission persists one exception and fences previous policy snapshots.
-func (s *Sqlite) setRelayPermission(ctx context.Context, session uuid.UUID, profile int32, permission relay.Permission) error {
+func (s *Sqlite) setRelayPermission(ctx context.Context, session uuid.UUID, profile int32, permission relay.Permission, old *relay.Exception) error {
 	host, err := normalizeRelayHostPort(permission.HostPort)
 	if err != nil {
 		return fmt.Errorf("relay host and port: %w", db.ErrInvalidInput)
@@ -53,6 +53,19 @@ func (s *Sqlite) setRelayPermission(ctx context.Context, session uuid.UUID, prof
 		if _, err := tx.ExecContext(ctx, "INSERT INTO relay_destinations(profile_id) VALUES(?) ON CONFLICT DO NOTHING", profile); err != nil {
 			return err
 		}
+		if old != nil {
+			removed, err := tx.ExecContext(ctx, "DELETE FROM relay_allowlist WHERE profile_id=? AND host_port=? AND cidr=? AND origin=?", profile, old.HostPort, old.CIDR, old.Origin)
+			if err != nil {
+				return err
+			}
+			n, err := removed.RowsAffected()
+			if err != nil {
+				return err
+			}
+			if n != 1 {
+				return db.ErrConflict
+			}
+		}
 		result, err := tx.ExecContext(ctx, `INSERT INTO relay_allowlist VALUES(?,?,?,?,?,'manual')
 			ON CONFLICT(profile_id,host_port,cidr,origin) DO UPDATE SET allow_http=excluded.allow_http,allow_private=excluded.allow_private
 			WHERE allow_http<>excluded.allow_http OR allow_private<>excluded.allow_private`,
@@ -61,13 +74,13 @@ func (s *Sqlite) setRelayPermission(ctx context.Context, session uuid.UUID, prof
 			return err
 		}
 		n, err := result.RowsAffected()
-		if err != nil || n == 0 {
+		if err != nil || (n == 0 && old == nil) {
 			return err
 		}
 		// An operator policy change clears a policy block and fences old transport results.
 		_, err = tx.ExecContext(ctx, `UPDATE relay_destinations SET config_version=config_version+1,
-			paused_until=CASE WHEN pause_class IN ('policy_blocked','config_invalid') THEN NULL ELSE paused_until END,
-			pause_class=CASE WHEN pause_class IN ('policy_blocked','config_invalid') THEN NULL ELSE pause_class END WHERE profile_id=?`, profile)
+			paused_until=CASE WHEN (pause_class IN ('policy_blocked','config_invalid') OR pause_class LIKE 'policy_blocked:%') THEN NULL ELSE paused_until END,
+			pause_class=CASE WHEN (pause_class IN ('policy_blocked','config_invalid') OR pause_class LIKE 'policy_blocked:%') THEN NULL ELSE pause_class END WHERE profile_id=?`, profile)
 		return err
 	})
 }
@@ -126,6 +139,36 @@ func (s *Sqlite) RemoveRelayPermissionAsRoot(ctx context.Context, session uuid.U
 		_, err = tx.ExecContext(ctx, `UPDATE relay_destinations SET config_version=config_version+1,
 			paused_until=CASE WHEN pause_class='config_invalid' THEN NULL ELSE paused_until END,
 			pause_class=nullif(pause_class,'config_invalid') WHERE profile_id=?`, profile)
+		return err
+	})
+}
+
+// EditRelayExceptionAsRoot replaces an exception atomically and records the edit as manual.
+func (s *Sqlite) EditRelayExceptionAsRoot(ctx context.Context, session uuid.UUID, profile int32, old relay.Exception, permission relay.Permission) error {
+	if session == uuid.Nil {
+		return db.ErrForbidden
+	}
+	return s.setRelayPermission(ctx, session, profile, permission, &old)
+}
+
+// RemoveRelayExceptionAsRoot revokes precisely the row selected by the operator.
+func (s *Sqlite) RemoveRelayExceptionAsRoot(ctx context.Context, session uuid.UUID, profile int32, old relay.Exception) error {
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		if err := checkIngestRoot(ctx, tx, session); err != nil {
+			return err
+		}
+		result, err := tx.ExecContext(ctx, "DELETE FROM relay_allowlist WHERE profile_id=? AND host_port=? AND cidr=? AND origin=?", profile, old.HostPort, old.CIDR, old.Origin)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n != 1 {
+			return db.ErrConflict
+		}
+		_, err = tx.ExecContext(ctx, "UPDATE relay_destinations SET config_version=config_version+1 WHERE profile_id=?", profile)
 		return err
 	})
 }

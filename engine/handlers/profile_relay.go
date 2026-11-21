@@ -19,7 +19,7 @@ type profileRelay struct {
 }
 
 // decodeProfileRelay retains the JSON size and destination validation contract.
-func decodeProfileRelay(w http.ResponseWriter, r *http.Request) (profileRelay, bool) {
+func decodeProfileRelay(w http.ResponseWriter, r *http.Request, diagnostic bool) (profileRelay, bool) {
 	r.Body = http.MaxBytesReader(w, r.Body, 8192)
 	body, err := utils.DecodeBody[profileRelay](r)
 	if err != nil {
@@ -31,9 +31,18 @@ func decodeProfileRelay(w http.ResponseWriter, r *http.Request) (profileRelay, b
 	if validationToken == "" {
 		validationToken = "placeholder"
 	}
+	rawURL := body.URL
 	body.URL, _, err = relay.Normalize(body.URL, validationToken)
 	if err != nil {
-		utils.WriteError(w, "valid relay base URL and token required", 400)
+		if diagnostic {
+			code := "token_invalid"
+			if _, _, baseErr := relay.Normalize(rawURL, "placeholder"); baseErr != nil {
+				code = "url_invalid"
+			}
+			writeRelayDiagnostic(w, r, &relay.ValidationError{Class: relay.PolicyBlocked, Diagnostic: relay.Describe(rawURL, code, "")}, http.StatusBadRequest)
+		} else {
+			utils.WriteError(w, "valid relay base URL and token required", 400)
+		}
 		return profileRelay{}, false
 	}
 	return body, true
@@ -62,7 +71,7 @@ func SetProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 		if r.Method == "DELETE" {
 			err = admin.RemoveRelay(r.Context(), store, user, p.ID, p.Slug)
 		} else {
-			body, ok := decodeProfileRelay(w, r)
+			body, ok := decodeProfileRelay(w, r, false)
 			if !ok {
 				return
 			}
@@ -80,7 +89,7 @@ func SetProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 func TestProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
-		body, ok := decodeProfileRelay(w, r)
+		body, ok := decodeProfileRelay(w, r, true)
 		if !ok {
 			return
 		}
@@ -89,17 +98,7 @@ func TestProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 		if err != nil {
 			var diagnostic *relay.ValidationError
 			if errors.As(err, &diagnostic) {
-				relay.LogDiagnostic(r.Context(), p.ID, diagnostic.Diagnostic, time.Now())
-				class := "network"
-				if diagnostic.Class == relay.PolicyBlocked || diagnostic.Class == relay.Auth || diagnostic.Class == relay.Redirect {
-					class = "policy"
-				}
-				body := map[string]string{"class": class}
-				if admin.AuthorizeAction(middleware.GetUserFromContext(r.Context()), admin.ManageServer, nil) == nil {
-					body["reason"] = diagnostic.Diagnostic.Code
-					body["instruction"] = relay.Remedy(diagnostic.Diagnostic.Code)
-				}
-				utils.WriteJSON(w, http.StatusBadGateway, body)
+				writeRelayDiagnostic(w, r, diagnostic, http.StatusBadGateway)
 			} else if errors.Is(err, relay.ErrUpstream) {
 				utils.WriteJSON(w, http.StatusBadGateway, map[string]string{"class": "network"})
 			} else {
@@ -109,4 +108,25 @@ func TestProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 		}
 		utils.WriteJSON(w, 200, map[string]any{"valid": true, "user_name": name})
 	}
+}
+
+// writeRelayDiagnostic gives only a broad class to callers who are not instance administrators.
+func writeRelayDiagnostic(w http.ResponseWriter, r *http.Request, d *relay.ValidationError, status int) {
+	ctx := r.Context()
+	if p := middleware.ProfileFromContext(ctx); p != nil {
+		relay.LogDiagnostic(ctx, p.ID, d.Diagnostic, time.Now())
+	}
+	class := "network"
+	if d.Class == relay.PolicyBlocked || d.Class == relay.Auth || d.Class == relay.Redirect {
+		class = "policy"
+	}
+	body := map[string]string{"class": class}
+	if admin.AuthorizeAction(middleware.GetUserFromContext(ctx), admin.ManageServer, nil) == nil {
+		body["reason"] = d.Diagnostic.Code
+		body["instruction"] = relay.Remedy(d.Diagnostic.Code)
+		body["scheme"] = d.Diagnostic.Scheme
+		body["host_port"] = d.Diagnostic.HostPort()
+		body["range_category"] = d.Diagnostic.Category
+	}
+	utils.WriteJSON(w, status, body)
 }

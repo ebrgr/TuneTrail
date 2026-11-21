@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/netip"
 
@@ -64,6 +65,11 @@ func RelayManagementHandler(store RelayManagementStore, action string) http.Hand
 			err = db.ErrNotFound
 		}
 		if err != nil {
+			var diagnostic *relay.ValidationError
+			if errors.As(err, &diagnostic) {
+				writeRelayDiagnostic(w, r, diagnostic, http.StatusBadGateway)
+				return
+			}
 			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 			return
 		}

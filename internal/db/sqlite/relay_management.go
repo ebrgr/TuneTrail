@@ -59,7 +59,7 @@ func (s *Sqlite) ResumeRelay(ctx context.Context, session uuid.UUID, profile int
 	if !present {
 		return db.ErrNotFound
 	}
-	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		if err := checkIngestRoot(ctx, tx, session); err != nil {
 			return err
 		}
@@ -73,6 +73,13 @@ func (s *Sqlite) ResumeRelay(ctx context.Context, session uuid.UUID, profile int
 		}
 		return err
 	})
+	if err == nil {
+		base, _, readErr := s.GetProfileRelay(ctx, profile)
+		if readErr == nil {
+			relay.LogDiagnostic(ctx, profile, relay.Describe(base, "destination_resumed", ""), time.Now())
+		}
+	}
+	return err
 }
 
 // ConvertOccurrence allows the one-way cut for active profiles with a verified or absent relay.
