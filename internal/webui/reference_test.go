@@ -184,6 +184,35 @@ func TestUIReference(t *testing.T) {
 	for name, route := range map[string]string{"profiles": "/admin?profile=1", "account": "/admin?section=account", "sign-out": "/admin/sign-out", "settings": "/admin/settings", "artist": "/alpha/manage/artist/1", "album": "/alpha/manage/album/1", "track": "/alpha/manage/track/1", "merge": "/alpha/manage/track/1/review?action=merge&to=2", "delete": "/admin/profile/1/delete-review"} {
 		save("admin/"+name, route, admin, session)
 	}
+	// Export populated health diagnostics and provenance using fixed timestamps.
+	if err := s.SetProfileRelay(t.Context(), 1, "https://fixture.invalid", "fixture-only"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Exec(`UPDATE relay_delivery_gate SET policy='durable';
+		INSERT INTO integrations(id,profile_id,source_type,display_name,created_at)
+		VALUES('reference-source',1,'listenbrainz','Fictional player',0);
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
+			duplicate_decision,reason_codes,rule_version,evidence)
+		VALUES('reference-receipt',1,'reference-source',1,'listenbrainz','1','reference',0,'single',1714564800,'second','start',
+			'{"client":"Fictional client"}','reference','1','review','["ambiguous_time_candidate"]',
+			'shadow-v1','{"delta_seconds":3,"recording_mbid_match":true}');
+		INSERT INTO integrations(id,profile_id,source_type,created_at)
+		VALUES('relay:1',1,'listenbrainz-relay',0);
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
+			mode,state,duplicate_decision,reason_codes,rule_version,event_id,occurrence_id,recording_id,identity_status,delivery_policy)
+		SELECT 'reference-active',l.profile_id,'reference-source',1,'listenbrainz','1','reference-2',0,'single',1714564860,'second','start',
+			'{"client":"Fictional client"}','reference','1','active','accepted','different','["no_candidate"]','active-v1',
+			l.event_id,l.track_id,o.recording_id,'resolved','durable'
+		FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=1 AND l.track_id=1;
+		INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,attempt_count,result,format_version)
+		SELECT 'reference-delivery',profile_id,'relay:1',event_id,'listen','reference','failed',1714564860,3,'{"reason":"item_rejected"}',1
+		FROM ingest_events WHERE receipt_id='reference-active'`); err != nil {
+		t.Fatal(err)
+	}
+	save("admin/ingest-health", "/admin/health?profile=1", admin, session)
+	save("admin/listen", "/alpha/manage/track/1/listen?listen_at=1714564800&tz=UTC", admin, session)
 	if err := fs.WalkDir(files, "static", func(p string, d fs.DirEntry, e error) error {
 		if e != nil {
 			return e

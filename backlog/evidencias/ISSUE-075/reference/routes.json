@@ -20,6 +20,16 @@
     "Status": 200
   },
   {
+    "Name": "admin/ingest-health",
+    "Route": "/admin/health?profile=1",
+    "Status": 200
+  },
+  {
+    "Name": "admin/listen",
+    "Route": "/alpha/manage/track/1/listen?listen_at=1714564800\u0026tz=UTC",
+    "Status": 200
+  },
+  {
     "Name": "admin/login",
     "Route": "/admin",
     "Status": 200

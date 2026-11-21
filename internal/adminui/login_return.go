@@ -41,6 +41,14 @@ func (h *Handler) canReturnToRead(r *http.Request, actor *models.User, u *url.UR
 	switch u.Path {
 	case "/admin":
 		return h.authorizePage(read, admin.Identity{User: actor}) == nil && h.returnProfileExists(read)
+	case "/admin/health":
+		// Recheck the selected profile against the new session before redirecting.
+		profiles, err := h.store.ListListeningProfiles(read.Context())
+		if err != nil {
+			return false
+		}
+		_, err = h.healthProfile(read, actor, profiles)
+		return err == nil
 	case "/admin/settings":
 		return admin.AuthorizeAction(actor, admin.ManageServer, nil) == nil
 	}

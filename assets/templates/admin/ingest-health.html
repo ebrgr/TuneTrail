@@ -1,0 +1,95 @@
+{{/* Only the profile-authorized diagnostic projection is rendered here. */}}
+{{define "admin/ingest-health"}}
+  <nav class="admin-sections" aria-label="{{tr "admin.text.profile_administration" "Profile administration"}}">
+    <a href="/admin?profile={{.Profile.ID}}">{{tr "nav.profile_settings" "Profile settings"}}</a>
+    <a href="/admin/health?profile={{.Profile.ID}}" aria-current="page">{{tr "admin.health.nav" "Health"}}</a>
+  </nav>
+  {{if .Profiles}}
+    <form method="get" action="/admin/health">
+      <label>{{tr "admin.text.profile" "Profile"}}
+        <select name="profile">
+          {{range .Profiles}}<option value="{{.ID}}" {{if eq .ID $.Profile.ID}}selected{{end}}>{{.DisplayName}}</option>{{end}}
+        </select>
+      </label>
+      <button>{{tr "admin.text.apply" "Apply"}}</button>
+    </form>
+  {{end}}
+  <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
+    <h2 id="health-sources">{{tr "admin.health.sources" "Sources and last submission"}}</h2>
+    {{range .Health.Sources}}
+      <details>
+        <summary>{{.Integration}} · {{.Source}}{{if .Client}} · {{.Client}}{{end}}</summary>
+        <dl>
+          <dt>{{tr "admin.health.received" "Received"}}</dt><dd>{{template "admin/health-time" .Received}}</dd>
+          <dt>{{tr "admin.health.precision" "Time precision"}}</dt><dd>{{template "admin/health-code" .Precision}}</dd>
+          <dt>{{tr "admin.health.delivery" "Relay delivery"}}</dt><dd>{{template "admin/health-delivery" .Delivery}}</dd>
+        </dl>
+      </details>
+    {{else}}
+      <p>{{tr "admin.health.no_sources" "No submissions recorded."}}</p>
+    {{end}}
+  </section>
+  <section class="card ingestion-diagnostics" aria-labelledby="health-relay">
+    <h2 id="health-relay">{{tr "admin.health.relay" "Relay queue and failures"}}</h2>
+    {{if .Health.RelayTracked}}
+      <p>{{trn "admin.health.open" "Queued deliveries: {{.Count}}" "Count" .Health.Open}}</p>
+      {{if .Health.Pause}}<p>{{tr "admin.health.paused" "Destination paused"}} · <samp>{{.Health.Pause}}</samp></p>{{end}}
+      {{if .Health.Relay}}
+        <div class="graph-values">
+          <div class="graph-table-scroll" role="region" aria-labelledby="health-relay" tabindex="0">
+            <table>
+              <thead><tr>
+                <th scope="col">{{tr "admin.health.delivery" "Relay delivery"}}</th>
+                <th scope="col">{{tr "admin.health.attempts" "Attempts"}}</th>
+                <th scope="col">{{tr "admin.health.reason" "Reason code"}}</th>
+              </tr></thead>
+              <tbody>
+                {{range .Health.Relay}}
+                  <tr><td>{{template "admin/health-delivery" .State}}</td><td>{{.Attempts}}</td><td>{{template "admin/health-code" .Reason}}</td></tr>
+                {{end}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {{else}}
+        <p>{{tr "admin.health.no_queue" "No queued or failed deliveries."}}</p>
+      {{end}}
+    {{else}}
+      <p>{{tr "admin.health.relay_untracked" "Relay deliveries are not tracked for this database."}}</p>
+    {{end}}
+  </section>
+  <section class="card ingestion-diagnostics" aria-labelledby="health-decisions">
+    <h2 id="health-decisions">{{tr "admin.health.decisions" "Recent deduplication decisions"}}</h2>
+    {{range .Health.Decisions}}
+      <details>
+        <summary>
+          {{template "admin/health-time" .At}} · <samp>{{.Value}}</samp> · {{template "admin/health-code" .Reason}}
+          {{if eq .Mode "shadow"}} · {{tr "admin.health.shadow" "Shadow mode"}}{{end}}
+        </summary>
+        <dl>
+          <dt>{{tr "admin.health.rule" "Rule version"}}</dt><dd>{{template "admin/health-code" .Rule}}</dd>
+          <dt>{{tr "admin.health.precision" "Time precision"}}</dt><dd>{{template "admin/health-code" .Precision}}</dd>
+          {{if .CandidateCount}}<dt>{{tr "admin.health.candidates" "Candidates recorded"}}</dt><dd>{{.CandidateCount}}</dd>{{end}}
+          {{if .DeltaSeconds}}<dt>{{tr "admin.health.delta" "Time difference (seconds)"}}</dt><dd>{{.DeltaSeconds}}</dd>{{end}}
+          {{if .TrustedExternalID}}<dt>{{tr "admin.health.external_id" "Trusted external ID"}}</dt>
+            <dd>{{tr "admin.health.recorded" "Recorded"}}</dd>{{end}}
+          {{if eq .ReleaseDiffers "1"}}<dt>{{tr "media.album" "Album"}}</dt>
+            <dd>{{tr "admin.health.release_differs" "Title differs from the MusicBrainz release"}}</dd>{{end}}
+          {{if .RecordingMatch}}<dt>{{tr "admin.health.recording_match" "Recording ID matches"}}</dt>
+            <dd>{{if eq .RecordingMatch "1"}}{{tr "admin.health.yes" "Yes"}}{{else}}{{tr "admin.health.no" "No"}}{{end}}</dd>{{end}}
+        </dl>
+      </details>
+    {{else}}
+      <p>{{tr "admin.health.no_decisions" "No deduplication decisions recorded."}}</p>
+    {{end}}
+  </section>
+{{end}}
+
+{{define "admin/health-time"}}<time datetime="{{.Format "2006-01-02T15:04:05Z07:00"}}">{{.Format "2006-01-02 15:04:05 MST"}}</time>{{end}}
+{{define "admin/health-unknown"}}{{tr "admin.listen.unknown_client" "Not recorded"}}{{end}}
+{{define "admin/health-code"}}{{if .}}<samp>{{.}}</samp>{{else}}{{template "admin/health-unknown"}}{{end}}{{end}}
+{{define "admin/health-delivery"}}
+  {{- if eq . "untracked"}}{{tr "admin.health.untracked" "Not tracked"}}
+  {{- else if eq . "not_queued"}}{{tr "admin.health.not_queued" "Not queued"}}
+  {{- else}}{{template "admin/health-code" .}}{{end -}}
+{{end}}

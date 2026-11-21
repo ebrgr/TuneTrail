@@ -134,6 +134,10 @@
   cursor:pointer;
   font-weight:500
 }
+/* Keep long diagnostic values inside the profile card or listen dialog. */
+.ingestion-diagnostics {
+  overflow-wrap:anywhere
+}
 .admin-main code {
   overflow-wrap:anywhere;
   user-select:all

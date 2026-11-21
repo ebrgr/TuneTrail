@@ -83,16 +83,21 @@ type RelayDeliveryStatus struct {
 	Reason                                string
 }
 
+// Relay projections treat work fenced by a previous destination as failed.
+const relayFenced = `o.relay_generation<>d.generation AND (o.state IN ('pending','retryable') OR json_extract(o.result,'$.reason')='queue_capacity')`
+const relayProjectedState = `CASE WHEN ` + relayFenced + ` THEN 'failed' ELSE o.state END`
+const relayProjectedReason = `CASE WHEN ` + relayFenced + ` THEN 'destination_changed'
+	ELSE coalesce(json_extract(o.result,'$.reason'),json_extract(o.result,'$.class'),'') END`
+
 // RelayDeliveries reads a stable page of delivery state for the requested profile.
 // Only current-generation work can appear pending. Old open work is projected
 // as destination_changed even before cleanup materializes the failure.
 func (s *Sqlite) RelayDeliveries(ctx context.Context, profile int32, after string) ([]RelayDeliveryStatus, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT o.id,o.event_id,
-		CASE WHEN o.relay_generation<>d.generation AND (o.state IN ('pending','retryable') OR json_extract(o.result,'$.reason')='queue_capacity') THEN 'failed' ELSE o.state END,
+		`+relayProjectedState+`,
 		o.attempt_count,o.last_attempt_at,CASE WHEN o.state='sent' THEN o.closed_at END,
 		CASE WHEN o.relay_generation=d.generation THEN o.next_attempt_at END,
-		CASE WHEN o.relay_generation<>d.generation AND (o.state IN ('pending','retryable') OR json_extract(o.result,'$.reason')='queue_capacity') THEN 'destination_changed'
-		ELSE coalesce(json_extract(o.result,'$.reason'),json_extract(o.result,'$.class'),'') END
+		`+relayProjectedReason+`
 		FROM outbox o JOIN relay_destinations d USING(profile_id)
 		WHERE o.profile_id=? AND o.destination_id='relay:'||? AND o.format_version>0 AND o.id>?
 		ORDER BY o.id LIMIT 100`, profile, profile, after)

@@ -2,6 +2,7 @@
   "admin/templates/admin.html": "templates/admin/admin.html",
   "admin/templates/catalog-review.html": "templates/admin/catalog-review.html",
   "admin/templates/head.html": "templates/shared/head.html",
+  "admin/templates/ingest-health.html": "templates/admin/ingest-health.html",
   "admin/templates/manage.html": "templates/admin/manage.html",
   "admin/templates/nav.html": "templates/shared/nav.html",
   "admin/templates/profile-delete.html": "templates/admin/profile-delete.html",

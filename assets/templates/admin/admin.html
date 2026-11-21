@@ -3,6 +3,7 @@
   <html lang="{{if .Locale}}{{.Locale.Tag}}{{else}}en{{end}}" data-theme="{{defaultTheme}}">
     <head>
       {{$title := tr "ui.account" "Account"}}
+      {{- if .Health}}{{$title = tr "admin.health.title" "Ingestion health"}}{{end}}
       {{if .SignOut}}{{$title = tr "admin.sign_out.title" "End this session in this browser"}}{{end}}
       {{template "partial/head" (head "admin" (printf "%s — TuneTrail" $title))}}
     </head>
@@ -20,6 +21,7 @@
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
           <h1>{{- if .SignOut}}{{tr "admin.sign_out.title" "End this session in this browser"}}
+            {{- else if .Health}}{{tr "admin.health.title" "Ingestion health"}}
             {{- else if .Login}}{{tr "ui.sign_in" "Sign in"}}
             {{- else if .Error}}{{tr "ui.request_status" "Request status"}}
             {{- else if eq .Section "account"}}{{tr "nav.my_account" "My account"}}
@@ -34,7 +36,9 @@
           {{if .Notice}}
             <p role="status">{{.Notice}}</p>
           {{end}}
-          {{if .IssuedToken}}
+          {{if .Health}}
+            {{template "admin/ingest-health" .}}
+          {{else if .IssuedToken}}
             <p>{{tr "admin.account.copy_token" "Copy this token now. Give it and the username to the account owner."}}</p>
             <p><code>{{.IssuedToken}}</code></p>
             <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
@@ -136,6 +140,7 @@
                   <a href="#keys">{{tr "admin.text.keys" "Keys"}}</a>
                   <a href="#import">{{tr "admin.text.import_export" "Import / export"}}</a>
                   <a href="#relay">{{tr "admin.text.relay" "Relay"}}</a>
+                  <a href="/admin/health?profile={{.ID}}">{{icon "Info"}} {{tr "admin.health.nav" "Health"}}</a>
                 </nav>
                 <section id="details">
                   <h2>{{.DisplayName}}</h2>

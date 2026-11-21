@@ -43,6 +43,7 @@ type Store interface {
 	db.ProfileStore
 	db.ImageStore
 	db.ExportStore
+	db.IngestHealthStore
 	importer.UploadStore
 }
 
@@ -109,6 +110,7 @@ type view struct {
 	Profile                             *models.ListeningProfile
 	Keys                                []models.ApiKey
 	RelayURL, CSRF, Next, Notice, Error string
+	Health                              *db.IngestHealth
 	RelayState                          *relay.ProfileView
 	Login, LogoutOnly, SignOut          bool
 	Section                             string
@@ -236,6 +238,11 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path == "/admin/login" && r.Method == "POST" {
 		h.login.ServeHTTP(w, r)
+		return
+	}
+	// Health has its own session and profile authorization before diagnostics.
+	if r.URL.Path == "/admin/health" {
+		h.healthPage(w, r)
 		return
 	}
 	if r.URL.Path == "/admin/settings" && r.Method == "GET" {

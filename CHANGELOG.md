@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Profile owners and root can inspect recent ingestion sources, deduplication decisions, and relay failures, and open a listen’s provenance from its management page (ISSUE-083).
+
 ## [0.51] - 2026-11-21
 
 - The sign-out item in the menu is now labeled “Sign out” without the ellipsis and shows the exit icon like the other items (ISSUE-180).

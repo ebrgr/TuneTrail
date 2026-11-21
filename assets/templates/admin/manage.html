@@ -240,6 +240,9 @@
                 <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_removal_of_this_listen"
                   "Confirm removal of this listen"}}</label>
                 <button>{{tr "admin.text.delete_listen" "Delete listen"}}</button>
+                <a href="/{{$.Profile.Slug}}/manage/track/{{$.ID}}/listen?listen_at={{.Time.Unix}}&amp;tz={{$.Timezone}}#why-this-listen">
+                  {{tr "admin.health.why" "Why is this listen here?"}}
+                </a>
               </form>
             {{else}}
               <p>{{tr "admin.text.no_recent_listens_for_this_profile" "No recent listens for this profile."}}</p>
@@ -338,6 +341,21 @@
                 <dt>{{tr "admin.listen.client" "Client"}}</dt>
                 <dd>{{if .FocusListen.Client}}{{.FocusListen.Client}}{{else}}{{tr "admin.listen.unknown_client" "Not recorded"}}{{end}}</dd>
               </dl>
+              {{/* Provenance is rendered only on the session-protected listen document. */}}
+              <details id="why-this-listen" class="ingestion-diagnostics" open>
+                <summary>{{tr "admin.health.why" "Why is this listen here?"}}</summary>
+                {{range .Provenance}}
+                  <dl class="listen-details">
+                    <dt>{{tr "admin.health.source" "Source"}}</dt><dd><samp>{{.Origin}}</samp></dd>
+                    <dt>{{tr "admin.health.received" "Received"}}</dt>
+                    <dd>{{if .Received}}{{template "admin/health-time" .Received}}{{else}}{{template "admin/health-unknown"}}{{end}}</dd>
+                    <dt>{{tr "admin.health.precision" "Time precision"}}</dt><dd>{{template "admin/health-code" .Precision}}</dd>
+                    <dt>{{tr "admin.health.rule" "Rule version"}}</dt><dd>{{template "admin/health-code" .Rule}}</dd>
+                    <dt>{{tr "admin.health.reason" "Reason code"}}</dt><dd>{{template "admin/health-code" .Reason}}</dd>
+                    <dt>{{tr "admin.health.delivery" "Relay delivery"}}</dt><dd>{{template "admin/health-delivery" .Delivery}}</dd>
+                  </dl>
+                {{end}}
+              </details>
               <form method="post" action="/{{.Profile.Slug}}/manage/track/{{.ID}}/listen-delete">
                 <input type="hidden" name="csrf_token" value="{{.CSRF}}">
                 {{if .Submission}}

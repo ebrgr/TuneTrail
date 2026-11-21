@@ -35,6 +35,13 @@ func SafeReturn(raw string) string {
 		n, e := strconv.ParseInt(v, 10, 32)
 		return e == nil && n > 0 && n <= max
 	}
+	// Health returns may select exactly one canonical profile ID.
+	if u.Path == "/admin/health" {
+		if len(q) == 0 || len(q) == 1 && len(q["profile"]) == 1 && positive(q.Get("profile"), 2147483647) {
+			return u.String()
+		}
+		return ""
+	}
 	adminPage := u.Path == "/admin"
 	if !adminPage && u.Path != "/" {
 		p := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")

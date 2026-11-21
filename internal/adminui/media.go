@@ -40,6 +40,7 @@ type mediaView struct {
 	SuggestedURL                    string
 	MergeQuery                      string
 	MergeCandidates                 []mergeCandidate
+	Provenance                      []db.ListenProvenance
 	FocusListen                     *models.Listen
 	HistoryReturn                   string
 	ArtistQuery                     string
@@ -417,6 +418,8 @@ func (h *Handler) mediaPage(w http.ResponseWriter, r *http.Request, identity adm
 								err = db.ErrNotFound
 							} else {
 								v.FocusListen = found.Items[0]
+								// Read provenance with the authorized profile, even for a public history.
+								v.Provenance, err = h.store.ListenProvenance(ctx, profile.ID, id, stamp)
 							}
 						}
 					}
