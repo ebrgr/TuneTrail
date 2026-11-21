@@ -888,30 +888,13 @@
   
     <section aria-labelledby="relay-exceptions">
       <h2 id="relay-exceptions">Relay exceptions by destination</h2>
+      <p>Global settings apply to every profile. This button allows only this destination.</p>
       
         <article class="server-setting">
           <h3>Fictional Alpha</h3>
           <p>No relay configured</p>
           
           
-          <form method="post" action="/admin/settings/relay">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="profile" value="1">
-            
-  <label>Host and port
-    <input name="host_port" value="" placeholder="relay.example:443" required></label>
-  <label>Reserved CIDR
-    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
-  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
-  
-  <label><input type="checkbox" name="allow_http" value="1">
-    Permit HTTP</label>
-  <label><input type="checkbox" name="allow_private" value="1">
-    Permit private network</label>
-
-            <button name="operation" value="add">Add exception</button>
-          </form>
         </article>
       
         <article class="server-setting">
@@ -919,24 +902,6 @@
           <p>No relay configured</p>
           
           
-          <form method="post" action="/admin/settings/relay">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="profile" value="2">
-            
-  <label>Host and port
-    <input name="host_port" value="" placeholder="relay.example:443" required></label>
-  <label>Reserved CIDR
-    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
-  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
-  
-  <label><input type="checkbox" name="allow_http" value="1">
-    Permit HTTP</label>
-  <label><input type="checkbox" name="allow_private" value="1">
-    Permit private network</label>
-
-            <button name="operation" value="add">Add exception</button>
-          </form>
         </article>
       
         <article class="server-setting">
@@ -944,24 +909,6 @@
           <p>No relay configured</p>
           
           
-          <form method="post" action="/admin/settings/relay">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="profile" value="3">
-            
-  <label>Host and port
-    <input name="host_port" value="" placeholder="relay.example:443" required></label>
-  <label>Reserved CIDR
-    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
-  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
-  
-  <label><input type="checkbox" name="allow_http" value="1">
-    Permit HTTP</label>
-  <label><input type="checkbox" name="allow_private" value="1">
-    Permit private network</label>
-
-            <button name="operation" value="add">Add exception</button>
-          </form>
         </article>
       
         <article class="server-setting">
@@ -969,24 +916,6 @@
           <p>No relay configured</p>
           
           
-          <form method="post" action="/admin/settings/relay">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="profile" value="4">
-            
-  <label>Host and port
-    <input name="host_port" value="" placeholder="relay.example:443" required></label>
-  <label>Reserved CIDR
-    <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
-  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
-  
-  <label><input type="checkbox" name="allow_http" value="1">
-    Permit HTTP</label>
-  <label><input type="checkbox" name="allow_private" value="1">
-    Permit private network</label>
-
-            <button name="operation" value="add">Add exception</button>
-          </form>
         </article>
       
     </section>
