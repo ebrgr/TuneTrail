@@ -377,7 +377,8 @@
             
               
                 <h2>Relay</h2>
-                <p>Forbidden ranges stay blocked. Global permissions override destination exceptions. HTTP and reserved networks are blocked by default.</p>
+                <p>Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions.</p>
+                <p>Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions.</p>
               
               <section class="server-setting">
                 <label for="setting-RELAY_ALLOW_HTTP">Allow relay over HTTP</label>
@@ -396,7 +397,7 @@
                     
                   </select>
                 
-                <p id="hint-RELAY_ALLOW_HTTP">Allows cleartext relay requests instance-wide. Restart to apply.</p>
+                <p id="hint-RELAY_ALLOW_HTTP">Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.</p>
                 
                 
                   <dl class="server-setting-state">
@@ -440,7 +441,7 @@
                     
                   </select>
                 
-                <p id="hint-RELAY_ALLOW_PRIVATE_NETWORK">Allows relay requests to reserved networks instance-wide. Permanently forbidden endpoints stay blocked. Restart to apply.</p>
+                <p id="hint-RELAY_ALLOW_PRIVATE_NETWORK">Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.</p>
                 
                 
                   <dl class="server-setting-state">
@@ -902,6 +903,8 @@
     <input name="host_port" value="" placeholder="relay.example:443" required></label>
   <label>Reserved CIDR
     <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
+  
   <label><input type="checkbox" name="allow_http" value="1">
     Permit HTTP</label>
   <label><input type="checkbox" name="allow_private" value="1">
@@ -925,6 +928,8 @@
     <input name="host_port" value="" placeholder="relay.example:443" required></label>
   <label>Reserved CIDR
     <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
+  
   <label><input type="checkbox" name="allow_http" value="1">
     Permit HTTP</label>
   <label><input type="checkbox" name="allow_private" value="1">
@@ -948,6 +953,8 @@
     <input name="host_port" value="" placeholder="relay.example:443" required></label>
   <label>Reserved CIDR
     <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
+  
   <label><input type="checkbox" name="allow_http" value="1">
     Permit HTTP</label>
   <label><input type="checkbox" name="allow_private" value="1">
@@ -971,6 +978,8 @@
     <input name="host_port" value="" placeholder="relay.example:443" required></label>
   <label>Reserved CIDR
     <input name="cidr" value="" placeholder="192.168.1.10/32"></label>
+  <p>Prefer a narrow CIDR. IPv4 ranges wider than /24 or IPv6 ranges wider than /56 expose a larger network.</p>
+  
   <label><input type="checkbox" name="allow_http" value="1">
     Permit HTTP</label>
   <label><input type="checkbox" name="allow_private" value="1">
