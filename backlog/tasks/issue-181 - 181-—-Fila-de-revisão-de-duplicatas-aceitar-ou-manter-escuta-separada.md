@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-21T23:32:00Z'
+updated_date: '2026-11-21T23:35:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -75,6 +75,15 @@ created: 2026-11-21T23:32:00Z
 ---
 
 Reviewer: sem BUG; 4 RISCOs (padrão da flag Revisar com a flag desligada aceita como separada; janela de 10 mil recibos em fontes; autor da decisão sem ID; migração recria índice legado). Testes sqlite -race, engine, adminui e webui OK. Ver backlog/evidencias/issue-181/PARECER-REVIEWER.md.
+
+---
+
+author: advisor
+created: 2026-11-21T23:35:00Z
+
+---
+
+Advisor (effort high): REPROVADO COM RESSALVAS. Falha crítica: com o Revisar desligado (padrão), uma reentrega no mesmo segundo é aceita como nova escuta (finishOccurrence ignora os candidatos), contrariando o doc-039 e o resolvedor legado. Melhorias: ação em massa na fila, resumo por fonte no lugar da janela de 10 mil recibos (ISSUE-184), autor da decisão. Ver backlog/evidencias/issue-181/PARECER-ADVISOR.md.
 
 ---
 <!-- COMMENTS:END -->
