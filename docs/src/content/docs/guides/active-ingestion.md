@@ -120,13 +120,20 @@ an old URL that arrives after the change leaves the item failed as
 `destination_changed`, even if the old server accepted it. Explicit retry
 can send it to the new destination.
 
-For a relay on your local network, sign in as an instance administrator and
-open **Server → Relay exceptions by destination**. Add the relay's configured
-host and port. Enable HTTP with an exception that has an empty CIDR if the relay
-uses cleartext. For a private address, add the narrowest reserved CIDR that
-contains the destination, such as a single address with `/32` or `/128`.
-A private HTTP relay needs both permissions. Use **Revalidate and resume**
-after saving the relay and its exceptions.
+For a local relay, save its URL and sign in as an instance administrator.
+Open the profile's relay settings or **Server → Relay exceptions by
+destination**, choose **Allow this relay**, then confirm the address, port, and
+permissions shown. The button grants only the HTTP or private-network
+permissions that this destination needs and resumes delivery. For a DNS name,
+the confirmation lists its current addresses. HTTP permission follows the
+configured name and port. Private access stays limited to the listed
+addresses, so confirm again if the private address changes. Loopback and
+link-local always require a destination exception. Cloud metadata and other
+forbidden ranges are never eligible. The official ListenBrainz service and
+other public HTTPS destinations need no exception.
+
+The panel lists and removes existing exceptions. Advanced CIDR rules are
+available through the root relay permissions API.
 
 **Upgrading from v11:** By default, HTTP and LAN relays on non-administrator
 profiles stop delivering until an instance administrator grants the required
