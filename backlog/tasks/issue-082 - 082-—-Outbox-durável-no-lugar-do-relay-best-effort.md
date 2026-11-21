@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T11:30:00Z'
+updated_date: '2026-11-21T11:36:00Z'
 labels:
   - ingestao
   - api
@@ -162,6 +162,15 @@ created: 2026-11-21T11:30:00Z
 ---
 
 Decisão do usuário de 21/11/2026 registrada no PLANO v6 e no ENSAIO-E4: backups físicos e cópias integrais podem preservar o token do relay em texto puro. Fila, tabelas de entrega, payload, logs, GET administrativo, exportação de histórico e evidências continuam sem token. DEPLOYMENT e o guia explicam a sensibilidade e a criação das cópias automáticas com modo 0600, confirmado no código. AC1 reverificado com replay v0.48 e testes de upgrade e recuperação. make check passou (13/13 E2E). Status Em andamento até o parecer do Reviewer. AC4 pendente.
+
+---
+
+author: Codex
+created: 2026-11-21T11:36:00Z
+
+---
+
+Retorno do Reviewer sobre as emendas pós-Advisor e a E4 aplicado. A documentação de backup foi commitada em 310bc6f e relida. Aliases Compose com sublinhado funcionam no upgrade, na allowlist e no dialer, preservando a sanitização do log. Chaves globais mantêm as pausas que precisam de exceção local. Guias, CHANGELOG, PLANO e ENSAIO-E4 registram janela de upgrade, limite do ensaio TLS e o SIGTERM de 4,011 s. go test dirigido, race, graphify AST e make check passaram (13/13 E2E). Aguardando releitura do Reviewer com status Em andamento.
 
 ---
 <!-- COMMENTS:END -->
