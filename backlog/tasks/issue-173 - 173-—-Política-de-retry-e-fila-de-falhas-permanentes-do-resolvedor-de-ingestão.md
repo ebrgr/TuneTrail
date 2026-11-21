@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T18:20:00Z'
-updated_date: '2026-11-21T16:46:00Z'
+updated_date: '2026-11-21T18:02:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -79,6 +79,15 @@ created: 2026-11-21T16:46:00Z
 ---
 
 Verificação: make check passou (13/13 jornadas E2E), make ui.reference.check conferiu 176 arquivos sem diferenças e os testes focados passaram com -race. Ensaios com trigger e relógio injetado cobriram falha persistente e transitória, esperas de 1/2/4/8 min, retomada após lease, recuperação de escutas após HTTP 200, JSON inválido e migração v12→v13 com backup v12. Testados reprocessamento concorrente e idempotente, dono/root, CSRF, isolamento e ausência de segredos, além das classes de erro R-b. EXPLAIN confirmou os índices parciais do claim e da seção. Chrome verificou layout 1/2/3 colunas, sem rolagem horizontal, com foco e hover em Yuu e Pearl. AC #4 segue pendente do parecer do Advisor. A central está preparada para a seção da 181.
+
+---
+
+author: claude
+created: 2026-11-21T18:02:00Z
+
+---
+
+Reviewer: sem BUG; 3 RISCOs menores (ver backlog/evidencias/ISSUE-173/PARECER-REVIEWER.md). Testes -race OK. AC #4 pendente do Advisor.
 
 ---
 <!-- COMMENTS:END -->
