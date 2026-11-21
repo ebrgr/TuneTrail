@@ -116,27 +116,51 @@ def validate(server):
     with relay_server() as origin:
         host_port = origin.removeprefix("http://")
         relay_settings = '/admin/settings/relay'
-        panel = f.request('GET','/admin/settings')[0]
+        panel = f.request('GET', '/admin/settings')[0]
         assert b'RELAY_ALLOW_HTTP' in panel and b'RELAY_ALLOW_PRIVATE_NETWORK' in panel
-        token_settings = f.token('/admin/settings')
-        form = {'csrf_token':token_settings,'profile':p['id'],'host_port':host_port}
-        f.request('POST',relay_settings,dict(form,operation='add',allow_http='1'),expected=403,
-                  headers={'Origin':'https://untrusted.example'})
-        f.request('POST',relay_settings,dict(form,operation='add',allow_http='1'),expected=303)
-        f.request('POST',relay_settings,dict(form,operation='edit',old_host=host_port,
-                  old_cidr='',old_origin='manual',allow_http='1'),expected=303)
-        f.request('POST',relay_settings,dict(form,operation='add',cidr='127.0.0.1/32',allow_private='1'),expected=303)
-        draft=dict(common,url=origin,token='fictional-token')
-        f.request('POST',prefix+'relay/test',draft,expected=303)
-        assert not server.request('GET',WEB+'/profiles/mara/relay',admin=True)['enabled']
-        f.request('POST',prefix+'relay/save',draft,expected=303)
-        panel=f.request('GET','/admin/settings')[0]
-        assert b'127.0.0.1/32' in panel and b'fictional-token' not in panel
-        f.request('POST',relay_settings,dict(form,operation='resume'),expected=303)
-        f.request('POST',relay_settings,dict(form,operation='remove',old_host=host_port,
-                  old_cidr='127.0.0.1/32',old_origin='manual'),expected=303)
+        assert b'Allow this relay' not in panel and b'Reserved CIDR' not in panel
+        form = {'csrf_token': csrf(panel), 'profile': p['id']}
+        draft = dict(common, url=origin, token='fictional-token')
+        for endpoint, forbidden in (('http://169.254.169.254', True), ('https://203.0.114.2', False)):
+            f.request('POST', prefix+'relay/save', dict(draft, url=endpoint), expected=303)
+            page = f.request('GET', '/admin/settings')[0]
+            assert b'Allow this relay' not in page
+            if forbidden:
+                assert b'permanently forbidden' in page
+        f.request('POST', prefix+'relay/save', draft, expected=303)
+        panel = f.request('GET', '/admin/settings')[0]
+        assert b'Allow this relay' in panel and b'HTTP and private network' in panel
+        f.request('POST', relay_settings, dict(form, operation='preview'), expected=403,
+                  headers={'Origin': 'https://untrusted.example'})
 
-        f.request('POST',prefix+'relay/remove',common,expected=303)
+        def preview():
+            page = f.request('POST', relay_settings, dict(form, operation='preview'))[0]
+            assert b'Confirm relay permission' in page and b'loopback or link-local' in page
+            assert b'fictional-token' not in page
+            fence = re.search(rb'name="fence" value="([a-f0-9]+)"', page)
+            assert fence
+            return dict(form, operation='allow', fence=fence[1].decode())
+
+        stale = preview()
+        f.request('POST', prefix+'relay/save', dict(draft, url=origin+'/changed'), expected=303)
+        f.request('POST', relay_settings, stale, expected=303)
+        panel = f.request('GET', '/admin/settings')[0]
+        assert b'confirm again' in panel and b'127.0.0.1/32' not in panel
+        f.request('POST', prefix+'relay/save', draft, expected=303)
+        f.request('POST', relay_settings, preview(), expected=303)
+        panel = f.request('GET', '/admin/settings')[0]
+        assert b'127.0.0.1/32' in panel and b'fictional-token' not in panel
+        assert b'Allow this relay' not in panel
+        f.request('POST', relay_settings, dict(form, operation='resume'), expected=303)
+        f.request('POST', relay_settings, dict(form, operation='remove', old_host=host_port,
+                  old_cidr='127.0.0.1/32', old_origin='manual'), expected=303)
+        panel = f.request('GET', '/admin/settings')[0]
+        assert b'Allow this relay' in panel and b'127.0.0.1/32' not in panel
+        server.request('PUT', WEB+'/profiles/mara/relay/permissions',
+                       {'host_port': host_port, 'cidr': '127.0.0.0/24', 'allow_private': True},
+                       admin=True, expected=204)
+        assert b'127.0.0.0/24' in f.request('GET', '/admin/settings')[0]
+        f.request('POST', prefix+'relay/remove', common, expected=303)
     # Five fictional source formats; file identity cannot change the target.
     fixtures={
         'spotify':b'[{"ts":"2024-01-01T12:00:00Z","master_metadata_track_name":"S Track","master_metadata_album_artist_name":"S Artist","master_metadata_album_album_name":"S Album","reason_end":"trackdone"}]',
