@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.55] - 2026-11-21
+
 - Top tracks are grouped by recording by default and can be split by release, including listens with an unknown release (ISSUE-135).
 
 ## [0.54] - 2026-11-21

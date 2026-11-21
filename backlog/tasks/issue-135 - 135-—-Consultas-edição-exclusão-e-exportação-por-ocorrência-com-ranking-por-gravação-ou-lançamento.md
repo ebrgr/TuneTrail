@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-21T22:24:00Z'
+updated_date: '2026-11-21T22:25:00Z'
 labels:
   - catalogo
   - ui
@@ -111,6 +111,15 @@ created: 2026-11-21T22:24:00Z
 ---
 
 Aceite do usuário em 21/11/2026: aceito sem Advisor e autorizado a publicar (sem push).
+
+---
+
+author: ebrgr
+created: 2026-11-21T22:25:00Z
+
+---
+
+Publicação: versão 0.55 (tag `v0.55`), branch `feat/issue-135-consultas-edicao-exclusao-e-exportacao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
