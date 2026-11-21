@@ -75,6 +75,9 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 10 {
 		pattern = ".pre-occurrence-writer-*.bak"
 	}
+	if version == 11 {
+		pattern = ".pre-relay-delivery-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err

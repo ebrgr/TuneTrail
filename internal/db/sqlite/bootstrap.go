@@ -19,7 +19,7 @@ import (
 )
 
 // currentSchemaVersion is the latest embedded migration understood by bootstrap.
-const currentSchemaVersion = 11
+const currentSchemaVersion = 12
 
 // regularFile rejects links and special files before opening database components.
 func regularFile(path string) (bool, error) {
@@ -330,7 +330,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 			if err := bootstrapPhase("inplace-backup-synced"); err != nil {
 				return "", err
 			}
-			if err := goose.Up(db, "."); err != nil {
+			if err := migrateDatabase(db); err != nil {
 				return "", err
 			}
 			if err := bootstrapPhase("inplace-migrated"); err != nil {
@@ -446,7 +446,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 	}
 	goose.SetBaseFS(migrations.Files)
 	if err = goose.SetDialect("sqlite3"); err == nil {
-		err = goose.Up(db, ".")
+		err = migrateDatabase(db)
 	}
 	if err == nil {
 		err = bootstrapPhase("temp-migrated")

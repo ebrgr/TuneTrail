@@ -141,6 +141,10 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 		return err
 	}
 	if profileID.Valid {
+		// Preserve the endpoint path while storing a canonical authority.
+		if canonical, _, normalizeErr := canonicalRelay(url); normalizeErr == nil {
+			url = canonical
+		}
 		if _, err := tx.ExecContext(ctx, `INSERT INTO profile_relays(profile_id,url,token) VALUES (?,?,?) ON CONFLICT(profile_id) DO NOTHING`, profileID.Int64, url, token); err != nil {
 			return err
 		}
@@ -157,6 +161,10 @@ func (s *Sqlite) SetProfileRelay(ctx context.Context, id int32, url, token strin
 	if url == "" && token == "" {
 		_, err := s.db.ExecContext(ctx, `DELETE FROM profile_relays WHERE profile_id=?`, id)
 		return err
+	}
+	// Normalize cosmetic URL changes before the destination trigger compares configurations.
+	if canonical, _, normalizeErr := canonicalRelay(url); normalizeErr == nil {
+		url = canonical
 	}
 	_, err := s.db.ExecContext(ctx, `INSERT INTO profile_relays(profile_id,url,token) VALUES (?,?,?) ON CONFLICT(profile_id) DO UPDATE SET url=excluded.url,token=excluded.token`, id, url, token)
 	// Expose an incompatible relay configuration as an administrative conflict.

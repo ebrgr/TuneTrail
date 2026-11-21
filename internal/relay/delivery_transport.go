@@ -63,13 +63,8 @@ func dialAllowed(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) boo
 		return false
 	}
 	ip := address.Addr().Unmap().WithZone("")
-	if ip.IsUnspecified() || ip.IsMulticast() || ip == netip.AddrFrom4([4]byte{255, 255, 255, 255}) {
+	if IsForbiddenAddress(ip) {
 		return false
-	}
-	for _, prefix := range forbiddenPrefixes {
-		if prefix.Contains(ip) {
-			return false
-		}
 	}
 	if allow != nil {
 		// The transport supplies an explicit port even for default scheme ports.
@@ -81,11 +76,53 @@ func dialAllowed(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) boo
 			}
 		}
 	}
-	if plainHTTP || !ip.IsGlobalUnicast() {
-		return false
+	return !plainHTTP && !IsReservedAddress(ip)
+}
+
+// IsForbiddenAddress reports addresses that operator exceptions cannot authorize.
+func IsForbiddenAddress(ip netip.Addr) bool {
+	ip = ip.Unmap().WithZone("")
+	if !ip.IsValid() || ip.IsUnspecified() || ip.IsMulticast() || ip == netip.AddrFrom4([4]byte{255, 255, 255, 255}) {
+		return true
+	}
+	for _, prefix := range forbiddenPrefixes {
+		if prefix.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsReservedAddress reports addresses that require an operator exception.
+func IsReservedAddress(ip netip.Addr) bool {
+	ip = ip.Unmap().WithZone("")
+	if !ip.IsGlobalUnicast() {
+		return true
 	}
 	for _, prefix := range reservedPrefixes {
 		if prefix.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
+// ValidExceptionPrefix rejects default routes and networks overlapping forbidden ranges.
+func ValidExceptionPrefix(prefix netip.Prefix) bool {
+	if !prefix.IsValid() || prefix.Bits() == 0 || prefix.Addr().Is4In6() || IsForbiddenAddress(prefix.Addr()) {
+		return false
+	}
+	for _, blocked := range forbiddenPrefixes {
+		if prefix.Overlaps(blocked) {
+			return false
+		}
+	}
+	for _, blocked := range [...]netip.Prefix{
+		netip.MustParsePrefix("224.0.0.0/4"), netip.MustParsePrefix("ff00::/8"),
+		netip.MustParsePrefix("0.0.0.0/32"), netip.MustParsePrefix("::/128"),
+		netip.MustParsePrefix("255.255.255.255/32"), netip.MustParsePrefix("::ffff:0:0/96"),
+	} {
+		if prefix.Overlaps(blocked) {
 			return false
 		}
 	}

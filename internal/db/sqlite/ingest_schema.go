@@ -18,7 +18,7 @@ func validateSchemaLayout(db *sql.DB, version int) error {
 	defer reference.Close()
 	reference.SetMaxOpenConns(1)
 	// Build the reference through the requested version, including the occurrence ingest guards.
-	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql", "006_active_admin_guards.sql", "007_account_tokens.sql", "008_recording_identity.sql", "009_ingest_activation.sql", "010_occurrence_ingest.sql", "011_occurrence_writer_guards.sql"}[:version] {
+	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql", "006_active_admin_guards.sql", "007_account_tokens.sql", "008_recording_identity.sql", "009_ingest_activation.sql", "010_occurrence_ingest.sql", "011_occurrence_writer_guards.sql", relayMigration}[:version] {
 		ddl, err := migrations.Files.ReadFile(name)
 		if err != nil {
 			return fmt.Errorf("read schema reference: %w", err)
@@ -58,7 +58,7 @@ func validateIdentityObjects(db *sql.DB, expected map[[2]string]struct{}) error 
 	rows, err := db.Query(`SELECT type,name FROM sqlite_master WHERE sql IS NOT NULL
 		AND tbl_name IN ('tracks','recordings','occurrences','event_origins','listens','ingest_events',
 		                 'ingest_event_details','ingest_observations','ingest_revisions','outbox','outbox_details',
-		                 'profile_ingest_flags','occurrence_credits','profile_relays')`)
+		                 'profile_ingest_flags','occurrence_credits','profile_relays','relay_destinations','relay_allowlist','relay_delivery_gate')`)
 	if err != nil {
 		return fmt.Errorf("inspect identity schema: %w", err)
 	}
