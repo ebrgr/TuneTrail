@@ -47,6 +47,9 @@ func (*fixtureStore) RenewRelayBatch(context.Context, sqlite.RelayBatch, time.Ti
 	return true, nil
 }
 func (s *fixtureStore) FinishRelayBatch(ctx context.Context, _ sqlite.RelayBatch, items []sqlite.RelayItem, result relay.Result, _ time.Time, release bool) (bool, error) {
+	if err := ctx.Err(); err != nil && !release {
+		return false, err
+	}
 	if release {
 		s.releases++
 	}
@@ -158,4 +161,16 @@ func TestWorkerPacesFailedClaims(t *testing.T) {
 			require.Equal(t, now, <-store.calls)
 		})
 	}
+}
+
+// A successful response remains settled when shutdown cancels the request context.
+func TestWorkerSettlesSuccessAfterCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	store := &fixtureStore{outcomes: map[string]relay.Class{}}
+	items := []sqlite.RelayItem{{ID: "accepted"}}
+	ok, err := finishAttempt(ctx, store, sqlite.RelayBatch{}, items, relay.Result{Class: relay.Success}, time.Now())
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Equal(t, relay.Success, store.outcomes["accepted"])
 }

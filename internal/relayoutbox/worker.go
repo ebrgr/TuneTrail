@@ -143,7 +143,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		}
 		posts++
 		result := sender.Deliver(ctx, base+"/submit-listens", token, body)
-		if ctx.Err() != nil {
+		if result.Class != relay.Success && ctx.Err() != nil {
 			return
 		}
 		diagnostic := result.Diagnostic
@@ -158,7 +158,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		if result.Class == relay.Success {
 			result.Diagnostic = relay.Describe(base, "", "")
 		}
-		settled, err := store.FinishRelayBatch(ctx, batch, items, result, now(), false)
+		settled, err := finishAttempt(ctx, store, batch, items, result, now())
 		if err != nil || !settled {
 			return
 		}
@@ -178,4 +178,14 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		}
 	}
 	return progress
+}
+
+// Record an acknowledged response even when shutdown canceled the request context.
+func finishAttempt(ctx context.Context, store Store, batch sqlite.RelayBatch, items []sqlite.RelayItem, result relay.Result, at time.Time) (bool, error) {
+	if result.Class == relay.Success {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(context.WithoutCancel(ctx), time.Second)
+		defer cancel()
+	}
+	return store.FinishRelayBatch(ctx, batch, items, result, at, false)
 }
