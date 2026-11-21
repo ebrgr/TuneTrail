@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- The sign-out item in the menu is now labeled “Sign out” without the ellipsis and shows the exit icon like the other items (ISSUE-180).
+
 ## [0.50] - 2026-11-21
 
 - Artist, album and track headers use a color derived from the cover again, instead of always showing the same blue-gray fallback (ISSUE-179).

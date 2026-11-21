@@ -54,7 +54,7 @@ func TestNavigationByPermission163(t *testing.T) {
 	for _, path := range []string{"/admin", "/admin/settings", "/admin?profile=2", "/admin?section=account&profile=2", scope + "/manage/track/12/edit"} {
 		denied := taskRequest139(a, "GET", path, owner, nil, nil)
 		require.Equal(t, 403, denied.Code, path)
-		for _, want := range []string{account, "Directory", "Sign out…"} {
+		for _, want := range []string{account, "Directory", "Sign out"} {
 			require.Contains(t, denied.Body.String(), want, path)
 		}
 		for _, hidden := range []string{"/admin/settings", "Source Track", "account/password", "profile/create"} {
