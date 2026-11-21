@@ -1055,3 +1055,32 @@ func TestRelayComposeHostnameUpgrade(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=1 AND pause_class IS NULL"))
 	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE host_port='multi_scrobbler:9078' AND origin='seeded'"))
 }
+
+// TestRelayStartupKeepsLocalPauses verifies that global access only clears matching denials.
+func TestRelayStartupKeepsLocalPauses(t *testing.T) {
+	s, _, _ := migrationDB(t, 12)
+	cases := []struct {
+		pause string
+		keep  bool
+	}{
+		{"policy_blocked:private_network_not_allowed:loopback", true},
+		{"policy_blocked:private_network_not_allowed:link_local", true},
+		{"policy_blocked:seed_skipped_non_admin:reserved", true},
+		{"policy_blocked:private_network_not_allowed:rfc1918", false},
+		{"policy_blocked:http_not_allowed:", false},
+	}
+	for i, tc := range cases {
+		id := i + 1
+		testfixtures.Profile(t, s, id, fmt.Sprintf("profile%d", id), fmt.Sprintf("Profile %d", id), 0)
+		execSQL(t, s, "INSERT INTO relay_destinations(profile_id,pause_class) VALUES(?,?)", id, tc.pause)
+	}
+	require.NoError(t, s.activateRelayDelivery(t.Context(), true, true))
+	for i, tc := range cases {
+		want := 0
+		if tc.keep {
+			want = 1
+		}
+		require.Equal(t, want, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=? AND pause_class=?", i+1, tc.pause), tc.pause)
+		require.Equal(t, 1-want, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=? AND pause_class IS NULL", i+1), tc.pause)
+	}
+}

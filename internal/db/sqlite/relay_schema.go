@@ -366,10 +366,12 @@ func (s *Sqlite) activateRelayDelivery(ctx context.Context, httpAllowed, private
 		if !httpAllowed && !privateAllowed {
 			return nil
 		}
+		// Global private access does not authorize loopback, link-local, or unclassified seed ranges.
 		_, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET pause_class=NULL,paused_until=NULL,config_version=config_version+1
 			WHERE pause_class='policy_blocked'
 			OR (? AND (pause_class LIKE 'policy_blocked:http_not_allowed:%' OR pause_class='policy_blocked:seed_skipped_non_admin:'))
-			OR (? AND (pause_class LIKE 'policy_blocked:private_network_not_allowed:%' OR pause_class='policy_blocked:seed_skipped_non_admin:reserved'))`, httpAllowed, privateAllowed)
+			OR (? AND pause_class LIKE 'policy_blocked:private_network_not_allowed:%'
+			AND pause_class NOT IN ('policy_blocked:private_network_not_allowed:loopback','policy_blocked:private_network_not_allowed:link_local'))`, httpAllowed, privateAllowed)
 		return err
 	})
 }
