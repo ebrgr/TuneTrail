@@ -42,7 +42,7 @@ def main():
                 stamp=int(time.time())-60;server.request('POST',LBZ+'/submit-listens',scrobble(stamp),token=key)
                 assert entered.wait(5),'relay request did not reach local receiver'
                 start=time.monotonic();server.process.send_signal(signal.SIGTERM)
-                returncode=server.process.wait(timeout=11);duration=time.monotonic()-start
+                returncode=server.process.wait(timeout=8.5);duration=time.monotonic()-start
                 assert returncode==0,'server did not exit cleanly'
                 with sqlite3.connect(server.directory/'tunetrail.db') as db:
                     assert db.execute('SELECT count(*) FROM listens').fetchone()[0]==1

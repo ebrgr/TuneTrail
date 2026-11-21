@@ -217,8 +217,13 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 ## ESTADO — Retorno do Advisor pós-E3 (21/11/2026)
 
 - Obrigatório 1 concluído. Falha de DNS no upgrade ou no bootstrap via ambiente pausa como transitória por 30 s, sem exceção semeada. O dialer decide de novo em cada tentativa.
-- Pendente: política global, texto de segurança, encerramento, diagnósticos e verificação.
+- Pendente: concluir a verificação integrada e registrar no Backlog.
 
 - Obrigatório 2 e D1: permissões globais valem inclusive para donos não-root na entrega durável e no teste de conexão. Prefira exceções. Faixas proibidas nunca são liberadas. Loopback e link-local sempre exigem exceção por destino. Para outros endereços vale global → exceção → bloqueio padrão. A via bruta legada/sombra e playing_now estão fora dessas regras (risco aceito).
 - D6: o sinal interrompe novos claims e sinaliza o resolvedor imediatamente. Admissão e HTTP em voo têm até 4 s em paralelo, e a espera dos workers compartilha o prazo de 8 s. O Compose mantém 30 s de tolerância.
 - Ressalva b: após receber 2xx, a conclusão por CAS usa contexto independente do cancelamento por até 1 s. Sem 2xx confirmado, o cancelamento preserva o caminho de liberação para nova tentativa.
+
+- D5, d e g: o teste de conexão reduz falhas pós-DNS a uma única classe para não-root, salvo autenticação no IP público verificado. O diagnóstico aceita só host ASCII LDH ou IP sem zona. Autoridades IDN usam punycode. O painel alerta para CIDR mais amplo que /24 ou /56, a pausa preventiva após 2xx usa INFO e cada tentativa recebe o snapshot da política global.
+- D3 e D4: a 083 decide a retenção de sent/failed. Manter DisableKeepAlives e medir na E4 bytes por linha e custo TLS (cerca de 3 mil handshakes para 300 mil eventos em lotes de 100), antes de considerar keep-alive por claim.
+- E4 mede ExpireRelayWork com 100 mil linhas abertas sem vencimento e a readmissão queue_capacity. Se a expiração exceder cerca de 50 ms, avaliar o índice parcial por perfil, destino, geração, criação e ID. Nenhum ensaio E4 iniciado.
+- Guia e CHANGELOG registram as reentregas possíveis, a deduplicação conhecida por destino e o impacto do upgrade em relays de perfis comuns. Maloja/multi-scrobbler aguardam confirmação na E4.

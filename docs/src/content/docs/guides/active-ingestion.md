@@ -101,7 +101,20 @@ sources do not create relay deliveries.
 The worker sends up to 100 events at a time. A destination that is unavailable
 or rate-limited pauses independently. Shutdown preserves queued work for the
 next run. Delivery is at least once, so a remote service can receive the same
-event twice if it processed a request before TuneTrail could record success.
+event twice. This can happen after a crash following remote acceptance, a
+failed local commit of the 2xx result, or cancellation while the remote
+outcome is unknown. TuneTrail still tries to record a 2xx observed before
+cancellation.
+
+| Destination | Duplicate handling for an exact re-delivery |
+| --- | --- |
+| ListenBrainz | Unique combination of user, track, and `listened_at`. |
+| Koito | Primary key on `track_id` and `listened_at`. |
+| TuneTrail | v9 deduplicates by profile, track, and `listened_at`. Occurrence mode can instead expose a `pending_duplicate` for review. |
+| Maloja and multi-scrobbler | To be confirmed in the relay trial. |
+
+These keys describe receiver behavior. TuneTrail cannot guarantee that an
+individual destination will suppress a re-delivery.
 Changing the URL stops eligibility for the former destination. A response to
 an old URL that arrives after the change leaves the item failed as
 `destination_changed`, even if the old server accepted it. Explicit retry
@@ -114,6 +127,12 @@ uses cleartext. For a private address, add the narrowest reserved CIDR that
 contains the destination, such as a single address with `/32` or `/128`.
 A private HTTP relay needs both permissions. Use **Revalidate and resume**
 after saving the relay and its exceptions.
+
+**Upgrading from v11:** By default, HTTP and LAN relays on non-administrator
+profiles stop delivering until an instance administrator grants the required
+permissions. The upgrade can seed eligible exceptions for administrator
+profiles only. A DNS lookup failure at startup postpones delivery briefly and
+does not seed an exception. The next attempt applies the current network policy.
 
 The **Relay** section above the exceptions offers two instance-wide permissions.
 Each defaults to false and requires restart. The saved and running values and
@@ -164,6 +183,11 @@ Logical listen exports and relay diagnostics omit credentials.
 Deleting history removes unsent relay work for those events and keeps at most
 30 days of daily aggregate sent counts. Purging all history removes those
 aggregates too.
+
+Shutdown stops new delivery claims and gives in-flight HTTP a bounded grace
+period. The supplied Compose deployment allows 30 seconds for shutdown.
+Outside Compose, Docker's default 10-second stop can interrupt shutdown if the
+host is slow. Configure a longer stop timeout when deploying that way.
 
 ### Relay configuration recovery on schema 12
 

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- **Upgrade action for existing relays:** HTTP and LAN relays on non-administrator profiles stop delivering under the default policy until root grants exceptions. Global private-network access applies to all profiles, while loopback and link-local access always require a destination exception. The durable transport rules do not apply to legacy, shadow, or playing-now forwarding (ISSUE-082).
+- A failed startup DNS lookup delays relay attempts by 30 seconds. Shutdown stops new relay claims immediately, shares an eight-second deadline across the server and workers, and attempts to persist already observed 2xx responses. A crash, failed commit, or ambiguous cancellation may still cause re-delivery. A late 2xx from a previous URL becomes `destination_changed`, and a manual retry uses the new URL (ISSUE-082).
 - The root Server panel now saves relay settings in `conf.toml`. Instance-wide `allow_http` and `allow_private_network` default to off and apply after restart. Root can also manage destination exceptions and revalidate a paused relay using native forms (ISSUE-082).
 - Relay warnings now include a stable reason and the configured host and port, with one warning per profile and reason per minute. Resolved addresses, paths, query strings and tokens are kept out of logs. Root receives actionable validation details; other profiles receive the policy or network class (ISSUE-082).
 
