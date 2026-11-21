@@ -195,3 +195,5 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 
 - Emenda do Reviewer E3 (1/2): 2xx com Remaining=0 usa o maior entre o prazo do servidor e jitter fixo de até 30 s, com piso de 1 s e sem escalar o contador de falhas. Pendente: tratar falhas pré-POST e repetir verificações.
 - Emenda do Reviewer E3 (2/2): claim sem progresso aguarda o próximo tick. Fontes inválidas ficam em `failed/source_invalid`. Configuração inválida pausa o destino com `config_invalid`. Pendente: ressalvas e verificação completa.
+- Retorno do Reviewer E3: a recuperação do resolvedor recebe 2 s adicionais no encerramento e registra aviso se o prazo expirar. Para a 083, fila sem destino retorna `sql.ErrNoRows` e apenas a geração atual fica elegível. A 012 obsoleta é rejeitada pela forma de tabela/trigger, mesmo sem o índice antigo.
+- Decisão R5 aceita pelo usuário: replay ativo de recibo `legacy` após o upgrade suprime o POST bruto. Se o envio falhou na v0.48, esse recibo nunca será entregue pela via ativa.

@@ -3,8 +3,9 @@
 ## [Unreleased]
 
 - Active ListenBrainz ingestion queues accepted events for durable relay delivery. The worker sends bounded batches, retries transient failures with backoff and server rate-limit hints, pauses each destination independently, and preserves queued work on shutdown (ISSUE-082).
-- Durable relay delivery and connection tests use a direct, redirect-free transport. Administrators can allow HTTP and reserved networks separately. Relay settings show the canonical URL and no longer return the saved token (ISSUE-082).
-- SQLite upgrades from v11 to v12 and keeps a `.pre-relay-delivery-*.bak` backup. TuneTrail 0.48 and earlier cannot open v12. Roll back by restoring the v11 backup (ISSUE-082).
+- Replaying a pre-upgrade receipt through active ingestion does not repeat the original raw relay POST. A failed pre-upgrade delivery remains undelivered through the active path (ISSUE-082).
+- Durable relay delivery and connection tests use a direct, redirect-free transport. Administrators can edit HTTP and reserved-network exceptions separately through the profile API. The upgrade seeds eligible existing exceptions only for administrator profiles. Testing a relay over HTTP or at a private address returns 502 until an administrator grants the required exceptions. The admin relay GET returns the canonical URL and omits the saved token (ISSUE-082).
+- SQLite upgrades from v11 to v12 in one direction and keeps a `.pre-relay-delivery-*.bak` backup. TuneTrail 0.48 and earlier cannot open v12. Roll back by restoring the v11 backup (ISSUE-082).
 
 ## [0.48] - 2026-11-20
 

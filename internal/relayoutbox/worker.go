@@ -86,17 +86,30 @@ func poll(ctx, claims context.Context, store Store, now func() time.Time, ticks 
 
 var policyLog struct {
 	sync.Mutex
-	next time.Time
+	next map[int32]time.Time
 }
 
 // logPolicyBlock omits network and request data and limits warnings across workers.
 func logPolicyBlock(ctx context.Context, profile int32, now time.Time) {
 	policyLog.Lock()
 	defer policyLog.Unlock()
-	if now.Before(policyLog.next) {
+	if now.Before(policyLog.next[profile]) {
 		return
 	}
-	policyLog.next = now.Add(time.Minute)
+	if policyLog.next == nil {
+		policyLog.next = make(map[int32]time.Time)
+	}
+	if len(policyLog.next) >= 1024 {
+		for id, deadline := range policyLog.next {
+			if !now.Before(deadline) {
+				delete(policyLog.next, id)
+			}
+		}
+		if len(policyLog.next) >= 1024 {
+			return
+		}
+	}
+	policyLog.next[profile] = now.Add(time.Minute)
 	logger.FromContext(ctx).Warn().Str("class", string(relay.PolicyBlocked)).Int32("profile_id", profile).Msg("Relay delivery paused")
 }
 

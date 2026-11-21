@@ -3,7 +3,6 @@ package engine
 import (
 	"context"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/relay"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
@@ -11,6 +10,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/stretchr/testify/require"
 )
 

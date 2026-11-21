@@ -971,3 +971,40 @@ func TestRelayInvalidStoredPermissionsPausesDestination(t *testing.T) {
 	require.Empty(t, empty.Items)
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE pause_class='config_invalid' AND paused_until IS NULL"))
 }
+
+// TestRelayQueueStatusAbsent distinguishes no destination from an empty configured queue.
+func TestRelayQueueStatusAbsent(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	_, _, _, err := s.RelayQueueStatus(t.Context(), 999)
+	require.ErrorIs(t, err, sql.ErrNoRows)
+	count, until, reason, err := s.RelayQueueStatus(t.Context(), 1)
+	require.NoError(t, err)
+	require.Zero(t, count)
+	require.False(t, until.Valid)
+	require.Empty(t, reason)
+}
+
+// TestRelayObsoleteArchiveLayout rejects pre-D1(a) v12 even without its obsolete index.
+func TestRelayObsoleteArchiveLayout(t *testing.T) {
+	s, _, _ := migrationDB(t, 12)
+	execSQL(t, s, `DROP TRIGGER trg_relay_archive_sent;
+		DROP TABLE relay_sent_archive;
+		CREATE TABLE relay_sent_archive (
+			id TEXT PRIMARY KEY NOT NULL,
+			profile_id INTEGER NOT NULL REFERENCES listening_profiles(id) ON DELETE CASCADE,
+			destination_id TEXT NOT NULL,
+			sent_at INTEGER NOT NULL,
+			attempt_count INTEGER NOT NULL,
+			http_status INTEGER
+		);
+		CREATE TRIGGER trg_relay_archive_sent BEFORE DELETE ON outbox
+		WHEN OLD.state='sent' AND OLD.format_version>0 AND OLD.destination_id='relay:'||OLD.profile_id
+		AND EXISTS (SELECT 1 FROM listening_profiles WHERE id=OLD.profile_id)
+		BEGIN
+			INSERT INTO relay_sent_archive
+			VALUES(OLD.id,OLD.profile_id,OLD.destination_id,OLD.closed_at,OLD.attempt_count,json_extract(OLD.result,'$.status'));
+		END;`)
+	require.Equal(t, 12, scalar(t, s, "SELECT max(version_id) FROM goose_db_version"))
+	require.Zero(t, scalar(t, s, "SELECT count(*) FROM sqlite_master WHERE name='idx_relay_sent_archive_profile'"))
+	require.Regexp(t, "incompatible v12 schema: altered (table relay_sent_archive|trigger trg_relay_archive_sent)", checkDatabase(s.db).Error())
+}

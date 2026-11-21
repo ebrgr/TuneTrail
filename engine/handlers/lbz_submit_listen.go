@@ -234,7 +234,8 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 				return
 			case active:
 				writeListenOK(w)
-				// Active replays use the committed admission policy, including old receipts.
+				// A legacy receipt replayed after the durable cut never sends the raw POST again.
+				// A failed legacy delivery remains undelivered through active admission.
 				if policy == "legacy" {
 					relayListenRequest(r.Context(), store, profile.ID, requestBytes, l)
 				}

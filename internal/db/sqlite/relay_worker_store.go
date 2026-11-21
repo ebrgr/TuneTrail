@@ -71,6 +71,8 @@ type RelayDeliveryStatus struct {
 }
 
 // RelayDeliveries reads a stable page of delivery state for the requested profile.
+// Only current-generation work can appear pending. Old open work is projected
+// as destination_changed even before cleanup materializes the failure.
 func (s *Sqlite) RelayDeliveries(ctx context.Context, profile int32, after string) ([]RelayDeliveryStatus, error) {
 	rows, err := s.db.QueryContext(ctx, `SELECT o.id,o.event_id,
 		CASE WHEN o.relay_generation<>d.generation AND (o.state IN ('pending','retryable') OR json_extract(o.result,'$.reason')='queue_capacity') THEN 'failed' ELSE o.state END,
@@ -97,6 +99,7 @@ func (s *Sqlite) RelayDeliveries(ctx context.Context, profile int32, after strin
 }
 
 // RelayQueueStatus reports current-generation capacity and the destination pause.
+// A profile without a destination returns sql.ErrNoRows.
 func (s *Sqlite) RelayQueueStatus(ctx context.Context, profile int32) (int, sql.NullTime, string, error) {
 	var count int
 	var seconds sql.NullInt64

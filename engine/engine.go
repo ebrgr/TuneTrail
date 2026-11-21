@@ -318,7 +318,13 @@ func Run(
 		<-relayDone
 	}
 	grace.Stop()
-	<-ingestDone
+	ingestGrace := time.NewTimer(2 * time.Second)
+	select {
+	case <-ingestDone:
+	case <-ingestGrace.C:
+		l.Warn().Msg("Engine: Active receipt recovery did not stop before shutdown deadline")
+	}
+	ingestGrace.Stop()
 	mbzC.Shutdown()
 	images.Shutdown()
 	if runErr == nil {

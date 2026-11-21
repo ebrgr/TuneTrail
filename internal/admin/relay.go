@@ -48,7 +48,8 @@ func TestRelay(ctx context.Context, store db.ProfileStore, user *models.User, id
 	if err != nil {
 		return "", err
 	}
-	// Tests can inject a bounded fake transport. Live configuration always uses the policy dialer.
+	// A non-nil transport is a test seam and can bypass the policy dialer.
+	// Production adapters must pass the zero Client so DNS and IP checks stay active.
 	if client.Transport != nil {
 		return client.Test(ctx, raw, token)
 	}
