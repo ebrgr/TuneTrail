@@ -26,6 +26,27 @@ CREATE TABLE relay_destinations (
     CHECK((lease_owner IS NULL)=(lease_until IS NULL))
 );
 
+-- Keep sent diagnostics after event deletion without retaining event keys or payload sources.
+CREATE TABLE relay_sent_archive (
+    id TEXT PRIMARY KEY NOT NULL,
+    profile_id INTEGER NOT NULL REFERENCES listening_profiles(id) ON DELETE CASCADE,
+    destination_id TEXT NOT NULL,
+    sent_at INTEGER NOT NULL,
+    attempt_count INTEGER NOT NULL,
+    http_status INTEGER
+);
+CREATE INDEX idx_relay_sent_archive_profile ON relay_sent_archive(profile_id);
+
+-- +goose StatementBegin
+CREATE TRIGGER trg_relay_archive_sent BEFORE DELETE ON outbox
+WHEN OLD.state='sent' AND OLD.format_version>0 AND OLD.destination_id='relay:'||OLD.profile_id
+ AND EXISTS (SELECT 1 FROM listening_profiles WHERE id=OLD.profile_id)
+BEGIN
+    INSERT INTO relay_sent_archive
+    VALUES(OLD.id,OLD.profile_id,OLD.destination_id,OLD.closed_at,OLD.attempt_count,json_extract(OLD.result,'$.status'));
+END;
+-- +goose StatementEnd
+
 CREATE TABLE relay_allowlist (
     profile_id INTEGER NOT NULL REFERENCES listening_profiles(id) ON DELETE CASCADE,
     host_port TEXT NOT NULL,

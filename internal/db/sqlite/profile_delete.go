@@ -160,6 +160,7 @@ func (s *Sqlite) ApplyProfileDelete(ctx context.Context, expected db.ProfileDele
 			return 0, staleWriteConflict(err)
 		}
 	}
+	// Event cascades discard open relay work and archive sent diagnostics in this transaction.
 	result, err := tx.ExecContext(ctx, `DELETE FROM listens WHERE profile_id=? AND rowid IN (SELECT rowid FROM (`+selection+`))`, append([]any{expected.ProfileID}, args...)...)
 	if err != nil {
 		return 0, staleWriteConflict(fmt.Errorf("delete profile listens: %w", err))

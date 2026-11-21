@@ -58,7 +58,7 @@ func validateIdentityObjects(db *sql.DB, expected map[[2]string]struct{}) error 
 	rows, err := db.Query(`SELECT type,name FROM sqlite_master WHERE sql IS NOT NULL
 		AND tbl_name IN ('tracks','recordings','occurrences','event_origins','listens','ingest_events',
 		                 'ingest_event_details','ingest_observations','ingest_revisions','outbox','outbox_details',
-		                 'profile_ingest_flags','occurrence_credits','profile_relays','relay_destinations','relay_allowlist','relay_delivery_gate')`)
+		                 'profile_ingest_flags','occurrence_credits','profile_relays','relay_destinations','relay_allowlist','relay_delivery_gate','relay_sent_archive')`)
 	if err != nil {
 		return fmt.Errorf("inspect identity schema: %w", err)
 	}

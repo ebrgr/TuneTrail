@@ -294,8 +294,8 @@ func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 		return fmt.Errorf("PurgeAllData: BeginTx: %w", err)
 	}
 	defer tx.Rollback()
-	// Order respects foreign-key dependencies; cascades clean up junction and
-	// alias tables automatically.
+	// Delete the events first so open relay work is discarded and sent diagnostics are archived.
+	// The remaining cascades clean up junction and alias tables.
 	for _, stmt := range []string{
 		`DELETE FROM listens`,
 		`DELETE FROM ingest_events`,

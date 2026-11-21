@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/testfixtures"
@@ -380,6 +381,81 @@ func TestRelayOccurrenceIntent(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='missing' AND state='pending_identity'"))
 	require.Equal(t, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE mode='active' AND state='accepted'"),
 		scalar(t, s, "SELECT count(*) FROM outbox WHERE format_version=1 AND delivery_key=event_id"))
+}
+
+// TestRelaySourceRevisionAndMerge keeps the accepted payload stable after catalog updates.
+func TestRelaySourceRevisionAndMerge(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
+	relayReceipt(t, s, 1, "source-revised", "v9", 1, now)
+	resolveRelayV9(t, s)
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
+	payload, err := s.RelayPayload(t.Context(), batch, batch.Items[0])
+	require.NoError(t, err)
+	execSQL(t, s, `INSERT INTO ingest_revisions
+		SELECT profile_id,receipt_id,resolution_version+1,'user',duplicate_decision,reason_codes,evidence,rule_version,unixepoch()
+		FROM ingest_events WHERE receipt_id='source-revised';
+		UPDATE ingest_events SET resolution_version=resolution_version+1 WHERE receipt_id='source-revised'`)
+	require.NoError(t, s.MergeTracks(t.Context(), 1, 70))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='source-revised' AND occurrence_id=70 AND state='accepted'"))
+	after, err := s.RelayPayload(t.Context(), batch, batch.Items[0])
+	require.NoError(t, err)
+	require.Equal(t, payload, after)
+}
+
+// TestRelayHistoryDeletion removes open claims and keeps only source-free sent diagnostics.
+func TestRelayHistoryDeletion(t *testing.T) {
+	for _, operation := range []string{"single", "profile-history", "purge"} {
+		t.Run(operation, func(t *testing.T) {
+			s, _ := relayStoreFixture(t)
+			ctx := db.WithProfile(t.Context(), 1)
+			now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
+			relayReceipt(t, s, 1, "sent-source", "v9", 1, now)
+			relayReceipt(t, s, 1, "open-source", "v9", 1, now.Add(time.Hour))
+			resolveRelayV9(t, s)
+			resolveRelayV9(t, s)
+			batch, err := s.ClaimRelayBatch(ctx, now)
+			require.NoError(t, err)
+			require.Len(t, batch.Items, 2)
+			var sent, open RelayItem
+			for _, item := range batch.Items {
+				if scalar(t, s, `SELECT count(*) FROM outbox o JOIN ingest_events e ON e.event_id=o.event_id
+					WHERE o.id=? AND e.receipt_id='sent-source'`, item.ID) == 1 {
+					sent = item
+				} else {
+					open = item
+				}
+			}
+			_, err = s.FinishRelayBatch(ctx, batch, []RelayItem{sent}, relay.Result{Class: relay.Success, Status: 200}, now, false)
+			require.NoError(t, err)
+			switch operation {
+			case "single":
+				require.NoError(t, s.DeleteListen(ctx, 1, now))
+				require.NoError(t, s.DeleteListen(ctx, 1, now.Add(time.Hour)))
+			case "profile-history":
+				plan, err := s.PreviewProfileDelete(ctx, 1, "track", 1)
+				require.NoError(t, err)
+				_, err = s.ApplyProfileDelete(ctx, plan)
+				require.NoError(t, err)
+			case "purge":
+				require.NoError(t, s.PurgeAllData(ctx))
+			}
+			require.Zero(t, scalar(t, s, "SELECT count(*) FROM outbox"))
+			require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+			require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_sent_archive WHERE id=? AND http_status=200", sent.ID))
+			_, err = s.RelayPayload(ctx, batch, open)
+			require.ErrorIs(t, err, sql.ErrNoRows)
+			renewed, err := s.RenewRelayBatch(ctx, batch, now)
+			require.NoError(t, err)
+			require.False(t, renewed)
+			_, err = s.FinishRelayBatch(ctx, batch, []RelayItem{open}, relay.Result{Class: relay.Success, Status: 200}, now, true)
+			require.NoError(t, err)
+			require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_sent_archive"))
+			require.NoError(t, checkIntegrity(s.db))
+		})
+	}
 }
 
 // TestRelayConfigurationTransitions checks that only a real URL change loses eligibility.

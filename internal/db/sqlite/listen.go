@@ -50,7 +50,7 @@ func (s *Sqlite) SaveListenWithResult(ctx context.Context, opts db.SaveListenOpt
 	return n > 0, err
 }
 
-// DeleteListen removes scoped history and matching receipts atomically.
+// DeleteListen removes scoped history, receipts and open relay items atomically.
 func (s *Sqlite) DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time) error {
 	if trackId == 0 {
 		return errors.New("DeleteListen: required parameter 'trackId' missing")
