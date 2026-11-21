@@ -36,6 +36,7 @@ func (s *Sqlite) queryRowContext(ctx context.Context, query string, args ...any)
 	return s.db.QueryRowContext(ctx, scopedRead(ctx, query), args...)
 }
 
+// requireRelated checks the occurrence actually heard by the profile.
 func (s *Sqlite) requireRelated(ctx context.Context, kind string, id int32) error {
 	if db.ProfileID(ctx) <= 0 {
 		return nil
@@ -52,7 +53,7 @@ func (s *Sqlite) requireRelated(ctx context.Context, kind string, id int32) erro
 		return fmt.Errorf("unknown catalog entity")
 	}
 	var found bool
-	err := s.queryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM listens l JOIN tracks t ON t.id=l.track_id WHERE `+condition+`)`, id).Scan(&found)
+	err := s.queryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM listens l JOIN occurrences t ON t.id=l.track_id WHERE `+condition+`)`, id).Scan(&found)
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,7 @@ func seedMediaRead(t *testing.T, s *Sqlite) {
 func TestMediaReadsPropagateCountFailures(t *testing.T) {
 	for _, kind := range []string{"artist", "album", "track"} {
 		t.Run(kind, func(t *testing.T) {
-			s, _, _ := migrationDB(t, 3)
+			s, _, _ := migrationDB(t, 13)
 			seedMediaRead(t, s)
 			// Metadata remains valid. Only the personal aggregate is unavailable.
 			execSQL(t, s, `ALTER TABLE listens RENAME TO unavailable_listens`)
@@ -57,7 +57,7 @@ func TestArtistAndAlbumPropagateDurationAggregateFailures(t *testing.T) {
 	}
 }
 func TestUnplayedCatalogMetadataRetainsZeroRank(t *testing.T) {
-	s, _, _ := migrationDB(t, 3)
+	s, _, _ := migrationDB(t, 13)
 	seedMediaRead(t, s)
 	a, err := s.GetArtist(context.Background(), db.GetArtistOpts{ID: 1})
 	if err != nil || a.AllTimeRank != 0 {

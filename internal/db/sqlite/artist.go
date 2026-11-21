@@ -622,6 +622,7 @@ func (s *Sqlite) CountArtists(ctx context.Context, timeframe db.Timeframe) (int6
 	return count, err
 }
 
+// CountNewArtists finds the first heard credited occurrence within the profile.
 func (s *Sqlite) CountNewArtists(ctx context.Context, timeframe db.Timeframe) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(timeframe)
 	var count int64
@@ -629,8 +630,7 @@ func (s *Sqlite) CountNewArtists(ctx context.Context, timeframe db.Timeframe) (i
 		SELECT COUNT(*) FROM (
 			SELECT at2.artist_id
 			FROM listens l
-			JOIN tracks t ON l.track_id = t.id
-			JOIN artist_tracks at2 ON t.id = at2.track_id
+			JOIN artist_tracks at2 ON l.track_id = at2.track_id
 			GROUP BY at2.artist_id
 			HAVING MIN(l.listened_at) BETWEEN ? AND ?
 		)`,

@@ -105,16 +105,19 @@ func (h *Pages) loadMedia(ctx context.Context, p *LivePage, kind string, id int3
 		if err != nil {
 			return err
 		}
-		albumContext := ctx
-		if p.AllowEmptyMedia && t.ListenCount == 0 {
-			albumContext = db.WithoutProfile(ctx)
-		}
-		a, err := h.store.GetAlbum(albumContext, db.GetAlbumOpts{ID: t.AlbumID})
-		if err != nil {
-			return fmt.Errorf("album for track %d unavailable: %v", id, err)
-		}
 		m.Item, m.Type, m.TimeListened, first, mbid = trackItem(slug, t, t.AllTimeRank), "Track", t.TimeListened, t.FirstListen, t.MbzID
-		m.Album = &Link{a.Title, mediaURL(slug, "album", a.ID)}
+		// A release-less occurrence has a track page without an album link.
+		if t.AlbumID > 0 {
+			albumContext := ctx
+			if p.AllowEmptyMedia && t.ListenCount == 0 {
+				albumContext = db.WithoutProfile(ctx)
+			}
+			a, err := h.store.GetAlbum(albumContext, db.GetAlbumOpts{ID: t.AlbumID})
+			if err != nil {
+				return fmt.Errorf("album for track %d unavailable: %v", id, err)
+			}
+			m.Album = &Link{a.Title, mediaURL(slug, "album", a.ID)}
+		}
 	}
 	// Read the server-computed cover color without sending image analysis to the browser.
 	m.Accent = imagecache.HeaderAccent(ctx, m.Image.Large)

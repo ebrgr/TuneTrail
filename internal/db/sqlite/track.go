@@ -42,6 +42,7 @@ func (s *Sqlite) GetTrack(ctx context.Context, opts db.GetTrackOpts) (*models.Tr
 	return s.getTrackByID(ctx, opts.ID, opts.AllowUnplayed)
 }
 
+// getTrackByID keeps occurrence URLs usable even without a legacy track or release.
 func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool) (*models.Track, error) {
 	if !allowUnplayed {
 		if err := s.requireRelated(ctx, "track", id); err != nil {
@@ -52,10 +53,13 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 	var track models.Track
 	var mbzID, image sql.NullString
 	err := s.queryRowContext(ctx, `
-		SELECT t.id, t.musicbrainz_id, t.duration, t.release_id, t.title, r.image
-		FROM tracks_with_title t
-		JOIN releases r ON t.release_id = r.id
-		WHERE t.id = ? LIMIT 1`, id).
+		SELECT o.id, rec.musicbrainz_id, COALESCE(t.duration, 0), COALESCE(o.release_id, 0),
+		       COALESCE(o.presented_title, t.title, ''), r.image
+		FROM occurrences o
+		JOIN recordings rec ON rec.id = o.recording_id
+		LEFT JOIN tracks_with_title t ON o.legacy_track_id = t.id
+		LEFT JOIN releases r ON o.release_id = r.id
+		WHERE o.id = ? LIMIT 1`, id).
 		Scan(&track.ID, &mbzID, &track.Duration, &track.AlbumID, &track.Title, &image)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, fmt.Errorf("getTrackByID: %w", db.ErrNotFound)
@@ -600,6 +604,7 @@ func (s *Sqlite) GetTracksWithNoDurationButHaveMbzID(ctx context.Context, from i
 	return tracks, rows.Err()
 }
 
+// GetTopTracksPaginated applies ranking and pagination after grouping the scoped listen events.
 func (s *Sqlite) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) (*db.PaginatedResponse[db.RankedItem[*models.Track]], error) {
 	if opts.Limit == 0 {
 		opts.Limit = defaultItemsPerPage
@@ -607,84 +612,8 @@ func (s *Sqlite) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts
 	offset := (opts.Page - 1) * opts.Limit
 	t1, t2 := db.TimeframeToTimeRange(opts.Timeframe)
 
-	var rows *sql.Rows
-	var err error
-
-	switch {
-	case opts.AlbumID > 0:
-		query := `
-			WITH TrackCounts AS (
-				SELECT l.track_id, COUNT(*) AS listen_count
-				FROM listens l
-				JOIN tracks t ON l.track_id = t.id
-				WHERE l.listened_at BETWEEN ? AND ? AND t.release_id = ?
-				GROUP BY l.track_id
-			),
-			RankedTracks AS (
-				SELECT track_id, listen_count,
-					   RANK() OVER (ORDER BY listen_count DESC) AS rank,
-					   COUNT(*) OVER () AS total_count
-				FROM TrackCounts
-				ORDER BY listen_count DESC, track_id
-				LIMIT ? OFFSET ?
-			)
-			SELECT r.track_id, twt.title, twt.musicbrainz_id, twt.release_id, rls.image, r.listen_count, r.rank, r.total_count
-			FROM RankedTracks r
-			JOIN tracks_with_title twt ON twt.id = r.track_id
-			JOIN releases rls ON twt.release_id = rls.id
-			ORDER BY r.rank, r.track_id`
-
-		rows, err = s.queryContext(ctx, query, t1.Unix(), t2.Unix(), opts.AlbumID, opts.Limit, offset)
-
-	case opts.ArtistID > 0:
-		query := `
-			WITH TrackCounts AS (
-				SELECT l.track_id, COUNT(*) AS listen_count
-				FROM listens l
-				JOIN artist_tracks at2 ON l.track_id = at2.track_id
-				WHERE l.listened_at BETWEEN ? AND ? AND at2.artist_id = ?
-				GROUP BY l.track_id
-			),
-			RankedTracks AS (
-				SELECT track_id, listen_count,
-					   RANK() OVER (ORDER BY listen_count DESC) AS rank,
-					   COUNT(*) OVER () AS total_count
-				FROM TrackCounts
-				ORDER BY listen_count DESC, track_id
-				LIMIT ? OFFSET ?
-			)
-			SELECT r.track_id, twt.title, twt.musicbrainz_id, twt.release_id, rls.image, r.listen_count, r.rank, r.total_count
-			FROM RankedTracks r
-			JOIN tracks_with_title twt ON twt.id = r.track_id
-			JOIN releases rls ON twt.release_id = rls.id
-			ORDER BY r.rank, r.track_id`
-
-		rows, err = s.queryContext(ctx, query, t1.Unix(), t2.Unix(), opts.ArtistID, opts.Limit, offset)
-
-	default:
-		query := `
-			WITH TrackCounts AS (
-				SELECT track_id, COUNT(*) AS listen_count
-				FROM listens
-				WHERE listened_at BETWEEN ? AND ?
-				GROUP BY track_id
-			),
-			RankedTracks AS (
-				SELECT track_id, listen_count,
-					   RANK() OVER (ORDER BY listen_count DESC) AS rank,
-					   COUNT(*) OVER () AS total_count
-				FROM TrackCounts
-				ORDER BY listen_count DESC, track_id
-				LIMIT ? OFFSET ?
-			)
-			SELECT r.track_id, twt.title, twt.musicbrainz_id, twt.release_id, rls.image, r.listen_count, r.rank, r.total_count
-			FROM RankedTracks r
-			JOIN tracks_with_title twt ON twt.id = r.track_id
-			JOIN releases rls ON twt.release_id = rls.id
-			ORDER BY r.rank, r.track_id`
-
-		rows, err = s.queryContext(ctx, query, t1.Unix(), t2.Unix(), opts.Limit, offset)
-	}
+	query, args := topTracksQuery(opts, t1.Unix(), t2.Unix(), offset)
+	rows, err := s.queryContext(ctx, query, args...)
 
 	if err != nil {
 		return nil, fmt.Errorf("GetTopTracksPaginated: %w", err)
@@ -702,7 +631,7 @@ func (s *Sqlite) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts
 		var item db.RankedItem[*models.Track]
 
 		// Scan totalCount directly alongside the row data
-		if err := rows.Scan(&t.ID, &t.Title, &mbzID, &t.AlbumID, &image, &t.ListenCount, &item.Rank, &totalCount); err != nil {
+		if err := rows.Scan(&t.ID, &t.Title, &mbzID, &t.AlbumID, &t.AlbumTitle, &image, &t.ListenCount, &item.Rank, &totalCount); err != nil {
 			return nil, err
 		}
 
@@ -734,6 +663,56 @@ func (s *Sqlite) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts
 		HasNextPage:  int64(offset+len(tracks)) < totalCount,
 		CurrentPage:  int32(opts.Page),
 	}, nil
+}
+
+// topTracksQuery aggregates eligible events and picks a stable, heard occurrence for each link.
+func topTracksQuery(opts db.GetItemsOpts, from, to int64, offset int) (string, []any) {
+	group := "o.recording_id"
+	if opts.TrackGrouping == db.TrackByRelease {
+		group += ", o.release_id"
+	}
+	args := []any{from, to}
+	join, filter := "", ""
+	switch {
+	case opts.AlbumID > 0:
+		filter = " AND o.release_id = ?"
+		args = append(args, opts.AlbumID)
+	case opts.ArtistID > 0:
+		join = " JOIN artist_tracks at ON at.track_id = o.id"
+		filter = " AND at.artist_id = ?"
+		args = append(args, opts.ArtistID)
+	}
+
+	query := `
+		WITH TrackCounts AS (
+			SELECT MIN(o.id) AS track_id, COUNT(*) AS listen_count
+			FROM listens l
+			JOIN occurrences o ON o.id = l.track_id` + join + `
+			WHERE l.listened_at BETWEEN ? AND ?` + filter + `
+			GROUP BY ` + group + `
+		),
+		RankedTracks AS (
+			SELECT track_id, listen_count,
+			       RANK() OVER (ORDER BY listen_count DESC) AS rank,
+			       COUNT(*) OVER () AS total_count
+			FROM TrackCounts
+			ORDER BY listen_count DESC, track_id
+			LIMIT ? OFFSET ?
+		)
+		SELECT r.track_id, COALESCE(o.presented_title, (
+		           SELECT alias FROM track_aliases
+		           WHERE track_id = o.legacy_track_id AND is_primary = 1 ORDER BY alias LIMIT 1
+		       ), ''), rec.musicbrainz_id, COALESCE(o.release_id, 0), COALESCE((
+		           SELECT alias FROM release_aliases
+		           WHERE release_id = o.release_id AND is_primary = 1 ORDER BY alias LIMIT 1
+		       ), ''), rls.image,
+		       r.listen_count, r.rank, r.total_count
+		FROM RankedTracks r
+		JOIN occurrences o ON o.id = r.track_id
+		JOIN recordings rec ON rec.id = o.recording_id
+		LEFT JOIN releases rls ON rls.id = o.release_id
+		ORDER BY r.rank, r.track_id`
+	return query, append(args, opts.Limit, offset)
 }
 
 // MergeTracks validates catalog identities before changing any relationships.
@@ -818,22 +797,26 @@ func mergeTracksIn(ctx context.Context, tx *sql.Tx, fromId, toId int32) error {
 	return nil
 }
 
+// CountTracks counts distinct heard recordings in the selected profile and period.
 func (s *Sqlite) CountTracks(ctx context.Context, timeframe db.Timeframe) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(timeframe)
 	var count int64
 	err := s.queryRowContext(ctx,
-		`SELECT COUNT(DISTINCT track_id) FROM listens WHERE listened_at BETWEEN ? AND ?`,
+		`SELECT COUNT(DISTINCT o.recording_id)
+		 FROM listens l JOIN occurrences o ON o.id = l.track_id
+		 WHERE l.listened_at BETWEEN ? AND ?`,
 		t1.Unix(), t2.Unix()).Scan(&count)
 	return count, err
 }
 
+// CountNewTracks uses the first listen to a recording across all its occurrences.
 func (s *Sqlite) CountNewTracks(ctx context.Context, timeframe db.Timeframe) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(timeframe)
 	var count int64
 	err := s.queryRowContext(ctx, `
 		SELECT COUNT(*) FROM (
-			SELECT track_id FROM listens
-			GROUP BY track_id
+			SELECT o.recording_id FROM listens l JOIN occurrences o ON o.id = l.track_id
+			GROUP BY o.recording_id
 			HAVING MIN(listened_at) BETWEEN ? AND ?
 		)`,
 		t1.Unix(), t2.Unix()).Scan(&count)

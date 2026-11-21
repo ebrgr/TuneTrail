@@ -132,10 +132,18 @@ type AddArtistsToTrackOpts struct {
 	ArtistIDs []int32
 }
 
+const (
+	TrackByRecording = "recording"
+	TrackByRelease   = "release"
+)
+
 type GetItemsOpts struct {
 	Limit     int
 	Page      int
 	Timeframe Timeframe
+
+	// TrackGrouping defaults to recording when unset.
+	TrackGrouping string
 
 	// Used only for getting top tracks
 	ArtistID int

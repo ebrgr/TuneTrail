@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Top tracks are grouped by recording by default and can be split by release, including listens with an unknown release (ISSUE-135).
+
 ## [0.54] - 2026-11-21
 
 - Active ingestion retries transient failures up to five attempts. Profile owners and root can reprocess parked receipts from the responsive Ingestion health page (ISSUE-173).

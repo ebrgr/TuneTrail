@@ -3,10 +3,11 @@ id: ISSUE-135
 title: >-
   135 — Consultas, edição, exclusão e exportação por ocorrência, com ranking por
   gravação ou lançamento
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-21T22:02:00Z'
+updated_date: '2026-11-21T22:11:00Z'
 labels:
   - catalogo
   - ui
@@ -15,6 +16,9 @@ dependencies:
   - ISSUE-133
   - ISSUE-134
   - ISSUE-092
+references:
+  - backlog/evidencias/issue-135/planos-ranking.md
+  - backlog/evidencias/issue-135/parecer-reviewer.md
 documentation:
   - doc-036
   - doc-039
@@ -30,9 +34,9 @@ Recorte 5 do estudo da ISSUE-116 (doc-036). Consultas, edição, fusão, exclus�
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Chave 'por gravação' / 'por lançamento' no ranking de faixas, padrão por gravação; soma por lançamento igual ao total por gravação
-- [ ] #2 Rankings e novidades por perfil seguem o contrato da ISSUE-132
-- [ ] #3 Duas escutas simultâneas de perfis distintos contam ambas no ranking; planos de consulta do ranking medidos em fixture grande
+- [x] #1 Chave 'por gravação' / 'por lançamento' no ranking de faixas, padrão por gravação; soma por lançamento igual ao total por gravação
+- [x] #2 Rankings e novidades por perfil seguem o contrato da ISSUE-132
+- [x] #3 Duas escutas simultâneas de perfis distintos contam ambas no ranking; planos de consulta do ranking medidos em fixture grande
 <!-- AC:END -->
 
 ## Comments
@@ -62,6 +66,24 @@ created: 2026-11-21T22:02:00Z
 ---
 
 Escopo dividido em 21/11/2026 (decisão do usuário): edição, exclusão, fusão e exportação/reimportação (antigos AC #3 e #4) foram para a ISSUE-183. Esta issue fica com a chave por gravação/lançamento e os rankings por perfil. Escuta sem lançamento conta no balde 'Lançamento desconhecido'. Advisor (effort high) depois da implementação.
+
+---
+
+author: ebrgr
+created: 2026-11-21T22:02:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-135` na branch `feat/issue-135-consultas-edicao-exclusao-e-exportacao` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-21T22:11:00Z
+
+---
+
+Verificação: ranking por gravação e por lançamento, soma com o balde sem lançamento, isolamento das novidades por perfil e escutas no mesmo segundo cobertos por testes SQLite e HTTP. Oito planos medidos em fixture de 600.004 escutas com índices existentes. make check passou com 13/13 jornadas E2E. Referência ISSUE-075 regenerada. Revisão local sem bloqueios.
 
 ---
 <!-- COMMENTS:END -->

@@ -9,6 +9,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/listening"
 	"github.com/ebrgr/TuneTrail/internal/memkv"
 	"github.com/ebrgr/TuneTrail/internal/models"
@@ -237,5 +238,58 @@ func TestNowPlayingIsScopedAndMissingTrackClearsOnlyItsProfile(t *testing.T) {
 	}
 	if _, ok := memkv.Store.Get("now-playing:2"); !ok {
 		t.Fatal("other profile cache cleared")
+	}
+}
+
+// TestTrackChartGrouping exercises the public switch, scoped rows and occurrence URLs.
+func TestTrackChartGrouping(t *testing.T) {
+	s := pageStore(t)
+	if err := s.Exec(`
+		UPDATE occurrences SET recording_id=(SELECT recording_id FROM occurrences WHERE id=1) WHERE id=2;
+		INSERT INTO occurrences(id,recording_id,presented_title)
+			SELECT 20,recording_id,'Unreleased recording' FROM occurrences WHERE id=1;
+		INSERT INTO listens(profile_id,track_id,listened_at,origin)
+			VALUES(1,20,1700000000,'listenbrainz_api');
+	`); err != nil {
+		t.Fatal(err)
+	}
+	langs, err := i18n.Load("../../langs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err := NewHandler(s, Options{Languages: langs})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ path, lang, want string }{
+		{"/alpha/chart/top/tracks", "en", `aria-current="true">By recording`},
+		{"/alpha/chart/top/tracks?group_by=release", "en", "Unknown release"},
+		{"/alpha/chart/top/tracks?group_by=release", "pt-BR", "Lançamento desconhecido"},
+		{"/alpha/chart/top/tracks?group_by=release", "pt-BR", `aria-current="true">Por lançamento`},
+		{"/alpha/chart/top/tracks?group_by=release&limit=1", "en", `group_by=release&amp;limit=1&amp;page=2`},
+		{"/alpha/chart/top/tracks?group_by=release&limit=1&page=2", "en", `href="/alpha/chart/top/tracks?limit=1"`},
+		{"/alpha/listens?track_id=20", "en", "Unreleased recording"},
+		{"/alpha/track/20", "en", "Unreleased recording"},
+		{"/alpha/track/2", "en", "Other Alpha Track"},
+	} {
+		r := httptest.NewRequest("GET", tc.path, nil)
+		r.Header.Set("Accept-Language", tc.lang)
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), tc.want) {
+			t.Errorf("%s (%s): HTTP %d, expected %q", tc.path, tc.lang, w.Code, tc.want)
+		}
+	}
+	for _, path := range []string{
+		"/alpha/chart/top/tracks?group_by=unknown",
+		"/alpha/chart/top/tracks?group_by=release&group_by=recording",
+		"/alpha/chart/top/albums?group_by=release",
+	} {
+		if w := pageRequest(h, path); w.Code != http.StatusBadRequest {
+			t.Errorf("%s: HTTP %d", path, w.Code)
+		}
+	}
+	if w := pageRequest(h, "/beta/track/20"); w.Code != http.StatusNotFound {
+		t.Errorf("another profile's occurrence: HTTP %d", w.Code)
 	}
 }

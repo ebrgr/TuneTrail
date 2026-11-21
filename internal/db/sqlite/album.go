@@ -497,6 +497,7 @@ func (s *Sqlite) AddArtistsToAlbum(ctx context.Context, opts db.AddArtistsToAlbu
 	return tx.Commit()
 }
 
+// GetTopAlbumsPaginated ranks releases attached to heard occurrences.
 func (s *Sqlite) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts) (*db.PaginatedResponse[db.RankedItem[*models.Album]], error) {
 	if opts.Limit == 0 {
 		opts.Limit = defaultItemsPerPage
@@ -512,7 +513,7 @@ func (s *Sqlite) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts
 			WITH AlbumCounts AS (
 				SELECT t.release_id, COUNT(*) AS listen_count
 				FROM listens l
-				JOIN tracks t ON l.track_id = t.id
+				JOIN occurrences t ON l.track_id = t.id
 				JOIN ` + albumArtistRelations + ` ar ON t.release_id = ar.release_id
 				WHERE ar.artist_id = ? AND l.listened_at BETWEEN ? AND ?
 				GROUP BY t.release_id
@@ -536,8 +537,8 @@ func (s *Sqlite) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts
 			WITH AlbumCounts AS (
 				SELECT t.release_id, COUNT(*) AS listen_count
 				FROM listens l
-				JOIN tracks t ON l.track_id = t.id
-				WHERE l.listened_at BETWEEN ? AND ?
+				JOIN occurrences t ON l.track_id = t.id
+				WHERE l.listened_at BETWEEN ? AND ? AND t.release_id IS NOT NULL
 				GROUP BY t.release_id
 			),
 			RankedAlbums AS (
@@ -714,23 +715,26 @@ func mergeAlbumsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replaceI
 	return nil
 }
 
+// CountAlbums counts known releases only.
 func (s *Sqlite) CountAlbums(ctx context.Context, timeframe db.Timeframe) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(timeframe)
 	var count int64
 	err := s.queryRowContext(ctx, `
 		SELECT COUNT(DISTINCT t.release_id)
-		FROM listens l JOIN tracks t ON l.track_id = t.id
+		FROM listens l JOIN occurrences t ON l.track_id = t.id
 		WHERE l.listened_at BETWEEN ? AND ?`,
 		t1.Unix(), t2.Unix()).Scan(&count)
 	return count, err
 }
 
+// CountNewAlbums uses each known release's first occurrence heard by the profile.
 func (s *Sqlite) CountNewAlbums(ctx context.Context, timeframe db.Timeframe) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(timeframe)
 	var count int64
 	err := s.queryRowContext(ctx, `
 		SELECT COUNT(*) FROM (
-			SELECT t.release_id FROM listens l JOIN tracks t ON l.track_id = t.id
+			SELECT t.release_id FROM listens l JOIN occurrences t ON l.track_id = t.id
+			WHERE t.release_id IS NOT NULL
 			GROUP BY t.release_id
 			HAVING MIN(l.listened_at) BETWEEN ? AND ?
 		)`,

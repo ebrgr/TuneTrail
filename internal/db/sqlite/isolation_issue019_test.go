@@ -12,7 +12,7 @@ import (
 
 // TestProfileScopeAndCatalogEscape documents scoped reads and the intentional internal global context.
 func TestProfileScopeAndCatalogEscape(t *testing.T) {
-	s, _, _ := migrationDB(t, 5)
+	s, _, _ := migrationDB(t, 13)
 	seedMediaRead(t, s)
 	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)

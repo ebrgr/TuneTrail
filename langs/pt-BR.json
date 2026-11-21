@@ -1,4 +1,8 @@
 {
+  "ranking.by_recording": "Por gravação",
+  "ranking.by_release": "Por lançamento",
+  "ranking.grouping": "Agrupamento de faixas",
+  "ranking.unknown_release": "Lançamento desconhecido",
   "admin.health.relay_untracked": "Este banco não rastreia as entregas do relay.",
   "admin.health.shadow": "Modo sombra",
   "admin.health.external_id": "ID externo confiável",

@@ -12,6 +12,10 @@ import (
 
 type Link struct{ Label, URL string }
 type PeriodLink struct{ Key, Label, URL string }
+type TrackGroupLink struct {
+	Link
+	Current bool
+}
 type Item struct {
 	ID          int32
 	Rank, Count int64
@@ -19,6 +23,8 @@ type Item struct {
 	Image       models.ImageList
 	Artists     []Link
 	Various     bool
+	Release     string
+	ShowRelease bool
 }
 type ListenView struct {
 	Item      Item
@@ -62,6 +68,7 @@ type LivePage struct {
 	Options                                    db.GetItemsOpts
 	Params                                     url.Values
 	Periods                                    []PeriodLink
+	TrackGroups                                []TrackGroupLink
 	Years                                      []int
 	Next                                       string
 	HistoryMore                                bool

@@ -332,6 +332,9 @@
           <div class="media-text">
             <a class="media-title" href="{{.URL}}">{{.Title}}</a>
             {{template "partial/artists" .}}
+            {{- if .ShowRelease}}
+              <span class="media-artist">{{if .Release}}{{.Release}}{{else}}{{tr "ranking.unknown_release" "Unknown release"}}{{end}}</span>
+            {{- end}}
           </div>
         </div>
         <span class="plays">{{quantity "quantity.plays" .Count}}</span>
@@ -410,6 +413,13 @@
     {{template "partial/periods" .}}
     <p class="date-range">{{.DateRange}} · {{.Timezone}}</p>
     {{template "partial/filters" .}}
+    {{- if .TrackGroups}}
+      <nav class="card period-selector" aria-label="{{tr "ranking.grouping" "Track grouping"}}">
+        {{- range .TrackGroups}}
+          <a href="{{.URL}}"{{if .Current}} aria-current="true"{{end}}>{{.Label}}</a>
+        {{- end}}
+      </nav>
+    {{- end}}
     {{template "partial/pager" .Pager}}
     {{if eq .Section "listens"}}
       {{template "partial/listens" .}}
@@ -450,6 +460,7 @@
         (eq $key "track_id")
         (eq $key "tz")
         (eq $key "period")
+        (eq $key "group_by")
       }}
         <input type="hidden" name="{{$key}}" value="{{index $values 0}}">
       {{end}}

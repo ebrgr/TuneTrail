@@ -2,12 +2,13 @@ package webquery
 
 import (
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/db"
 	"math"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/ebrgr/TuneTrail/internal/db"
 )
 
 // HTML validates presentation requests without changing the legacy JSON parser.
@@ -15,6 +16,18 @@ func HTML(r *http.Request, home bool) (db.GetItemsOpts, url.Values, error) {
 	q := r.URL.Query()
 	o := db.GetItemsOpts{Page: 1, Limit: 100, Timeframe: TimeframeFromRequest(r)}
 	bad := func(key string) (db.GetItemsOpts, url.Values, error) { return o, q, fmt.Errorf("invalid %s", key) }
+	// Preserve an explicit chart grouping in pagination and period URLs.
+	if len(q["group_by"]) > 1 {
+		return bad("group_by")
+	}
+	switch group := q.Get("group_by"); group {
+	case "":
+		q.Del("group_by")
+	case db.TrackByRecording, db.TrackByRelease:
+		o.TrackGrouping = group
+	default:
+		return bad("group_by")
+	}
 	for _, key := range []string{"page", "limit", "year", "month", "week", "artist_id", "album_id", "track_id"} {
 		raw := q.Get(key)
 		if raw == "" {
@@ -161,6 +174,9 @@ func ResolveTimeframe(tf db.Timeframe) db.Timeframe {
 
 // RankingFiltersAllowed rejects filters that would select the ranked entity itself.
 func RankingFiltersAllowed(section string, opts db.GetItemsOpts) bool {
+	if opts.TrackGrouping != "" && section != "chart/top/tracks" {
+		return false
+	}
 	switch section {
 	case "chart/top/artists":
 		return opts.ArtistID == 0 && opts.AlbumID == 0 && opts.TrackID == 0

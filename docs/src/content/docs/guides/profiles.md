@@ -63,6 +63,18 @@ Existing installations must already use SQLite. The schema migration cannot be
 downgraded in place: stop Koito, restore the pre-upgrade directory backup and run
 the previous version to roll back.
 
+## Track rankings
+
+Open **Top Tracks** in a profile to see plays grouped **By recording**. Select
+**By release** to see how many times the profile played each recording on each
+release. Plays without a known release appear under **Unknown release**.
+With the same filters, the two views add up to the same play total.
+
+The release view can be bookmarked with `?group_by=release`. Tracks with
+unconfirmed recording identities stay separate, even if their titles match.
+A recording is new to a profile in the period when that profile first heard
+any of its occurrences.
+
 ## API compatibility
 
 Players continue to submit to `/apis/listenbrainz/1/submit-listens` with

@@ -160,7 +160,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	returnParams := cloneQuery(p.Params)
 	for key, values := range returnParams {
 		switch key {
-		case "period", "year", "month", "week", "page", "limit", "artist_id", "album_id", "track_id", "tz", "show_time":
+		case "period", "year", "month", "week", "page", "limit", "artist_id", "album_id", "track_id", "tz", "show_time", "group_by":
 			if len(values) != 1 || values[0] == "" {
 				returnParams.Del(key)
 			}
@@ -214,6 +214,19 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	path := r.URL.Path
+	if p.Section == "chart/top/tracks" {
+		// Switching grouping keeps the current filters and starts at the first page.
+		q := cloneQuery(p.Params)
+		q.Del("page")
+		q.Del("group_by")
+		recordingURL := queryURL(path, q)
+		q.Set("group_by", db.TrackByRelease)
+		byRelease := p.Options.TrackGrouping == db.TrackByRelease
+		p.TrackGroups = []TrackGroupLink{
+			{Link: Link{Label: translated(p.Locale, "ranking.by_recording", "By recording"), URL: recordingURL}, Current: !byRelease},
+			{Link: Link{Label: translated(p.Locale, "ranking.by_release", "By release"), URL: queryURL(path, q)}, Current: byRelease},
+		}
+	}
 	if p.Pager.Current > 1 {
 		q := cloneQuery(p.Params)
 		q.Set("page", strconv.Itoa(p.Pager.Current-1))
@@ -375,7 +388,11 @@ func (h *Pages) ranking(ctx context.Context, slug, kind string, o db.GetItemsOpt
 			return nil, Pager{}, e
 		}
 		for _, v := range r.Items {
-			items = append(items, trackItem(slug, v.Item, v.Rank))
+			item := trackItem(slug, v.Item, v.Rank)
+			// Release rows need a label to distinguish editions with the same track title.
+			item.ShowRelease = o.TrackGrouping == db.TrackByRelease
+			item.Release = v.Item.AlbumTitle
+			items = append(items, item)
 		}
 		return items, pageInfo(r.CurrentPage, r.TotalCount, r.HasNextPage), nil
 	}

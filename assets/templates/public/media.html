@@ -49,14 +49,14 @@
       <a href="#overview">{{tr "media.overview" "Overview"}}</a>
       {{if ne $media.Kind "track"}}
         <a href="#tracks">{{tr "ui.tracks" "Tracks"}}</a>
-      {{else}}
+      {{else if $media.Album}}
         <a href="{{$media.Album.URL}}#tracks">{{tr "ui.tracks" "Tracks"}}</a>
       {{end}}
       {{if eq $media.Kind "artist"}}
         <a href="#albums">{{tr "ui.albums" "Albums"}}</a>
       {{else if $media.Album}}
         <a href="{{$media.Album.URL}}">{{tr "ui.albums" "Albums"}}</a>
-      {{else}}
+      {{else if ne $media.Kind "track"}}
         <a href="#overview">{{tr "ui.albums" "Albums"}}</a>
       {{end}}
       <a href="#history">{{tr "ui.history" "History"}}</a>

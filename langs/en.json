@@ -1,4 +1,8 @@
 {
+  "ranking.by_recording": "By recording",
+  "ranking.by_release": "By release",
+  "ranking.grouping": "Track grouping",
+  "ranking.unknown_release": "Unknown release",
   "admin.health.relay_untracked": "Relay deliveries are not tracked for this database.",
   "admin.health.shadow": "Shadow mode",
   "admin.health.external_id": "Trusted external ID",

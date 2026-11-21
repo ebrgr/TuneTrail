@@ -129,6 +129,12 @@ func SafeReturn(raw string) string {
 			default:
 				return ""
 			}
+		case "group_by":
+			// Keep the chart grouping on return from authentication.
+			if len(mediaParts) != 4 || strings.Join(mediaParts[1:], "/") != "chart/top/tracks" ||
+				(v != "recording" && v != "release") {
+				return ""
+			}
 		case "year":
 			if !positive(v, 9999) {
 				return ""
