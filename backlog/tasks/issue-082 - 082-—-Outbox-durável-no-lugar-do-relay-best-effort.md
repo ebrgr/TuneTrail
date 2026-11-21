@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T02:14:00Z'
+updated_date: '2026-11-21T02:29:00Z'
 labels:
   - ingestao
   - api
@@ -116,6 +116,15 @@ created: 2026-11-21T02:14:00Z
 ---
 
 E3 concluída. D1(a) emendada na 012 pré-publicação com agregados diários, retenção de 30 dias e purga total. Gate durável ativo no mesmo corte do handler e do worker. Replay byte a byte contra v0.48, pausas e bisseção, SIGTERM com HTTP em voo e três cenários SIGKILL verificados. SQLite cheio conserva a claim para recuperação. go test direcionado com race e make check passaram (13/13 E2E). Sem alteração de status. Parada para Reviewer, depois Advisor Opus high sobre encerramento e falhas ambíguas.
+
+---
+
+author: Codex
+created: 2026-11-21T02:29:00Z
+
+---
+
+Retorno E3 à revisão: obrigatórios corrigidos em 954d174 (pausa após 2xx sem prazo do servidor) e c905e37 (espera após falha pré-POST, source_invalid e config_invalid). Ressalvas aplicadas, com decisão R5 registrada no plano, código e CHANGELOG. Testes dirigidos com race e make check passaram, com 13/13 E2E. Worktree permanece na E3 para nova revisão e posterior parecer do Advisor sobre encerramento e falhas ambíguas. AC4 segue aberto.
 
 ---
 <!-- COMMENTS:END -->

@@ -18,3 +18,9 @@ make check
 python3 scripts/validate_relay_parity.py --baseline /path/to/v0.48 --binary ./tunetrail
 python3 scripts/validate_relay_crash.py --binary ./tunetrail
 ```
+
+## Retorno do Reviewer
+
+- `TestRelaySuccessWithoutRateLimitDeadline` verifica a pausa após 2xx com Remaining=0 e sem espera do servidor. Com jitter injetado em 15 s, a pausa dura 15 s mesmo com falhas anteriores, e o contador fica zerado.
+- `TestWorkerPacesFailedClaims` injeta relógio e ticks e verifica ausência de novo claim durante falha de leitura, configuração inválida ou BUSY antes do próximo tick. Os testes do store verificam `failed/source_invalid` para snapshot inválido e pausa `config_invalid` sem prazo para permissão corrompida.
+- `TestRelayObsoleteArchiveLayout` rejeita a estrutura v12 anterior a D1(a) mesmo sem o índice obsoleto. `TestRelayQueueStatusAbsent` distingue ausência de destino de fila configurada e vazia.
