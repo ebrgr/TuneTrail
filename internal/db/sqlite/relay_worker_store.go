@@ -22,8 +22,12 @@ func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, str
 	if err != nil {
 		return "", "", nil, err
 	}
-	if !relay.ValidStoredTarget(endpoint, token) {
-		return "", "", nil, ErrRelayConfigInvalid
+	diagnostic := relay.StoredTargetDiagnostic(endpoint, token)
+	if _, _, err := canonicalRelay(endpoint); err != nil {
+		diagnostic = relay.Describe(endpoint, "url_invalid", "")
+	}
+	if diagnostic.Code != "" {
+		return "", "", nil, errors.Join(ErrRelayConfigInvalid, &relay.ValidationError{Class: relay.ConfigInvalid, Diagnostic: diagnostic})
 	}
 	permissions, err := s.RelayPermissions(ctx, batch.Profile)
 	// Renewal rechecks config_version after these reads, fencing concurrent configuration changes.

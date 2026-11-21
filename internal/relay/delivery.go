@@ -167,10 +167,16 @@ func (d *Deliverer) request(ctx context.Context, method, endpoint, token string,
 	return resp, "", Diagnostic{}
 }
 
-// ValidStoredTarget checks local configuration without making a network request.
-func ValidStoredTarget(base, token string) bool {
+// StoredTargetDiagnostic checks local configuration without making a network request.
+func StoredTargetDiagnostic(base, token string) Diagnostic {
+	if _, _, err := Normalize(base, "placeholder"); err != nil {
+		return Describe(base, "url_invalid", "")
+	}
 	_, normalizedToken, err := Normalize(base, token)
-	return err == nil && validAuthorization("Token "+normalizedToken)
+	if err != nil || !validAuthorization("Token "+normalizedToken) {
+		return Describe(base, "token_invalid", "")
+	}
+	return Diagnostic{}
 }
 
 // validAuthorization rejects control bytes that net/http cannot send in a header value.

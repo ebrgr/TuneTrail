@@ -337,12 +337,13 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 	if err != nil {
 		return false, err
 	}
-	finished := false
+	finished, resumed := false, false
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		var version, failures int64
-		err := tx.QueryRowContext(ctx, `SELECT config_version,backoff_count FROM relay_destinations
+		var previousPause sql.NullString
+		err := tx.QueryRowContext(ctx, `SELECT config_version,backoff_count,pause_class FROM relay_destinations
 			WHERE profile_id=? AND generation=? AND work_version=? AND lease_owner=?`,
-			batch.Profile, batch.Generation, batch.Version, batch.Owner).Scan(&version, &failures)
+			batch.Profile, batch.Generation, batch.Version, batch.Owner).Scan(&version, &failures, &previousPause)
 		if errors.Is(err, sql.ErrNoRows) {
 			// URL changes preserve the physical lease until the old attempt returns.
 			if err := invalidateRelayBatch(ctx, tx, batch, ids); err != nil {
@@ -367,6 +368,7 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 					return err
 				}
 				release = release || paused
+				resumed = previousPause.Valid && result.Class == relay.Success && !paused
 			}
 		}
 		if !release {
@@ -378,6 +380,11 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 		}
 		return releaseRelayDestination(ctx, tx, batch)
 	})
+	if err == nil && resumed {
+		diagnostic := result.Diagnostic
+		diagnostic.Code = "destination_resumed"
+		relay.LogDiagnostic(ctx, batch.Profile, diagnostic, now)
+	}
 	return finished && err == nil, err
 }
 

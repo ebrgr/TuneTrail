@@ -95,7 +95,13 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 	base, token, permissions, err := store.RelayTarget(ctx, batch)
 	if err != nil {
 		if ctx.Err() == nil && errors.Is(err, sqlite.ErrRelayConfigInvalid) {
-			_, _ = store.FinishRelayBatch(ctx, batch, nil, relay.Result{Class: relay.ConfigInvalid}, now(), true) // Lease recovery covers a failed write.
+			diagnostic := relay.Describe(base, "config_invalid", "")
+			var validation *relay.ValidationError
+			if errors.As(err, &validation) {
+				diagnostic = validation.Diagnostic
+			}
+			relay.LogDiagnostic(ctx, batch.Profile, diagnostic, now())
+			_, _ = store.FinishRelayBatch(ctx, batch, nil, relay.Result{Class: relay.ConfigInvalid, Diagnostic: diagnostic}, now(), true) // Lease recovery covers a failed write.
 		}
 		return false
 	}
@@ -145,6 +151,9 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 			diagnostic = relay.Describe(base, "destination_paused", "")
 		}
 		relay.LogDiagnostic(ctx, batch.Profile, diagnostic, now())
+		if result.Class == relay.Success {
+			result.Diagnostic = relay.Describe(base, "", "")
+		}
 		settled, err := store.FinishRelayBatch(ctx, batch, items, result, now(), false)
 		if err != nil || !settled {
 			return

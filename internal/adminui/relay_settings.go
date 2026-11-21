@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/netip"
+	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
@@ -69,6 +70,7 @@ func (h *Handler) relaySettingsAction(w http.ResponseWriter, r *http.Request, id
 	var diagnostic *relay.ValidationError
 	switch {
 	case errors.As(err, &diagnostic):
+		relay.LogDiagnostic(ctx, profile, diagnostic.Diagnostic, time.Now())
 		code := diagnostic.Diagnostic.Code
 		h.putNoticeData(identity.SessionID, 0, "admin.relay.reason_"+code, relay.Remedy(code), nil)
 	case errors.Is(err, db.ErrInvalidInput):
