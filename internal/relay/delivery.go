@@ -37,6 +37,7 @@ type Result struct {
 	Class         Class
 	ServerWait    time.Duration
 	RemainingZero bool
+	Diagnostic    Diagnostic
 }
 
 // Deliverer makes one bounded delivery attempt. It is safe for concurrent use.
@@ -73,15 +74,21 @@ func newDeliverer(allow Allowlist, now func() time.Time, resolver *net.Resolver)
 
 // Deliver posts to the full submission endpoint and reports only sanitized metadata.
 func (d *Deliverer) Deliver(ctx context.Context, endpoint, token string, body []byte) Result {
-	resp, class := d.request(ctx, http.MethodPost, endpoint, token, body)
+	resp, class, diagnostic := d.request(ctx, http.MethodPost, endpoint, token, body)
 	if resp == nil {
-		return Result{Class: class}
+		return Result{Class: class, Diagnostic: diagnostic}
 	}
 	result := Result{
 		Status:        resp.StatusCode,
 		Class:         statusClass(resp.StatusCode),
 		ServerWait:    serverWait(resp.Header, d.now()),
 		RemainingZero: strings.TrimSpace(resp.Header.Get("X-RateLimit-Remaining")) == "0",
+	}
+	if result.Class == Redirect {
+		result.Diagnostic = Describe(endpoint, "redirect_refused", "")
+	}
+	if result.Class == Auth {
+		result.Diagnostic = Describe(endpoint, "token_invalid", "")
 	}
 	// The headers settle the attempt. A broken or oversized body cannot undo a 2xx.
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, MaxResponse))
@@ -95,13 +102,21 @@ func (d *Deliverer) Test(ctx context.Context, base, token string) (string, error
 	if err != nil {
 		return "", err
 	}
-	resp, _ := d.request(ctx, http.MethodGet, base+"/validate-token", token, nil)
+	resp, class, diagnostic := d.request(ctx, http.MethodGet, base+"/validate-token", token, nil)
 	if resp == nil {
-		return "", ErrUpstream
+		return "", &ValidationError{Class: class, Diagnostic: diagnostic}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", ErrUpstream
+		class := statusClass(resp.StatusCode)
+		code := ""
+		if class == Redirect {
+			code = "redirect_refused"
+		}
+		if class == Auth {
+			code = "token_invalid"
+		}
+		return "", &ValidationError{Class: class, Diagnostic: Describe(base, code, "")}
 	}
 	data, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponse+1))
 	if err != nil || len(data) > MaxResponse {
@@ -111,25 +126,28 @@ func (d *Deliverer) Test(ctx context.Context, base, token string) (string, error
 		Valid    bool   `json:"valid"`
 		Username string `json:"user_name"`
 	}
-	if err := json.Unmarshal(data, &result); err != nil || !result.Valid {
+	if err := json.Unmarshal(data, &result); err != nil {
 		return "", ErrUpstream
+	}
+	if !result.Valid {
+		return "", &ValidationError{Class: Auth, Diagnostic: Describe(base, "token_invalid", "")}
 	}
 	return result.Username, nil
 }
 
 // request builds a bounded request without returning raw transport errors.
-func (d *Deliverer) request(ctx context.Context, method, endpoint, token string, body []byte) (*http.Response, Class) {
+func (d *Deliverer) request(ctx context.Context, method, endpoint, token string, body []byte) (*http.Response, Class, Diagnostic) {
 	_, token, err := Normalize(endpoint, token)
 	if err != nil {
-		return nil, PolicyBlocked
+		return nil, PolicyBlocked, Describe(endpoint, "url_invalid", "")
 	}
 	req, err := http.NewRequestWithContext(ctx, method, strings.TrimSpace(endpoint), bytes.NewReader(body))
 	if err != nil {
-		return nil, PolicyBlocked
+		return nil, PolicyBlocked, Describe(endpoint, "url_invalid", "")
 	}
 	authorization := "Token " + token
 	if !validAuthorization(authorization) {
-		return nil, PolicyBlocked
+		return nil, PolicyBlocked, Describe(endpoint, "token_invalid", "")
 	}
 	req.Header.Set("Authorization", authorization)
 	req.Header.Set("Accept", "application/json")
@@ -143,9 +161,10 @@ func (d *Deliverer) request(ctx context.Context, method, endpoint, token string,
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, deliveryErrorClass(err)
+		class := deliveryErrorClass(err)
+		return nil, class, transportDiagnostic(endpoint, class, err)
 	}
-	return resp, ""
+	return resp, "", Diagnostic{}
 }
 
 // ValidStoredTarget checks local configuration without making a network request.

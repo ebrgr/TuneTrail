@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
@@ -41,7 +42,7 @@ func (s *Sqlite) probeSavedRelay(ctx context.Context, profile int32, requireHeal
 		return version, false, err
 	}
 	if _, err := relay.NewDeliverer(permissions, nil).Test(ctx, url, token); err != nil {
-		return version, false, db.ErrConflict
+		return version, false, err
 	}
 	return version, true, nil
 }
@@ -81,6 +82,10 @@ func (s *Sqlite) ConvertOccurrence(ctx context.Context, session uuid.UUID, profi
 	}
 	version, _, err := s.probeSavedRelay(ctx, profile, true)
 	if err != nil {
+		var diagnostic *relay.ValidationError
+		if errors.As(err, &diagnostic) {
+			return db.ErrConflict
+		}
 		return err
 	}
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {

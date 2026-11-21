@@ -388,10 +388,12 @@ func finishRelayItem(ctx context.Context, tx *sql.Conn, batch RelayBatch, item R
 		reason = "item_rejected"
 	}
 	data, err := json.Marshal(struct {
-		Class  relay.Class `json:"class"`
-		Status int         `json:"status"`
-		Reason string      `json:"reason,omitempty"`
-	}{Class: result.Class, Status: result.Status, Reason: reason})
+		Class      relay.Class `json:"class"`
+		Status     int         `json:"status"`
+		Reason     string      `json:"reason,omitempty"`
+		Diagnostic string      `json:"diagnostic,omitempty"`
+		Category   string      `json:"range_category,omitempty"`
+	}{Class: result.Class, Status: result.Status, Reason: reason, Diagnostic: result.Diagnostic.Code, Category: result.Diagnostic.Category})
 	if err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"net/http"
+	"time"
 )
 
 type profileRelay struct {
@@ -86,8 +87,21 @@ func TestProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 		p := middleware.ProfileFromContext(r.Context())
 		name, err := admin.TestRelay(r.Context(), store, middleware.GetUserFromContext(r.Context()), p.ID, p.Slug, body.URL, body.Token, relay.Client{})
 		if err != nil {
-			if errors.Is(err, relay.ErrUpstream) {
-				utils.WriteError(w, "relay validation unavailable", 502)
+			var diagnostic *relay.ValidationError
+			if errors.As(err, &diagnostic) {
+				relay.LogDiagnostic(r.Context(), p.ID, diagnostic.Diagnostic, time.Now())
+				class := "network"
+				if diagnostic.Class == relay.PolicyBlocked || diagnostic.Class == relay.Auth || diagnostic.Class == relay.Redirect {
+					class = "policy"
+				}
+				body := map[string]string{"class": class}
+				if admin.AuthorizeAction(middleware.GetUserFromContext(r.Context()), admin.ManageServer, nil) == nil {
+					body["reason"] = diagnostic.Diagnostic.Code
+					body["instruction"] = relay.Remedy(diagnostic.Diagnostic.Code)
+				}
+				utils.WriteJSON(w, http.StatusBadGateway, body)
+			} else if errors.Is(err, relay.ErrUpstream) {
+				utils.WriteJSON(w, http.StatusBadGateway, map[string]string{"class": "network"})
 			} else {
 				utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 			}

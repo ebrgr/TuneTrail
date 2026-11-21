@@ -94,6 +94,7 @@ type relaySeed struct {
 	http                     bool
 	private                  []netip.Prefix
 	blocked, admin           bool
+	reason, category         string
 }
 
 // relaySeeds resolves endpoints before obtaining the writer reservation.
@@ -133,6 +134,7 @@ func resolveRelaySeeds(ctx context.Context, seeds []relaySeed, resolver relayRes
 		seedIndex[i] = -1
 		seed := &seeds[i]
 		seed.blocked = true
+		seed.reason = "url_invalid"
 		canonical, key, err := canonicalRelay(seed.raw)
 		if err != nil {
 			continue
@@ -143,6 +145,7 @@ func resolveRelaySeeds(ctx context.Context, seeds []relaySeed, resolver relayRes
 		}
 		seed.canonical, seed.hostPort = canonical, key
 		seed.http = strings.HasPrefix(canonical, "http://")
+		seed.reason = "dns_resolution_failed"
 		index, ok := hostIndex[host]
 		if !ok {
 			index = len(lookups)
@@ -187,23 +190,40 @@ func resolveRelaySeeds(ctx context.Context, seeds []relaySeed, resolver relayRes
 
 // applyAddresses permits narrow admin exceptions and rejects an entire unsafe answer.
 func (seed *relaySeed) applyAddresses(addresses []netip.Addr) {
-	if len(addresses) == 0 || (seed.http && !seed.admin) {
+	if len(addresses) == 0 {
 		return
 	}
 	for _, ip := range addresses {
 		ip = ip.Unmap().WithZone("")
 		if relay.IsForbiddenAddress(ip) {
+			seed.reason = "seed_skipped_resolves_forbidden"
+			seed.category = "forbidden"
 			return
 		}
 		if relay.IsReservedAddress(ip) {
 			prefix := netip.PrefixFrom(ip, ip.BitLen())
-			if !seed.admin || !relay.ValidExceptionPrefix(prefix) {
+			if !relay.ValidExceptionPrefix(prefix) {
+				seed.reason = "seed_skipped_resolves_forbidden"
+				seed.category = "reserved"
+				return
+			}
+			if !seed.admin {
+				seed.reason = "seed_skipped_non_admin"
+				seed.category = "reserved"
 				return
 			}
 			seed.private = append(seed.private, prefix)
 		}
 	}
+	if seed.http && !seed.admin {
+		seed.reason = "seed_skipped_non_admin"
+		return
+	}
 	seed.blocked = false
+	seed.reason = "seed_not_required"
+	if seed.http || len(seed.private) > 0 {
+		seed.reason = "seeded"
+	}
 }
 
 // applyRelaySeed records a policy block or narrowly scoped operator exceptions.
@@ -290,7 +310,13 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 	if err := bootstrapPhase("relay-before-commit"); err != nil {
 		return err
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	for _, seed := range seeds {
+		relay.LogDiagnostic(ctx, seed.profile, relay.Describe(seed.raw, seed.reason, seed.category), time.Now())
+	}
+	return nil
 }
 
 // migrateDatabase applies historical Goose migrations and the atomic relay upgrade.

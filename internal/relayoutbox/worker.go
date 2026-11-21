@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
-	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 )
 
@@ -84,35 +83,6 @@ func poll(ctx, claims context.Context, store Store, now func() time.Time, ticks 
 	}
 }
 
-var policyLog struct {
-	sync.Mutex
-	next map[int32]time.Time
-}
-
-// logPolicyBlock omits network and request data and limits warnings across workers.
-func logPolicyBlock(ctx context.Context, profile int32, now time.Time) {
-	policyLog.Lock()
-	defer policyLog.Unlock()
-	if now.Before(policyLog.next[profile]) {
-		return
-	}
-	if policyLog.next == nil {
-		policyLog.next = make(map[int32]time.Time)
-	}
-	if len(policyLog.next) >= 1024 {
-		for id, deadline := range policyLog.next {
-			if !now.Before(deadline) {
-				delete(policyLog.next, id)
-			}
-		}
-		if len(policyLog.next) >= 1024 {
-			return
-		}
-	}
-	policyLog.next[profile] = now.Add(time.Minute)
-	logger.FromContext(ctx).Warn().Str("class", string(relay.PolicyBlocked)).Int32("profile_id", profile).Msg("Relay delivery paused")
-}
-
 // process persists each sub-lot before starting another POST and always releases the claim.
 func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func() time.Time) (progress bool) {
 	defer func() {
@@ -170,9 +140,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		if ctx.Err() != nil {
 			return
 		}
-		if result.Class == relay.PolicyBlocked {
-			logPolicyBlock(ctx, batch.Profile, now())
-		}
+		relay.LogDiagnostic(ctx, batch.Profile, result.Diagnostic, now())
 		settled, err := store.FinishRelayBatch(ctx, batch, items, result, now(), false)
 		if err != nil || !settled {
 			return

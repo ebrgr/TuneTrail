@@ -64,7 +64,14 @@ func TestDeliverHTTPClasses(t *testing.T) {
 			})
 			result := NewDeliverer(allow, func() time.Time { return now }).Deliver(
 				t.Context(), server.URL+"/prefix/submit-listens", fixtureToken, []byte(payload))
-			require.Equal(t, Result{Status: status, Class: class, ServerWait: time.Minute, RemainingZero: true}, result)
+			expected := Result{Status: status, Class: class, ServerWait: time.Minute, RemainingZero: true}
+			if class == Auth {
+				expected.Diagnostic = Describe(server.URL, "token_invalid", "")
+			}
+			if class == Redirect {
+				expected.Diagnostic = Describe(server.URL, "redirect_refused", "")
+			}
+			require.Equal(t, expected, result)
 		})
 	}
 }
@@ -115,7 +122,7 @@ func TestDeliverTransportFailures(t *testing.T) {
 	result := delivery.Deliver(t.Context(), "https://example.test/?secret="+fixtureToken, fixtureToken, []byte("private-body"))
 	require.Equal(t, PolicyBlocked, result.Class)
 	require.NotContains(t, fmt.Sprintf("%+v", result), fixtureToken)
-	require.NotContains(t, fmt.Sprintf("%+v", result), "example.test")
+	require.Equal(t, "example.test", result.Diagnostic.Host)
 	require.NotContains(t, fmt.Sprintf("%+v", result), "private-body")
 }
 
@@ -129,7 +136,7 @@ func TestDeliverInvalidAuthorization(t *testing.T) {
 	for _, control := range []string{"\x00", "\x1f", "\x7f", "\r", "\n"} {
 		token := "secret" + control + "token"
 		result := delivery.Deliver(t.Context(), "https://relay.test/submit-listens", token, nil)
-		require.Equal(t, Result{Class: PolicyBlocked}, result)
+		require.Equal(t, PolicyBlocked, result.Class)
 		require.NotContains(t, fmt.Sprintf("%+v", result), "secret")
 	}
 	require.True(t, validAuthorization("Token a\tb"))

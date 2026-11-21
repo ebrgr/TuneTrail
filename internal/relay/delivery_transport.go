@@ -59,29 +59,50 @@ var forbiddenPrefixes = [...]netip.Prefix{
 
 // dialAllowed checks the address the kernel will actually dial, including mapped IPv4.
 func dialAllowed(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) bool {
+	return dialPolicy(hostPort, sockaddr, allow, plainHTTP) == nil
+}
+
+// dialPolicy classifies a denial using only the category of the resolved address.
+func dialPolicy(hostPort, sockaddr string, allow Allowlist, plainHTTP bool) error {
 	address, err := netip.ParseAddrPort(sockaddr)
 	if err != nil {
-		return false
+		return blockedAddress{"forbidden_range", "reserved"}
 	}
 	ip := address.Addr().Unmap().WithZone("")
 	if IsForbiddenAddress(ip) {
-		return false
+		for _, prefix := range forbiddenPrefixes {
+			if !prefix.Addr().Is4() && prefix.Bits() < 128 {
+				continue
+			}
+			if prefix.Contains(ip) {
+				return blockedAddress{"metadata_endpoint", "metadata"}
+			}
+		}
+		return blockedAddress{"forbidden_range", addressCategory(ip)}
+	}
+	scheme := "https"
+	if plainHTTP {
+		scheme = "http"
 	}
 	if allow != nil {
-		// The transport supplies an explicit port even for default scheme ports.
 		host, port, err := net.SplitHostPort(hostPort)
 		if err == nil && port != "" {
 			canonical := net.JoinHostPort(strings.ToLower(strings.TrimSuffix(host, ".")), port)
-			scheme := "https"
-			if plainHTTP {
-				scheme = "http"
-			}
 			if allow.Allows(scheme, canonical, ip) {
-				return true
+				return nil
+			}
+			if IsReservedAddress(ip) && !allow.Allows("https", canonical, ip) {
+				return blockedAddress{"private_network_not_allowed", addressCategory(ip)}
 			}
 		}
 	}
-	return !plainHTTP && !IsReservedAddress(ip)
+	if plainHTTP {
+		return blockedAddress{"http_not_allowed", addressCategory(ip)}
+	}
+	if IsReservedAddress(ip) {
+		return blockedAddress{"private_network_not_allowed", addressCategory(ip)}
+	}
+	return nil
 }
 
 // IsForbiddenAddress reports addresses that operator exceptions cannot authorize.
@@ -157,10 +178,7 @@ func newDeliveryTransport(allow Allowlist, resolver *net.Resolver, plainHTTP boo
 				Timeout:  5 * time.Second,
 				Resolver: resolver,
 				Control: func(_ string, sockaddr string, _ syscall.RawConn) error {
-					if !dialAllowed(hostPort, sockaddr, allow, plainHTTP) {
-						return errDialPolicy
-					}
-					return nil
+					return dialPolicy(hostPort, sockaddr, allow, plainHTTP)
 				},
 			}
 			// DialContext can report the first policy error when a later public address is unreachable.
