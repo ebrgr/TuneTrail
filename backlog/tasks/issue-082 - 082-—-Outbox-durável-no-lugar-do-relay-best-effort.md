@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T02:45:00Z'
+updated_date: '2026-11-21T11:12:00Z'
 labels:
   - ingestao
   - api
@@ -134,6 +134,15 @@ created: 2026-11-21T02:45:00Z
 ---
 
 Decisão do usuário de 20/11/2026 aplicada: novas opções de runtime da 082 via Servidor root e conf.toml, sem nova variável de ambiente. Auditoria e constantes documentadas no PLANO. allow_http e allow_private_network são globais e desligadas por padrão, com reinício. Exceções por destino editáveis em formulários nativos com política root e CSRF. Host e porta configurados autorizados em avisos; DNS resolvido e segredos continuam excluídos. Diagnóstico de validação detalhado para root e somente classe para os demais. Jornada administrativa, testes dirigidos com race e make check passaram (13/13 E2E). Parada para Advisor sobre configuração, encerramento e falhas ambíguas.
+
+---
+
+author: Codex
+created: 2026-11-21T11:12:00Z
+
+---
+
+Retorno pós-E3 aprovado pelo usuário em 21/11 aplicado. DNS de boot pausa por 30 s e tenta novamente; loopback e link-local exigem exceção por destino mesmo com a chave global; a UI e o guia descrevem o alcance para não-root e a via bruta. Diagnóstico público consolidado, autoridades IDNA normalizadas, aviso de CIDR amplo e pausa preventiva em INFO. SIGTERM interrompe claims e resolvedor de imediato; 2xx conhecido é persistido com contexto independente. make check passou (13/13 E2E), testes dirigidos com -race e graphify AST passaram. Cenário SIGTERM com HTTP em voo saiu em 4,005 s e retomou após reinício. Guia e CHANGELOG cobrem reentrega e impacto do upgrade. Retenção segue para ISSUE-083; medições e confirmação de deduplicação de Maloja/multi-scrobbler ficam na E4. Aguardando nova revisão do Advisor, sem iniciar E4 nem alterar status ou AC4.
 
 ---
 <!-- COMMENTS:END -->
