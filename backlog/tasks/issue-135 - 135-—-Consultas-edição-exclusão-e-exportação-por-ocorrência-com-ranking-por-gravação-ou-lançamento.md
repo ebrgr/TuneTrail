@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-15T16:43:00Z'
-updated_date: '2026-11-19T19:06:00Z'
+updated_date: '2026-11-21T22:02:00Z'
 labels:
   - catalogo
   - ui
@@ -32,8 +32,7 @@ Recorte 5 do estudo da ISSUE-116 (doc-036). Consultas, edição, fusão, exclus�
 <!-- AC:BEGIN -->
 - [ ] #1 Chave 'por gravação' / 'por lançamento' no ranking de faixas, padrão por gravação; soma por lançamento igual ao total por gravação
 - [ ] #2 Rankings e novidades por perfil seguem o contrato da ISSUE-132
-- [ ] #3 Editar ou remover um lançamento não muda outro; exportar e reimportar preserva ocorrência e proveniência
-- [ ] #4 Duas escutas simultâneas de perfis distintos sobrevivem; planos de consulta medidos em fixtures grandes
+- [ ] #3 Duas escutas simultâneas de perfis distintos contam ambas no ranking; planos de consulta do ranking medidos em fixture grande
 <!-- AC:END -->
 
 ## Comments
@@ -54,6 +53,15 @@ created: 2026-11-19T19:06:00Z
 ---
 
 Entradas obrigatórias da ISSUE-133: merge reversível de gravações para ocorrências equivalentes em lançamentos distintos (faixas com MBID nulo viram gravações separadas e o ranking fica dividido até reconciliação); confirmar reimportação e compatibilidade integrada do corte, pois AC6/AC7 da 133 usam primitivas SQL em fixture pós-corte. Versionar a comparação HTTP do AC3 e reaplicá-la aos leitores ativados.
+
+---
+
+author: claude
+created: 2026-11-21T22:02:00Z
+
+---
+
+Escopo dividido em 21/11/2026 (decisão do usuário): edição, exclusão, fusão e exportação/reimportação (antigos AC #3 e #4) foram para a ISSUE-183. Esta issue fica com a chave por gravação/lançamento e os rankings por perfil. Escuta sem lançamento conta no balde 'Lançamento desconhecido'. Advisor (effort high) depois da implementação.
 
 ---
 <!-- COMMENTS:END -->
