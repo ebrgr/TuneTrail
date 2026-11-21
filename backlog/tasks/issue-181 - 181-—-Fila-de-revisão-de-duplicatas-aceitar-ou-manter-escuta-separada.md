@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-21T23:27:00Z'
+updated_date: '2026-11-21T23:32:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -66,6 +66,15 @@ created: 2026-11-21T23:27:00Z
 ---
 
 Verificação: ambos os resolvedores já geravam pending_duplicate. A flag legada era bloqueada na API e o resolvedor de ocorrência não a consultava. A central passou a oferecer controle por perfil, fila paginada e decisão transacional com CSRF e outbox elegível. Testes de isolamento, concorrência, rollback e reenvio passaram. Referência ISSUE-075 regenerada e validada no Orca. EXPLAIN com 300 mil recibos confirmou a janela de fontes e os índices do schema v16. Conflitos sem identidade ou candidato permanecem visíveis com evidência e sem ação de decisão.
+
+---
+
+author: claude
+created: 2026-11-21T23:32:00Z
+
+---
+
+Reviewer: sem BUG; 4 RISCOs (padrão da flag Revisar com a flag desligada aceita como separada; janela de 10 mil recibos em fontes; autor da decisão sem ID; migração recria índice legado). Testes sqlite -race, engine, adminui e webui OK. Ver backlog/evidencias/issue-181/PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->
