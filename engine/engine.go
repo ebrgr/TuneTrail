@@ -21,6 +21,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/images"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	mbz "github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/relayoutbox"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/go-chi/chi/v5"
@@ -238,12 +239,27 @@ func Run(
 		Handler: mux,
 	}
 
+	// Activate the policy before any submission handler can observe the database.
+	relayStore, ok := store.(interface {
+		relayoutbox.Store
+		ActivateRelayDelivery(context.Context) error
+	})
+	if !ok {
+		return errors.New("durable relay store unavailable")
+	}
+	if err := relayStore.ActivateRelayDelivery(ctx); err != nil {
+		return fmt.Errorf("activate durable relay: %w", err)
+	}
+	relayCtx, cancelRelay := context.WithCancel(ctx)
+	defer cancelRelay()
+	claimCtx, stopClaims := context.WithCancel(relayCtx)
+	defer stopClaims()
+	relayDone := relayoutbox.Run(relayCtx, claimCtx, relayStore)
+	serveErr := make(chan error, 1)
 	go func() {
 		ready.Store(true)
 		l.Info().Msgf("Engine: Listening on %s", cfg.ListenAddr())
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			l.Fatal().Err(err).Msg("Engine: Error when running ListenAndServe")
-		}
+		serveErr <- httpServer.ListenAndServe()
 	}()
 
 	// Drain durable active receipts even after the master admission switch is disabled.
@@ -274,26 +290,41 @@ func Run(
 	l.Info().Msg("Engine: Initialization finished")
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	defer signal.Stop(quit)
+	var runErr error
+	select {
+	case <-quit:
+	case err := <-serveErr:
+		if !errors.Is(err, http.ErrServerClosed) {
+			runErr = err
+		}
+	}
+	ready.Store(false)
 	l.Info().Msg("Engine: Received server shutdown notice")
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	l.Info().Msg("Engine: Waiting for all processes to finish")
+	// Stop admission first; budget each subsequent phase independently.
+	admissionCtx, stopAdmission := context.WithTimeout(context.WithoutCancel(ctx), 4*time.Second)
+	if err := httpServer.Shutdown(admissionCtx); err != nil {
+		runErr = errors.Join(runErr, err, httpServer.Close())
+	}
+	stopAdmission()
+	stopClaims()
 	stopIngest()
+	grace := time.NewTimer(3 * time.Second)
 	select {
-	case <-ingestDone:
-	case <-ctx.Done():
+	case <-relayDone:
+	case <-grace.C:
+		cancelRelay()
+		<-relayDone
 	}
+	grace.Stop()
+	<-ingestDone
 	mbzC.Shutdown()
-	if err := httpServer.Shutdown(ctx); err != nil {
-		l.Fatal().Err(err).Msg("Engine: Error during server shutdown")
-		return err
-	}
-	// Stop provider queues after active HTTP requests have drained.
 	images.Shutdown()
-	l.Info().Msg("Engine: Shutdown successful")
-	return nil
+	if runErr == nil {
+		l.Info().Msg("Engine: Shutdown successful")
+	}
+	return runErr
 }
 
 func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {

@@ -157,8 +157,11 @@ func TestAdministrationJourney(t *testing.T) {
 	require.Equal(t, "fake-token", secret)
 	relayPage := call("GET", fmt.Sprintf("/admin?profile=%d", b), nil, session)
 	require.Equal(t, 200, relayPage.Code)
-	require.Contains(t, relayPage.Body.String(), `type="text" name="token" value="fake-token"`)
+	require.Contains(t, relayPage.Body.String(), `type="password" name="token"`)
+	require.NotContains(t, relayPage.Body.String(), "fake-token")
 	blankRelay := url.Values{"csrf_token": {token}, "profile_slug": {"bob"}, "url": {"http://localhost:1234"}, "token": {""}}
+	require.Equal(t, 303, call("POST", bp+"relay/save", blankRelay, session).Code)
+	blankRelay.Set("url", "http://localhost:4321")
 	require.Equal(t, 400, call("POST", bp+"relay/save", blankRelay, session).Code)
 	_, unchangedRelay, err := s.GetProfileRelay(ctx, b)
 	require.NoError(t, err)

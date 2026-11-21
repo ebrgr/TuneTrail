@@ -2,9 +2,9 @@
 package relayoutbox
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"sync"
 	"time"
@@ -115,7 +115,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		part := queue[0]
 		queue = queue[1:]
 		items := make([]sqlite.RelayItem, 0, len(part))
-		payload := make([]json.RawMessage, 0, len(part))
+		payload := make([][]byte, 0, len(part))
 		for _, item := range part {
 			raw, err := store.RelayPayload(ctx, batch, item)
 			if errors.Is(err, sql.ErrNoRows) {
@@ -137,13 +137,9 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		if len(items) > 1 {
 			kind = "import"
 		}
-		body, err := json.Marshal(struct {
-			Type    string            `json:"listen_type"`
-			Payload []json.RawMessage `json:"payload"`
-		}{kind, payload})
-		if err != nil {
-			return
-		}
+		// Preserve the versioned bytes for each item across envelope compositions.
+		body := append([]byte(`{"listen_type":"`+kind+`","payload":[`), bytes.Join(payload, []byte(","))...)
+		body = append(body, ']', '}')
 		renewed, err := store.RenewRelayBatch(ctx, batch, now(), items...)
 		if err != nil || !renewed {
 			return

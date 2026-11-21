@@ -14,7 +14,7 @@ import (
 type profileRelay struct {
 	Enabled bool   `json:"enabled"`
 	URL     string `json:"url"`
-	Token   string `json:"token"`
+	Token   string `json:"token,omitempty"`
 }
 
 // decodeProfileRelay retains the JSON size and destination validation contract.
@@ -25,7 +25,12 @@ func decodeProfileRelay(w http.ResponseWriter, r *http.Request) (profileRelay, b
 		utils.WriteError(w, "valid relay base URL and token required", 400)
 		return profileRelay{}, false
 	}
-	body.URL, body.Token, err = relay.Normalize(body.URL, body.Token)
+	// A blank token may reuse the saved credential for an unchanged endpoint.
+	validationToken := body.Token
+	if validationToken == "" {
+		validationToken = "placeholder"
+	}
+	body.URL, _, err = relay.Normalize(body.URL, validationToken)
 	if err != nil {
 		utils.WriteError(w, "valid relay base URL and token required", 400)
 		return profileRelay{}, false
@@ -33,7 +38,7 @@ func decodeProfileRelay(w http.ResponseWriter, r *http.Request) (profileRelay, b
 	return body, true
 }
 
-// GetProfileRelayHandler returns secrets only in a no-store admin response.
+// GetProfileRelayHandler returns saved state without the credential.
 func GetProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
@@ -43,7 +48,7 @@ func GetProfileRelayHandler(store db.ProfileStore) http.HandlerFunc {
 			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 			return
 		}
-		utils.WriteJSON(w, 200, profileRelay{Enabled: url != "" && token != "", URL: url, Token: token})
+		utils.WriteJSON(w, 200, profileRelay{Enabled: url != "" && token != "", URL: url})
 	}
 }
 

@@ -78,6 +78,11 @@ func bindRoutes(
 				r.Delete("/avatar", handlers.ProfileAvatarHandler(db))
 				r.Post("/import", profileImportHandler(db, mbz))
 				r.Get("/relay", handlers.GetProfileRelayHandler(db))
+				if management, ok := db.(handlers.RelayManagementStore); ok {
+					r.With(middleware.RequireAdmin(db)).Put("/relay/permissions", handlers.RelayManagementHandler(management, "permission"))
+					r.With(middleware.RequireAdmin(db)).Post("/relay/resume", handlers.RelayManagementHandler(management, "resume"))
+					r.With(middleware.RequireAdmin(db)).Post("/ingest-activation/occurrence", handlers.RelayManagementHandler(management, "occurrence"))
+				}
 				r.Post("/relay/test", handlers.TestProfileRelayHandler(db))
 				r.Put("/relay", handlers.SetProfileRelayHandler(db))
 				r.Delete("/relay", handlers.SetProfileRelayHandler(db))

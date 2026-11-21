@@ -114,6 +114,11 @@ def validate(server):
     f.request('POST',prefix+f'keys/{key["id"]}/revoke',dict(common,confirm='1'),expected=303)
     server.request('GET',LBZ+'/validate-token',token=key['key'],expected=401)
     with relay_server() as origin:
+        host_port = origin.removeprefix("http://")
+        server.request('PUT', WEB+'/profiles/mara/relay/permissions',
+                       {'host_port':host_port,'allow_http':True}, admin=True, expected=204)
+        server.request('PUT', WEB+'/profiles/mara/relay/permissions',
+                       {'host_port':host_port,'cidr':'127.0.0.1/32','allow_private':True}, admin=True, expected=204)
         draft=dict(common,url=origin,token='fictional-token')
         f.request('POST',prefix+'relay/test',draft,expected=303)
         assert not server.request('GET',WEB+'/profiles/mara/relay',admin=True)['enabled']

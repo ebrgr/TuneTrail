@@ -86,10 +86,11 @@ type Batch struct {
 }
 
 type Result struct {
-	ReceiptID string
-	Decision  string
-	Pending   bool
-	Replay    bool
+	DeliveryPolicy string
+	ReceiptID      string
+	Decision       string
+	Pending        bool
+	Replay         bool
 }
 
 // JobMode pins admission and the resolver variant for every page of an import.
@@ -102,6 +103,11 @@ type JobMode struct {
 type Admission interface {
 	AdmitIngest(context.Context, Batch, bool, *JobMode, error) (bool, []Result, error)
 	BeginImportIngest(context.Context, int32, bool) (JobMode, error)
+}
+
+// PolicyAdmission exposes the transaction's effective relay policy for HTTP submissions.
+type PolicyAdmission interface {
+	AdmitIngestPolicy(context.Context, Batch, bool, *JobMode, error) (bool, []Result, string, error)
 }
 
 type Receiver interface {

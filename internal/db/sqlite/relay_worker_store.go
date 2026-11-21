@@ -51,17 +51,17 @@ func (s *Sqlite) FailRelaySource(ctx context.Context, batch RelayBatch, item Rel
 
 // RelayDeliveryStatus projects safe health data without loading credentials or payloads.
 type RelayDeliveryStatus struct {
-	ID, State                string
-	Attempts                 int64
-	LastAttempt, NextAttempt sql.NullInt64
-	Reason                   string
+	ID, EventID, State                    string
+	Attempts                              int64
+	LastAttempt, NextAttempt, DeliveredAt sql.NullInt64
+	Reason                                string
 }
 
 // RelayDeliveries reads a stable page of delivery state for the requested profile.
 func (s *Sqlite) RelayDeliveries(ctx context.Context, profile int32, after string) ([]RelayDeliveryStatus, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT o.id,
+	rows, err := s.db.QueryContext(ctx, `SELECT o.id,o.event_id,
 		CASE WHEN o.relay_generation<>d.generation AND (o.state IN ('pending','retryable') OR json_extract(o.result,'$.reason')='queue_capacity') THEN 'failed' ELSE o.state END,
-		o.attempt_count,o.last_attempt_at,
+		o.attempt_count,o.last_attempt_at,CASE WHEN o.state='sent' THEN o.closed_at END,
 		CASE WHEN o.relay_generation=d.generation THEN o.next_attempt_at END,
 		CASE WHEN o.relay_generation<>d.generation AND (o.state IN ('pending','retryable') OR json_extract(o.result,'$.reason')='queue_capacity') THEN 'destination_changed'
 		ELSE coalesce(json_extract(o.result,'$.reason'),json_extract(o.result,'$.class'),'') END
@@ -75,7 +75,7 @@ func (s *Sqlite) RelayDeliveries(ctx context.Context, profile int32, after strin
 	var result []RelayDeliveryStatus
 	for rows.Next() {
 		var item RelayDeliveryStatus
-		if err := rows.Scan(&item.ID, &item.State, &item.Attempts, &item.LastAttempt, &item.NextAttempt, &item.Reason); err != nil {
+		if err := rows.Scan(&item.ID, &item.EventID, &item.State, &item.Attempts, &item.LastAttempt, &item.DeliveredAt, &item.NextAttempt, &item.Reason); err != nil {
 			return nil, err
 		}
 		result = append(result, item)

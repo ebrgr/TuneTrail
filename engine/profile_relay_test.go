@@ -3,8 +3,10 @@ package engine
 import (
 	"context"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -43,7 +45,14 @@ func TestProfileRelayAdministration(t *testing.T) {
 	w := a.request("GET", path, "", "", true)
 	require.Equal(t, 200, w.Code)
 	require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
-	require.JSONEq(t, `{"enabled":false,"url":"","token":""}`, w.Body.String())
+	require.JSONEq(t, `{"enabled":false,"url":""}`, w.Body.String())
+	w = a.request("POST", path+"/test", body, "", true)
+	require.Equal(t, 502, w.Code)
+	require.Zero(t, calls.Load())
+	host := strings.TrimPrefix(server.URL, "http://")
+	require.NoError(t, a.store.SetRelayPermission(t.Context(), 1, relay.Permission{HostPort: host, HTTP: true}))
+	require.Equal(t, 502, a.request("POST", path+"/test", body, "", true).Code)
+	require.NoError(t, a.store.SetRelayPermission(t.Context(), 1, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
 	w = a.request("POST", path+"/test", body, "", true)
 	require.Equal(t, 200, w.Code, w.Body.String())
 	require.Contains(t, w.Body.String(), "external-user")
@@ -53,9 +62,9 @@ func TestProfileRelayAdministration(t *testing.T) {
 	require.Empty(t, url, "testing must not enable or save a relay")
 	require.Equal(t, 204, a.request("PUT", path, body, "", true).Code)
 	w = a.request("GET", path, "", "", true)
-	require.JSONEq(t, fmt.Sprintf(`{"enabled":true,"url":%q,"token":"external-token"}`, server.URL+"/1"), w.Body.String())
+	require.JSONEq(t, fmt.Sprintf(`{"enabled":true,"url":%q}`, server.URL+"/1"), w.Body.String())
 	w = a.request("GET", "/apis/web/v1/profiles/second/relay", "", "", true)
-	require.JSONEq(t, `{"enabled":false,"url":"","token":""}`, w.Body.String())
+	require.JSONEq(t, `{"enabled":false,"url":""}`, w.Body.String())
 	for _, token := range []string{"invalid", "redirect", "invalid-json"} {
 		w = a.request("POST", path+"/test", strings.Replace(body, "external-token", token, 1), "", true)
 		require.GreaterOrEqual(t, w.Code, 400, token)
@@ -66,7 +75,7 @@ func TestProfileRelayAdministration(t *testing.T) {
 	}
 	require.Equal(t, 204, a.request("DELETE", path, "", "", true).Code)
 	w = a.request("GET", path, "", "", true)
-	require.JSONEq(t, `{"enabled":false,"url":"","token":""}`, w.Body.String())
+	require.JSONEq(t, `{"enabled":false,"url":""}`, w.Body.String())
 }
 
 const serverURLPlaceholder = "https://example.invalid/never-forward-token"

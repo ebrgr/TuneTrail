@@ -3,10 +3,12 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"errors"
+	"fmt"
 	"net/netip"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/relay"
+	"github.com/google/uuid"
 )
 
 // RelayPermission separates cleartext permission from access to reserved addresses.
@@ -14,22 +16,43 @@ type RelayPermission = relay.Permission
 
 // SetRelayPermission saves a validated operator exception for one profile.
 func (s *Sqlite) SetRelayPermission(ctx context.Context, profile int32, permission RelayPermission) error {
+	return s.setRelayPermission(ctx, uuid.Nil, profile, permission)
+}
+
+// SetRelayPermissionAsRoot checks a live instance administrator in the write transaction.
+func (s *Sqlite) SetRelayPermissionAsRoot(ctx context.Context, session uuid.UUID, profile int32, permission relay.Permission) error {
+	if session == uuid.Nil {
+		return db.ErrForbidden
+	}
+	return s.setRelayPermission(ctx, session, profile, permission)
+}
+
+// setRelayPermission persists one exception and fences previous policy snapshots.
+func (s *Sqlite) setRelayPermission(ctx context.Context, session uuid.UUID, profile int32, permission relay.Permission) error {
 	host, err := normalizeRelayHostPort(permission.HostPort)
 	if err != nil {
-		return err
+		return fmt.Errorf("relay host and port: %w", db.ErrInvalidInput)
 	}
 	cidr := ""
 	if permission.Prefix.IsValid() {
 		prefix := permission.Prefix.Masked()
 		if !permission.Private || !relay.ValidExceptionPrefix(prefix) || !relay.IsReservedPrefix(prefix) {
-			return errors.New("invalid relay exception prefix")
+			return fmt.Errorf("invalid relay exception prefix: %w", db.ErrInvalidInput)
 		}
 		cidr = prefix.String()
 	}
 	if (!permission.HTTP && !permission.Private) || (permission.Private && cidr == "") {
-		return errors.New("invalid relay permissions")
+		return fmt.Errorf("invalid relay permissions: %w", db.ErrInvalidInput)
 	}
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		if session != uuid.Nil {
+			if err := checkIngestRoot(ctx, tx, session); err != nil {
+				return err
+			}
+		}
+		if _, err := tx.ExecContext(ctx, "INSERT INTO relay_destinations(profile_id) VALUES(?) ON CONFLICT DO NOTHING", profile); err != nil {
+			return err
+		}
 		result, err := tx.ExecContext(ctx, `INSERT INTO relay_allowlist VALUES(?,?,?,?,?,'manual')
 			ON CONFLICT(profile_id,host_port,cidr,origin) DO UPDATE SET allow_http=excluded.allow_http,allow_private=excluded.allow_private
 			WHERE allow_http<>excluded.allow_http OR allow_private<>excluded.allow_private`,
@@ -66,7 +89,7 @@ func (s *Sqlite) RelayPermissions(ctx context.Context, profile int32) (relay.Per
 		if cidr != "" {
 			p.Prefix, err = netip.ParsePrefix(cidr)
 			if err != nil || !p.Private || !relay.ValidExceptionPrefix(p.Prefix) || !relay.IsReservedPrefix(p.Prefix) {
-				return nil, errors.New("invalid stored relay exception")
+				return nil, fmt.Errorf("invalid stored relay exception")
 			}
 		}
 		permissions = append(permissions, p)

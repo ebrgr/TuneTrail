@@ -22,7 +22,7 @@ func SaveRelay(ctx context.Context, store db.ProfileStore, user *models.User, id
 	if _, err := Profile(ctx, store, user, id, slug); err != nil {
 		return err
 	}
-	raw, token, err := relay.Normalize(raw, token)
+	raw, token, err := relayDraft(ctx, store, id, raw, token)
 	if err != nil {
 		return err
 	}
@@ -44,5 +44,41 @@ func TestRelay(ctx context.Context, store db.ProfileStore, user *models.User, id
 	if _, err := Profile(ctx, store, user, id, slug); err != nil {
 		return "", err
 	}
-	return client.Test(ctx, raw, token)
+	raw, token, err := relayDraft(ctx, store, id, raw, token)
+	if err != nil {
+		return "", err
+	}
+	// Tests can inject a bounded fake transport. Live configuration always uses the policy dialer.
+	if client.Transport != nil {
+		return client.Test(ctx, raw, token)
+	}
+	var permissions relay.Permissions
+	if scoped, ok := store.(interface {
+		RelayPermissions(context.Context, int32) (relay.Permissions, error)
+	}); ok {
+		permissions, err = scoped.RelayPermissions(ctx, id)
+		if err != nil {
+			return "", err
+		}
+	}
+	return relay.NewDeliverer(permissions, nil).Test(ctx, raw, token)
+}
+
+// relayDraft reuses a saved credential only for the same endpoint.
+func relayDraft(ctx context.Context, store db.ProfileStore, id int32, raw, token string) (string, string, error) {
+	if token != "" {
+		return relay.Normalize(raw, token)
+	}
+	base, _, err := relay.Normalize(raw, "placeholder")
+	if err != nil {
+		return "", "", err
+	}
+	saved, secret, err := store.GetProfileRelay(ctx, id)
+	if err != nil {
+		return "", "", err
+	}
+	if base != saved || secret == "" {
+		return "", "", db.ErrInvalidInput
+	}
+	return relay.Normalize(base, secret)
 }

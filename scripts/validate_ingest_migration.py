@@ -47,7 +47,7 @@ def check(path, version):
         assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (version,)
         assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
         if version >= 12:
-            assert conn.execute("SELECT policy FROM relay_delivery_gate WHERE id=1").fetchone() == ("legacy",)
+            assert conn.execute("SELECT policy FROM relay_delivery_gate WHERE id=1").fetchone() == ("durable",)
             columns = {row[1] for row in conn.execute("PRAGMA table_info(ingest_events)")}
             assert "delivery_policy" in columns
         assert conn.execute('PRAGMA foreign_key_check').fetchall() == []

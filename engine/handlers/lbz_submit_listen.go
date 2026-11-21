@@ -207,8 +207,11 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 		if receiver, ok := store.(ingest.Receiver); ok && req.ListenType != ListenTypePlayingNow {
 			batch, invalid := listenIngestBatch(profile.ID, req, r.Header.Get("Idempotency-Key"), receivedAt)
 			var active bool
+			policy := "legacy"
 			var err error
-			if admission, ok := store.(ingest.Admission); ok {
+			if admission, ok := store.(ingest.PolicyAdmission); ok {
+				active, _, policy, err = admission.AdmitIngestPolicy(r.Context(), batch, cfg.ActiveIngestEnabled(), nil, invalid)
+			} else if admission, ok := store.(ingest.Admission); ok {
 				active, _, err = admission.AdmitIngest(r.Context(), batch, cfg.ActiveIngestEnabled(), nil, invalid)
 			} else {
 				_, err = receiver.ReceiveBatch(r.Context(), batch)
@@ -231,7 +234,10 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 				return
 			case active:
 				writeListenOK(w)
-				relayListenRequest(r.Context(), store, profile.ID, requestBytes, l)
+				// Active replays use the committed admission policy, including old receipts.
+				if policy == "legacy" {
+					relayListenRequest(r.Context(), store, profile.ID, requestBytes, l)
+				}
 				return
 			case err != nil:
 				l.Warn().Msg("ListenBrainz shadow receipt failed")

@@ -188,4 +188,5 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 ## ESTADO DA E3
 
 - D1(a): a 012 pré-publicação guarda apenas contadores diários UTC de envios após exclusão de histórico, com retenção de 30 dias. PurgeAllData limpa também os agregados. Recriar bases locais v12 anteriores a esta emenda.
-- Pendente: transporte com permissões por esquema, worker e shutdown, ativação atômica da política e D4, testes e Reviewer. Custo conhecido: excluir perfil de 100 mil itens com histórico e cascatas levou 2,13 s numa transação.
+- Feito: transporte e GET de validação com allowlist por esquema, store/worker, ativação atômica da política com o handler e o ciclo de vida. O corte D4 usa somente o gate e exige perfil ativo, revisão de configuração estável e relay saudável/permitido quando configurado. GET administrativo e HTML omitem o token. Campo vazio reutiliza o token salvo somente na mesma URL.
+- Pendente: testes finais, CHANGELOG, documentação, evidências e Reviewer. Custo conhecido: excluir perfil de 100 mil itens com histórico e cascatas levou 2,13 s numa transação.

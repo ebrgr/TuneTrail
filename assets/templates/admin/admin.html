@@ -274,7 +274,7 @@
                     <input type="hidden" name="submission_token" value="{{$.Submission}}">
                     <input type="hidden" name="profile_slug" value="{{.Slug}}">
                     <label>{{tr "admin.text.server_url" "Server URL"}} <input name="url" value="{{$.RelayURL}}" required></label>
-                    <label>{{tr "admin.text.token" "Token"}} <input type="text" name="token" value="{{$.RelayToken}}" autocomplete="off" required></label>
+                    <label>{{tr "admin.text.token" "Token"}} <input type="password" name="token" autocomplete="new-password"></label>
                     <button formaction="/admin/profile/{{.ID}}/relay/save">{{tr "admin.text.save_relay" "Save relay"}}</button>
                     <button formaction="/admin/profile/{{.ID}}/relay/test">{{tr "admin.text.test_without_saving" "Test without saving"}}</button>
                   </form>

@@ -147,7 +147,7 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 	}
 	var profileID sql.NullInt64
 	if err := tx.QueryRowContext(ctx, `SELECT CASE WHEN (SELECT COUNT(*) FROM listening_profiles)=1 THEN
-   (SELECT m.id FROM listening_profiles m JOIN users u ON u.id=m.user_id WHERE u.role='admin' LIMIT 1) END`).Scan(&profileID); err != nil {
+   (SELECT m.id FROM listening_profiles m JOIN users u ON u.id=m.user_id WHERE u.role='admin' AND (EXISTS(SELECT 1 FROM profile_relays WHERE profile_id=m.id) OR NOT EXISTS(SELECT 1 FROM profile_ingest_flags WHERE profile_id=m.id AND occurrence_write=1)) LIMIT 1) END`).Scan(&profileID); err != nil {
 		return err
 	}
 	if _, err := tx.ExecContext(ctx, `INSERT INTO legacy_relay_binding(id,profile_id) VALUES (1,?)`, profileID); err != nil {
@@ -181,21 +181,30 @@ func (s *Sqlite) InitializeLegacyRelay(ctx context.Context, url, token string) e
 	}
 	return nil
 }
+
+// SetProfileRelay persists a canonical endpoint, requiring validation for occurrence profiles.
 func (s *Sqlite) SetProfileRelay(ctx context.Context, id int32, url, token string) error {
 	if url == "" && token == "" {
-		_, err := s.db.ExecContext(ctx, `DELETE FROM profile_relays WHERE profile_id=?`, id)
+		_, err := s.db.ExecContext(ctx, "DELETE FROM profile_relays WHERE profile_id=?", id)
 		return err
 	}
-	// Normalize cosmetic URL changes before the destination trigger compares configurations.
-	if canonical, _, normalizeErr := canonicalRelay(url); normalizeErr == nil {
+	if canonical, _, err := canonicalRelay(url); err == nil {
 		url = canonical
 	}
-	_, err := s.db.ExecContext(ctx, `INSERT INTO profile_relays(profile_id,url,token) VALUES (?,?,?) ON CONFLICT(profile_id) DO UPDATE SET url=excluded.url,token=excluded.token`, id, url, token)
-	// Expose an incompatible relay configuration as an administrative conflict.
-	if isOccurrenceGuard(err, "Relay conflicts") {
-		return fmt.Errorf("SetProfileRelay: %w: %w", db.ErrConflict, err)
+	validated, version, err := s.validateOccurrenceRelay(ctx, id, url, token)
+	if err != nil {
+		return err
 	}
-	return err
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		if err := requireOccurrenceRelayValidation(ctx, tx, id, validated, version); err != nil {
+			return err
+		}
+		_, err := tx.ExecContext(ctx, "INSERT INTO profile_relays(profile_id,url,token) VALUES(?,?,?) ON CONFLICT(profile_id) DO UPDATE SET url=excluded.url,token=excluded.token", id, url, token)
+		if isOccurrenceGuard(err, "Relay conflicts") {
+			return db.ErrConflict
+		}
+		return err
+	})
 }
 
 func validProfileIdentity(name, slug string) bool {

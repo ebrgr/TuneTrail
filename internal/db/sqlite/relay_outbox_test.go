@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -166,9 +168,40 @@ func TestRelayD4KeepsTheLegacyCut(t *testing.T) {
 	require.Error(t, s.SetProfileRelay(t.Context(), 2, "https://relay.test", "fixture"))
 	execSQL(t, s, "UPDATE relay_delivery_gate SET policy='durable'")
 	execSQL(t, s, "UPDATE profile_ingest_flags SET occurrence_write=1 WHERE profile_id=1")
-	require.NoError(t, s.SetProfileRelay(t.Context(), 2, "https://relay.test", "fixture"))
+	require.Error(t, s.SetProfileRelay(t.Context(), 2, "http://127.0.0.1:1", "fixture"))
 	_, err = s.db.Exec("UPDATE relay_delivery_gate SET policy='legacy'")
 	require.ErrorContains(t, err, "cannot be reversed")
+}
+
+// TestRelayOccurrenceConversion requires a healthy permitted relay or no relay.
+func TestRelayOccurrenceConversion(t *testing.T) {
+	s, _, _ := migrationDB(t, 12)
+	ctx := t.Context()
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	testfixtures.Profile(t, s, 2, "two", "Two", 0)
+	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")
+	session, err := s.SaveSession(ctx, 1, time.Now().Add(time.Hour), false)
+	require.NoError(t, err)
+	execSQL(t, s, "INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)")
+	require.NoError(t, s.ActivateRelayDelivery(ctx))
+	require.NoError(t, s.ConvertOccurrence(ctx, session.ID, 2))
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/validate-token" || r.Header.Get("Authorization") != "Token fixture" {
+			w.WriteHeader(401)
+			return
+		}
+		_, _ = w.Write([]byte(`{"valid":true,"user_name":"synthetic"}`))
+	}))
+	defer target.Close()
+	require.NoError(t, s.SetProfileRelay(ctx, 1, target.URL, "fixture"))
+	require.ErrorIs(t, s.ConvertOccurrence(ctx, session.ID, 1), db.ErrConflict)
+	key := strings.TrimPrefix(target.URL, "http://")
+	require.NoError(t, s.SetRelayPermissionAsRoot(ctx, session.ID, 1, RelayPermission{HostPort: key, HTTP: true}))
+	require.ErrorIs(t, s.ConvertOccurrence(ctx, session.ID, 1), db.ErrConflict)
+	require.NoError(t, s.SetRelayPermissionAsRoot(ctx, session.ID, 1, RelayPermission{HostPort: key, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
+	require.NoError(t, s.ConvertOccurrence(ctx, session.ID, 1))
+	require.ErrorIs(t, s.SetProfileRelay(ctx, 1, target.URL, "bad-token"), db.ErrConflict)
+	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM profile_ingest_flags WHERE occurrence_write=1"))
 }
 
 // relayReceipt creates an active fixture under the simulated E3 policy.
@@ -298,6 +331,7 @@ func TestRelayBatchWritesUseIDs(t *testing.T) {
 // TestRelayLeaseQueryPlans records the scan and indexed forms for renewal and release.
 func TestRelayLeaseQueryPlans(t *testing.T) {
 	s, _ := relayStoreFixture(t)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM pragma_index_list('outbox') WHERE name='sqlite_autoindex_outbox_1' AND origin='pk'"))
 	cases := []struct {
 		name, query string
 		args        []any

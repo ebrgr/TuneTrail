@@ -97,8 +97,15 @@ func occurrenceWriteFlag(ctx context.Context, tx ingestModeReader, profile int32
 
 // AdmitIngest fixes the mode under the writer lock, honoring the import job's pinned mode.
 func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (active bool, results []ingest.Result, err error) {
+	active, results, _, err = s.AdmitIngestPolicy(ctx, batch, master, pinned, invalid)
+	return active, results, err
+}
+
+// AdmitIngestPolicy returns the delivery policy selected in the committed admission transaction.
+func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (active bool, results []ingest.Result, policy string, err error) {
+	policy = "legacy"
 	if len(batch.Items) == 0 && !master && (pinned == nil || !pinned.Active) {
-		return false, nil, nil
+		return false, nil, policy, nil
 	}
 	source := receiptSourcePrefix(batch.Source) + fmt.Sprint(batch.ProfileID)
 	batchID := uuid.NewString()
@@ -153,6 +160,13 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 			}
 		}
 		modeKnown = true
+		deliveryPolicy := ""
+		if active && version >= 12 {
+			if err := tx.QueryRowContext(ctx, "SELECT policy FROM relay_delivery_gate WHERE id=1").Scan(&deliveryPolicy); err != nil {
+				return err
+			}
+			policy = deliveryPolicy
+		}
 		if active && invalid != nil {
 			return invalid
 		}
@@ -181,21 +195,24 @@ func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master boo
 			var result ingest.Result
 			var err error
 			if active {
-				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, variant)
+				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, variant, deliveryPolicy)
 			} else {
 				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, hasMode)
 			}
 			if err != nil {
 				return err
 			}
+			if result.DeliveryPolicy != "" && result.DeliveryPolicy != policy {
+				return errors.New("receipt delivery policy did not match admission")
+			}
 			results = append(results, result)
 		}
 		return nil
 	})
 	if err != nil {
-		return active || !modeKnown, nil, ingestStorageError(err, active || !modeKnown || (pinned != nil && pinned.Active))
+		return active || !modeKnown, nil, "", ingestStorageError(err, active || !modeKnown || (pinned != nil && pinned.Active))
 	}
-	return active, results, nil
+	return active, results, policy, nil
 }
 
 // ingestStorageError preserves shadow fail-open on lock contention.
@@ -386,7 +403,7 @@ func replayIngest(r *dedup.Receipt) ingest.Result {
 }
 
 // receiveActiveItem replaces unlinked shadow receipts and replays linked or active owners.
-func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, variant string) (ingest.Result, error) {
+func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, variant, policy string) (ingest.Result, error) {
 	previous, err := findKey(ctx, tx, b, i.Item, source, true)
 	if errors.Is(err, errReceiptKeyConflict) {
 		return ingest.Result{Decision: "review", Pending: true}, nil
@@ -455,16 +472,24 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 			state, reasons = "pending_duplicate", `["client_batch_conflict"]`
 		}
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO ingest_events
+	statement := `INSERT INTO ingest_events
 		(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
 		external_namespace,external_event_id,external_id_trusted,client_idempotency_key,batch_digest,file_digest,file_format,format_version,
-		listened_at,original_time,time_precision,time_semantics,original_offset,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant)
+		listened_at,original_time,time_precision,time_semantics,original_offset,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant%s)
 		VALUES(?,?,?,1,?,'1',?,?,?,?,nullif(?,''),nullif(?,''),?,nullif(?,''),nullif(?,''),nullif(?,''),nullif(?,''),CASE WHEN ?!='' THEN '1' END,
-		?,nullif(?,''),?,?,nullif(?,''),?,?,?,'active',?,?,?,?)`,
+		?,nullif(?,''),?,?,nullif(?,''),?,?,?,'active',?,?,?,?%s)`
+	args := []any{
 		id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
 		b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, at.UTC().Format(receiptTime), i.OriginalTime(), precision, semantics, offset,
-		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion, variant)
-	return ingest.Result{ReceiptID: id, Pending: true}, err
+		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion, variant}
+	if policy == "" {
+		_, err = tx.ExecContext(ctx, fmt.Sprintf(statement, "", ""), args...)
+		return ingest.Result{ReceiptID: id, Pending: true, DeliveryPolicy: "legacy"}, err
+	}
+	args = append(args, policy)
+	var confirmed string
+	err = tx.QueryRowContext(ctx, fmt.Sprintf(statement, ",delivery_policy", ",?")+" RETURNING delivery_policy", args...).Scan(&confirmed)
+	return ingest.Result{ReceiptID: id, Pending: true, DeliveryPolicy: confirmed}, err
 }
 
 // shadowModeClause selects only shadow rows once mode is present in the schema.

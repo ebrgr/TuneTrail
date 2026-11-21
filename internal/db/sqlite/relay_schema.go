@@ -301,14 +301,10 @@ func migrateDatabase(db *sql.DB) error {
 	return upgradeRelaySchema(context.Background(), db, net.DefaultResolver)
 }
 
-// checkRelayWriterPolicy keeps intermediate binaries from serving an activated database.
-func checkRelayWriterPolicy(db *sql.DB) error {
-	var policy string
-	if err := db.QueryRow("SELECT policy FROM relay_delivery_gate WHERE id=1").Scan(&policy); err != nil {
-		return fmt.Errorf("read receipt delivery policy: %w", err)
-	}
-	if policy != "legacy" {
-		return errors.New("database requires the durable relay writer")
-	}
-	return nil
+// ActivateRelayDelivery switches the durable writer on before the service accepts requests.
+func (s *Sqlite) ActivateRelayDelivery(ctx context.Context) error {
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		_, err := tx.ExecContext(ctx, "UPDATE relay_delivery_gate SET policy='durable' WHERE id=1 AND policy='legacy'")
+		return err
+	})
 }
