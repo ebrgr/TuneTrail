@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.54] - 2026-11-21
+
 - Active ingestion retries transient failures up to five attempts. Profile owners and root can reprocess parked receipts from the responsive Ingestion health page (ISSUE-173).
 
 ## [0.53] - 2026-11-21

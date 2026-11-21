@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T18:20:00Z'
-updated_date: '2026-11-21T21:59:00Z'
+updated_date: '2026-11-21T22:00:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -115,6 +115,15 @@ created: 2026-11-21T21:59:00Z
 ---
 
 Aceite do usuário em 21/11/2026: aceito e autorizado a publicar (sem push).
+
+---
+
+author: ebrgr
+created: 2026-11-21T22:00:00Z
+
+---
+
+Publicação: versão 0.54 (tag `v0.54`), branch `feat/issue-173-politica-de-retry-e-fila` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
