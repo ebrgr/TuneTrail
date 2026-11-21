@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T18:20:00Z'
-updated_date: '2026-11-21T18:02:00Z'
+updated_date: '2026-11-21T21:20:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -29,7 +29,7 @@ Origem: ressalva R-a do Reviewer e medição da C6 da ISSUE-081 (backlog/evidenc
 - [x] #1 O resolvedor limita as tentativas automáticas a 5, com esperas de 1, 2, 4 e 8 minutos, e move o recibo esgotado para uma fila durável de falhas permanentes sem perder chave, motivo ou contagem
 - [x] #2 O dono do perfil e o root enxergam a fila na central de saúde e reprocessam um recibo de forma explícita e idempotente; o reprocessamento reaproveita a mesma resolução transacional
 - [x] #3 Erros de entrada determinísticos são encerrados com motivo registrado; falhas transitórias continuam recuperáveis
-- [ ] #4 Ensaio sintético com falha persistente e transitória, crash e retomada por lease, sem escuta confirmada perdida; Advisor (effort high) registrado
+- [x] #4 Ensaio sintético com falha persistente e transitória, crash e retomada por lease, sem escuta confirmada perdida; Advisor (effort high) registrado
 - [x] #5 R-b: com o interruptor mestre ligado, um erro genérico (que não é de armazenamento) antes de o modo do perfil ser conhecido segue pelo caminho legado em vez de responder 500; erros de armazenamento e BUSY continuam em 503 com Retry-After; testado por classe de erro
 - [x] #6 A central de saúde organiza as seções em duas ou três colunas no desktop e empilhadas no celular, compartilhada com a fila de revisão da ISSUE-181, com o visual e o hover do padrão do sistema
 <!-- AC:END -->
@@ -88,6 +88,15 @@ created: 2026-11-21T18:02:00Z
 ---
 
 Reviewer: sem BUG; 3 RISCOs menores (ver backlog/evidencias/ISSUE-173/PARECER-REVIEWER.md). Testes -race OK. AC #4 pendente do Advisor.
+
+---
+
+author: advisor
+created: 2026-11-21T21:20:00Z
+
+---
+
+Advisor (effort high): APROVADO com ressalvas não bloqueantes; ver backlog/evidencias/issue-173/PARECER-ADVISOR.md. Melhorias 1 e 2 (recibo que excede a lease nunca estaciona; interrupção longa estaciona a fila, sem reprocessar todos) ficam para follow-up.
 
 ---
 <!-- COMMENTS:END -->
