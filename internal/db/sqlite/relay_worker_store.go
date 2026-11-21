@@ -3,10 +3,14 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/relay"
 )
+
+// ErrRelayConfigInvalid identifies non-retryable configuration or permission data.
+var ErrRelayConfigInvalid = errors.New("invalid stored relay configuration")
 
 // RelayTarget checks that the credential and permission snapshot still belongs to the claim.
 func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, string, relay.Permissions, error) {
@@ -16,6 +20,9 @@ func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, str
 		batch.Profile, batch.Generation, batch.ConfigVersion, batch.Version, batch.Owner).Scan(&endpoint, &token)
 	if err != nil {
 		return "", "", nil, err
+	}
+	if _, _, err := relay.Normalize(endpoint, token); err != nil {
+		return "", "", nil, ErrRelayConfigInvalid
 	}
 	permissions, err := s.RelayPermissions(ctx, batch.Profile)
 	// Renewal rechecks config_version after these reads, fencing concurrent configuration changes.
@@ -41,12 +48,18 @@ func (s *Sqlite) RelayProfiles(ctx context.Context) ([]int32, error) {
 }
 
 // FailRelaySource retires a retained item whose accepted receipt cannot produce a payload.
-func (s *Sqlite) FailRelaySource(ctx context.Context, batch RelayBatch, item RelayItem) error {
-	_, err := s.db.ExecContext(ctx, `UPDATE outbox SET state='failed',result='{"reason":"source_missing"}',next_attempt_at=NULL,
-		lease_owner=NULL,lease_until=NULL WHERE profile_id=? AND id=? AND work_version=? AND lease_owner=? AND relay_generation=?
-		AND `+relayDue+` AND EXISTS(SELECT 1 FROM relay_destinations WHERE profile_id=? AND generation=? AND work_version=? AND lease_owner=?)`,
-		batch.Profile, item.ID, item.Version, batch.Owner, batch.Generation, batch.Profile, batch.Generation, batch.Version, batch.Owner)
-	return err
+func (s *Sqlite) FailRelaySource(ctx context.Context, batch RelayBatch, item RelayItem, cause error) error {
+	reason := "source_missing"
+	if errors.Is(cause, ErrRelaySourceInvalid) {
+		reason = "source_invalid"
+	}
+	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		_, err := tx.ExecContext(ctx, `UPDATE outbox SET state='failed',result=json_object('reason',?),next_attempt_at=NULL,
+			lease_owner=NULL,lease_until=NULL WHERE profile_id=? AND id=? AND work_version=? AND lease_owner=? AND relay_generation=?
+			AND `+relayDue+` AND EXISTS(SELECT 1 FROM relay_destinations WHERE profile_id=? AND generation=? AND work_version=? AND lease_owner=?)`,
+			reason, batch.Profile, item.ID, item.Version, batch.Owner, batch.Generation, batch.Profile, batch.Generation, batch.Version, batch.Owner)
+		return err
+	})
 }
 
 // RelayDeliveryStatus projects safe health data without loading credentials or payloads.

@@ -445,7 +445,7 @@ func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch 
 			return false, err
 		}
 		class = relay.RateLimited
-	case relay.Auth, relay.Route, relay.Redirect, relay.PolicyBlocked:
+	case relay.Auth, relay.Route, relay.Redirect, relay.PolicyBlocked, relay.ConfigInvalid:
 		_, err := tx.ExecContext(ctx, "UPDATE relay_destinations SET paused_until=NULL,pause_class=? WHERE profile_id=?", class, batch.Profile)
 		return true, err
 	}

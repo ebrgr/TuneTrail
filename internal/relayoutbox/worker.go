@@ -19,7 +19,7 @@ type Store interface {
 	ClaimRelayBatch(context.Context, time.Time) (sqlite.RelayBatch, error)
 	RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.Permissions, error)
 	RelayPayload(context.Context, sqlite.RelayBatch, sqlite.RelayItem) ([]byte, error)
-	FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem) error
+	FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem, error) error
 	RenewRelayBatch(context.Context, sqlite.RelayBatch, time.Time, ...sqlite.RelayItem) (bool, error)
 	FinishRelayBatch(context.Context, sqlite.RelayBatch, []sqlite.RelayItem, relay.Result, time.Time, bool) (bool, error)
 	RelayProfiles(context.Context) ([]int32, error)
@@ -36,20 +36,7 @@ func Run(ctx, claims context.Context, store Store) <-chan struct{} {
 			workers.Go(func() {
 				tick := time.NewTicker(250 * time.Millisecond)
 				defer tick.Stop()
-				for claims.Err() == nil && ctx.Err() == nil {
-					batch, err := store.ClaimRelayBatch(claims, time.Now())
-					if err == nil && len(batch.Items) > 0 {
-						process(ctx, store, batch, time.Now)
-						continue
-					}
-					select {
-					case <-claims.Done():
-						return
-					case <-ctx.Done():
-						return
-					case <-tick.C:
-					}
-				}
+				poll(ctx, claims, store, time.Now, tick.C)
 			})
 		}
 		workers.Go(func() {
@@ -80,6 +67,23 @@ func Run(ctx, claims context.Context, store Store) <-chan struct{} {
 	return done
 }
 
+// poll waits after idle or unproductive claims, including temporary SQLite contention.
+func poll(ctx, claims context.Context, store Store, now func() time.Time, ticks <-chan time.Time) {
+	for claims.Err() == nil && ctx.Err() == nil {
+		batch, err := store.ClaimRelayBatch(claims, now())
+		if err == nil && len(batch.Items) > 0 && process(ctx, store, batch, now) {
+			continue
+		}
+		select {
+		case <-claims.Done():
+			return
+		case <-ctx.Done():
+			return
+		case <-ticks:
+		}
+	}
+}
+
 var policyLog struct {
 	sync.Mutex
 	next time.Time
@@ -97,7 +101,7 @@ func logPolicyBlock(ctx context.Context, profile int32, now time.Time) {
 }
 
 // process persists each sub-lot before starting another POST and always releases the claim.
-func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func() time.Time) {
+func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func() time.Time) (progress bool) {
 	defer func() {
 		// A failed final write leaves the lease available for crash recovery.
 		_, _ = store.FinishRelayBatch(ctx, batch, nil, relay.Result{}, now(), true)
@@ -107,7 +111,10 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 	}
 	base, token, permissions, err := store.RelayTarget(ctx, batch)
 	if err != nil {
-		return
+		if ctx.Err() == nil && errors.Is(err, sqlite.ErrRelayConfigInvalid) {
+			_, _ = store.FinishRelayBatch(ctx, batch, nil, relay.Result{Class: relay.ConfigInvalid}, now(), true) // Lease recovery covers a failed write.
+		}
+		return false
 	}
 	sender := relay.NewDeliverer(permissions, now)
 	queue := [][]sqlite.RelayItem{batch.Items}
@@ -118,10 +125,11 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		payload := make([][]byte, 0, len(part))
 		for _, item := range part {
 			raw, err := store.RelayPayload(ctx, batch, item)
-			if errors.Is(err, sql.ErrNoRows) {
-				if err := store.FailRelaySource(ctx, batch, item); err != nil {
+			if errors.Is(err, sql.ErrNoRows) || errors.Is(err, sqlite.ErrRelaySourceInvalid) {
+				if err := store.FailRelaySource(ctx, batch, item, err); err != nil {
 					return
 				}
+				progress = true
 				continue
 			}
 			if err != nil {
@@ -153,7 +161,11 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 			logPolicyBlock(ctx, batch.Profile, now())
 		}
 		settled, err := store.FinishRelayBatch(ctx, batch, items, result, now(), false)
-		if err != nil || !settled || result.RemainingZero {
+		if err != nil || !settled {
+			return
+		}
+		progress = true
+		if result.RemainingZero {
 			return
 		}
 		switch result.Class {
@@ -167,4 +179,5 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 			return
 		}
 	}
+	return progress
 }

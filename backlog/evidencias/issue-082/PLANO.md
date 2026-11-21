@@ -194,3 +194,4 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Parada: Reviewer sobre o diff da E3 e, em seguida, Advisor para encerramento e falhas ambíguas. E4 e critérios que dependem desse parecer permanecem pendentes. Custo conhecido: excluir perfil de 100 mil itens com histórico e cascatas levou 2,13 s numa transação.
 
 - Emenda do Reviewer E3 (1/2): 2xx com Remaining=0 usa o maior entre o prazo do servidor e jitter fixo de até 30 s, com piso de 1 s e sem escalar o contador de falhas. Pendente: tratar falhas pré-POST e repetir verificações.
+- Emenda do Reviewer E3 (2/2): claim sem progresso aguarda o próximo tick. Fontes inválidas ficam em `failed/source_invalid`. Configuração inválida pausa o destino com `config_invalid`. Pendente: ressalvas e verificação completa.

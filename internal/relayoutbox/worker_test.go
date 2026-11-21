@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
@@ -38,7 +39,7 @@ func (*fixtureStore) RelayPayload(_ context.Context, _ sqlite.RelayBatch, item s
 	return []byte(`{"track_metadata":{"track_name":"` + item.ID + `"}}`), nil
 }
 
-func (s *fixtureStore) FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem) error {
+func (s *fixtureStore) FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem, error) error {
 	s.missing++
 	return nil
 }
@@ -101,4 +102,60 @@ func TestWorkerCancellation(t *testing.T) {
 	process(ctx, store, sqlite.RelayBatch{PostBudget: 2, Items: []sqlite.RelayItem{{ID: "a"}}}, time.Now)
 	require.Empty(t, store.outcomes)
 	require.Equal(t, 1, store.releases)
+}
+
+type failingClaimStore struct {
+	Store
+	calls               chan time.Time
+	claimErr, targetErr error
+	paused              chan relay.Class
+}
+
+func (s *failingClaimStore) ClaimRelayBatch(_ context.Context, at time.Time) (sqlite.RelayBatch, error) {
+	s.calls <- at
+	return sqlite.RelayBatch{Items: []sqlite.RelayItem{{ID: "fixture"}}}, s.claimErr
+}
+
+func (s *failingClaimStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.Permissions, error) {
+	return "", "", nil, s.targetErr
+}
+
+func (s *failingClaimStore) FinishRelayBatch(_ context.Context, _ sqlite.RelayBatch, _ []sqlite.RelayItem, result relay.Result, _ time.Time, _ bool) (bool, error) {
+	if result.Class != "" {
+		s.paused <- result.Class
+	}
+	return true, nil
+}
+
+// TestWorkerPacesFailedClaims proves a new attempt needs a scheduler tick.
+func TestWorkerPacesFailedClaims(t *testing.T) {
+	for _, tc := range []struct {
+		name                string
+		claimErr, targetErr error
+	}{
+		{"busy", errors.New("SQLITE_BUSY"), nil},
+		{"target read", nil, errors.New("target lookup failed")},
+		{"invalid config", nil, sqlite.ErrRelayConfigInvalid},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(t.Context())
+			done := make(chan struct{})
+			ticks := make(chan time.Time)
+			now := time.Unix(123, 0)
+			store := &failingClaimStore{calls: make(chan time.Time, 16), claimErr: tc.claimErr, targetErr: tc.targetErr, paused: make(chan relay.Class, 4)}
+			go func() { defer close(done); poll(ctx, ctx, store, func() time.Time { return now }, ticks) }()
+			defer func() { cancel(); <-done }()
+			require.Equal(t, now, <-store.calls)
+			if errors.Is(tc.targetErr, sqlite.ErrRelayConfigInvalid) {
+				require.Equal(t, relay.ConfigInvalid, <-store.paused)
+			}
+			select {
+			case <-store.calls:
+				t.Fatal("claim repeated before the scheduler tick")
+			case <-time.After(20 * time.Millisecond):
+			}
+			ticks <- now
+			require.Equal(t, now, <-store.calls)
+		})
+	}
 }

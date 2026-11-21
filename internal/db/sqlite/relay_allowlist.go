@@ -89,7 +89,7 @@ func (s *Sqlite) RelayPermissions(ctx context.Context, profile int32) (relay.Per
 		if cidr != "" {
 			p.Prefix, err = netip.ParsePrefix(cidr)
 			if err != nil || !p.Private || !relay.ValidExceptionPrefix(p.Prefix) || !relay.IsReservedPrefix(p.Prefix) {
-				return nil, fmt.Errorf("invalid stored relay exception")
+				return nil, ErrRelayConfigInvalid
 			}
 		}
 		permissions = append(permissions, p)

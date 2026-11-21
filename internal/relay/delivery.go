@@ -28,6 +28,7 @@ const (
 	Transient     Class = "transient"
 	TLS           Class = "tls"
 	PolicyBlocked Class = "policy_blocked"
+	ConfigInvalid Class = "config_invalid"
 )
 
 // Result contains only sanitized data for the delivery scheduler.

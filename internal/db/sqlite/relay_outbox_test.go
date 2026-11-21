@@ -929,3 +929,45 @@ func TestRelaySuccessWithoutRateLimitDeadline(t *testing.T) {
 	require.EqualValues(t, now.Add(15*time.Second).Unix(), scalar(t, s, "SELECT paused_until FROM relay_destinations WHERE profile_id=1"))
 	require.Zero(t, scalar(t, s, "SELECT backoff_count FROM relay_destinations WHERE profile_id=1"))
 }
+
+// TestRelayInvalidSourceRetiresItem keeps corrupt data out of the claim queue.
+func TestRelayInvalidSourceRetiresItem(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().UTC().Add(time.Minute)
+	relayReceipt(t, s, 1, "invalid-source", "v9", 1, now)
+	resolveRelayV9(t, s)
+	execSQL(t, s, `DROP TRIGGER trg_ingest_snapshot_immutable;
+		UPDATE ingest_events SET original_snapshot='{"artist":12}' WHERE receipt_id='invalid-source'`)
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
+	_, err = s.RelayPayload(t.Context(), batch, batch.Items[0])
+	require.ErrorIs(t, err, ErrRelaySourceInvalid)
+	require.NoError(t, s.FailRelaySource(t.Context(), batch, batch.Items[0], err))
+	_, err = s.FinishRelayBatch(t.Context(), batch, nil, relay.Result{}, now, true)
+	require.NoError(t, err)
+	empty, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Empty(t, empty.Items)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='failed' AND json_extract(result,'$.reason')='source_invalid'"))
+}
+
+// TestRelayInvalidStoredPermissionsPausesDestination distinguishes corruption from database errors.
+func TestRelayInvalidStoredPermissionsPausesDestination(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().UTC().Add(time.Minute)
+	relayReceipt(t, s, 1, "invalid-config", "v9", 1, now)
+	resolveRelayV9(t, s)
+	execSQL(t, s, "INSERT INTO relay_allowlist VALUES(1,'relay.test:443','invalid-prefix',0,1,'manual')")
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
+	_, _, _, err = s.RelayTarget(t.Context(), batch)
+	require.ErrorIs(t, err, ErrRelayConfigInvalid)
+	_, err = s.FinishRelayBatch(t.Context(), batch, nil, relay.Result{Class: relay.ConfigInvalid}, now, true)
+	require.NoError(t, err)
+	empty, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	require.Empty(t, empty.Items)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE pause_class='config_invalid' AND paused_until IS NULL"))
+}

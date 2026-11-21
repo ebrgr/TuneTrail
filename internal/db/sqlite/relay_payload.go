@@ -3,6 +3,7 @@ package sqlite
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"time"
@@ -11,10 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// ErrRelaySourceInvalid identifies persisted source data that cannot be encoded.
+var ErrRelaySourceInvalid = errors.New("invalid relay source")
+
 // RelayPayload reconstructs a claimed item from its immutable accepted receipt.
 func (s *Sqlite) RelayPayload(ctx context.Context, batch RelayBatch, item RelayItem) ([]byte, error) {
 	var version int
-	var snapshot, listenedAt string
+	var snapshot string
+	var listenedAt sql.NullString
 	err := s.db.QueryRowContext(ctx, `SELECT o.format_version,e.original_snapshot,e.listened_at
 		FROM outbox o JOIN ingest_events e ON e.profile_id=o.profile_id AND e.event_id=o.event_id
 		JOIN relay_destinations d ON d.profile_id=o.profile_id
@@ -28,13 +33,17 @@ func (s *Sqlite) RelayPayload(ctx context.Context, batch RelayBatch, item RelayI
 	}
 	var original ingest.Snapshot
 	if err := json.Unmarshal([]byte(snapshot), &original); err != nil {
-		return nil, errors.New("invalid relay snapshot")
+		return nil, ErrRelaySourceInvalid
 	}
-	at, err := time.Parse(receiptTime, listenedAt)
+	at, err := time.Parse(receiptTime, listenedAt.String)
 	if err != nil {
-		return nil, errors.New("invalid relay receipt time")
+		return nil, ErrRelaySourceInvalid
 	}
-	return encodeRelayItem(version, original, at.Unix())
+	body, err := encodeRelayItem(version, original, at.Unix())
+	if err != nil {
+		return nil, ErrRelaySourceInvalid
+	}
+	return body, nil
 }
 
 // encodeRelayItem keeps both wire formats available for already queued items.
