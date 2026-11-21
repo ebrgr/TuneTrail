@@ -1,6 +1,6 @@
 # ISSUE-082 — Outbox durável para o relay ListenBrainz
 
-Versão 5. Worktree rebaseada sobre `v0.48` (`26c5ec1`), SQLite v11. A `v0.47` continua como referência do replay. O Advisor (Opus, esforço high) aprovou a v2 para E1 e pediu as emendas abaixo como condição para E2. O usuário liberou E1 e aprovou a semeadura da allowlist no upgrade. Após o parecer de E1, autorizou as correções do Reviewer e o refinamento da semeadura. A tabela de payload segue para validação final.
+Versão 6. Worktree rebaseada sobre `v0.48` (`26c5ec1`), SQLite v11. A `v0.47` continua como referência do replay. O Advisor (Opus, esforço high) aprovou a v2 para E1 e pediu as emendas abaixo como condição para E2. O usuário liberou E1 e aprovou a semeadura da allowlist no upgrade. Após o parecer de E1, autorizou as correções do Reviewer e o refinamento da semeadura. A tabela de payload segue para validação final.
 
 ## Caminho atual na v0.47
 
@@ -234,5 +234,7 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - Medido: expiração de 100 mil itens com 300 mil recibos, 15,55–16,29 ms em sete ticks. Índice adicional dispensado neste host. Remoção de histórico no mesmo cenário e espaço da fila medidos.
 - Verificado: SIGTERM em 4,004 s; paridade v0.48; SIGKILL em três fronteiras e recusa injetada na gravação do 2xx. O mock observou uma reentrega após aceite remoto sem CAS e uma após falha da gravação, ambas deduplicáveis.
 - Medido: TLS real em loopback com CA de teste. Síntese e limites registrados no relatório.
-- Carga, TLS, paridade, upgrade e segurança registrados em ENSAIO-E4.md. A outbox com 100 mil abertos manteve 200, e uma reserva externa do escritor produziu 503. O backup físico de rollback inclui a credencial, conforme a restauração integral documentada. A exigência de token ausente em todo backup precisa de decisão do usuário antes de mudar o status.
-- Verificado: paridade em v0.47/v0.48, diagnóstico do upgrade no painel e no log, exceções liberadas pelo root, ACs 1–3, testes de relay/worker com race e make check com 13/13 jornadas. Pendente: Reviewer, decisão sobre o backup físico e AC4. A tarefa segue Em andamento.
+- Carga, TLS, paridade, upgrade e segurança registrados em ENSAIO-E4.md. A outbox com 100 mil abertos manteve 200, e uma reserva externa do escritor produziu 503.
+- Verificado: paridade em v0.47/v0.48, diagnóstico do upgrade no painel e no log, exceções liberadas pelo root, ACs 1–3, testes de relay/worker com race e make check com 13/13 jornadas. Pendente: Reviewer e AC4. A tarefa segue Em andamento.
+- Decisão do usuário em 21/11/2026: backups físicos e cópias integrais podem preservar o token necessário à restauração. O token permanece fora da fila, tabelas de entrega, payload, logs, GET administrativo, exportação de histórico e evidências. Tratar backups com a mesma proteção do banco. AC1 reverificado com essa distinção.
+- Verificação da v6: testes dirigidos de backup e upgrade, replay contra v0.48, recuperação após crash com exportação sanitizada e `make check` (13/13 E2E) passaram.

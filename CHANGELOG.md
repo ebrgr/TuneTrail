@@ -6,6 +6,7 @@
 - The root Server panel saves `allow_http` and `allow_private_network` in `conf.toml`. Both defaults are off and changes apply after restart. Root can manage destination exceptions and revalidate paused relays. Global permissions apply to every profile. Loopback and link-local require destination exceptions, and forbidden addresses always stay blocked. These controls govern durable delivery and connection tests. Legacy, shadow, and playing-now forwarding keep the previous transport (ISSUE-082).
 - Relay warnings report the configured authority and a stable reason, at most once per profile and reason per minute. DNS answers, URL paths, queries, and tokens are omitted. Root receives detailed validation results. Non-root validation uses broad classes. The admin relay GET returns the canonical URL and omits the saved token (ISSUE-082).
 - **Upgrade action for existing relays:** SQLite upgrades from v11 to v12 and keeps a `.pre-relay-delivery-*.bak` backup. TuneTrail 0.48 and earlier refuse v12. Roll back by restoring the v11 backup. Eligible administrator relays get seeded permissions. Under the default policy, existing HTTP or LAN relays on non-administrator profiles stop delivering until root grants the necessary exceptions. Failed DNS at startup schedules a new attempt after 30 seconds (ISSUE-082).
+- The upgrade guides explain that physical SQLite backups preserve credentials and require the same protection as the live database (ISSUE-082).
 
 ## [0.48] - 2026-11-20
 

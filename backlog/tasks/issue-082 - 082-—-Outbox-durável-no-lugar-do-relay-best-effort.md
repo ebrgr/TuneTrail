@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T11:24:00Z'
+updated_date: '2026-11-21T11:30:00Z'
 labels:
   - ingestao
   - api
@@ -153,6 +153,15 @@ created: 2026-11-21T11:24:00Z
 ---
 
 E4 executada em bases descartáveis e loopback. Saudável: 4.039 entregues e 1 rejeição isolada por bisseção em 127,210 s. Com 100 mil abertos, todos os 40 ACKs retornaram 200 (p95 0,75 ms); a reserva externa do escritor retornou 503. ExpireRelayWork ficou em 15,55–16,29 ms, sem índice adicional; outbox aberta ≈343 B/linha. SIGTERM em 4,011 s com retomada. SIGKILL pós-aceite e falha do CAS produziram uma repetição cada no mock; chave de deduplicação consolidou a entrega. Paridade v0.47/v0.48, 13/13 E2E e race do relay/worker passaram. ACs 1–3 reverificados; AC4 segue pendente. Upgrade grande com WAL e restore v11 passou, mas o backup físico preserva a credencial por restauração integral. Pendente decisão do usuário sobre esse requisito de segurança; status segue Em andamento para revisão. Retenção sent/failed e UI de falhas ficam na 083.
+
+---
+
+author: Codex
+created: 2026-11-21T11:30:00Z
+
+---
+
+Decisão do usuário de 21/11/2026 registrada no PLANO v6 e no ENSAIO-E4: backups físicos e cópias integrais podem preservar o token do relay em texto puro. Fila, tabelas de entrega, payload, logs, GET administrativo, exportação de histórico e evidências continuam sem token. DEPLOYMENT e o guia explicam a sensibilidade e a criação das cópias automáticas com modo 0600, confirmado no código. AC1 reverificado com replay v0.48 e testes de upgrade e recuperação. make check passou (13/13 E2E). Status Em andamento até o parecer do Reviewer. AC4 pendente.
 
 ---
 <!-- COMMENTS:END -->

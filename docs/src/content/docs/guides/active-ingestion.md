@@ -176,9 +176,17 @@ class. The legacy raw relay retains its previous network behavior.
 
 The saved token is omitted from the admin response and from the HTML field.
 Leave it blank to keep the same credential for the displayed URL, or supply a
-new token when changing the URL. A physical SQLite backup contains the saved
-configuration, including the token. Protect it like the live database.
-Logical listen exports and relay diagnostics omit credentials.
+new token when changing the URL.
+
+Every physical SQLite backup or full database copy is as sensitive as the
+live database. It preserves password hashes, API keys, and any configured
+relay token in plaintext, where present in the source schema. TuneTrail creates
+automatic backups alongside the database with owner-only permissions
+(`0600`), including `.pre-relay-delivery-*.bak`, `.pre-occurrence-ingest-*.bak`,
+and `koito.db.pre-tunetrail-*.bak`. Preserve those permissions on copies. Keep
+backups out of shared locations, do not send them to third parties, and protect
+or delete them using the same procedures as the live database. History exports,
+the administrative relay GET, and relay diagnostics omit the token.
 
 Deleting history removes unsent relay work for those events and keeps at most
 30 days of daily aggregate sent counts. Purging all history removes those

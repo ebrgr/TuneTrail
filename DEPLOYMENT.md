@@ -159,10 +159,23 @@ v11. On the test hardware a database with 300,000 receipts needed about 21
 seconds before the health endpoint answered and a backup of about 260 MB.
 
 The migration runs on every installation, even though the occurrence mode stays
-off until a profile is converted. Versions 0.48 and earlier refuse a v11
+off until a profile is converted. Versions 0.46 and earlier refuse a v11
 database. To go back, stop the service and restore the backup; writes made
 after the upgrade are lost, and relay deliveries already made stay at the
 destination (ISSUE-134).
+
+### Physical database backups
+
+Treat every physical backup or full database copy as sensitive as the live
+database. It preserves the data present in the source schema, including
+password hashes, API keys, and any configured relay token in plaintext.
+TuneTrail creates automatic upgrade backups alongside the database with
+owner-only permissions (`0600`), including `.pre-relay-delivery-*.bak`,
+`.pre-occurrence-ingest-*.bak`, and `koito.db.pre-tunetrail-*.bak`.
+Preserve those permissions on copies. Keep the backups out of shared
+locations and do not send them to third parties. Protect them and delete
+obsolete copies using the same procedures as for the database itself.
+History exports and the administrative relay GET omit the token.
 
 ## Rollback
 
