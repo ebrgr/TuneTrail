@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.52] - 2026-11-21
+
 - Profile owners and root can inspect recent ingestion sources, deduplication decisions, and relay failures, and open a listen’s provenance from its management page (ISSUE-083).
 - **Health** now appears in the menu above server configuration (with a heart-pulse icon) and the page follows the style of the media edit dialog, with responsive layout and hover states. The account links under the profile cards are spaced out and centered (ISSUE-083).
 

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:39:00Z'
-updated_date: '2026-11-21T16:08:00Z'
+updated_date: '2026-11-21T16:11:00Z'
 labels:
   - admin
   - ingestao
@@ -115,6 +115,15 @@ created: 2026-11-21T16:08:00Z
 ---
 
 Aceite: aprovada pelo usuário em 21/11/2026, como central de diagnóstico somente leitura, após ver o preview.
+
+---
+
+author: ebrgr
+created: 2026-11-21T16:11:00Z
+
+---
+
+Publicação: versão 0.52 (tag `v0.52`), branch `feat/issue-083-central-de-saude-da-ingestao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
