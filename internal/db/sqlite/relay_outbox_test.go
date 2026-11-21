@@ -251,9 +251,11 @@ func TestRelayOutboxClaims(t *testing.T) {
 		require.ErrorIs(t, err, sql.ErrNoRows)
 	}
 	late := now.Add(3 * time.Minute)
+	execSQL(t, s, "UPDATE relay_destinations SET pause_class='server',paused_until=1,backoff_count=3 WHERE profile_id=1")
 	finished, err := s.FinishRelayBatch(ctx, first, first.Items[:1], relay.Result{Class: relay.Success, Status: 200}, late, false)
 	require.NoError(t, err)
 	require.True(t, finished)
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=1 AND pause_class IS NULL AND paused_until IS NULL AND backoff_count=0"))
 	second, err := competitor.ClaimRelayBatch(ctx, late)
 	require.NoError(t, err)
 	require.Len(t, second.Items, 1)
@@ -269,6 +271,7 @@ func TestRelayOutboxClaims(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='sent'"))
 	require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.EqualValues(t, late.Add(time.Minute).Unix(), scalar(t, s, "SELECT paused_until FROM relay_destinations WHERE profile_id=1"))
+	require.Zero(t, scalar(t, s, "SELECT backoff_count FROM relay_destinations WHERE profile_id=1"))
 }
 
 // TestRelayBatchWritesUseIDs leaves an unrelated row untouched even if it has the same lease owner.
@@ -353,6 +356,7 @@ func TestRelayPauseAndCancellation(t *testing.T) {
 	_, err = s.FinishRelayBatch(t.Context(), next, next.Items, relay.Result{Class: relay.BadRequest, Status: 413}, now, true)
 	require.NoError(t, err)
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE profile_id=2 AND attempt_count=1 AND state='failed'"))
+	execSQL(t, s, "UPDATE outbox SET lease_owner='dead-worker',lease_until=? WHERE profile_id=1", now.Add(time.Minute).Unix())
 	expired, err := s.ExpireRelayWork(t.Context(), 1, now.Add(relayMaxAge+time.Minute))
 	require.NoError(t, err)
 	require.EqualValues(t, 1, expired)
@@ -567,7 +571,7 @@ func TestRelayMutationMeasurements(t *testing.T) {
 	if os.Getenv("TUNETRAIL_RELAY_MEASURE") != "1" {
 		t.Skip("opt-in rehearsal")
 	}
-	for _, operation := range []string{"url", "remove", "profile"} {
+	for _, operation := range []string{"url", "remove", "profile", "expire"} {
 		t.Run(operation, func(t *testing.T) {
 			s, _ := relayStoreFixture(t)
 			fillRelayCapacity(t, s, time.Now().UTC())
@@ -580,11 +584,13 @@ func TestRelayMutationMeasurements(t *testing.T) {
 				err = s.SetProfileRelay(t.Context(), 1, "", "")
 			case "profile":
 				err = s.DeleteListeningProfile(t.Context(), 1, "One", 100002)
+			case "expire":
+				_, err = s.ExpireRelayWork(t.Context(), 1, time.Now())
 			}
 			elapsed := time.Since(start)
 			require.NoError(t, err)
 			t.Logf("operation=%s elapsed=%s", operation, elapsed)
-			if operation != "profile" {
+			if operation == "url" || operation == "remove" {
 				require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 				require.Equal(t, 100000, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='pending'"))
 				require.Zero(t, scalar(t, s, `SELECT count(*) FROM outbox o JOIN relay_destinations d USING(profile_id)
@@ -681,4 +687,64 @@ func TestRelayMigrationMeasurements(t *testing.T) {
 		require.NoError(t, rows.Close())
 	}
 	require.NoError(t, checkDatabase(s.db))
+}
+
+// TestRelayMarkerMeasurements isolates schema costs on a populated legacy outbox.
+func TestRelayMarkerMeasurements(t *testing.T) {
+	if os.Getenv("TUNETRAIL_RELAY_MEASURE") != "1" {
+		t.Skip("opt-in rehearsal")
+	}
+	s, _, path := migrationDB(t, 11)
+	seedIdentityHistory(t, s)
+	execSQL(t, s, `WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<300000)
+		INSERT INTO listens(profile_id,track_id,listened_at,event_id)
+		SELECT 1,1,x+1000000,printf('marker-%06d',x) FROM n`)
+	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
+		received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,state,identity_status,event_id,occurrence_id,recording_id,mode,closed_at)
+		SELECT l.event_id,1,'source',1,'listenbrainz','1',l.event_id,0,'single',1,?,'second','start',
+		'{"artist":"Fixture","title":"Queue"}','fixture','1','accepted','resolved',l.event_id,1,o.recording_id,'active',1
+		FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=1 AND l.event_id LIKE 'marker-%'`, time.Unix(1, 0).UTC().Format(receiptTime))
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('relay:1',1,'listenbrainz-relay',0);
+		INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,closed_at,result)
+		SELECT event_id,1,'relay:1',event_id,'listen',event_id,'discarded',1,1,'{"reason":"pre_082_best_effort"}'
+		FROM ingest_events WHERE receipt_id LIKE 'marker-%'`)
+	execSQL(t, s, "PRAGMA wal_checkpoint(TRUNCATE)")
+	start := time.Now()
+	backup, err := backupBeforeUpgrade(t.Context(), s.db, path, 11)
+	require.NoError(t, err)
+	backupElapsed := time.Since(start)
+	size, err := os.Stat(backup)
+	require.NoError(t, err)
+	start = time.Now()
+	require.NoError(t, upgradeRelaySchema(t.Context(), s.db, lookupFixture{}))
+	upgradeElapsed := time.Since(start)
+	wal, err := os.Stat(path + "-wal")
+	require.NoError(t, err)
+	require.Equal(t, 300000, scalar(t, s, `SELECT count(*) FROM outbox WHERE format_version=0 AND state='discarded' AND json_extract(result,'$.reason')='pre_082_best_effort'`))
+	t.Logf("marcadores=300000 backup=%s backup_bytes=%d upgrade=%s wal_012=%d", backupElapsed, size.Size(), upgradeElapsed, wal.Size())
+
+	copyDB, err := openExisting(backup)
+	require.NoError(t, err)
+	defer copyDB.Close()
+	_, err = copyDB.Exec("PRAGMA journal_mode=WAL; PRAGMA wal_checkpoint(TRUNCATE)")
+	require.NoError(t, err)
+	start = time.Now()
+	_, err = copyDB.Exec("ALTER TABLE outbox ADD COLUMN format_version INTEGER NOT NULL DEFAULT 0 CHECK(format_version>=0)")
+	require.NoError(t, err)
+	formatElapsed := time.Since(start)
+	formatWAL, err := os.Stat(backup + "-wal")
+	require.NoError(t, err)
+	t.Logf("check_format=%s wal_format=%d", formatElapsed, formatWAL.Size())
+	_, err = copyDB.Exec("ALTER TABLE outbox ADD COLUMN relay_generation INTEGER NOT NULL DEFAULT 1 CHECK(relay_generation>0); PRAGMA wal_checkpoint(TRUNCATE)")
+	require.NoError(t, err)
+	start = time.Now()
+	_, err = copyDB.Exec(`CREATE INDEX idx_outbox_relay_due ON outbox(profile_id,destination_id,relay_generation,next_attempt_at,id)
+		WHERE format_version>0 AND state IN ('pending','retryable');
+		CREATE INDEX idx_outbox_relay_capacity ON outbox(profile_id,destination_id,relay_generation,created_at,id)
+		WHERE format_version>0 AND state='failed' AND json_extract(result,'$.reason')='queue_capacity'`)
+	require.NoError(t, err)
+	indexElapsed := time.Since(start)
+	indexWAL, err := os.Stat(backup + "-wal")
+	require.NoError(t, err)
+	t.Logf("indices_parciais=%s wal_indices=%d", indexElapsed, indexWAL.Size())
 }

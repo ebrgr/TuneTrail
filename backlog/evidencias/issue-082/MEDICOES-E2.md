@@ -21,3 +21,40 @@ O custo observado é compatível com a varredura para validar o CHECK. A mudanç
 ```sh
 TUNETRAIL_RELAY_MEASURE=1 go test ./internal/db/sqlite -run '^TestRelay' -count=1 -v
 ```
+
+## Revisão do Advisor
+
+Medições na mesma máquina arm64, com SSD local. Cada medição de configuração usa uma fixture independente com 100 mil intenções abertas, recibos aceitos e escutas correspondentes. Os tempos são de parede e incluem a transação e seu commit. O preparo das fixtures ficou fora do cronômetro.
+
+| Operação | Trigger anterior | 012 emendada |
+| --- | ---: | ---: |
+| Trocar URL pelo store | 532,0 ms | 174,3 µs |
+| Remover relay pelo store | 514,4 ms | 125,0 µs |
+| Excluir perfil e seus dados | 2,130 s | 2,132 s |
+| Expirar lote sem itens vencidos, fila de 100 mil | — | 14,5 ms |
+
+Troca e remoção ultrapassaram o limiar de 500 ms, então a decisão d foi aplicada. O trigger agora avança a geração e zera o contador. A contagem de trabalho elegível considera somente linhas abertas da geração atual. O teste confirma o contador zero logo após a mudança, mesmo com as 100 mil linhas antigas ainda materializadas como abertas. O store materializa a falha em grupos limitados. Excluir o perfil ainda percorre o histórico e suas cascatas. O tempo de expiração corresponde ao pior caminho de procurar sem encontrar vencidos nessa fixture, com lease e data ainda elegíveis no mesmo índice da fila.
+
+### EXPLAIN antes e depois
+
+- Renovação e liberação anteriores: `SEARCH outbox USING INDEX idx_outbox_event (profile_id=?)`. A busca examina a faixa do perfil e filtra a posse depois.
+- Renovação e liberação emendadas: `SEARCH outbox USING INDEX sqlite_autoindex_outbox_1 (id=?)`, alimentado por `json_each` com os IDs do lote. Perfil, destino, geração, posse e estado são filtros adicionais.
+- Expiração ficou em duas instruções. A busca de itens abertos usa `idx_outbox_relay_due` por perfil, destino e geração. A busca de overflow usa `idx_outbox_relay_capacity` e também limita `created_at`. Cada instrução modifica no máximo 100 linhas.
+- A seleção de POST continua em `idx_outbox_relay_due`, com geração e prazo na busca.
+
+### 300 mil marcadores pré-082
+
+Um segundo banco v11 descartável contém 300 mil escutas, recibos aceitos e marcadores `discarded/pre_082_best_effort` correspondentes. Após truncar o WAL, medimos o backup e toda a 012. Em seguida medimos, de forma independente na cópia descartável v11, o CHECK de `outbox.format_version` e a criação dos dois índices parciais de fila após instalar as colunas necessárias. Nenhum marcador foi promovido.
+
+| Operação | Tempo | Tamanho observado |
+| --- | ---: | ---: |
+| Backup consistente | 755,7 ms | 240.709.632 B |
+| Transação da 012 completa | 2.302,8 ms | WAL de 90.672 B |
+| `ADD COLUMN format_version` com CHECK, isolado | 354,0 ms | WAL de 8.272 B |
+| Dois índices parciais de fila, isolados | 37,3 ms | WAL de 32.992 B |
+
+Na repetição com outbox vazia, a 012 emendada levou 1,391 s e deixou 90.672 B de WAL. Os índices parciais não incluem os marcadores encerrados, embora sua criação leia a tabela. Esta foi uma execução por cenário em SSD local, sem carga concorrente ou DNS nessa fixture. NAS e cartão SD podem ter custo perto de 10× maior. A ordem de grandeza serve para planejar a janela, sem extrapolar como garantia.
+
+```sh
+TUNETRAIL_RELAY_MEASURE=1 go test ./internal/db/sqlite -run 'TestRelay(MarkerMeasurements|MutationMeasurements|MigrationMeasurements|LeaseQueryPlans)' -v -count=1
+```

@@ -89,3 +89,20 @@ remain pending and are excluded from listening counts.
 
 Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
 TuneTrail 0.46 and earlier cannot open a v11 database.
+
+### Relay configuration recovery on schema 12
+
+The relay editor saves a canonical URL. Scheme and host are lowercase, the
+default port is omitted, and the endpoint path is preserved. The admin GET
+returns the saved form.
+
+Use TuneTrail's relay editor to repair the saved URL or revoke the relay.
+A direct update to `profile_relays` through the standalone `sqlite3` CLI or
+Python can fail with `no such function: tt_relay_canonical`. The schema uses
+that function to compare endpoint identities, and TuneTrail registers it on
+its own SQLite connections. Keep the relay triggers in place.
+
+If the application cannot be recovered, stop TuneTrail and restore the
+SQLite-consistent `.pre-relay-delivery-*.bak` snapshot into a clean data
+directory before starting the schema 11 build. Keep the newer database
+separately because restoring the backup rolls back later local changes.

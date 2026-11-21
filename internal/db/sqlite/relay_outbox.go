@@ -228,6 +228,8 @@ func maintainRelayQueue(ctx context.Context, tx *sql.Conn, profile int32, genera
 }
 
 // RetryRelayItem explicitly readmits a failed item against the current destination.
+// Isolated 400/413 failures terminate immediately. The eight-attempt limit
+// bounds manual retries and any future recoverable item failures.
 func (s *Sqlite) RetryRelayItem(ctx context.Context, profile int32, id string, now time.Time) (bool, error) {
 	result, err := s.db.ExecContext(ctx, `UPDATE outbox SET state='pending',result='{}',next_attempt_at=?,relay_generation=(SELECT generation FROM relay_destinations WHERE profile_id=outbox.profile_id),
 		lease_owner=NULL,lease_until=NULL,work_version=work_version+1
@@ -334,7 +336,7 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 			return err
 		}
 		finished = true
-		if !canceled {
+		if !canceled && result.Class != "" {
 			terminal := result.Class == relay.Success || (result.Class == relay.BadRequest && len(items) == 1 && (result.Status == 400 || result.Status == 413))
 			for _, item := range items {
 				if err := finishRelayItem(ctx, tx, batch, item, result, terminal, now.Unix()); err != nil {
