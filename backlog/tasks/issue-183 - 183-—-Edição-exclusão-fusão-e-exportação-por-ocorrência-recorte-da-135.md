@@ -1,7 +1,7 @@
 ---
 id: ISSUE-183
 title: 183 — Edição, exclusão, fusão e exportação por ocorrência (recorte da 135)
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T22:02:00Z'
@@ -85,6 +85,15 @@ created: 2026-11-21T23:08:00Z
 ---
 
 Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine (Reviewer); 39 respostas HTTP equivalentes à v0.55; Reviewer sem BUG após reauditoria; Advisor reprovou com ressalvas e os 5 itens foram corrigidos (reauditoria pelo Reviewer, aceita pelo usuário). ACs 1 a 3 marcados.
+
+---
+
+author: ebrgr
+created: 2026-11-21T23:08:00Z
+
+---
+
+Aceite do usuário em 21/11/2026: aceito com a reauditoria do Reviewer (sem nova revisão do Advisor) e autorizado a publicar (sem push).
 
 ---
 <!-- COMMENTS:END -->
