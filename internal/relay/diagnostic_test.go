@@ -81,3 +81,20 @@ func TestPrivateDiagnosticsSharePublicClass(t *testing.T) {
 	require.Equal(t, "policy", (&ValidationError{Class: Auth, PublicPeer: true}).PublicClass())
 	require.Equal(t, "network", (&ValidationError{Class: Redirect, PublicPeer: true}).PublicClass())
 }
+
+// TestComposeRelayHostname keeps service aliases usable without relaxing diagnostic sanitization.
+func TestComposeRelayHostname(t *testing.T) {
+	key := "multi_scrobbler:9078"
+	ip := netip.MustParseAddr("10.1.2.3")
+	policy := NetworkPolicy{Permissions: Permissions{
+		{HostPort: key, HTTP: true},
+		{HostPort: key, Private: true, Prefix: netip.PrefixFrom(ip, 32)},
+	}}
+	require.True(t, policy.Allows("http", key, ip))
+	require.True(t, dialAllowed("Multi_Scrobbler:9078", "10.1.2.3:9078", policy, true))
+	require.Equal(t, key, Describe("http://Multi_Scrobbler:9078/x", "", "").HostPort())
+	for _, host := range []string{"a\u202eb", "a\u2028b", "a\x00b", "a\x7fb", "a b", "a/b", "a<>b", `a"b`, "fe80::1%eth0"} {
+		_, err := CanonicalHost(host)
+		require.Error(t, err, "%q", host)
+	}
+}

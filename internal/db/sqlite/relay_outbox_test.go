@@ -1033,3 +1033,25 @@ func TestRelayIDNAExceptionAuthority(t *testing.T) {
 	require.Equal(t, want, key)
 	require.Equal(t, "https://xn--bcher-kva.example/prefix", url)
 }
+
+// TestRelayComposeHostnameUpgrade covers canonicalization and exception seeding for service aliases.
+func TestRelayComposeHostnameUpgrade(t *testing.T) {
+	ctx := t.Context()
+	raw, authority := "http://multi_scrobbler:9078/x", "multi_scrobbler:9078"
+	canonical, key, err := canonicalRelay(raw)
+	require.NoError(t, err)
+	require.Equal(t, raw, canonical)
+	require.Equal(t, authority, key)
+	key, err = normalizeRelayHostPort(authority)
+	require.NoError(t, err)
+	require.Equal(t, authority, key)
+
+	s, _, _ := migrationDB(t, 11)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	execSQL(t, s, "UPDATE users SET role='admin' WHERE id=1")
+	execSQL(t, s, "INSERT INTO profile_relays VALUES(?,?,?)", 1, raw, "fictional")
+	dns := lookupFixture{"multi_scrobbler": {netip.MustParseAddr("10.1.2.3")}}
+	require.NoError(t, upgradeRelaySchema(ctx, s.db, dns))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM relay_destinations WHERE profile_id=1 AND pause_class IS NULL"))
+	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE host_port='multi_scrobbler:9078' AND origin='seeded'"))
+}

@@ -45,6 +45,9 @@ func Describe(endpoint, code, category string) Diagnostic {
 	return d
 }
 
+// relayHostLookup accepts service names with underscores, including Docker Compose aliases.
+var relayHostLookup = idna.New(idna.MapForLookup(), idna.StrictDomainName(false), idna.BidiRule())
+
 // CanonicalHost normalizes a configured DNS name or literal IP for exception matching.
 func CanonicalHost(host string) (string, error) {
 	host = strings.TrimSuffix(host, ".")
@@ -54,7 +57,7 @@ func CanonicalHost(host string) (string, error) {
 		}
 		return "", errors.New("invalid relay host")
 	}
-	ascii, err := idna.Lookup.ToASCII(host)
+	ascii, err := relayHostLookup.ToASCII(host)
 	if err != nil || !asciiHostname(ascii) {
 		return "", errors.New("invalid relay host")
 	}
@@ -67,7 +70,7 @@ func unzonedIP(host string) bool {
 	return err == nil && ip.Zone() == ""
 }
 
-// asciiHostname accepts LDH labels and IDNA ASCII labels only.
+// asciiHostname accepts ASCII hostname labels, including underscores in service names.
 func asciiHostname(host string) bool {
 	host = strings.TrimSuffix(host, ".")
 	if len(host) > 253 {
@@ -78,7 +81,7 @@ func asciiHostname(host string) bool {
 			return false
 		}
 		for _, ch := range label {
-			if !(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '-') {
+			if !(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '-' || ch == '_') {
 				return false
 			}
 		}
