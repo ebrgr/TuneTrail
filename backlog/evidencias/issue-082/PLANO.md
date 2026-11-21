@@ -227,3 +227,7 @@ Riscos a verificar incluem aceitação parcial de um lote rejeitado, reentrega a
 - E4 mede ExpireRelayWork com 100 mil linhas abertas sem vencimento e a readmissão queue_capacity. Se a expiração exceder cerca de 50 ms, avaliar o índice parcial por perfil, destino, geração, criação e ID. Nenhum ensaio E4 iniciado.
 - Guia e CHANGELOG registram as reentregas possíveis, a deduplicação conhecida por destino e o impacto do upgrade em relays de perfis comuns. Maloja/multi-scrobbler aguardam confirmação na E4.
 - Verificado: `make check` completo (incluindo `go test ./...` e 13/13 jornadas E2E), testes dirigidos com `-race` em engine, relay, SQLite, relayoutbox e API, e graphify AST. No ensaio isolado de SIGTERM com HTTP em voo, a saída levou 4,005 s, a escuta ficou íntegra e o envio retomou após reinício. Pendente: revisão do Advisor e E4.
+
+## ESTADO DA E4
+
+- Script de carga em loopback preparado para quatro cenários com bases descartáveis. Em andamento: executar e registrar medições, segurança, paridade, upgrade e falhas ambíguas.
