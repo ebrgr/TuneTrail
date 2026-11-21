@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T14:02:00Z'
-updated_date: '2026-11-21T14:07:00Z'
+updated_date: '2026-11-21T14:09:00Z'
 labels:
   - imagens
 dependencies: []
@@ -50,6 +50,15 @@ created: 2026-11-21T14:07:00Z
 ---
 
 Aceite: aprovada pelo usuário em 21/11/2026, após ver a correção num build temporário com a ISSUE-180.
+
+---
+
+author: ebrgr
+created: 2026-11-21T14:09:00Z
+
+---
+
+Publicação: versão 0.50 (tag `v0.50`), branch `fix/issue-179-cor-do-cabecalho-de-midia` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
