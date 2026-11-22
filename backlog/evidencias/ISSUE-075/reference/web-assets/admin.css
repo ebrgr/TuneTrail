@@ -382,6 +382,10 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 .admin-main .ingestion-health .ingestion-reprocess { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .ingestion-discard-link { padding-inline:12px; }
 .admin-main .ingestion-health .ingestion-discard-warning { flex-basis:100%; margin:0; }
+.admin-main .ingestion-health .ingestion-discard-check {
+  flex-direction:row; flex-basis:100%; align-items:center; min-height:44px;
+}
+.admin-main .ingestion-health .ingestion-discard-check input { flex:none; }
 .admin-main .ingestion-health .ingestion-review-setting { margin:0 0 var(--space-3); }
 .admin-main .ingestion-health .ingestion-review-unavailable { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .card > h3 {

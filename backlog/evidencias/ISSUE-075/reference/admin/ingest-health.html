@@ -14,7 +14,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=782cd4e9642312329c95c16f36d6b749ff8d1afb5d8c7448b60bfc6c22cd769b">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=7b192d6ad7cb30843a0605175900f6b3ac58367425ab953e4a78139da5dc9bd3">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=9c2de13e09eca06a2886463bdb012dcba5d419ab1cedf0b740cbcffa2b2d6bdc"></script>
       
@@ -611,13 +611,18 @@
   <section class="card ingestion-diagnostics" aria-labelledby="health-discard">
     <h3 id="health-discard">Discard receipts without a listen</h3>
       <details>
-        <summary>Discard oldest eligible receipts (5)</summary>
+        <summary>Discard all eligible receipts (5)</summary>
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-          <input type="hidden" name="digest" value="dc02b53a9ce91571fac241b3e606829c5b4ccc94b04e6872ffb57ae9602295e6">
+          <input type="hidden" name="digest" value="338044de44f53fb028df48864462bc3d3f882f443050b8f68a9fa83209a505e9">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
-  <button type="submit" name="confirm" value="1">Confirm discard</button>
 
+          <p class="ingestion-discard-warning">If the queue changes, completed batches stay discarded. Reload the page to review the remaining receipts.</p>
+          <label class="ingestion-discard-check">
+            <input type="checkbox" name="confirm" value="1" required>
+            <span>Confirm discard of all eligible receipts (5)</span>
+          </label>
+          <button type="submit">Confirm discard</button>
         </form>
       </details>
       <details >
@@ -630,8 +635,9 @@
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000173">
-          <input type="hidden" name="digest" value="fc4efa17ddfaf171a1ffe91923d25dae6af030a1fedf5f86f8301c704eaa7e4c">
+          <input type="hidden" name="digest" value="71341b6a9f5fa6560bee50df0113a4f9701457a6a908742c5acbe2bc827f70cb">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+
   <button type="submit" name="confirm" value="1">Confirm discard</button>
 
         </form>
@@ -646,8 +652,9 @@
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="reference-receipt">
-          <input type="hidden" name="digest" value="88859c230a4963bfcd168732215a709fb32d5fafaacb034df6276e52d39e34f9">
+          <input type="hidden" name="digest" value="66ede62bd12b4df122b62056c1d0a6ba7187be64197918aa5f6ae00574aa3851">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+
   <button type="submit" name="confirm" value="1">Confirm discard</button>
 
         </form>
@@ -662,8 +669,9 @@
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000181">
-          <input type="hidden" name="digest" value="d1fd35f197f5df18a4c6b6159d840fb03cb7b7f022f543aadba5859c8685bc91">
+          <input type="hidden" name="digest" value="8e2bc4ef0e5d8dfc111b65882b5b284eb85ba58a8a54444e58ecee0b9113eb8a">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+
   <button type="submit" name="confirm" value="1">Confirm discard</button>
 
         </form>
@@ -678,8 +686,9 @@
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="inbox-missing">
-          <input type="hidden" name="digest" value="b17fcd694191a706d1bdbb1253b12685613d64ee1684cff035fd0b031a786fab">
+          <input type="hidden" name="digest" value="171e36a4ad081b7083af2a63a75def0686805ecc14ae5e46b3e4c6e2bad45d49">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+
   <button type="submit" name="confirm" value="1">Confirm discard</button>
 
         </form>
@@ -694,8 +703,9 @@
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="inbox-incomplete">
-          <input type="hidden" name="digest" value="10df31d18c7b4625943375b6164dbcf4d3a2134e1920804a5713f93803a050a1">
+          <input type="hidden" name="digest" value="45203d7d6e0302c44c316cbd93afc1152cc8c04ccf9a3d428ee546e2f2280dcd">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+
   <button type="submit" name="confirm" value="1">Confirm discard</button>
 
         </form>

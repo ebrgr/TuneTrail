@@ -328,11 +328,18 @@
     <h3 id="health-discard">{{tr "admin.health.discard_queue" "Discard receipts without a listen"}}</h3>
     {{- if .Discard.Batch.Count}}
       <details>
-        <summary>{{tr "admin.health.discard_batch" "Discard oldest eligible receipts"}} ({{.Discard.Batch.Count}})</summary>
+        <summary>{{tr "admin.health.discard_batch" "Discard all eligible receipts"}} ({{.Discard.Batch.Count}})</summary>
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile={{.Profile.ID}}">
           <input type="hidden" name="csrf_token" value="{{.CSRF}}">
           <input type="hidden" name="digest" value="{{.Discard.Batch.Digest}}">
-          {{- template "admin/health-discard-confirm"}}
+          {{- template "admin/health-discard-warning"}}
+          <p class="ingestion-discard-warning">{{tr "admin.health.discard_partial"
+            "If the queue changes, completed batches stay discarded. Reload the page to review the remaining receipts."}}</p>
+          <label class="ingestion-discard-check">
+            <input type="checkbox" name="confirm" value="1" required>
+            <span>{{tr "admin.health.discard_confirm_all" "Confirm discard of all eligible receipts"}} ({{.Discard.Batch.Count}})</span>
+          </label>
+          <button type="submit">{{tr "admin.health.discard_confirm" "Confirm discard"}}</button>
         </form>
       </details>
     {{- end}}
@@ -367,9 +374,13 @@
   </section>
 {{- end}}
 
-{{define "admin/health-discard-confirm"}}
+{{define "admin/health-discard-warning"}}
   <p class="ingestion-discard-warning">{{tr "admin.health.discard_warning"
     "Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen."}}</p>
+{{end}}
+
+{{define "admin/health-discard-confirm"}}
+  {{- template "admin/health-discard-warning"}}
   <button type="submit" name="confirm" value="1">{{tr "admin.health.discard_confirm" "Confirm discard"}}</button>
 {{end}}
 

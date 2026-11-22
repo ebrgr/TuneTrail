@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Profile owners and root can discard receipts without a listen in Ingestion health, individually or in confirmed batches, with a minimal audit record (ISSUE-185).
+- Profile owners and root can discard receipts without a listen in Ingestion health, individually or all at once with a single confirmation. Each discard leaves a minimal audit entry with 90-day retention (ISSUE-185).
 
 ## [0.59] - 2026-11-22
 

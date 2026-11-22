@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T15:05:00Z'
-updated_date: '2026-11-22T15:52:00Z'
+updated_date: '2026-11-22T15:59:00Z'
 labels:
   - ingestao
   - ui
@@ -14,6 +14,7 @@ dependencies:
   - ISSUE-182
 references:
   - backlog/evidencias/issue-185/VERIFICACAO.md
+  - backlog/evidencias/issue-185/CORRECOES.md
 type: feature
 ordinal: 198000
 ---
@@ -59,6 +60,15 @@ created: 2026-11-22T15:52:00Z
 ---
 
 Reviewer: provável BUG não executado: ingest_discards tem PK (profile_id, receipt_id) e o INSERT de rastro não trata conflito; o recibo de revisão de reenvio de ID confiável tem ID determinístico, então descartar, reenviar e descartar de novo viola a PK, dá erro 500 e desfaz o lote (recibo indescartável). RISCOs: lotes de 25 com confirmação a cada lote (10 mil = 400 confirmações), sem retenção do rastro. Testes sqlite -race, engine, handlers, middleware, adminui e webui OK. Ver backlog/evidencias/issue-185/PARECER-REVIEWER.md. Advisor recomendado (exclusão de dados), pendente a pedido do usuário.
+
+---
+
+author: Codex
+created: 2026-11-22T15:59:00Z
+
+---
+
+Fixed repeated trusted-replay discards, added one confirmation for the full eligible set with transactions of up to 500 receipts, and set a 90-day audit retention window with bounded cleanup. Ten thousand parked receipts took a median of 2.812 s at the repository. make check passed all 13 E2E scenarios, targeted race tests passed, and Orca verified 390, 1100, and 1500 px. Technical review pending.
 
 ---
 <!-- COMMENTS:END -->

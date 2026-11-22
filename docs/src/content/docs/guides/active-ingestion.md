@@ -344,11 +344,21 @@ and failures.
 
 Profile owners and root can use **Discard** in **Ingestion health** to remove
 parked, pending, or invalid receipts that have no listen and no active resolution
-lease. Open the receipt or the batch of up to 25 oldest eligible receipts, then
-select **Confirm discard**. If a receipt in the selection changes before you
-confirm, reload the page and review the new selection.
+lease. For a single receipt, open it and select **Confirm discard**. To
+discard all eligible receipts for the profile, open **Discard all eligible
+receipts**, check the displayed total, and select **Confirm discard** once.
 
-Discarding permanently deletes the receipt and retains its ID, source state
-and reason codes, discard time, and the acting account ID in the profile's
-audit record. Use listen deletion for receipts linked to a listen. Listens
-already sent to a relay remain at the destination.
+The server deletes the confirmed set in transactions of up to 500 receipts.
+If the queue changes, the operation stops and completed transactions stay
+discarded. Reload the page to review the remaining receipts before confirming
+again.
+
+Discarding permanently deletes the receipt and keeps one audit entry per
+discard, including for trusted replays of the same receipt ID. Each entry
+contains the receipt ID, previous state and reason codes, discard time, and
+acting account ID. After a successful discard, up to 500 entries older than
+90 days are removed from that profile. Deleting the profile or purging all
+data also removes these entries.
+
+Use listen deletion for receipts linked to a listen. Listens already sent to
+a relay remain at the destination.

@@ -168,7 +168,13 @@ func (h *Handler) mutateHealth(w http.ResponseWriter, r *http.Request, identity 
 		}
 		anchor = "health-discard"
 		// The store revalidates the confirmed versions against this authorized profile.
-		err = h.store.DiscardIngestPending(r.Context(), profile, identity.User.ID, form.SingleValue("receipt"), form.SingleValue("digest"))
+		receipt := form.SingleValue("receipt")
+		err = h.store.DiscardIngestPending(r.Context(), profile, identity.User.ID, receipt, form.SingleValue("digest"))
+		if receipt == "" && errors.Is(err, db.ErrConflict) {
+			const message = "The eligible receipts changed. Completed batches stay discarded. Reload the page to review the remaining receipts."
+			textError(w, adminFormat(i18n.ViewOf(w), "admin.health.discard_conflict", message, nil), http.StatusConflict)
+			return
+		}
 		if err != nil {
 			h.failHealthDiscard(w, r, identity, err)
 			return
