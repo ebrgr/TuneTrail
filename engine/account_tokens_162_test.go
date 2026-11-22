@@ -35,6 +35,6 @@ func TestAccountTokenRoutes162(t *testing.T) {
 	}
 	rec := a.request("GET", "/admin/redeem", "", "", false)
 	require.Equal(t, http.StatusOK, rec.Code)
-	require.Equal(t, "no-referrer", rec.Header().Get("Referrer-Policy"))
+	require.Equal(t, "same-origin", rec.Header().Get("Referrer-Policy"))
 	require.Equal(t, "no-store", rec.Header().Get("Cache-Control"))
 }

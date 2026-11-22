@@ -176,7 +176,7 @@ func New(store Store, opts Options) (*Handler, error) {
 	h.login = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		limitedLogin.ServeHTTP(&loginResponse{ResponseWriter: w, handler: h}, r)
 	})
-	h.entry = adminweb.NoStore(adminweb.SameOriginWithReject(http.HandlerFunc(h.dispatch), func(w http.ResponseWriter, _ *http.Request) { h.fail(w, adminweb.ErrCSRF) }))
+	h.entry = adminweb.NoStore(adminweb.SameOriginWithReject(http.HandlerFunc(h.dispatch), h.rejectOrigin))
 	return h, nil
 }
 
@@ -212,7 +212,10 @@ func (w headWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Protect the redemption document and errors produced before dispatch.
 	if r.URL.Path == "/admin/redeem" {
-		w.Header().Set("Referrer-Policy", "no-referrer")
+		// ISSUE-125: not "no-referrer". Browsers serialize the Origin of a form POST as "null" under
+		// that policy, so the same-origin check rejected every real redemption. The page and its URL
+		// carry no secret (a query string is refused), and same-origin still sends no Referer elsewhere.
+		w.Header().Set("Referrer-Policy", "same-origin")
 	}
 	w.Header().Add("Vary", "Cookie")
 	w = h.languages.Wrap(w, r)
@@ -678,4 +681,15 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 		return nil, nil
 	}
 	return os.Open(u.Path)
+}
+
+// rejectOrigin answers a request the same-origin policy refused. The pre-session redemption form
+// gets a fresh form and the neutral "page expired" text instead of a misleading permission error
+// (ISSUE-125); every other path, including sign-in, keeps the generic forbidden answer.
+func (h *Handler) rejectOrigin(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/admin/redeem" {
+		h.renderRedeem(w, r, http.StatusForbidden, view{Redeem: true}, "This page expired or was opened in another tab. Try again.", "")
+		return
+	}
+	h.fail(w, adminweb.ErrCSRF)
 }

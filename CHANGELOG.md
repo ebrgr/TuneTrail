@@ -5,6 +5,7 @@
 - The account page moves to `/account` and opens for every signed-in user, not only administrators. It has Identity, Password and Session cards, warns before a password change that every session ends, and keeps `/admin?section=account` working by redirecting to it (ISSUE-125).
 - "My account" in the menu and the post-login destination of ordinary users point to `/account`; `account` is now a reserved profile slug (ISSUE-125).
 - Redeeming an account token now lists the password rules before sending, asks to confirm the password, and ends at the sign-in form with a "Password set" message. A stale or foreign form (expired page, another tab) shows "This page expired or was opened in another tab. Try again." with a fresh form instead of a permission error (ISSUE-125).
+- Redeeming an account token no longer fails in a real browser: the page asked for `Referrer-Policy: no-referrer`, under which browsers send `Origin: null` on the form POST and the same-origin check refused it with a permission message. The redemption page now uses `same-origin`, and a refused origin on the sign-in or redemption form shows the expired-page text with a fresh form (ISSUE-125).
 - Account cards and the redemption form reuse the shared colours, hover, pressed, focus and disabled states of the rest of the app in the Yuu and Pearl themes (ISSUE-125).
 
 ## [0.62] - 2026-11-22

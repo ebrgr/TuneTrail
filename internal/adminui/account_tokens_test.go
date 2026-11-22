@@ -107,7 +107,7 @@ func TestAccountTokenWeb162(t *testing.T) {
 	first := issue()
 	activation := issue()
 	redeemPage := request("GET", "/admin/redeem", nil, nil)
-	require.Equal(t, "no-referrer", redeemPage.Header().Get("Referrer-Policy"))
+	require.Equal(t, "same-origin", redeemPage.Header().Get("Referrer-Policy"))
 	preauth := redeemPage.Result().Cookies()[0]
 	query := "/admin/redeem?" + url.Values{"account_token": {activation}}.Encode()
 	csrf := field(redeemPage, "csrf_token")
@@ -120,7 +120,7 @@ func TestAccountTokenWeb162(t *testing.T) {
 	head := request("HEAD", "/admin/redeem", nil, preauth)
 	require.Equal(t, 200, head.Code)
 	require.Empty(t, head.Body.String())
-	require.Equal(t, "no-referrer", head.Header().Get("Referrer-Policy"))
+	require.Equal(t, "same-origin", head.Header().Get("Referrer-Policy"))
 	// The form keeps the typed username (ISSUE-125); every other byte must match across failures.
 	neutral := func(rec *httptest.ResponseRecorder, name string) string {
 		return strings.ReplaceAll(rec.Body.String(), `value="`+name+`"`, `value=""`)
@@ -128,7 +128,7 @@ func TestAccountTokenWeb162(t *testing.T) {
 	redeem := func(username, token, formCSRF string) *httptest.ResponseRecorder {
 		t.Helper()
 		rec := request("POST", "/admin/redeem", url.Values{"username": {username}, "account_token": {token}, "password": {newPassword}, "confirm_password": {newPassword}, "csrf_token": {formCSRF}}, preauth)
-		require.Equal(t, "no-referrer", rec.Header().Get("Referrer-Policy"))
+		require.Equal(t, "same-origin", rec.Header().Get("Referrer-Policy"))
 		require.NotContains(t, rec.Body.String(), token)
 		require.NotContains(t, rec.Body.String(), newPassword)
 		return rec
