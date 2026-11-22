@@ -4,7 +4,7 @@ title: 125 — Remodelar a página de conta do administrador
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:13:00Z'
+updated_date: '2026-11-22T22:17:00Z'
 labels:
   - ui
   - admin
@@ -88,6 +88,15 @@ created: 2026-11-22T22:13:00Z
 ---
 
 Pedido do usuário (22/11/2026): a página de resgate deve ter uma caixa explícita orientando a sair do perfil root e abrir 'Todos os perfis' (/) antes de resgatar; com sessão aberta, versão enfática com Sair…. Perguntas em aberto levadas ao usuário: zona de perigo vazia na /account (recomendado remover até existir ação) e seletor de ícones do avatar (hoje campo de texto com 5 nomes; mover para a ISSUE-126 ou corrigir já).
+
+---
+
+author: claude
+created: 2026-11-22T22:17:00Z
+
+---
+
+Decisões do usuário (22/11/2026): manter a zona de perigo vazia em /account; trocar já o campo de texto de ícone por dropdown (5 ícones + iniciais) na criação do perfil e no avatar, dentro da 125. A separação de 'Meu perfil' e 'Minha conta' segue na ISSUE-126.
 
 ---
 <!-- COMMENTS:END -->
