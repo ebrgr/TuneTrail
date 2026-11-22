@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T20:58:00Z'
+updated_date: '2026-11-22T21:03:00Z'
 labels:
   - ui
   - admin
@@ -71,6 +71,15 @@ created: 2026-11-22T20:58:00Z
 ---
 
 Implementação (22/11/2026): GET /account para qualquer sessão (comum, dono, root) com cartões Identidade, Senha (aviso antes de enviar, requisitos, erros por campo com role=alert/aria-describedby), Sessão (Sair… secundário via /admin/sign-out) e zona de perigo reservada vazia. /admin?section=account redireciona 303 para /account (após autorização). AccountDestination=/account (menu, atalhos, fallback pós-login, tela de confirmação de saída). Sem JS: POST completo com erro no cartão; com JS: fragmento do cartão (mecanismo da 124, X-TuneTrail-Fragment/Submission). 'account' virou slug reservado. Credenciais, bcrypt, sessões e lock do resgate não foram tocados (ChangeAccount reutilizado). Verificação: make check verde (go test, ui.reference.check com ISSUE-075/reference regenerada, e2e 13/13); testes novos em engine/account_issue125_test.go. Capturas 390/768/1440: dispensadas por decisão do usuário (ele testa no servidor); critério #4 segue pendente de aceite visual.
+
+---
+
+author: claude
+created: 2026-11-22T21:03:00Z
+
+---
+
+Reviewer: APROVADO, sem BUG. Riscos baixos: slug 'account' reservado, POST /account sem restrição de método, falta mensagem 'senha alterada' pós-troca (ISSUE-128), /account com query dá 400. Testes adminui/adminweb/webassets/webui/admin/engine ok. Aceite visual do usuário no servidor (sem capturas, por decisão dele).
 
 ---
 <!-- COMMENTS:END -->
