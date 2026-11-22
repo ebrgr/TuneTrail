@@ -1,7 +1,7 @@
 ---
 id: ISSUE-181
 title: '181 — Fila de revisão de duplicatas: aceitar ou manter escuta separada'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
@@ -130,6 +130,15 @@ created: 2026-11-22T01:03:00Z
 ---
 
 Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG após 2 reauditorias; Advisor reprovou com ressalvas e os itens foram corrigidos (reauditoria pelo Reviewer, aceita pelo usuário). ACs 1 a 6 marcados. Decisão de produto pendente: reenvio do mesmo ID externo confiável com Revisar ligado.
+
+---
+
+author: ebrgr
+created: 2026-11-22T01:03:00Z
+
+---
+
+Aceite do usuário em 21/11/2026: aceito com a reauditoria do Reviewer (sem nova revisão do Advisor) e autorizado a publicar (sem push). Pendente de decisão de produto: reenvio do mesmo ID externo confiável com Revisar ligado abre uma pendência; padrão da flag Revisar para o corte da ISSUE-172.
 
 ---
 <!-- COMMENTS:END -->
