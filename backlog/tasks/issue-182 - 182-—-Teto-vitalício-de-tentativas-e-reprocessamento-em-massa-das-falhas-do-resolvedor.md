@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T21:57:00Z'
-updated_date: '2026-11-22T14:58:00Z'
+updated_date: '2026-11-22T15:00:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -105,6 +105,15 @@ created: 2026-11-22T14:58:00Z
 ---
 
 Aceite do usuário em 22/11/2026: aceito como está e autorizado a publicar (sem push). Risco aceito e registrado: o timeout de 20 s da prova do MusicBrainz agora reagenda o recibo (1/2/4/8 min, depois estaciona) em vez de seguir com identidade degradada; erros rápidos do MusicBrainz continuam degradando. Item 3 do Advisor (commit por lote no reprocessar todos) ignorado por decisão do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-22T15:00:00Z
+
+---
+
+Publicação: versão 0.58 (tag `v0.58`), branch `feat/issue-182-teto-vitalicio-de-tentativas-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
