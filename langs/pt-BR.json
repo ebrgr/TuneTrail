@@ -788,5 +788,11 @@
   "admin.account.redeemed": "Senha definida. Entre com seu usuário e a nova senha.",
   "admin.message.page_expired": "Esta página expirou ou foi aberta em outra aba. Tente novamente.",
   "admin.redeem.before": "Antes de resgatar: se você estiver conectado como administrador (root), saia desta conta primeiro e depois abra Todos os perfis para continuar.",
-  "admin.redeem.signed_in": "Você está conectado como {{.Username}}. Para resgatar o token de outra conta, saia primeiro."
+  "admin.redeem.signed_in": "Você está conectado como {{.Username}}. Para resgatar o token de outra conta, saia primeiro.",
+  "admin.icon.none": "Iniciais (sem ícone)",
+  "admin.icon.music": "Música",
+  "admin.icon.headphones": "Fones de ouvido",
+  "admin.icon.disc": "Disco",
+  "admin.icon.radio": "Rádio",
+  "admin.icon.user": "Usuário"
 }

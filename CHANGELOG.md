@@ -8,6 +8,7 @@
 - Redeeming an account token no longer fails in a real browser: the page asked for `Referrer-Policy: no-referrer`, under which browsers send `Origin: null` on the form POST and the same-origin check refused it with a permission message. The redemption page now uses `same-origin`, and a refused origin on the sign-in or redemption form shows the expired-page text with a fresh form (ISSUE-125).
 - Account cards and the redemption form reuse the shared colours, hover, pressed, focus and disabled states of the rest of the app in the Yuu and Pearl themes (ISSUE-125).
 - The token redemption page opens with a notice that redemption needs a browser without an open account, with links to Sign out… and All profiles; when a session is open it names the signed-in user and asks to sign out first (ISSUE-125).
+- The avatar Icon field when creating or editing a profile is now a dropdown with Music, Headphones, Disc, Radio, User and Initials (no icon); the current icon is preselected (ISSUE-125).
 
 ## [0.62] - 2026-11-22
 

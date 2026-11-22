@@ -20,6 +20,21 @@
   </div>
 {{end}}
 
+{{/* Avatar icon choice (ISSUE-125): values are the ones ValidateProfile accepts; "" means initials.
+     The argument is the stored icon, so an unknown stored value simply leaves "Initials" selected. */}}
+{{define "admin/icon-select"}}
+  <label>{{tr "admin.text.icon" "Icon"}}
+    <select name="icon">
+      <option value=""{{if not .}} selected{{end}}>{{tr "admin.icon.none" "Initials (no icon)"}}</option>
+      <option value="music"{{if eq . "music"}} selected{{end}}>{{tr "admin.icon.music" "Music"}}</option>
+      <option value="headphones"{{if eq . "headphones"}} selected{{end}}>{{tr "admin.icon.headphones" "Headphones"}}</option>
+      <option value="disc"{{if eq . "disc"}} selected{{end}}>{{tr "admin.icon.disc" "Disc"}}</option>
+      <option value="radio"{{if eq . "radio"}} selected{{end}}>{{tr "admin.icon.radio" "Radio"}}</option>
+      <option value="user"{{if eq . "user"}} selected{{end}}>{{tr "admin.icon.user" "User"}}</option>
+    </select>
+  </label>
+{{end}}
+
 {{define "admin/account"}}
   <p class="sr-only" role="status" data-enhance-status></p>
   <div class="account-grid">

@@ -152,7 +152,12 @@ func New(store Store, opts Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "strval": func(p *string) string {
+		if p == nil {
+			return ""
+		}
+		return *p
+	}, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}

@@ -123,7 +123,7 @@
                     {{- end}}
                     <label>{{tr "admin.text.name" "Name"}} <input name="display_name" required></label>
                     <label>{{tr "admin.text.slug" "Slug"}} <input name="slug" required></label>
-                    <label>{{tr "admin.text.icon" "Icon"}} <input name="icon"></label>
+                    {{template "admin/icon-select" ""}}
                     <label>{{tr "admin.text.photo" "Photo"}} <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
                     <small>{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
                     <button>{{tr "admin.text.create_profile" "Create account and profile"}}</button>
@@ -170,7 +170,7 @@
                     <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
                     <input type="hidden" name="submission_token" value="{{$.Submission}}">
                     <input type="hidden" name="profile_slug" value="{{.Slug}}">
-                    <label>{{tr "admin.text.icon" "Icon"}} <input name="icon" value="{{if .AvatarIcon}}{{.AvatarIcon}}{{end}}"></label>
+                    {{template "admin/icon-select" (strval .AvatarIcon)}}
                     <label>{{tr "admin.text.photo" "Photo"}} <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
                     <small>{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
                     <button>{{tr "admin.text.save_avatar" "Save avatar"}}</button>

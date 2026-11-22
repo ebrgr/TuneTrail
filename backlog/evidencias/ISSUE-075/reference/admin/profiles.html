@@ -461,7 +461,18 @@
                       <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
                     <label>Name <input name="display_name" required></label>
                     <label>Slug <input name="slug" required></label>
-                    <label>Icon <input name="icon"></label>
+                    
+  <label>Icon
+    <select name="icon">
+      <option value="" selected>Initials (no icon)</option>
+      <option value="music">Music</option>
+      <option value="headphones">Headphones</option>
+      <option value="disc">Disc</option>
+      <option value="radio">Radio</option>
+      <option value="user">User</option>
+    </select>
+  </label>
+
                     <label>Photo <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
                     <small>JPEG, PNG or static WebP.</small>
                     <button>Create account and profile</button>
@@ -501,7 +512,18 @@
                     <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
                     <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
                     <input type="hidden" name="profile_slug" value="alpha">
-                    <label>Icon <input name="icon" value=""></label>
+                    
+  <label>Icon
+    <select name="icon">
+      <option value="" selected>Initials (no icon)</option>
+      <option value="music">Music</option>
+      <option value="headphones">Headphones</option>
+      <option value="disc">Disc</option>
+      <option value="radio">Radio</option>
+      <option value="user">User</option>
+    </select>
+  </label>
+
                     <label>Photo <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
                     <small>JPEG, PNG or static WebP.</small>
                     <button>Save avatar</button>

@@ -188,3 +188,53 @@ func TestRedeemNoticeBox125(t *testing.T) {
 	require.NotContains(t, failed.Body.String(), "secret-token-value")
 	require.NotContains(t, failed.Body.String(), "secret-password-1")
 }
+
+// TestProfileIconSelect125 renders the icon dropdown and keeps the server contract for its values.
+func TestProfileIconSelect125(t *testing.T) {
+	a := taskApp139(t)
+	icons := []string{"music", "headphones", "disc", "radio", "user"}
+	options := func(body string) {
+		require.Contains(t, body, `<select name="icon">`)
+		require.Contains(t, body, `<option value="" `)
+		for _, icon := range icons {
+			require.Contains(t, body, `<option value="`+icon+`"`)
+		}
+		require.NotContains(t, body, `<input name="icon"`)
+	}
+	create := taskRequest139(a, "GET", "/admin", a.cookie, nil, nil)
+	require.Equal(t, 200, create.Code)
+	options(create.Body.String())
+	require.Contains(t, create.Body.String(), "Initials (no icon)")
+
+	// Every accepted value is stored; the avatar form preselects the current one.
+	page := func() *httptest.ResponseRecorder {
+		w := taskRequest139(a, "GET", "/admin?profile=2", a.cookie, nil, nil)
+		require.Equal(t, 200, w.Code)
+		return w
+	}
+	post := func(icon string) *httptest.ResponseRecorder {
+		w := page()
+		return taskRequest139(a, "POST", "/admin/profile/2/avatar", a.cookie, url.Values{
+			"csrf_token": {taskField139(t, w, "csrf_token")}, "submission_token": {taskField139(t, w, "submission_token")},
+			"profile_slug": {"second"}, "icon": {icon}}, nil)
+	}
+	for _, icon := range icons {
+		require.Equal(t, 303, post(icon).Code, icon)
+		body := page().Body.String()
+		options(body)
+		require.Contains(t, body, `<option value="`+icon+`" selected>`, icon)
+	}
+	require.Equal(t, 400, post("invalid").Code)
+	require.Contains(t, page().Body.String(), `<option value="user" selected>`)
+
+	// An invalid icon stored earlier does not break the page: initials stay selected.
+	require.NoError(t, a.store.Exec("UPDATE listening_profiles SET avatar_icon='legacy-icon' WHERE id=2"))
+	body := page().Body.String()
+	require.Contains(t, body, `<option value="" selected>`)
+	require.NotContains(t, body, `legacy-icon`)
+
+	pt := taskRequest139(a, "GET", "/admin?profile=2", a.cookie, nil, map[string]string{"Accept-Language": "pt-BR"})
+	for _, label := range []string{"Iniciais (sem ícone)", "Música", "Fones de ouvido", "Disco", "Rádio", "Usuário"} {
+		require.Contains(t, pt.Body.String(), label)
+	}
+}
