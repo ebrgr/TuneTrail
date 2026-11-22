@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T21:03:00Z'
+updated_date: '2026-11-22T21:24:00Z'
 labels:
   - ui
   - admin
@@ -80,6 +80,15 @@ created: 2026-11-22T21:03:00Z
 ---
 
 Reviewer: APROVADO, sem BUG. Riscos baixos: slug 'account' reservado, POST /account sem restrição de método, falta mensagem 'senha alterada' pós-troca (ISSUE-128), /account com query dá 400. Testes adminui/adminweb/webassets/webui/admin/engine ok. Aceite visual do usuário no servidor (sem capturas, por decisão dele).
+
+---
+
+author: claude
+created: 2026-11-22T21:24:00Z
+
+---
+
+Ajustes pós-teste (22/11/2026): (1) resgate de token: regras da senha visíveis antes do envio (mín. 8 caracteres, máx. 72 bytes, como validAccountPassword), campo Confirmar senha, erros por campo, sucesso redireciona para /admin?redeemed=1 (login com 'Senha definida…'); CSRF/preauth inválido em resgate e login mostra 'Esta página expirou ou foi aberta em outra aba' com formulário novo (403, username preservado, nunca token/senha), sem afrouxar CSRF/SameOrigin. (2) estilos de /account e resgate reutilizam tokens e estados globais (foco global, hover/active/disabled, sem cor fixa); verificação em scripts/check_web_style.py com testes. make check verde. Sem capturas (decisão do usuário).
 
 ---
 <!-- COMMENTS:END -->
