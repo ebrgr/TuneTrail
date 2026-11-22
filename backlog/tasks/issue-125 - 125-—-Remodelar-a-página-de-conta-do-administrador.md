@@ -4,7 +4,7 @@ title: 125 — Remodelar a página de conta do administrador
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T21:20:00Z'
+updated_date: '2026-11-22T22:13:00Z'
 labels:
   - ui
   - admin
@@ -79,6 +79,15 @@ created: 2026-11-22T21:20:00Z
 ---
 
 Requisito do usuário (22/11/2026): todas as telas tocadas pela 125 seguem o padrão de cores e os mesmos estados de hover, active e foco do restante do app (tokens de tokens.css, button.large-button, a:hover, focus-visible global, .admin-sections), nos temas Yuu e Pearl, sem cor fixa nova.
+
+---
+
+author: claude
+created: 2026-11-22T22:13:00Z
+
+---
+
+Pedido do usuário (22/11/2026): a página de resgate deve ter uma caixa explícita orientando a sair do perfil root e abrir 'Todos os perfis' (/) antes de resgatar; com sessão aberta, versão enfática com Sair…. Perguntas em aberto levadas ao usuário: zona de perigo vazia na /account (recomendado remover até existir ação) e seletor de ícones do avatar (hoje campo de texto com 5 nomes; mover para a ISSUE-126 ou corrigir já).
 
 ---
 <!-- COMMENTS:END -->
