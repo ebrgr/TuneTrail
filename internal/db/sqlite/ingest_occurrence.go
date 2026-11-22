@@ -229,12 +229,16 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			}
 		}
 		if match.id == 0 {
-			conflicts, err := occurrenceCreditConflicts(ctx, tx, observedCredits(r.snapshot))
-			if err != nil {
-				return err
-			}
-			if len(conflicts) > 0 {
-				return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_artist_credit", precision, conflicts, "", proof.evidence)
+			// Bridged tracks need catalog artists. Standalone credits can keep
+			// the observed name without a link when the alias is ambiguous.
+			if r.snapshot.Release != "" {
+				conflicts, err := occurrenceCreditConflicts(ctx, tx, observedCredits(r.snapshot))
+				if err != nil {
+					return err
+				}
+				if len(conflicts) > 0 {
+					return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_artist_credit", precision, conflicts, "", proof.evidence)
+				}
 			}
 			match, err = createOccurrence(ctx, tx, r.snapshot, proof, match)
 			if err != nil {

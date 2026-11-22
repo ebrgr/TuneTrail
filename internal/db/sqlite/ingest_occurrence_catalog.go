@@ -270,9 +270,10 @@ func createOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsho
 		if err != nil {
 			return match, err
 		}
+		// Keep the observed name even when its exact alias cannot identify one artist.
 		for position, name := range observedCredits(snapshot) {
 			if _, err := tx.ExecContext(ctx, `INSERT INTO occurrence_credits(occurrence_id,position,name,artist_id)
-				VALUES(?,?,?,(SELECT artist_id FROM artist_aliases WHERE alias=? COLLATE BINARY LIMIT 1))`, match.id, position, name, name); err != nil {
+				VALUES(?,?,?,(SELECT min(artist_id) FROM artist_aliases WHERE alias=? COLLATE BINARY HAVING count(DISTINCT artist_id)=1))`, match.id, position, name, name); err != nil {
 				return match, err
 			}
 		}
@@ -337,7 +338,7 @@ func occurrenceCreditConflicts(ctx context.Context, tx *sql.Conn, names []string
 		return nil, err
 	}
 	rows, err := tx.QueryContext(ctx, `WITH ambiguous AS (
-		SELECT a.alias FROM artist_aliases a JOIN json_each(?) c ON a.alias=c.value
+		SELECT a.alias FROM artist_aliases a JOIN json_each(?) c ON a.alias=c.value COLLATE BINARY
 		GROUP BY a.alias HAVING count(DISTINCT a.artist_id)>1
 	) SELECT DISTINCT a.artist_id FROM artist_aliases a JOIN ambiguous b USING(alias)
 	ORDER BY a.artist_id`, string(credits))
@@ -364,11 +365,18 @@ func ensureOccurrenceArtists(ctx context.Context, tx *sql.Conn, names []string) 
 	var result []int64
 	for _, name := range names {
 		var id int64
-		err := tx.QueryRowContext(ctx, `SELECT DISTINCT artist_id FROM artist_aliases WHERE alias=? COLLATE BINARY`, name).Scan(&id)
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		var matches int
+		err := tx.QueryRowContext(ctx, `SELECT coalesce(min(artist_id),0),count(DISTINCT artist_id)
+			FROM artist_aliases WHERE alias=? COLLATE BINARY`, name).Scan(&id, &matches)
+		if err != nil {
 			return nil, err
 		}
-		if errors.Is(err, sql.ErrNoRows) {
+		// The receipt resolver routes homonyms to pending_identity before
+		// creation under the same writer lock. Reject any ambiguous write here too.
+		if matches > 1 {
+			return nil, fmt.Errorf("ambiguous occurrence artist alias %q", name)
+		}
+		if matches == 0 {
 			if err = tx.QueryRowContext(ctx, `INSERT INTO artists DEFAULT VALUES RETURNING id`).Scan(&id); err != nil {
 				return nil, err
 			}

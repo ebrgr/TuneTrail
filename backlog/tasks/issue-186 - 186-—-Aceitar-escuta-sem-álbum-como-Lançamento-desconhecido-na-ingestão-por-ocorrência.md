@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T17:02:00Z'
-updated_date: '2026-11-22T17:31:00Z'
+updated_date: '2026-11-22T19:26:00Z'
 labels:
   - ingestao
   - catalogo
@@ -58,6 +58,15 @@ created: 2026-11-22T17:31:00Z
 ---
 
 Reviewer: sem BUG executado; RISCO MÉDIO não executado: o crédito da ocorrência sem álbum liga artist_id por alias com LIMIT 1 sem ORDER BY (dois artistas com o mesmo alias podem ser confundidos). RISCOs: ranking por gravação divide a faixa entre a gravação do álbum e a sem álbum sem MBID; MBID declarado cria gravação não validada; recibos antigos release_missing não são reenfileirados. Testes sqlite -race (timeout de 30 min, 614 s), engine, handlers, middleware, adminui e webui OK. Ver backlog/evidencias/issue-186/PARECER-REVIEWER.md. Advisor (effort high) obrigatório por tocar a identidade.
+
+---
+
+author: Codex
+created: 2026-11-22T19:26:00Z
+
+---
+
+Correção do Reviewer: ocorrência sem álbum conserva o crédito observado e só vincula o artist_id quando o alias binário identifica um único artista. Com álbum, homônimos permanecem em pending_identity, sem criação ou vínculo no catálogo. O teste cobre dois artistas com MBIDs distintos. go test -count=1 -timeout 30m ./internal/db/sqlite ./engine e make check passaram, com 13/13 percursos E2E.
 
 ---
 <!-- COMMENTS:END -->

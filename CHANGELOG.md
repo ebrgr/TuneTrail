@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Occurrence ingestion accepts listens without an album and counts them under Unknown release in track rankings grouped by release (ISSUE-186).
+- Listens without an album retain the submitted artist credit when an alias matches multiple artists (ISSUE-186).
 
 ## [0.60] - 2026-11-22
 

@@ -740,3 +740,29 @@ func TestOccurrenceStandaloneSameSecond(t *testing.T) {
 		})
 	}
 }
+
+// TestOccurrenceHomonymousArtistCredits preserves the name without choosing a homonym.
+func TestOccurrenceHomonymousArtistCredits(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `INSERT INTO artists(id,musicbrainz_id) VALUES
+		(20,'fa000000-0000-4000-8000-000000000020'),
+		(21,'fa000000-0000-4000-8000-000000000021');
+		INSERT INTO artist_aliases VALUES(20,'Homonym','Fixture',1),(21,'Homonym','Fixture',1)`)
+
+	item := ingest.Snapshot{Title: "Homonymous credit", Artist: "Homonym"}
+	id := admitOccurrenceFixture(t, s, item, 2200, "")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "accepted")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrence_credits c JOIN ingest_events e USING(occurrence_id)
+		WHERE e.receipt_id=? AND c.name='Homonym' AND c.artist_id IS NULL`, id))
+
+	// Album-backed tracks need unambiguous catalog links before creation.
+	item.Release = "Homonymous album"
+	id = admitOccurrenceFixture(t, s, item, 2210, "")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "pending_identity")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events
+		WHERE receipt_id=? AND reason_codes='["ambiguous_artist_credit"]' AND json_extract(original_snapshot,'$.artist')='Homonym'`, id))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM release_aliases WHERE alias='Homonymous album'`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM artist_aliases WHERE alias='Homonym'`))
+}
