@@ -85,7 +85,7 @@ func TestListeningVisibility161(t *testing.T) {
 	require.Equal(t, 403, json160(a, "PATCH", api+"/", `{"require_login":true}`, other, "").Code)
 	for _, protected := range []bool{false, true} {
 		if protected {
-			pagePath := fmt.Sprintf("/admin?profile=%d", p.ID)
+			pagePath := "/account/profile"
 			page := taskRequest139(a, "GET", pagePath, owner, nil, nil)
 			require.Equal(t, 200, page.Code)
 			form := url.Values{

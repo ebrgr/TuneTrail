@@ -46,14 +46,15 @@
       try {
         const data = new FormData(form);
         if (event.submitter?.name) data.set(event.submitter.name, event.submitter.value);
-        const url = new URL(form.action, location.href);
+        // A submit button may carry its own formaction (ISSUE-126: relay Save and Test share one form).
+        const url = new URL(event.submitter?.formAction || form.action, location.href);
         const init = {method: form.method.toUpperCase(), credentials: 'same-origin', redirect: 'manual',
           headers: {'X-TuneTrail-Partial': '1'}};
         if (init.method === 'GET') {
           url.search = new URLSearchParams(data).toString();
           url.searchParams.set('partial', '1');
           init.headers['X-TuneTrail-Submission'] = ticket();
-        } else init.body = new URLSearchParams(data);
+        } else init.body = form.enctype === 'multipart/form-data' ? data : new URLSearchParams(data);
         const response = await fetch(url, init);
         // Sign-in, CSRF, a spent ticket or any other unexpected answer: reload, never resend.
         if (response.headers.get('X-TuneTrail-Fragment') !== section.id) { reload(); return; }
@@ -71,6 +72,8 @@
           const query = url.searchParams.get('artist_query');
           if (query !== null) root.querySelectorAll('input[type=hidden][name=artist_query]').forEach(input => { input.value = query; });
         }
+        // A renamed profile changes the slug every other form of the page must send (ISSUE-126).
+        if (next.dataset.slug) root.querySelectorAll('input[name=profile_slug]').forEach(input => { input.value = next.dataset.slug; });
         const message = next.querySelector('[data-section-message]')?.textContent.trim() || '';
         if (status) { status.textContent = ''; requestAnimationFrame(() => { status.textContent = message; }); }
         // Return focus to the same field, or to the section heading.

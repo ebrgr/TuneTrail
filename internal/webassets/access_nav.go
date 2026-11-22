@@ -37,12 +37,12 @@ func AccessNavigation(actor *models.User, own, visited *models.ListeningProfile,
 	nav.AccountLinks = append(nav.AccountLinks, *nav.Account)
 	// The confirmation page validates any requested return for the current actor.
 	nav.SignOut = &NavLink{"/admin/sign-out", "nav.sign_out", "Sign out", "LogOut", section == "sign-out"}
-	if admin.AuthorizeAction(actor, admin.ManageProfile, own) == nil {
-		nav.AccountLinks = append(nav.AccountLinks, NavLink{fmt.Sprintf("/admin?profile=%d", own.ID), "nav.my_profile", "My profile", "UserRoundCog", section == "profiles" && visited != nil && own.ID == visited.ID})
-	}
+	// ISSUE-126: there is no separate "My profile" entry; the profile is a tab of My account.
 	if admin.AuthorizeAction(actor, admin.ManageProfile, visited) == nil {
 		nav.ManageListening = true
-		nav.ProfileSettings = &NavLink{fmt.Sprintf("/admin?profile=%d", visited.ID), "nav.profile_settings", "Profile settings", "UserRoundCog", section == "profiles"}
+		// The own profile has a single address; only a root visiting another profile uses the context URL.
+		isOwn := own != nil && visited.UserID == own.UserID
+		nav.ProfileSettings = &NavLink{AccountTabURL(isOwn, visited.ID, TabProfile), "nav.profile_settings", "Profile settings", "UserRoundCog", section == "profiles"}
 	}
 	// ISSUE-083: ingestion health targets the visited profile when manageable, otherwise the actor's own profile.
 	var health *NavLink
@@ -56,7 +56,7 @@ func AccessNavigation(actor *models.User, own, visited *models.ListeningProfile,
 	nav.ManageCatalog = admin.AuthorizeAction(actor, admin.ManageCatalog, nil) == nil
 	nav.AdminBadge = nav.ManageCatalog && visited != nil && visited.UserID == actor.ID
 	if admin.AuthorizeAction(actor, admin.ManageAccounts, nil) == nil {
-		nav.RootLinks = append(nav.RootLinks, NavLink{"/admin?section=profiles", "ui.manage_profiles", "Manage profiles", "UserRoundCog", section == "profiles" && visited == nil})
+		nav.RootLinks = append(nav.RootLinks, NavLink{"/admin?section=profiles", "ui.manage_profiles", "Manage profiles", "UserRoundCog", section == "profiles"})
 		// Root sees Health in the Administration group, above server configuration.
 		if health != nil {
 			nav.RootLinks = append(nav.RootLinks, *health)
@@ -168,4 +168,15 @@ func AccountTabs(self bool, profileID int32, current string) []NavLink {
 		tabs = append(tabs, NavLink{URL: AccountTabURL(self, profileID, t.Tab), Label: t.Label, Fallback: t.Fallback, Current: t.Tab == current})
 	}
 	return tabs
+}
+
+// IsAccountPath reports whether p is the account document or one of its own-profile tabs.
+// These documents take no query and are valid login return targets (ISSUE-125, ISSUE-126).
+func IsAccountPath(p string) bool {
+	switch p {
+	case AccountDestination, AccountDestination + "/" + TabProfile, AccountDestination + "/" + TabKeys,
+		AccountDestination + "/" + TabHistory, AccountDestination + "/" + TabRelay:
+		return true
+	}
+	return false
 }

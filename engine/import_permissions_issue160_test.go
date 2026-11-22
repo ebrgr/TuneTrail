@@ -50,7 +50,7 @@ func TestOwnerHTTPImportProvenance160(t *testing.T) {
 					require.Equal(t, 1, count, table)
 				}
 			case "html-upload":
-				page := taskRequest139(a, "GET", fmt.Sprintf("/admin?profile=%d&section=import", p.ID), cookie, nil, nil)
+				page := taskRequest139(a, "GET", "/account/history", cookie, nil, nil)
 				require.Equal(t, 200, page.Code)
 				fields := map[string]string{"format": "koito", "confirm": "1", "profile_name": p.DisplayName, "profile_slug": p.Slug, "csrf_token": taskField139(t, page, "csrf_token"), "submission_token": taskField139(t, page, "submission_token")}
 				// Browser multipart forms put CSRF first; keep the existing parser contract intact.

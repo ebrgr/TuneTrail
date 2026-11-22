@@ -1,5 +1,7 @@
 {
+  "admin/templates/account-tabs.html": "templates/admin/account-tabs.html",
   "admin/templates/account.html": "templates/admin/account.html",
+  "admin/templates/accounts-list.html": "templates/admin/accounts-list.html",
   "admin/templates/admin.html": "templates/admin/admin.html",
   "admin/templates/catalog-review.html": "templates/admin/catalog-review.html",
   "admin/templates/head.html": "templates/shared/head.html",

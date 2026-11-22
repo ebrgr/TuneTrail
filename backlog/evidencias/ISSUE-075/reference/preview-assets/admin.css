@@ -394,6 +394,31 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   .admin-main .account-grid { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
   .admin-main .account-danger { grid-column:1 / -1; }
 }
+/* ISSUE-126: the tab strip scrolls sideways on narrow screens; each tab keeps a 44px target. */
+.admin-main .account-tabs { display:flex; gap:var(--space-2); overflow-x:auto; padding:var(--space-2) 0 var(--space-4); }
+.admin-main .account-tabs a {
+  flex:0 0 auto; display:inline-flex; align-items:center; min-height:44px; padding:10px 18px;
+  border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
+  background:var(--color-bg); text-decoration:none; transition:background-color .1s;
+}
+.admin-main .account-tabs a:hover,
+.admin-main .account-tabs a[aria-current=page] { background:var(--color-bg-tertiary); }
+.admin-main .account-who { color:var(--color-fg-secondary); margin:0; }
+/* The context banner names both people; text and a solid border carry the meaning, not colour. */
+.admin-main .account-context {
+  margin:0 0 var(--space-3); padding:var(--space-3);
+  border:2px solid var(--color-bg-tertiary); border-radius:var(--radius-md); background:var(--color-bg-secondary);
+}
+.admin-main .account-context p { margin:0 0 var(--space-2); }
+.admin-main .account-key { margin:var(--space-3) 0 0; }
+/* Root accounts list: one card per account. */
+.admin-main .account-rows { list-style:none; margin:0 0 var(--space-4); padding:0; display:grid; gap:var(--space-3); }
+.admin-main .account-row { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); }
+.admin-main .account-row > div { flex:1 1 12rem; display:flex; flex-direction:column; min-width:0; }
+.admin-main .account-row .account-secondary { margin-top:0; }
+@media (min-width:64rem) {
+  .admin-main .account-rows { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
 }
 /* ISSUE-083: ingestion health follows the media task dialog (uppercase section titles, filled rows,
    outlined buttons) and uses theme tokens only, so every theme keeps the same contrast. */

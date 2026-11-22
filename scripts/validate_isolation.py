@@ -133,7 +133,7 @@ def run_fixture(binary,root,mode):
         assert not checked_json(server,'alpha','/now-playing')['currently_playing']
         stale=None
         if mode=='go':
-            forms=Forms(server);page=forms.request('GET','/admin?profile=1')[0]
+            forms=Forms(server);page=forms.request('GET','/account/profile')[0]
             csrf=re.search(rb'name="csrf_token" value="([^"]+)"',page)[1].decode()
             ticket=re.search(rb'name="submission_token" value="([^"]+)"',page)[1].decode()
             stale=urllib.parse.urlencode({'csrf_token':csrf,'submission_token':ticket,'profile_slug':'alpha','display_name':'Wrong','slug':'alpha'}).encode()
@@ -177,7 +177,7 @@ def run_import_relay_and_cache(binary,root):
         server.start();server.login()
         # Forms opened in two tabs retain their own profile, token and destination.
         forms=Forms(server)
-        pages=[forms.request('GET',f'/admin?profile={i}')[0] for i in (1,2)]
+        pages=[forms.request('GET','/account/profile' if i==1 else f'/admin?profile={i}')[0] for i in (1,2)]
         tokens=[]
         for page in pages:
             csrf=re.search(rb'name="csrf_token" value="([^"]+)"',page)[1].decode()

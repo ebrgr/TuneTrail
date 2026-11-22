@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
 var routeSlug = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
@@ -15,7 +16,7 @@ func IsPage(path string) bool {
 		return false
 	}
 	// The ingestion health document shares the protected administration dispatcher.
-	if path == "/admin/health" || path == "/admin" || path == "/account" || path == "/admin/settings" || path == "/admin/redeem" || path == "/admin/sign-out" {
+	if path == "/admin/health" || path == "/admin" || webassets.IsAccountPath(path) || path == "/admin/settings" || path == "/admin/redeem" || path == "/admin/sign-out" {
 		return true
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")

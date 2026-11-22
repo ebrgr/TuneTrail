@@ -11,6 +11,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/relay"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"io"
 	"net/http"
 	"strconv"
@@ -117,12 +118,17 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 	}
 	slug := f.SingleValue("profile_slug")
 	operation := strings.Join(parts[2:], "/")
-	target := profilePath(id)
 	profile, err := admin.Profile(r.Context(), h.store, identity.User, id, slug)
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
+	// ISSUE-126: the owner returns to /account/<tab>; a root operating another account returns
+	// to the administration context. The server decides from the session, not from the form.
+	self := profile.UserID == identity.User.ID
+	target := webassets.AccountTabURL(self, id, operationTab(operation))
+	card := operationCard(operation)
+	w.Header().Add("Vary", "X-TuneTrail-Partial")
 	switch operation {
 	case "account-token":
 		if !fields(f, "profile_slug") {
@@ -307,12 +313,29 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			err = db.ErrInvalidInput
 		}
 	}
+	fragment := card != "" && adminweb.FragmentRequested(r)
 	if err != nil {
+		if status, message := errorMessage(err); fragment && status != http.StatusUnauthorized && status != http.StatusForbidden && status != http.StatusNotFound {
+			// The error is shown inside the affected card; the profile is read again for its values.
+			if fresh, e := h.store.GetListeningProfileByID(r.Context(), id); e == nil {
+				st := accountState{Card: card, Error: localMessage(i18n.ViewOf(w), message)}
+				h.renderProfileTab(w, r, identity, fresh, cardTab[card], self, st, status, card)
+				return
+			}
+		}
 		h.fail(w, err)
 		return
 	}
 	if operation != "relay/test" {
 		h.putNotice(identity.SessionID, id, "Changes saved.")
+	}
+	if fragment {
+		// Only the card is returned; its notice moves from the pending store into the card.
+		if fresh, e := h.store.GetListeningProfileByID(r.Context(), id); e == nil {
+			st := accountState{Card: card, Notice: h.takeNotice(identity.SessionID, id, i18n.ViewOf(w))}
+			h.renderProfileTab(w, r, identity, fresh, cardTab[card], self, st, http.StatusOK, card)
+			return
+		}
 	}
 	http.Redirect(w, r, target, http.StatusSeeOther)
 }

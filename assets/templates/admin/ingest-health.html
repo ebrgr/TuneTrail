@@ -2,7 +2,8 @@
 {{define "admin/ingest-health"}}
   <div class="ingestion-health">
   <nav class="admin-sections" aria-label="{{tr "admin.text.profile_administration" "Profile administration"}}">
-    <a href="/admin?profile={{.Profile.ID}}">{{tr "nav.profile_settings" "Profile settings"}}</a>
+    {{/* ISSUE-126: the own profile lives at /account/profile; the navigation model chooses the address. */}}
+    {{with .Nav.ProfileSettings}}<a href="{{.URL}}">{{tr "nav.profile_settings" "Profile settings"}}</a>{{end}}
     <a href="/admin/health?profile={{.Profile.ID}}" aria-current="page">{{tr "admin.health.nav" "Health"}}</a>
   </nav>
   {{if .Profiles}}

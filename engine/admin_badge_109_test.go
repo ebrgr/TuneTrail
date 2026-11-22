@@ -34,7 +34,7 @@ func TestAdminBadgeOnlyForAdministratorSession(t *testing.T) {
 	require.Equal(t, "true", admin.Header().Get("X-TuneTrail-Admin"))
 	require.Contains(t, admin.Body.String(), `class="admin-badge"`)
 	require.Contains(t, admin.Body.String(), "data-admin\n")
-	require.Contains(t, admin.Body.String(), `href="/admin?profile=1"`) // badge keeps the profile (ISSUE-123)
+	require.Contains(t, admin.Body.String(), `href="/account/profile"`) // badge opens the own profile tab (ISSUE-123, ISSUE-126)
 
 	for name, cookie := range map[string]string{
 		"visitor":     "",

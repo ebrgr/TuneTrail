@@ -32,10 +32,13 @@ func TestAdministrationLanguages(t *testing.T) {
 	require.Contains(t, login.Body.String(), "Nome de usuário")
 	require.Contains(t, login.Body.String(), `name="username"`)
 	require.Contains(t, login.Body.String(), "Senha")
-	en, pt := get("/admin?profile=1", "en", true), get("/admin?profile=1", "pt-BR", true)
+	// ISSUE-126: the own profile is split into tabs under /account.
+	en, pt := get("/account/history", "en", true), get("/account/history", "pt-BR", true)
 	require.Equal(t, 200, pt.Code)
-	require.Contains(t, pt.Body.String(), "Importar e exportar")
-	require.Contains(t, pt.Body.String(), "Salvar relay")
+	require.Contains(t, pt.Body.String(), "Importar")
+	require.Contains(t, pt.Body.String(), "Exportar")
+	require.Contains(t, get("/account/relay", "pt-BR", true).Body.String(), "Salvar relay")
+	require.Contains(t, pt.Body.String(), "Histórico")
 	require.Contains(t, pt.Body.String(), `aria-label="Navegação principal"`)
 	require.Contains(t, pt.Body.String(), `aria-label="Tema e idioma"`) // ISSUE-071: visible label in More.
 	require.Contains(t, pt.Header().Get("Cache-Control"), "no-store")
@@ -79,7 +82,7 @@ func TestAdministrationLanguages(t *testing.T) {
 	saved := httptest.NewRecorder()
 	a.router.ServeHTTP(saved, post)
 	require.Equal(t, 303, saved.Code)
-	notice := get("/admin?profile=1", "pt-BR", true)
+	notice := get("/account/profile", "pt-BR", true)
 	require.Contains(t, notice.Body.String(), "Alterações salvas.")
 	jsonReq := httptest.NewRequest("POST", "http://koito.test/apis/web/v1/login", strings.NewReader("{}"))
 	jsonReq.Header.Set("Origin", "http://evil.test")
@@ -93,11 +96,11 @@ func TestAdministrationLanguages(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			lang, want := "en", "Import and export"
+			lang, want := "en", "Export"
 			if i%2 == 0 {
-				lang, want = "pt-BR", "Importar e exportar"
+				lang, want = "pt-BR", "Exportar"
 			}
-			w := get("/admin?profile=1", lang, true)
+			w := get("/account/history", lang, true)
 			if w.Code != 200 || !strings.Contains(w.Body.String(), want) {
 				errs <- fmt.Sprint(i)
 			}

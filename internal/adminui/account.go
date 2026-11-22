@@ -67,7 +67,7 @@ func (h *Handler) renderAccount(w http.ResponseWriter, r *http.Request, id admin
 	if st.Username == "" {
 		st.Username = id.User.Username
 	}
-	v := view{User: id.User, CSRF: token, Submission: ticket, Section: "account", AccountPage: &st,
+	v := view{User: id.User, CSRF: token, Submission: ticket, Section: "account", AccountPage: &st, Tab: webassets.TabAccount, Tabs: webassets.AccountTabs(true, 0, webassets.TabAccount),
 		Nav: h.navigation(r, id, nil, "account")}
 	if fragment == "" {
 		h.render(w, status, v)

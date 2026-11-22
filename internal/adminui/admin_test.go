@@ -155,7 +155,7 @@ func TestAdministrationJourney(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "http://localhost:1234", raw)
 	require.Equal(t, "fake-token", secret)
-	relayPage := call("GET", fmt.Sprintf("/admin?profile=%d", b), nil, session)
+	relayPage := call("GET", fmt.Sprintf("/admin?section=relay&profile=%d", b), nil, session)
 	require.Equal(t, 200, relayPage.Code)
 	require.Contains(t, relayPage.Body.String(), `type="password" name="token"`)
 	require.NotContains(t, relayPage.Body.String(), "fake-token")

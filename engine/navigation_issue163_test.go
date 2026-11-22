@@ -61,7 +61,11 @@ func TestNavigationByPermission163(t *testing.T) {
 			require.NotContains(t, denied.Body.String(), hidden, path)
 		}
 	}
-	page := taskRequest139(a, "GET", own, owner, nil, nil)
+	// ISSUE-126: the owner's own profile has a single address under /account.
+	redirect := taskRequest139(a, "GET", own, owner, nil, nil)
+	require.Equal(t, 303, redirect.Code)
+	require.Equal(t, "/account/profile", redirect.Header().Get("Location"))
+	page := taskRequest139(a, "GET", "/account/profile", owner, nil, nil)
 	require.Contains(t, page.Body.String(), "Only you and administrators can view protected listens.")
 	require.Contains(t, page.Body.String(), `aria-describedby="protected-relay-help"`)
 	root := taskRequest139(a, "GET", own, a.cookie, nil, nil)

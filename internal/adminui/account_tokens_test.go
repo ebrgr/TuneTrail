@@ -183,12 +183,12 @@ func TestAccountTokenWeb162(t *testing.T) {
 	}
 	_, err = admin.Authenticate(ctx, s, userSession.ID)
 	require.NoError(t, err)
-	unconfirmed := post(fmt.Sprintf("/admin/profile/%d/delete", rootProfile.ID), fmt.Sprintf("/admin?profile=%d", rootProfile.ID),
+	unconfirmed := post(fmt.Sprintf("/admin/profile/%d/delete", rootProfile.ID), "/account/profile",
 		url.Values{"profile_slug": {rootProfile.Slug}, "display_name": {rootProfile.DisplayName}, "listen_count": {"0"}}, rootCookie)
 	require.Equal(t, 400, unconfirmed.Code)
 	_, err = admin.Authenticate(ctx, s, rootSession.ID)
 	require.NoError(t, err)
-	rec = post(fmt.Sprintf("/admin/profile/%d/delete", rootProfile.ID), fmt.Sprintf("/admin?profile=%d", rootProfile.ID),
+	rec = post(fmt.Sprintf("/admin/profile/%d/delete", rootProfile.ID), "/account/profile",
 		url.Values{"profile_slug": {rootProfile.Slug}, "display_name": {rootProfile.DisplayName}, "listen_count": {"0"}, "confirm": {"1"}}, rootCookie)
 	require.Equal(t, 303, rec.Code)
 	require.Contains(t, rec.Header().Get("Set-Cookie"), "Max-Age=0")
@@ -197,9 +197,9 @@ func TestAccountTokenWeb162(t *testing.T) {
 	adminSession, err := admin.Login(ctx, s, "pending", newPassword, false)
 	require.NoError(t, err)
 	lastCookie := &http.Cookie{Name: adminweb.SessionCookie, Value: adminSession.ID.String()}
-	last := post(route+"account-role", profilePage, url.Values{"profile_slug": {"pending"}, "role": {"user"}}, lastCookie)
+	last := post(route+"account-role", "/account/profile", url.Values{"profile_slug": {"pending"}, "role": {"user"}}, lastCookie)
 	require.Equal(t, 409, last.Code)
-	listing := request("GET", profilePage, nil, lastCookie)
+	listing := request("GET", "/account/profile", nil, lastCookie)
 	for _, token := range []string{first, activation, beforePromotion, reset} {
 		raw, err := base64.RawURLEncoding.DecodeString(token)
 		require.NoError(t, err)

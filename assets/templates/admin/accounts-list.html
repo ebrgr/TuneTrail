@@ -1,0 +1,40 @@
+{{/* ISSUE-126: root accounts and profiles, one card per account. Only administrators reach it. */}}
+{{define "admin/accounts-list"}}
+  <section aria-labelledby="accounts-list-title">
+    <h2 id="accounts-list-title">{{tr "ui.manage_profiles" "Accounts and profiles"}}</h2>
+    <ul class="account-rows">
+      {{range .Rows}}
+        <li class="account-card account-row">
+          {{template "partial/avatar" .Avatar}}
+          <div>
+            <strong>{{.Profile.DisplayName}}</strong>
+            <span>/{{.Profile.Slug}}</span>
+            <span>
+              {{- if eq .Account.Role "admin"}}{{tr "account.role.admin" "Administrator"}}{{else}}{{tr "account.role.user" "User"}}{{end -}}
+              {{- if eq .Account.Status "pending"}} · {{tr "account.status.pending" "Pending"}}{{end -}}
+              {{- if .Profile.RequireLogin}} · {{tr "profiles.protected" "Protected"}}{{end -}}
+            </span>
+          </div>
+          <a class="account-secondary" href="/admin?profile={{.Profile.ID}}">
+            {{- if .Own}}{{tr "account.list.mine" "Open my account"}}{{else}}{{tr "account.list.manage" "Manage"}}{{end -}}
+          </a>
+        </li>
+      {{else}}
+        <li>{{tr "admin.text.no_profiles_yet" "No profiles yet."}}</li>
+      {{end}}
+    </ul>
+  </section>
+  <section class="account-card" aria-labelledby="accounts-create-title">
+    <h2 id="accounts-create-title">{{tr "admin.text.create_profile" "Create account and profile"}}</h2>
+    <form method="post" class="account-form" action="/admin/profile/create" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+      {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}
+      <label>{{tr "admin.text.name" "Name"}} <input name="display_name" required></label>
+      <label>{{tr "admin.text.slug" "Slug"}} <input name="slug" required></label>
+      {{template "admin/icon-select" ""}}
+      <label>{{tr "admin.text.photo" "Photo"}} <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+      <small class="form-help">{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
+      <button class="account-action">{{tr "admin.text.create_profile" "Create account and profile"}}</button>
+    </form>
+  </section>
+{{end}}

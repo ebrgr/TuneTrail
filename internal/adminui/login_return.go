@@ -38,10 +38,11 @@ func (h *Handler) canReturnToRead(r *http.Request, actor *models.User, u *url.UR
 	parts := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
 	read := r.Clone(r.Context())
 	read.Method, read.URL = http.MethodGet, u
-	switch u.Path {
-	case "/account":
-		// ISSUE-125: any authenticated session may return to its account page.
+	// ISSUE-125/126: any authenticated session may return to its account page or one of its tabs.
+	if webassets.IsAccountPath(u.Path) {
 		return u.RawQuery == "" && admin.AuthorizeAction(actor, admin.ManageAccount, nil) == nil
+	}
+	switch u.Path {
 	case "/admin":
 		return h.authorizePage(read, admin.Identity{User: actor}) == nil && h.returnProfileExists(read)
 	case "/admin/health":

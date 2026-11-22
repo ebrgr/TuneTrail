@@ -195,7 +195,7 @@ func TestProfileIconSelect125(t *testing.T) {
 	icons := []string{"music", "headphones", "disc", "radio", "user"}
 	options := func(body string) {
 		require.Contains(t, body, `<select name="icon">`)
-		require.Contains(t, body, `<option value="" `)
+		require.Contains(t, body, `<option value=""`) // ISSUE-126: the avatar card alone no longer repeats the create form
 		for _, icon := range icons {
 			require.Contains(t, body, `<option value="`+icon+`"`)
 		}

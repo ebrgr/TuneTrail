@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
@@ -25,7 +27,7 @@ func SafeReturn(raw string) string {
 		return ""
 	}
 	// ISSUE-125: the account page takes no query and is a valid login return target.
-	if u.Path == "/account" {
+	if webassets.IsAccountPath(u.Path) {
 		if len(q) != 0 {
 			return ""
 		}

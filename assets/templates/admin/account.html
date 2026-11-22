@@ -25,7 +25,7 @@
 {{define "admin/icon-select"}}
   <label>{{tr "admin.text.icon" "Icon"}}
     <select name="icon">
-      <option value=""{{if not .}} selected{{end}}>{{tr "admin.icon.none" "Initials (no icon)"}}</option>
+      <option value=""{{if or (not .) (not (avatarIcon .))}} selected{{end}}>{{tr "admin.icon.none" "Initials (no icon)"}}</option>
       <option value="music"{{if eq . "music"}} selected{{end}}>{{tr "admin.icon.music" "Music"}}</option>
       <option value="headphones"{{if eq . "headphones"}} selected{{end}}>{{tr "admin.icon.headphones" "Headphones"}}</option>
       <option value="disc"{{if eq . "disc"}} selected{{end}}>{{tr "admin.icon.disc" "Disc"}}</option>
@@ -35,14 +35,12 @@
   </label>
 {{end}}
 
+{{/* The cards of the Account tab; the shell (admin/account-shell) owns the grid. */}}
 {{define "admin/account"}}
-  <p class="sr-only" role="status" data-enhance-status></p>
-  <div class="account-grid">
-    {{template "admin/account-identity" .}}
-    {{template "admin/account-password" .}}
-    {{template "admin/account-session" .}}
-    {{template "admin/account-danger" .}}
-  </div>
+  {{template "admin/account-identity" .}}
+  {{template "admin/account-password" .}}
+  {{template "admin/account-session" .}}
+  {{template "admin/account-danger" .}}
 {{end}}
 
 {{/* Each card is a swappable section (ISSUE-124): id and data-section match the fragment header. */}}

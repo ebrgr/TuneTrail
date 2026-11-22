@@ -84,10 +84,11 @@ def validate(server):
     f = Forms(server)
     token = f.token()
     f.request('POST','/admin/login',{'username':'validation-admin','password':PASSWORD},expected=403)
-    f.login('/admin?profile=1')
-    token=f.token('/admin?profile=1')
+    # ISSUE-126: the signed-in administrator's own profile lives at /account/profile.
+    f.login('/account/profile')
+    token=f.token('/account/profile')
     # Documents are distinct from actions, including HEAD and expired sessions.
-    for path in ['/admin','/admin?profile=1','/admin/profile/1/export','/admin/profile/1/delete-review']:
+    for path in ['/admin','/account/profile','/admin/profile/1/export','/admin/profile/1/delete-review']:
         body, _=f.request('HEAD',path);assert not body
     f.request('POST','/admin/profile/1/save',{'csrf_token':token,'profile_slug':'default','display_name':'Cross origin','slug':'default'},expected=403,headers={'Origin':'https://elsewhere.invalid'})
     f.request('GET','/admin/logout',expected=404)

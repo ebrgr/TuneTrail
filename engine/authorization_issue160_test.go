@@ -155,7 +155,8 @@ func TestMassAssignmentAndCurrentRole160(t *testing.T) {
 func TestHTMLManagementMatrix160(t *testing.T) {
 	a := taskApp139(t)
 	cookie, p := owner160(t, a)
-	pagePath := fmt.Sprintf("/admin?section=keys&profile=%d", p.ID)
+	// ISSUE-126: the owner's own tabs are addressed without an ID.
+	pagePath := "/account/keys"
 	ownPage := taskRequest139(a, "GET", pagePath, cookie, nil, nil)
 	require.Equal(t, 200, ownPage.Code, ownPage.Body.String())
 	require.NotContains(t, ownPage.Body.String(), "first-key")
@@ -167,11 +168,8 @@ func TestHTMLManagementMatrix160(t *testing.T) {
 		require.Equal(t, actor.other, taskRequest139(a, "GET", "/admin/profile/1/export", actor.cookie, nil, nil).Code)
 	}
 	for _, section := range []string{"account", "profiles", "keys", "relay", "import", "export"} {
-		want := 200
-		if section == "account" {
-			// ISSUE-125: the legacy account link redirects to /account after authorization.
-			want = 303
-		}
+		// ISSUE-125/126: every legacy section of the own profile redirects to its /account tab.
+		want := 303
 		require.Equal(t, want, taskRequest139(a, "GET", fmt.Sprintf("/admin?section=%s&profile=%d", section, p.ID), cookie, nil, nil).Code, section)
 	}
 	for _, op := range []struct {

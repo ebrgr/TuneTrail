@@ -114,7 +114,9 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 		require.Contains(t, page.Body.String(), tc.message)
 		require.Contains(t, page.Body.String(), tc.button)
 		require.Contains(t, page.Body.String(), `href="/admin/sign-out?return=%2Fadmin"`)
-		require.Equal(t, []string{ownLink}, profileLinks.FindAllString(page.Body.String(), -1))
+		// ISSUE-126: there is no separate profile entry; the denied page never links to a profile.
+		require.Empty(t, profileLinks.FindAllString(page.Body.String(), -1))
+		require.NotContains(t, page.Body.String(), ownLink)
 		for _, secret := range []string{`href="/admin/settings"`, `action="/admin/profile/create"`, `action="/admin/account/password"`, "Source Track"} {
 			require.NotContains(t, page.Body.String(), secret)
 		}

@@ -130,6 +130,12 @@ type view struct {
 	AccountPage                         *accountState
 	RedeemUsername, RedeemField         string
 	RedeemSession                       string
+	// ISSUE-126: shared account shell. Tab is the current tab, Context is true only while a
+	// root operates another account, and Rows feeds the root accounts list.
+	Tab     string
+	Tabs    []webassets.NavLink
+	Context bool
+	Rows    []accountRow
 }
 
 // New constructs the protected handler and a bounded pre-login endpoint.
@@ -291,6 +297,11 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		h.accountPage(w, r)
 		return
 	}
+	// ISSUE-126: the tabs of the session's own profile; IsRoute already restricted the path.
+	if strings.HasPrefix(r.URL.Path, "/account/") {
+		h.accountTab(w, r)
+		return
+	}
 	if r.URL.Path == "/admin" && (r.Method == "GET" || r.Method == "HEAD") {
 		identity, err := adminweb.SessionIdentity(r, h.store)
 		if errors.Is(err, admin.ErrUnauthorized) {
@@ -311,8 +322,12 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// ISSUE-125: the account document moved to /account; old links keep working.
-		if r.URL.Query().Get("section") == "account" {
+		if r.URL.Query().Get("section") == "account" && r.URL.Query().Get("profile") == "" {
 			http.Redirect(w, r, webassets.AccountDestination, http.StatusSeeOther)
+			return
+		}
+		// ISSUE-126: the own profile has a single address, /account/<tab>.
+		if h.redirectOwnProfile(w, r, identity) {
 			return
 		}
 		h.page(w, r, identity)
@@ -419,8 +434,8 @@ func (h *Handler) render(w http.ResponseWriter, status int, data view) {
 	_, _ = io.WriteString(w, out.String())
 }
 
-// fail returns generic public errors and never prints request bodies or credentials.
-func (h *Handler) fail(w http.ResponseWriter, err error) {
+// errorMessage maps an error to its public status and fixed message.
+func errorMessage(err error) (int, string) {
 	status := adminweb.ErrorStatus(err)
 	if errors.Is(err, relay.ErrUpstream) {
 		status = 502
@@ -439,6 +454,12 @@ func (h *Handler) fail(w http.ResponseWriter, err error) {
 	if status == 502 {
 		message = "relay validation unavailable"
 	}
+	return status, message
+}
+
+// fail returns generic public errors and never prints request bodies or credentials.
+func (h *Handler) fail(w http.ResponseWriter, err error) {
+	status, message := errorMessage(err)
 	h.render(w, status, view{Error: message})
 }
 
@@ -521,7 +542,28 @@ func (h *Handler) postLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, h.loginDestination(r, identity.User, f.SingleValue("next")), http.StatusSeeOther)
 }
 
-// page renders only data belonging to the authenticated admin and explicitly selected profile.
+// redirectOwnProfile sends /admin?profile=<own> and its legacy sections to /account/<tab>.
+// It runs after authorizePage and only acts when the selected profile belongs to the session.
+func (h *Handler) redirectOwnProfile(w http.ResponseWriter, r *http.Request, id admin.Identity) bool {
+	q := r.URL.Query()
+	raw := q.Get("profile")
+	if raw == "" {
+		return false
+	}
+	tab, ok := webassets.TabFromSection(q.Get("section"))
+	n, err := parseID(raw)
+	if !ok || err != nil {
+		return false
+	}
+	profile, err := h.store.GetListeningProfileByID(r.Context(), n)
+	if err != nil || profile.UserID != id.User.ID {
+		return false
+	}
+	http.Redirect(w, r, webassets.AccountTabURL(true, profile.ID, tab), http.StatusSeeOther)
+	return true
+}
+
+// page serves the root accounts list, or a tab of another account in the administration context.
 func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity) {
 	q, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
@@ -533,6 +575,36 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 			h.fail(w, db.ErrInvalidInput)
 			return
 		}
+	}
+	section := q.Get("section")
+	if section == "" {
+		section = "profiles"
+	}
+	switch section {
+	case "profiles", "keys", "relay", "import", "export", "account":
+	default:
+		h.fail(w, db.ErrInvalidInput)
+		return
+	}
+	if q.Get("profile") != "" {
+		n, e := parseID(q.Get("profile"))
+		if e != nil {
+			h.fail(w, e)
+			return
+		}
+		profile, e := h.store.GetListeningProfileByID(r.Context(), n)
+		if e != nil {
+			h.fail(w, e)
+			return
+		}
+		tab, _ := webassets.TabFromSection(section)
+		// A profile of the session itself never uses the context mode (redirected before).
+		h.renderProfileTab(w, r, id, profile, tab, profile.UserID == id.User.ID, accountState{}, http.StatusOK, "")
+		return
+	}
+	if section == "account" {
+		h.fail(w, db.ErrInvalidInput)
+		return
 	}
 	token, err := h.csrf.SessionToken(id)
 	if err != nil {
@@ -552,64 +624,19 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		}
 	}
 	profiles = allowed
-	section := q.Get("section")
-	if section == "" {
-		section = "profiles"
-	}
-	switch section {
-	case "profiles", "keys", "relay", "import", "export":
-	default:
-		h.fail(w, db.ErrInvalidInput)
-		return
-	}
 	ticket, err := h.newSubmission(id.SessionID)
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	// Load credential-free account details only for administrators.
 	v := view{User: id.User, Profiles: profiles, CSRF: token, Section: section, Submission: ticket,
 		AccountsRoot: admin.AuthorizeAction(id.User, admin.ManageAccounts, nil) == nil}
-	if q.Get("profile") != "" {
-		n, e := parseID(q.Get("profile"))
-		if e != nil {
-			h.fail(w, e)
-			return
-		}
-		v.Profile, err = h.store.GetListeningProfileByID(r.Context(), n)
-		if err != nil {
-			h.fail(w, err)
-			return
-		}
-		if v.AccountsRoot {
-			v.Account, err = h.store.ProfileAccount(r.Context(), n)
-			if err != nil {
-				h.fail(w, err)
-				return
-			}
-			v.CanIssueToken = admin.AuthorizeAction(id.User, admin.IssueAccountToken, v.Profile) == nil
-		}
-		v.Keys, err = admin.Keys(r.Context(), h.store, id.User, n, v.Profile.Slug)
-		if err != nil {
-			h.fail(w, err)
-			return
-		}
-		v.RelayURL, _, err = admin.Relay(r.Context(), h.store, id.User, n, v.Profile.Slug)
-		if err != nil {
-			h.fail(w, err)
-			return
-		}
-		if store, ok := h.store.(relayPanelStore); ok && admin.AuthorizeAction(id.User, admin.ManageServer, nil) == nil {
-			profiles, _ := store.RelayPolicyProfiles(r.Context(), id.SessionID, n)
-			if len(profiles) != 0 && profiles[0].Configured {
-				v.RelayState = &profiles[0]
-			}
-		}
-		v.Notice = h.takeNotice(id.SessionID, n, i18n.ViewOf(w))
-	} else {
-		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
+	// Account roles and states are loaded only for administrators.
+	if v.AccountsRoot {
+		v.Rows = h.accountRows(r.Context(), id.User, profiles)
 	}
-	v.Nav = h.navigation(r, id, v.Profile, "profiles")
+	v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
+	v.Nav = h.navigation(r, id, nil, "profiles")
 	h.render(w, 200, v)
 }
 
