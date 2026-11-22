@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T23:37:00Z'
+updated_date: '2026-11-22T23:39:00Z'
 labels:
   - ui
   - admin
@@ -118,6 +118,15 @@ created: 2026-11-22T23:37:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito o 126' e 'publique').
+
+---
+
+author: ebrgr
+created: 2026-11-22T23:39:00Z
+
+---
+
+Publicação: versão 0.64 (tag `v0.64`), branch `feat/issue-126-remodelar-a-gestao-de-perfis` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

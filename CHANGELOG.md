@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.64] - 2026-11-22
+
 - "My account" is now the single place to manage your account and profile, with five tabs: Account, Profile, API keys, History and Relay. The Profile tab keeps the name, URL name, listen protection (with the relay note) and avatar; the separate "My profile" menu entry is gone, and the own profile has one address, `/account/profile`, so `/admin?profile=<own id>` and its `section=` variants redirect there (ISSUE-126).
 - Administrators get an Administration list of accounts and profiles with a Create account and profile card. Opening another account shows the same tabs in a context banner ("Maria (@maria) · you are operating as administrator", with a Back button); its Account tab holds the root tools (recovery token, role, deletion review), which ordinary users never receive (ISSUE-126).
 - With JavaScript, saving the profile, avatar, API keys, the relay and the administrator role updates only the affected card; without it every form posts and returns to the same tab. Ingestion health stays in the main menu (ISSUE-126).
