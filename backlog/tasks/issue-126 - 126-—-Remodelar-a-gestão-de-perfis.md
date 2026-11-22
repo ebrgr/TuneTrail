@@ -1,11 +1,11 @@
 ---
 id: ISSUE-126
 title: 126 — Remodelar a gestão de perfis
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T23:31:00Z'
+updated_date: '2026-11-22T23:37:00Z'
 labels:
   - ui
   - admin
@@ -100,6 +100,24 @@ created: 2026-11-22T23:31:00Z
 ---
 
 Reviewer: APROVADO, sem BUG. Sonda HTTP em binário real com três papéis (26 verificações OK): comum sem controles de root e 403 nas rotas root; root com lista e contexto; redirecionamento do próprio perfil; POST em perfil alheio 403. Riscos baixos: aceite visual pendente, cartão único por ação com JS, N consultas na lista root. Removidos dois arquivos de trava de teste commitados por engano.
+
+---
+
+author: ebrgr
+created: 2026-11-22T23:37:00Z
+
+---
+
+Verificação: Reviewer APROVADO (sonda HTTP 26 verificações nos três papéis); make check 13/13 E2E; aceite visual pelo usuário no servidor
+
+---
+
+author: evertonberger
+created: 2026-11-22T23:37:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito o 126' e 'publique').
 
 ---
 <!-- COMMENTS:END -->
