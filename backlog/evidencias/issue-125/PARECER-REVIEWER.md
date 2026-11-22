@@ -36,3 +36,19 @@ Testes rodados por mim (`-race -count=1`, assets/langs configurados): adminui, a
 - `msgPasswordInvalid` da `/account` diz "8 e 72 caracteres", mas a regra real é 8 caracteres e 72 BYTES (`validAccountPassword`); o resgate já diz "72 bytes".
 - `messages.go` teve a tabela realinhada pelo gofmt (diff grande, sem mudança de conteúdo).
 - A checagem de estilo cobre só `account.css`; o bloco de resgate usa as mesmas classes em `admin.html`, verificadas apenas pelo CSS.
+
+---
+
+# Reauditoria 3 (commits c09b136 a 1535490: causa raiz do resgate, caixa de orientação, dropdown de ícones)
+
+**APROVADO.** Nenhum [BUG] executado. `-race` em adminui, adminweb, webassets, webui, admin e engine (`Account|Navigation|Auth|SignOut|Sidebar|Authorization|Login|Admin|Redeem|Icon|Profile`): ok. `make check` do agente: 13/13 E2E.
+
+## [OK]
+- Causa raiz do erro do usuário corrigida: `Referrer-Policy: same-origin` na página de resgate (sob `no-referrer` o navegador envia `Origin: null` e a checagem same-origin recusava com a frase de permissão), recusa de origem no resgate mostra "página expirou" com formulário novo, teste de regressão com `Origin: null`. Login manteve a resposta anterior (teste de i18n existente).
+- Caixa do resgate: dois links reais (`/admin/sign-out` e `/` "Todos os perfis"); com sessão aberta mostra só o username da própria sessão, escapado pelo template; sem ecoar token ou senha.
+- Dropdown de ícones nos dois formulários: 5 valores aceitos pelo servidor + "Iniciais"; valor inválido já gravado mostra Iniciais sem quebrar; contrato do servidor intacto (valor desconhecido segue 400).
+
+## [RISCO] baixo
+- Sem pré-visualização do ícone (só o select acessível): decisão mínima do pedido.
+- A página de resgate agora consulta a sessão em toda requisição para montar o aviso: custo de uma leitura quando há cookie, nada sem cookie.
+- Aviso e links dependem do menu "Sair…": quem já está sem sessão vê a versão curta e os mesmos dois links.
