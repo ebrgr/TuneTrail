@@ -4,7 +4,7 @@ title: 125 — Remodelar a página de conta do administrador
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-22T20:45:00Z'
 labels:
   - ui
   - admin
@@ -43,6 +43,15 @@ created: 2026-11-20T18:33:00Z
 ---
 
 Reescopo (decisão do usuário em 20/11/2026, estudo da 163): a página Conta passa a ser destino de qualquer sessão (comum e root) em /account, com cartões Identidade, Senha e Sessão, conforme doc-041 §7. A troca de senha encerra todas as sessões e avisa antes; username separado de slug. A 163 define o destino e a navegação; a 157 fornece o Sair….
+
+---
+
+author: claude
+created: 2026-11-22T20:45:00Z
+
+---
+
+Início (22/11/2026): decisão do usuário de fazer a 125 antes da 128, pois ela cria /account (destino pós-login do usuário comum). Executada por um agente Claude em worktree própria (Codex ocupado com a fase 2 da 172). Reviewer ao final; Advisor só se tocar credenciais, bcrypt, sessões ou lock do resgate (a troca de senha já revoga as sessões: manter o contrato, não reescrever).
 
 ---
 <!-- COMMENTS:END -->
