@@ -371,8 +371,8 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 .admin-main .ingestion-health-badges a[data-tone="warning"] { --badge-tone:var(--color-warning); }
 .admin-main .ingestion-health-badges a[data-tone="error"] { --badge-tone:var(--color-error); }
 .admin-main .ingestion-health-badges a:hover { text-decoration:underline; }
-.admin-main .ingestion-health-badges svg,
-.admin-main .ingestion-health-column > h2 svg { width:18px; height:18px; flex-shrink:0; }
+.admin-main .ingestion-health-badges svg { width:18px; height:18px; flex-shrink:0; }
+.admin-main .ingestion-health-column > h2 svg { width:1.25em; height:1.25em; flex-shrink:0; }
 .admin-main .ingestion-health form { flex-direction:row; flex-wrap:wrap; align-items:end; gap:var(--space-2); margin:0 0 var(--space-5); }
 .admin-main .ingestion-health label { display:flex; flex-direction:column; gap:6px; flex:1 1 11.25rem; width:auto; min-width:0; }
 .admin-main .ingestion-health select {

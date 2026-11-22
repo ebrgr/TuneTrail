@@ -261,7 +261,9 @@ func TestIngestHealthReviewActions(t *testing.T) {
 		require.Equal(t, http.StatusOK, w.Code, html)
 		require.Contains(t, html, `href="#health-review" data-tone="warning"`)
 		require.Contains(t, html, "<span>Pending reviews: 1</span>")
-		for _, want := range []string{"Pending reviews (1)", "Accept all as duplicates", "Keep all as separate listens", "View evidence", "Accept as duplicate", "Keep as a separate listen", receipts[profile]} {
+		require.Equal(t, 1, strings.Count(html, `href="#health-review"`))
+		require.Contains(t, html, `<a href="#health-discard">Discard</a>`)
+		for _, want := range []string{"Accept all as duplicates", "Keep all as separate listens", "View evidence", "Accept as duplicate", "Keep as a separate listen", receipts[profile]} {
 			require.Contains(t, html, want)
 		}
 		require.NotContains(t, html, receipts[3-profile])

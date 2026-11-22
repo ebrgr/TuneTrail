@@ -29,9 +29,8 @@
       {{icon "RefreshCw"}} <span>{{tr "admin.health.relay_pending" "Pending Outbox deliveries"}}: {{.Health.Open}}</span>
     </a>
   </nav>
-  <nav class="admin-sections" aria-label="{{tr "admin.health.review_queue" "Pending reviews"}}">
+  <nav class="admin-sections" aria-label="{{tr "admin.health.discard" "Discard"}}">
     <a href="#health-discard">{{tr "admin.health.discard" "Discard"}}</a>
-    <a href="#health-review">{{tr "admin.health.review_queue" "Pending reviews"}} ({{.Health.ReviewCount}})</a>
   </nav>
   <div class="ingestion-health-grid">
   <div class="ingestion-health-column">

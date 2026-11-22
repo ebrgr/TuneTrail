@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T19:36:00Z'
-updated_date: '2026-11-22T19:46:00Z'
+updated_date: '2026-11-22T19:49:00Z'
 labels:
   - ui
   - ingestao
@@ -61,6 +61,15 @@ created: 2026-11-22T19:46:00Z
 ---
 
 Reviewer: APROVADO, sem BUG. Riscos baixos: atalho 'Pendências de revisão' duplica a badge; semânticas de janela diferentes entre badges; ícones dos h2 pequenos. Testes adminui/webassets/webui/engine ok.
+
+---
+
+author: codex
+created: 2026-11-22T19:49:00Z
+
+---
+
+Revisão aplicada: removido o segundo atalho para revisões e preservado o atalho Descartar. Os ícones dos títulos Inbox e Outbox medem 1,25 em, e os das badges medem 18 px. O teste de integração verifica um único link para revisões e a presença de Descartar. A referência de UI e as capturas Yuu desktop e Pearl mobile foram regeneradas. Os testes dos pacotes afetados passaram com TUNETRAIL_WEB_DIR apontando para assets, e make check concluiu as 13 jornadas E2E.
 
 ---
 <!-- COMMENTS:END -->
