@@ -3,11 +3,11 @@ id: ISSUE-188
 title: >-
   188 — Central de saúde: ícones em Inbox/Outbox e badges de pendências abaixo
   do seletor de perfil
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T19:36:00Z'
-updated_date: '2026-11-22T19:49:00Z'
+updated_date: '2026-11-22T19:52:00Z'
 labels:
   - ui
   - ingestao
@@ -70,6 +70,24 @@ created: 2026-11-22T19:49:00Z
 ---
 
 Revisão aplicada: removido o segundo atalho para revisões e preservado o atalho Descartar. Os ícones dos títulos Inbox e Outbox medem 1,25 em, e os das badges medem 18 px. O teste de integração verifica um único link para revisões e a presença de Descartar. A referência de UI e as capturas Yuu desktop e Pearl mobile foram regeneradas. Os testes dos pacotes afetados passaram com TUNETRAIL_WEB_DIR apontando para assets, e make check concluiu as 13 jornadas E2E.
+
+---
+
+author: ebrgr
+created: 2026-11-22T19:52:00Z
+
+---
+
+Verificação: Reviewer APROVADO (riscos 1 e 3 corrigidos); make check 13/13 E2E
+
+---
+
+author: evertonberger
+created: 2026-11-22T19:52:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito e publique').
 
 ---
 <!-- COMMENTS:END -->
