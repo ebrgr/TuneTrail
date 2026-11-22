@@ -1,7 +1,7 @@
 ---
 id: ISSUE-185
 title: 185 — Descartar recibos que não deram certo na central de saúde
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T15:05:00Z'
@@ -87,6 +87,15 @@ created: 2026-11-22T16:15:00Z
 ---
 
 Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG após reauditoria; tela conferida em 390/1100/1500 px; Advisor dispensado pelo usuário. ACs 1 a 4 marcados. Riscos aceitos: releitura do conjunto restante a cada lote; recibo novo durante o descarte interrompe os lotes seguintes.
+
+---
+
+author: ebrgr
+created: 2026-11-22T16:15:00Z
+
+---
+
+Aceite do usuário em 22/11/2026: aceito sem Advisor e autorizado a publicar (sem push). Riscos aceitos e registrados: o descarte em massa relê o conjunto restante a cada lote (custo cresce com filas muito grandes); um recibo novo no conjunto elegível durante o descarte provoca conflito e interrompe os lotes seguintes (os já concluídos permanecem descartados); o rastro tem retenção de 90 dias.
 
 ---
 <!-- COMMENTS:END -->
