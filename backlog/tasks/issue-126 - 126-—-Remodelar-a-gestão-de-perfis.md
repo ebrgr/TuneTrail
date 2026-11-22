@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:53:00Z'
+updated_date: '2026-11-22T23:04:00Z'
 labels:
   - ui
   - admin
@@ -73,6 +73,15 @@ created: 2026-11-22T22:53:00Z
 ---
 
 Fase 1 (desenho) concluída, sem implementação. Estudo em backlog/evidencias/issue-126/ESTUDO.md. Recomendação A′: um único 'Minha conta' em /account com abas (Conta | Perfil | Chaves de API | Histórico | Relay | Saúde), alvo derivado da sessão e sem 'Meu perfil' separado; área root 'Administração' (Contas e perfis, Saúde, Servidor); root edita outra pessoa no mesmo shell em modo contexto (/admin?profile=N, cabeçalho 'Você x Maria') com aba Conta root. /admin?profile=<próprio> redireciona (303) para /account/profile; todas as URLs atuais e todos os POST permanecem. Descartadas: proposta original isolada (mantém dois caminhos), B (duas áreas), C (centrar no perfil), D (página única). Plano em 6 cortes com make check verde. Aguardando decisão do usuário (5 perguntas no §12) antes de implementar.
+
+---
+
+author: claude
+created: 2026-11-22T23:04:00Z
+
+---
+
+Decisões do usuário (22/11/2026) sobre o estudo: (1) aprovada a Opção A′: um único 'Minha conta' com abas, sem 'Meu perfil' separado; o root opera outras contas na Administração, com o mesmo conjunto de abas em modo contexto; (2) abas: Conta | Perfil | Chaves de API | Histórico | Relay; a SAÚDE sai das abas e permanece no menu (+) principal, como hoje (dono e root); (3) /admin?profile=<próprio> redireciona (303) para /account/profile; as demais URLs atuais continuam funcionando; (4) default conservador: root exclui a própria conta pela Administração; zona de perigo da Conta própria segue vazia (125).
 
 ---
 <!-- COMMENTS:END -->
