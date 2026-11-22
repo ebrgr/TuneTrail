@@ -29,7 +29,17 @@ func (s *Sqlite) IngestHealth(ctx context.Context, profile int32, pages ...int) 
 	if err != nil {
 		return health, err
 	}
-	health.Sources, err = s.healthSources(ctx, profile, version)
+	// Browse the summary independently of the review queue's page.
+	sourcePage := 1
+	if len(pages) > 1 {
+		sourcePage = pages[1]
+	}
+	health.Sources, err = s.healthSources(ctx, profile, version, int64(sourcePage-1)*healthSourcePageSize)
+	if len(health.Sources) > healthSourcePageSize {
+		health.Sources = health.Sources[:healthSourcePageSize]
+		health.SourceNext = sourcePage + 1
+	}
+	health.SourcePrevious = sourcePage - 1
 	if err != nil {
 		return health, err
 	}
@@ -87,26 +97,31 @@ func (s *Sqlite) healthFailures(ctx context.Context, profile int32) ([]db.Ingest
 	return failures, count, rows.Err()
 }
 
-// healthSourcesSQL groups receipts by source and client, including on pre-v16 fixtures.
+const healthSourcePageSize = 100
+
+// healthSourcesSQL uses one row per source dimension, with the live state of its last receipt.
 func healthSourcesSQL(version int) string {
 	delivery, join := healthDeliverySQL(version)
+	if version >= 17 {
+		return `SELECT coalesce(nullif(i.display_name,''),x.source_instance_id),x.source,x.client,x.received_at,e.time_precision,
+			` + delivery + `
+		FROM ingest_source_summary x
+		CROSS JOIN ingest_events e ON e.profile_id=x.profile_id AND e.receipt_id=x.receipt_id
+		JOIN integrations i ON i.profile_id=x.profile_id AND i.id=x.source_instance_id
+		` + join + ` WHERE x.profile_id=? ORDER BY x.received_at DESC,x.receipt_id DESC LIMIT 101 OFFSET ?`
+	}
 	policy := "'legacy' AS delivery_policy"
 	if version >= 12 {
 		policy = "e.delivery_policy"
 	}
-	sample := "SELECT * FROM ingest_events WHERE profile_id=?"
-	if version >= 16 {
-		// Bound the grouping work while keeping the latest submission for each recent source.
-		sample += " ORDER BY received_at DESC,receipt_id DESC LIMIT 10000"
-	}
-	return `WITH recent AS (` + sample + `), sources AS (
+	return `WITH sources AS (
 		SELECT e.profile_id,e.receipt_id,e.source_instance_id,e.received_at,e.time_precision,e.event_id,` + policy + `,
 			substr(coalesce(nullif(e.client_name,''),
 			CASE WHEN json_valid(e.original_snapshot) THEN
 				CASE WHEN json_type(e.original_snapshot,'$.client')='text' THEN json_extract(e.original_snapshot,'$.client') END
 			END,''),1,120) AS client,
 			coalesce(e.file_format,e.source_type) AS source
-		FROM recent e
+		FROM ingest_events e WHERE e.profile_id=?
 	), latest AS (
 		SELECT *, row_number() OVER (PARTITION BY source_instance_id, source, client ORDER BY received_at DESC, receipt_id DESC) AS rank
 		FROM sources
@@ -114,12 +129,12 @@ func healthSourcesSQL(version int) string {
 	SELECT coalesce(nullif(i.display_name,''),e.source_instance_id), e.source, e.client, e.received_at, e.time_precision,
 		` + delivery + `
 	FROM latest e JOIN integrations i ON i.profile_id=e.profile_id AND i.id=e.source_instance_id
-	` + join + ` WHERE e.rank=1 ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT 100`
+	` + join + ` WHERE e.rank=1 ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT 101 OFFSET ?`
 }
 
 // healthSources projects the latest receipt per integration, format and client.
-func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int) ([]db.IngestSource, error) {
-	rows, err := s.db.QueryContext(ctx, healthSourcesSQL(version), profile)
+func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int, offset int64) ([]db.IngestSource, error) {
+	rows, err := s.db.QueryContext(ctx, healthSourcesSQL(version), profile, offset)
 	if err != nil {
 		return nil, err
 	}

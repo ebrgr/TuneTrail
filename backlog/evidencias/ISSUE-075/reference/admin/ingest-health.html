@@ -448,14 +448,34 @@
       <button>Apply</button>
     </form>
   
+  <nav class="admin-sections" aria-label="Pending reviews">
+    <a href="#health-review">Pending reviews (1)</a>
+  </nav>
   <div class="ingestion-health-grid">
   <section class="card ingestion-diagnostics" aria-labelledby="health-review">
-    <h2 id="health-review">Pending reviews <span>(1)</span></h2>
+    <h2 id="health-review">Pending reviews</h2>
       <form class="ingestion-review-setting" method="post" action="/admin/health/review-setting?profile=1">
         <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="enabled" value="0">
           <button type="submit">Turn off duplicate review</button>
       </form>
+      <form class="ingestion-review-setting" method="post" action="/admin/health/review-batch?profile=1">
+        <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+        <input type="hidden" name="decision" value="same">
+        <input type="hidden" name="digest" value="7148d256a3601193fac44d2709615101e6bda5e538c7e7f655b43d82aabf488d">
+        <button type="submit">
+          Accept all as duplicates (1)
+        </button>
+      </form>
+      <form class="ingestion-review-setting" method="post" action="/admin/health/review-batch?profile=1">
+        <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+        <input type="hidden" name="decision" value="different">
+        <input type="hidden" name="digest" value="289431d816dec2cd1237acec9ebd5dd6c38205f74ba9444992017c8fdff3d66e">
+        <button type="submit">
+          Keep all as separate listens (1)
+        </button>
+      </form>
+      <p>Bulk actions process up to 25 eligible receipts at a time.</p>
       <details>
         <summary>
           View evidence · Alpha Track
@@ -510,7 +530,7 @@
       </details>
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
-    <h2 id="health-sources">Recent sources and last submission</h2>
+    <h2 id="health-sources">Sources and last submission</h2>
       <details>
         <summary>Fictional player · listenbrainz</summary>
         <dl>

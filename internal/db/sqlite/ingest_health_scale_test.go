@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestIngestHealthQueryPlans measures the production projections on a disposable v15-to-v16 database.
+// TestIngestHealthQueryPlans measures the production projections on a disposable v15-to-v17 database.
 // Run with TUNETRAIL_TEST_HEALTH_SCALE=1 go test ./internal/db/sqlite -run '^TestIngestHealthQueryPlans$' -count=1 -v.
 func TestIngestHealthQueryPlans(t *testing.T) {
 	if os.Getenv("TUNETRAIL_TEST_HEALTH_SCALE") != "1" {
@@ -71,20 +71,22 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 		slices.Sort(samples)
 		t.Logf("%s: warm median %s (range %s–%s)", name, samples[2], samples[0], samples[4])
 	}
-	for _, version := range []int{15, 16} {
-		if version == 16 {
-			_, err := provider.UpTo(t.Context(), 16)
+	for _, version := range []int{15, 17} {
+		if version > 15 {
+			started := time.Now()
+			_, err := provider.UpTo(t.Context(), int64(version))
 			require.NoError(t, err)
+			t.Logf("migrate to v%d: %s", version, time.Since(started))
 			execSQL(t, s, `ANALYZE`)
 		}
 		t.Logf("schema v%d", version)
-		explain("sources", healthSourcesSQL(version), 1)
+		explain("sources", healthSourcesSQL(version), 1, 0)
 		explain("decisions", healthDecisionsSQL, 1)
 		explain("pending list", reviewPageSQL, 1, reviewPageSize, 0)
 		explain("pending count", reviewCountSQL, 1)
 		explain("candidates", reviewCandidateRows, 1, "scale:0298103")
 		measure("sources", func() error {
-			_, err := s.healthSources(t.Context(), 1, version)
+			_, err := s.healthSources(t.Context(), 1, version, 0)
 			return err
 		})
 		measure("decisions", func() error {

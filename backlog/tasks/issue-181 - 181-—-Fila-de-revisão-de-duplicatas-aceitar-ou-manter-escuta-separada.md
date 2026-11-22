@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-21T23:35:00Z'
+updated_date: '2026-11-22T00:26:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -14,6 +14,7 @@ dependencies:
 references:
   - backlog/evidencias/ISSUE-083/PARECER-REVIEWER.md
   - backlog/evidencias/issue-181/VERIFICACAO.md
+  - backlog/evidencias/issue-181/CORRECOES.md
 priority: medium
 type: feature
 ordinal: 194000
@@ -84,6 +85,15 @@ created: 2026-11-21T23:35:00Z
 ---
 
 Advisor (effort high): REPROVADO COM RESSALVAS. Falha crítica: com o Revisar desligado (padrão), uma reentrega no mesmo segundo é aceita como nova escuta (finishOccurrence ignora os candidatos), contrariando o doc-039 e o resolvedor legado. Melhorias: ação em massa na fila, resumo por fonte no lugar da janela de 10 mil recibos (ISSUE-184), autor da decisão. Ver backlog/evidencias/issue-181/PARECER-ADVISOR.md.
+
+---
+
+author: codex
+created: 2026-11-22T00:26:00Z
+
+---
+
+Correções verificadas: colisão exata com Revisar desligado volta a registrar duplicate/same, e a janela de ±2 s aceita escutas separadas. A central tem contador e ações em massa de até 25 recibos, com CAS, CSRF e ID da conta na revisão. O resumo paginado do schema v17 preserva fontes antigas. Testes focados, corrida, EXPLAIN com 300 mil recibos, referência ISSUE-075 e make check passaram.
 
 ---
 <!-- COMMENTS:END -->

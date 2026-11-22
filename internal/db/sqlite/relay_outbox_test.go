@@ -416,6 +416,11 @@ func TestRelayOccurrenceIntent(t *testing.T) {
 	for range 3 {
 		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	}
+	// A repeat may close as a duplicate after the original intent has been written.
+	relayReceipt(t, s, 1, "accepted-repeat", "occurrence", 0, now)
+	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN ingest_events original USING(profile_id,event_id)
+		WHERE e.receipt_id='accepted-repeat' AND original.receipt_id='accepted' AND e.state='duplicate'`))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='ambiguous' AND state='pending_duplicate'"))
 	require.Greater(t, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE mode='active' AND state='accepted'"), 0)
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='missing' AND state='pending_identity'"))

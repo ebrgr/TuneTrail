@@ -211,14 +211,23 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		if len(conflicts) > 0 {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_occurrence", precision, conflicts, "", proof.evidence)
 		}
-		// Optional candidate review is independent of conflicts in the submission itself.
-		if review {
-			candidates, reason, err := occurrenceListenCandidates(ctx, tx, r, match.id)
-			if err != nil {
-				return err
-			}
-			if len(candidates) > 0 {
+		// An exact repeat stays a single listen even when candidate review is disabled.
+		candidates, exact, err := occurrenceListenCandidates(ctx, tx, r, match.id)
+		if err != nil {
+			return err
+		}
+		reason := "distinct_occurrence_event"
+		if len(candidates) > 0 {
+			if review {
+				reason = "ambiguous_time_candidate"
+				if exact != "" {
+					reason = "legacy_identity_collision"
+				}
 				return writeOccurrenceDecision(ctx, tx, r, match, "pending_duplicate", reason, precision, candidates, "", proof.evidence)
+			}
+			reason = "review_deferred"
+			if exact != "" {
+				return writeOccurrenceDecision(ctx, tx, r, match, "duplicate", reason, precision, candidates, exact, proof.evidence)
 			}
 		}
 		if match.id == 0 {
@@ -251,7 +260,7 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			return fmt.Errorf("write occurrence listen: %w", err)
 		}
 		// Persist the acceptance before creating its relay intent.
-		if err := writeOccurrenceDecision(ctx, tx, r, match, "accepted", "distinct_occurrence_event", precision, nil, event, proof.evidence); err != nil {
+		if err := writeOccurrenceDecision(ctx, tx, r, match, "accepted", reason, precision, candidates, event, proof.evidence); err != nil {
 			return err
 		}
 		return insertRelayIntent(ctx, tx, r, event, time.Now().Unix())
@@ -263,9 +272,12 @@ func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt
 	status, decision := "pending", "review"
 	var closed any
 	now := time.Now().Unix()
-	if state == "accepted" {
+	switch {
+	case state == "accepted":
 		status, decision, closed = "resolved", "different", now
-	} else if state == "pending_duplicate" && match.id != 0 {
+	case state == "duplicate":
+		status, decision, closed = "resolved", "same", now
+	case state == "pending_duplicate" && match.id != 0:
 		status = "resolved"
 	}
 	evidence, err := json.Marshal(struct {
@@ -298,7 +310,7 @@ func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt
 	return err
 }
 
-// occurrenceListenCandidates uses the window only for selection and never collapses compatible deliveries.
+// occurrenceListenCandidates returns the review window and the first exact match, if any.
 func occurrenceListenCandidates(ctx context.Context, tx *sql.Conn, r claimedReceipt, occurrence int64) ([]string, string, error) {
 	if occurrence == 0 {
 		return nil, "", nil
@@ -313,27 +325,25 @@ func occurrenceListenCandidates(ctx context.Context, tx *sql.Conn, r claimedRece
 			      AND prior.external_event_id<>incoming.external_event_id)
 			    OR (prior.file_digest=incoming.file_digest AND prior.file_format=incoming.file_format
 			      AND prior.format_version=incoming.format_version AND prior.item_ordinal<>incoming.item_ordinal))))
-		ORDER BY l.listened_at,l.event_id`, r.profile, occurrence, r.unix-2, r.unix+2, r.unix, r.id)
+		ORDER BY (l.listened_at=?) DESC,l.listened_at,l.event_id LIMIT 33`, r.profile, occurrence, r.unix-2, r.unix+2, r.unix, r.id, r.unix)
 	if err != nil {
 		return nil, "", err
 	}
 	defer rows.Close()
 	var candidates []string
-	reason := "ambiguous_time_candidate"
+	var exact string
 	for rows.Next() {
 		var id string
 		var stamp int64
 		if err := rows.Scan(&id, &stamp); err != nil {
 			return nil, "", err
 		}
-		if stamp == r.unix {
-			reason = "legacy_identity_collision"
+		if stamp == r.unix && exact == "" {
+			exact = id
 		}
-		if len(candidates) < 33 {
-			candidates = append(candidates, "event:"+id)
-		}
+		candidates = append(candidates, "event:"+id)
 	}
-	return candidates, reason, rows.Err()
+	return candidates, exact, rows.Err()
 }
 
 // observedCredits preserves the source's ordered list and removes duplicate names.

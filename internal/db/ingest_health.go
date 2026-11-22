@@ -10,7 +10,8 @@ type IngestHealthStore interface {
 	IngestHealth(context.Context, int32, ...int) (IngestHealth, error)
 	ReprocessIngest(context.Context, int32, string) error
 	SetIngestReview(context.Context, int32, bool) error
-	ResolveIngestReview(context.Context, int32, IngestReviewDecision) error
+	ResolveIngestReview(context.Context, int32, int32, IngestReviewDecision) error
+	ResolveIngestReviewBatch(context.Context, int32, int32, string, string) error
 	ListenProvenance(context.Context, int32, int32, int64, ...string) ([]ListenProvenance, error)
 }
 
@@ -26,6 +27,8 @@ type IngestHealth struct {
 	Reviews                                 []IngestReview
 	ReviewCount, ReviewPrevious, ReviewNext int
 	ReviewAvailable, ReviewEnabled          bool
+	ReviewSame, ReviewDifferent             IngestReviewBatch
+	SourcePrevious, SourceNext              int
 }
 
 // IngestFailure is the credential-free projection of a parked receipt.
@@ -75,4 +78,10 @@ type IngestReviewCandidate struct {
 type IngestReviewDecision struct {
 	Receipt, Candidate, Value string
 	Version                   int64
+}
+
+// IngestReviewBatch describes the next bounded batch and its receipt-version digest.
+type IngestReviewBatch struct {
+	Digest string
+	Count  int
 }

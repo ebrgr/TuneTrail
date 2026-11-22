@@ -53,14 +53,14 @@ func TestIngestReviewDecisions(t *testing.T) {
 	require.Empty(t, other.Reviews)
 
 	same := db.IngestReviewDecision{Receipt: "same", Version: 1, Value: "same", Candidate: event}
-	require.ErrorIs(t, s.ResolveIngestReview(ctx, 2, same), db.ErrNotFound)
+	require.ErrorIs(t, s.ResolveIngestReview(ctx, 2, 1, same), db.ErrNotFound)
 	fake := db.IngestReviewDecision{Receipt: "foreign", Version: 1, Value: "same", Candidate: foreign}
-	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, fake), db.ErrNotFound)
+	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, 1, fake), db.ErrNotFound)
 	unlisted := same
 	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM listens WHERE rowid=20`).Scan(&unlisted.Candidate))
-	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, unlisted), db.ErrNotFound)
-	require.NoError(t, s.ResolveIngestReview(ctx, 1, same))
-	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, same), db.ErrConflict)
+	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, 1, unlisted), db.ErrNotFound)
+	require.NoError(t, s.ResolveIngestReview(ctx, 1, 1, same))
+	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, 1, same), db.ErrConflict)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM outbox`))
 	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='same' AND state='duplicate' AND event_id=? AND closed_at IS NOT NULL`, event))
@@ -68,12 +68,12 @@ func TestIngestReviewDecisions(t *testing.T) {
 	separate := db.IngestReviewDecision{Receipt: "different", Version: 1, Value: "different"}
 	// Failure after the decision rolls the listen, version and revision back together.
 	execSQL(t, s, `CREATE TRIGGER fail_review_intent BEFORE INSERT ON outbox BEGIN SELECT RAISE(ABORT,'fixture'); END`)
-	require.Error(t, s.ResolveIngestReview(ctx, 1, separate))
+	require.Error(t, s.ResolveIngestReview(ctx, 1, 1, separate))
 	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id='different'`))
 	execSQL(t, s, `DROP TRIGGER fail_review_intent`)
-	require.NoError(t, s.ResolveIngestReview(ctx, 1, separate))
-	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, separate), db.ErrConflict)
+	require.NoError(t, s.ResolveIngestReview(ctx, 1, 1, separate))
+	require.ErrorIs(t, s.ResolveIngestReview(ctx, 1, 1, separate), db.ErrConflict)
 	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM listens`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM outbox JOIN ingest_events USING(profile_id,event_id)
 		WHERE receipt_id='different' AND ingest_events.state='accepted' AND outbox.format_version=1`))
@@ -98,11 +98,11 @@ func TestIngestReviewRace(t *testing.T) {
 	same, different := make(chan error, 1), make(chan error, 1)
 	go func() {
 		<-start
-		same <- s.ResolveIngestReview(t.Context(), 1, db.IngestReviewDecision{Receipt: "race", Version: 1, Value: "same", Candidate: candidate})
+		same <- s.ResolveIngestReview(t.Context(), 1, 1, db.IngestReviewDecision{Receipt: "race", Version: 1, Value: "same", Candidate: candidate})
 	}()
 	go func() {
 		<-start
-		different <- other.ResolveIngestReview(t.Context(), 1, db.IngestReviewDecision{Receipt: "race", Version: 1, Value: "different"})
+		different <- other.ResolveIngestReview(t.Context(), 1, 1, db.IngestReviewDecision{Receipt: "race", Version: 1, Value: "different"})
 	}()
 	close(start)
 	sameErr, differentErr := <-same, <-different
@@ -119,27 +119,55 @@ func TestIngestReviewRace(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id='race' AND author='user'`))
 }
 
-// TestOccurrenceReviewSetting checks the default and the occurrence-specific keep path.
+// TestOccurrenceReviewSetting checks exact repeats, the ±2 s window and profile scope.
 func TestOccurrenceReviewSetting(t *testing.T) {
 	s := convertedOccurrenceFixture(t)
 	ctx := t.Context()
 	snapshot := ingest.Snapshot{Title: "Review track", Artist: "Artist", Release: "Album"}
-	for _, key := range []string{"first", "separate-by-default"} {
-		id := admitOccurrenceFixture(t, s, snapshot, 1000, key)
-		resolveOccurrenceFixture(t, s, nil)
-		requireReceiptState(t, s, id, "accepted")
-	}
+	first := admitOccurrenceFixture(t, s, snapshot, 1000, "first")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, first, "accepted")
+	repeat := admitOccurrenceFixture(t, s, snapshot, 1000, "repeat")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, repeat, "duplicate")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND origin='listenbrainz_api' AND listened_at=1000`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN ingest_events original USING(profile_id,event_id)
+		WHERE e.receipt_id=? AND original.receipt_id=? AND e.duplicate_decision='same' AND e.reason_codes='["review_deferred"]'`, repeat, first))
+
+	nearby := admitOccurrenceFixture(t, s, snapshot, 1002, "nearby")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, nearby, "accepted")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND reason_codes='["review_deferred"]'`, nearby))
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(2,1,1)`)
+	active, other, err := s.AdmitIngest(ctx, ingest.Batch{ProfileID: 2, Source: ingest.ShadowSourceListenBrainz,
+		Operation: "single", ClientKey: "other", ReceivedAt: time.Now(),
+		Items: []ingest.Item{{ListenedAt: time.Unix(1000, 0), Snapshot: snapshot}}}, true, nil, nil)
+	require.NoError(t, err)
+	require.True(t, active)
+	require.Len(t, other, 1)
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, other[0].ReceiptID, "accepted")
+
 	require.NoError(t, s.SetIngestReview(ctx, 1, true))
 	id := admitOccurrenceFixture(t, s, snapshot, 1000, "manual")
 	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "pending_duplicate")
+	nearReview := admitOccurrenceFixture(t, s, snapshot, 1004, "near-review")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, nearReview, "pending_duplicate")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND reason_codes='["ambiguous_time_candidate"]'`, nearReview))
 	health, err := s.IngestHealth(ctx, 1)
 	require.NoError(t, err)
-	require.Len(t, health.Reviews, 1)
-	require.Len(t, health.Reviews[0].Candidates, 2)
-	require.True(t, health.Reviews[0].CanKeep)
-	require.Equal(t, "Review track", health.Reviews[0].Title)
-	require.NoError(t, s.ResolveIngestReview(ctx, 1, db.IngestReviewDecision{Receipt: id, Version: 1, Value: "different"}))
+	require.Len(t, health.Reviews, 2)
+	for _, item := range health.Reviews {
+		if item.Receipt == id {
+			require.Len(t, item.Candidates, 2)
+			require.True(t, item.CanKeep)
+			require.Equal(t, "Review track", item.Title)
+		}
+	}
+	require.NoError(t, s.ResolveIngestReview(ctx, 1, 1, db.IngestReviewDecision{Receipt: id, Version: 1, Value: "different"}))
 	requireReceiptState(t, s, id, "accepted")
-	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens WHERE origin='listenbrainz_api' AND listened_at=1000`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND origin='listenbrainz_api' AND listened_at=1000`))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM outbox`))
 }

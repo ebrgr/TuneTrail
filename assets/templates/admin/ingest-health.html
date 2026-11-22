@@ -15,9 +15,12 @@
       <button>{{tr "admin.text.apply" "Apply"}}</button>
     </form>
   {{end}}
+  <nav class="admin-sections" aria-label="{{tr "admin.health.review_queue" "Pending reviews"}}">
+    <a href="#health-review">{{tr "admin.health.review_queue" "Pending reviews"}} ({{.Health.ReviewCount}})</a>
+  </nav>
   <div class="ingestion-health-grid">
   <section class="card ingestion-diagnostics" aria-labelledby="health-review">
-    <h2 id="health-review">{{tr "admin.health.review_queue" "Pending reviews"}} <span>({{.Health.ReviewCount}})</span></h2>
+    <h2 id="health-review">{{tr "admin.health.review_queue" "Pending reviews"}}</h2>
     {{- if .Health.ReviewAvailable}}
       <form class="ingestion-review-setting" method="post" action="/admin/health/review-setting?profile={{.Profile.ID}}">
         <input type="hidden" name="csrf_token" value="{{.CSRF}}">
@@ -29,6 +32,29 @@
           <button type="submit">{{tr "admin.health.review_enable" "Turn on duplicate review"}}</button>
         {{- end}}
       </form>
+    {{- end}}
+    {{- if .Health.ReviewSame.Count}}
+      <form class="ingestion-review-setting" method="post" action="/admin/health/review-batch?profile={{.Profile.ID}}">
+        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+        <input type="hidden" name="decision" value="same">
+        <input type="hidden" name="digest" value="{{.Health.ReviewSame.Digest}}">
+        <button type="submit">
+          {{tr "admin.health.review_all_same" "Accept all as duplicates"}} ({{.Health.ReviewSame.Count}})
+        </button>
+      </form>
+    {{- end}}
+    {{- if .Health.ReviewDifferent.Count}}
+      <form class="ingestion-review-setting" method="post" action="/admin/health/review-batch?profile={{.Profile.ID}}">
+        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+        <input type="hidden" name="decision" value="different">
+        <input type="hidden" name="digest" value="{{.Health.ReviewDifferent.Digest}}">
+        <button type="submit">
+          {{tr "admin.health.review_all_different" "Keep all as separate listens"}} ({{.Health.ReviewDifferent.Count}})
+        </button>
+      </form>
+    {{- end}}
+    {{- if or .Health.ReviewSame.Count .Health.ReviewDifferent.Count}}
+      <p>{{tr "admin.health.review_batch_limit" "Bulk actions process up to 25 eligible receipts at a time."}}</p>
     {{- end}}
     {{- range .Health.Reviews}}
       <details>
@@ -118,7 +144,7 @@
     {{- end}}
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
-    <h2 id="health-sources">{{tr "admin.health.sources" "Recent sources and last submission"}}</h2>
+    <h2 id="health-sources">{{tr "admin.health.sources" "Sources and last submission"}}</h2>
     {{- range .Health.Sources}}
       <details>
         <summary>{{.Integration}} · {{.Source}}{{if .Client}} · {{.Client}}{{end}}</summary>
@@ -130,6 +156,20 @@
       </details>
     {{- else}}
       <p>{{tr "admin.health.no_sources" "No submissions recorded."}}</p>
+    {{- end}}
+    {{- if or .Health.SourcePrevious .Health.SourceNext}}
+      <nav class="admin-sections" aria-label="{{tr "admin.health.sources" "Sources and last submission"}}">
+        {{- if .Health.SourcePrevious}}
+          <a href="/admin/health?profile={{.Profile.ID}}&amp;source_page={{.Health.SourcePrevious}}#health-sources">
+            {{tr "admin.health.review_previous" "Previous page"}}
+          </a>
+        {{- end}}
+        {{- if .Health.SourceNext}}
+          <a href="/admin/health?profile={{.Profile.ID}}&amp;source_page={{.Health.SourceNext}}#health-sources">
+            {{tr "admin.health.review_next" "Next page"}}
+          </a>
+        {{- end}}
+      </nav>
     {{- end}}
   </section>
   <section class="card ingestion-diagnostics" aria-labelledby="health-relay">

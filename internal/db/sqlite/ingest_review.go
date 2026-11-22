@@ -77,6 +77,17 @@ func (s *Sqlite) healthReviews(ctx context.Context, profile int32, page int, hea
 			return err
 		}
 	}
+	// Preview each action from the same snapshot as the queue count.
+	for _, action := range []struct {
+		value string
+		view  *db.IngestReviewBatch
+	}{{"same", &health.ReviewSame}, {"different", &health.ReviewDifferent}} {
+		reviews, digest, err := ingestReviewBatch(ctx, tx, profile, action.value)
+		if err != nil {
+			return err
+		}
+		*action.view = db.IngestReviewBatch{Digest: digest, Count: len(reviews)}
+	}
 	return tx.Commit()
 }
 
@@ -129,89 +140,94 @@ func (s *Sqlite) SetIngestReview(ctx context.Context, profile int32, enabled boo
 }
 
 // ResolveIngestReview records a human decision under the ingestion writer reservation.
-func (s *Sqlite) ResolveIngestReview(ctx context.Context, profile int32, review db.IngestReviewDecision) error {
-	if review.Receipt == "" || review.Version < 0 ||
+func (s *Sqlite) ResolveIngestReview(ctx context.Context, profile, actor int32, review db.IngestReviewDecision) error {
+	if actor <= 0 || review.Receipt == "" || review.Version < 0 ||
 		!(review.Value == "same" && review.Candidate != "" || review.Value == "different" && review.Candidate == "") {
 		return db.ErrInvalidInput
 	}
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		r := claimedReceipt{id: review.Receipt, profile: profile}
-		var state, mode, rule, evidence string
-		var closed, occurrence, recording sql.NullInt64
-		var instant sql.NullString
-		err := tx.QueryRowContext(ctx, `SELECT state,mode,closed_at,resolution_version,work_version,
-			occurrence_id,recording_id,listened_at,coalesce(CASE WHEN json_type(original_snapshot,'$.client')='text' THEN json_extract(original_snapshot,'$.client') END,''),
-			source_type,coalesce(file_format,''),resolver_variant,delivery_policy,coalesce(nullif(rule_version,''),'manual-review-v1'),evidence
-			FROM ingest_events WHERE profile_id=? AND receipt_id=?`, profile, r.id).Scan(
-			&state, &mode, &closed, &r.version, &r.work, &occurrence, &recording, &instant, &r.client,
-			&r.source, &r.format, &r.variant, &r.deliveryPolicy, &rule, &evidence)
-		if errors.Is(err, sql.ErrNoRows) || err == nil && mode != "active" {
+		return s.resolveIngestReview(ctx, tx, profile, actor, review)
+	})
+}
+
+// resolveIngestReview applies one decision inside the caller's writer transaction.
+func (s *Sqlite) resolveIngestReview(ctx context.Context, tx *sql.Conn, profile, actor int32, review db.IngestReviewDecision) error {
+	r := claimedReceipt{id: review.Receipt, profile: profile}
+	var state, mode, rule, evidence string
+	var closed, occurrence, recording sql.NullInt64
+	var instant sql.NullString
+	err := tx.QueryRowContext(ctx, `SELECT state,mode,closed_at,resolution_version,work_version,
+		occurrence_id,recording_id,listened_at,coalesce(CASE WHEN json_type(original_snapshot,'$.client')='text' THEN json_extract(original_snapshot,'$.client') END,''),
+		source_type,coalesce(file_format,''),resolver_variant,delivery_policy,coalesce(nullif(rule_version,''),'manual-review-v1'),evidence
+		FROM ingest_events WHERE profile_id=? AND receipt_id=?`, profile, r.id).Scan(
+		&state, &mode, &closed, &r.version, &r.work, &occurrence, &recording, &instant, &r.client,
+		&r.source, &r.format, &r.variant, &r.deliveryPolicy, &rule, &evidence)
+	if errors.Is(err, sql.ErrNoRows) || err == nil && mode != "active" {
+		return db.ErrNotFound
+	}
+	if err != nil {
+		return err
+	}
+	if state != "pending_duplicate" || closed.Valid || r.version != review.Version {
+		return db.ErrConflict
+	}
+
+	now := s.ingestNow().Unix()
+	event, finalState, reason := review.Candidate, "duplicate", "user_confirmed_duplicate"
+	if review.Value == "same" {
+		err := tx.QueryRowContext(ctx, `SELECT occurrence_id,recording_id FROM (`+reviewCandidateRows+`) WHERE event_id=?`,
+			profile, r.id, event).Scan(&occurrence, &recording)
+		if errors.Is(err, sql.ErrNoRows) {
 			return db.ErrNotFound
 		}
 		if err != nil {
 			return err
 		}
-		if state != "pending_duplicate" || closed.Valid || r.version != review.Version {
+	} else {
+		at, err := time.Parse(receiptTime, instant.String)
+		if err != nil || !occurrence.Valid {
 			return db.ErrConflict
 		}
-
-		now := s.ingestNow().Unix()
-		event, finalState, reason := review.Candidate, "duplicate", "user_confirmed_duplicate"
-		if review.Value == "same" {
-			err := tx.QueryRowContext(ctx, `SELECT occurrence_id,recording_id FROM (`+reviewCandidateRows+`) WHERE event_id=?`,
-				profile, r.id, event).Scan(&occurrence, &recording)
-			if errors.Is(err, sql.ErrNoRows) {
-				return db.ErrNotFound
-			}
-			if err != nil {
-				return err
-			}
-		} else {
-			at, err := time.Parse(receiptTime, instant.String)
-			if err != nil || !occurrence.Valid {
-				return db.ErrConflict
-			}
-			// Re-read the recording because catalog reconciliation may have changed it during review.
-			err = tx.QueryRowContext(ctx, `SELECT recording_id FROM occurrences WHERE id=?`, occurrence).Scan(&recording)
-			if errors.Is(err, sql.ErrNoRows) {
-				return db.ErrConflict
-			}
-			if err != nil {
-				return err
-			}
-			event, finalState, reason = uuid.NewString(), "accepted", "distinct_occurrence_event"
-			origin, legacy := occurrenceOrigin(r), r.variant == "v9"
-			if legacy {
-				origin, reason = "legacy", "user_kept_separate"
-			}
-			// Exempt only an explicit repetition of an existing legacy tuple from the legacy unique index.
-			if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin,review_distinct)
-				VALUES(?,?,?,?,?,?,? AND EXISTS(SELECT 1 FROM listens WHERE profile_id=? AND track_id=? AND listened_at=?
-					AND origin='legacy' AND review_distinct=0))`,
-				profile, occurrence, at.Unix(), r.client, event, origin, legacy, profile, occurrence, at.Unix()); err != nil {
-				return err
-			}
-		}
-		// Both fences and the pending state must still match before writing a revision or relay intent.
-		err = tx.QueryRowContext(ctx, `UPDATE ingest_events SET state=?,identity_status='resolved',duplicate_decision=?,
-			reason_codes=json_array(?),resolution_version=resolution_version+1,work_version=work_version+1,
-			resolved_at=?,closed_at=?,event_id=?,occurrence_id=?,recording_id=?,next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL
-			WHERE profile_id=? AND receipt_id=? AND resolution_version=? AND work_version=? AND `+reviewQueueScope+`
-			RETURNING resolution_version`, finalState, review.Value, reason, now, now, event, occurrence, recording,
-			profile, r.id, review.Version, r.work).Scan(&r.version)
+		// Re-read the recording because catalog reconciliation may have changed it during review.
+		err = tx.QueryRowContext(ctx, `SELECT recording_id FROM occurrences WHERE id=?`, occurrence).Scan(&recording)
 		if errors.Is(err, sql.ErrNoRows) {
 			return db.ErrConflict
 		}
 		if err != nil {
 			return err
 		}
-		if _, err := tx.ExecContext(ctx, `INSERT INTO ingest_revisions VALUES(?,?,?,'user',?,json_array(?),json_set(?,'$.review_event_id',?),?,?)`,
-			profile, r.id, r.version, review.Value, reason, evidence, event, rule, now); err != nil {
+		event, finalState, reason = uuid.NewString(), "accepted", "distinct_occurrence_event"
+		origin, legacy := occurrenceOrigin(r), r.variant == "v9"
+		if legacy {
+			origin, reason = "legacy", "user_kept_separate"
+		}
+		// Exempt only an explicit repetition of an existing legacy tuple from the legacy unique index.
+		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin,review_distinct)
+			VALUES(?,?,?,?,?,?,? AND EXISTS(SELECT 1 FROM listens WHERE profile_id=? AND track_id=? AND listened_at=?
+				AND origin='legacy' AND review_distinct=0))`,
+			profile, occurrence, at.Unix(), r.client, event, origin, legacy, profile, occurrence, at.Unix()); err != nil {
 			return err
 		}
-		if finalState == "accepted" {
-			return insertRelayIntent(ctx, tx, r, event, now)
-		}
-		return nil
-	})
+	}
+	// Both fences and the pending state must still match before writing a revision or relay intent.
+	err = tx.QueryRowContext(ctx, `UPDATE ingest_events SET state=?,identity_status='resolved',duplicate_decision=?,
+		reason_codes=json_array(?),resolution_version=resolution_version+1,work_version=work_version+1,
+		resolved_at=?,closed_at=?,event_id=?,occurrence_id=?,recording_id=?,next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL
+		WHERE profile_id=? AND receipt_id=? AND resolution_version=? AND work_version=? AND `+reviewQueueScope+`
+		RETURNING resolution_version`, finalState, review.Value, reason, now, now, event, occurrence, recording,
+		profile, r.id, review.Version, r.work).Scan(&r.version)
+	if errors.Is(err, sql.ErrNoRows) {
+		return db.ErrConflict
+	}
+	if err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO ingest_revisions VALUES(?,?,?,'user',?,json_array(?),json_set(?,'$.review_event_id',?,'$.decided_by',?),?,?)`,
+		profile, r.id, r.version, review.Value, reason, evidence, event, actor, rule, now); err != nil {
+		return err
+	}
+	if finalState == "accepted" {
+		return insertRelayIntent(ctx, tx, r, event, now)
+	}
+	return nil
 }

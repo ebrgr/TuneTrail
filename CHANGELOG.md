@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 
-- Profile owners and root can turn on duplicate review in Ingestion health, inspect pending receipts, and link each resolvable receipt to an existing listen or keep it as a separate listen (ISSUE-181).
+- Profile owners and root can turn on duplicate review in Ingestion health, inspect evidence, and decide individually or in batches. The revision records the deciding account. With review off, exact repeats of the same occurrence in the same second count once (ISSUE-181).
+- Ingestion health keeps rarely used sources in its last-submission list and paginates the source summary (ISSUE-181).
 
 ## [0.56] - 2026-11-21
 

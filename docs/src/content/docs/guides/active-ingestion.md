@@ -13,9 +13,9 @@ for processing. The listen may take time to appear in the history. For a 503
 response, respect `Retry-After` before resending. The import summary shows
 **Pending** for submissions waiting on processing and **Duplicates** for
 completed submissions the importer recognized. Duplicate review is off by
-default. Without review, the legacy resolver keeps its same-track, same-second
-deduplication rule. The occurrence resolver keeps submissions with compatible
-identity as separate listens after checking for receipt replays.
+default. With review off, a repeat of the same track or occurrence in the same
+second links to the existing listen. The occurrence resolver keeps possible
+matches up to two seconds apart as separate listens.
 
 ## Review possible duplicates
 
@@ -24,13 +24,19 @@ duplicate review for an active profile and open **View evidence** on a receipt.
 Choose an existing listen and select **Accept as duplicate** to link the
 receipt to it. **Keep as a separate listen** adds a listen at the submitted
 time and queues relay delivery when eligible. Pending receipts do not count
-toward listening statistics.
+toward listening statistics. Each decision records the signed-in account's ID
+in the revision history.
+
+At the top of **Health**, the counter shows the number of pending receipts for
+the selected profile. **Accept all as duplicates** processes only receipts with
+one recorded candidate that still exists. **Keep all as separate listens**
+processes only receipts with a resolved occurrence and a valid submitted time.
+Each action processes up to 25 eligible receipts in a single transaction. If
+the batch changes while the page is open, refresh before submitting again.
 
 Turning review off changes how new decisions are made. Receipts already in
 the queue remain available. A submission conflict without a resolved track or
-an existing candidate remains visible as evidence until its identity can be
-established. The source summary groups the 10,000 most recent receipts for the
-selected profile.
+an existing candidate remains visible without decision buttons.
 
 ## Prepare a pilot
 
@@ -116,9 +122,10 @@ open it, always signed in, even when the profile is public.
 
 - **Pending reviews** shows submissions awaiting a duplicate decision and
   lets you turn review on or off for the active profile.
-- **Recent sources and last submission** lists the latest submission for each
-  integration, source format and declared client in the recent receipt window,
-  with the received time, time precision, and relay delivery state.
+- **Sources and last submission** lists the latest submission for each
+  integration, source format and declared client, with the received time, time
+  precision, and current relay delivery state. Use the next page to see older
+  sources when the list spans multiple pages.
 - **Relay queue and failures** shows the number of queued deliveries, the pause
   reason when the destination is paused, and the most recent open or failed
   deliveries with their attempt count and reason code.

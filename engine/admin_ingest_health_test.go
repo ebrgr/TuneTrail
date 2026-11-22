@@ -214,12 +214,13 @@ func TestIngestHealthReviewActions(t *testing.T) {
 	owner.cookie = session.ID.String()
 	tokenPattern := regexp.MustCompile(`name="csrf_token" value="([^"]+)"`)
 	tokens := make(map[int]string, 2)
+	digests := make(map[int]string, 2)
 	var firstCandidate string
 	for profile, app := range map[int]*profileTestApp{1: a, 2: &owner} {
 		w := app.request("GET", fmt.Sprintf("/admin/health?profile=%d", profile), "", "", true)
 		html := w.Body.String()
 		require.Equal(t, http.StatusOK, w.Code, html)
-		for _, want := range []string{"Pending reviews", "View evidence", "Accept as duplicate", "Keep as a separate listen", receipts[profile]} {
+		for _, want := range []string{"Pending reviews (1)", "Accept all as duplicates", "Keep all as separate listens", "View evidence", "Accept as duplicate", "Keep as a separate listen", receipts[profile]} {
 			require.Contains(t, html, want)
 		}
 		require.NotContains(t, html, receipts[3-profile])
@@ -227,6 +228,9 @@ func TestIngestHealthReviewActions(t *testing.T) {
 		match := tokenPattern.FindStringSubmatch(html)
 		require.Len(t, match, 2)
 		tokens[profile] = match[1]
+		bulk := regexp.MustCompile(`(?s)name="decision" value="different"\s*>\s*<input type="hidden" name="digest" value="([a-f0-9]{64})"`).FindStringSubmatch(html)
+		require.Len(t, bulk, 2)
+		digests[profile] = bulk[1]
 		if profile == 1 {
 			option := regexp.MustCompile(`<option value="([a-f0-9-]+)">Review Track`).FindStringSubmatch(html)
 			require.Len(t, option, 2)
@@ -260,15 +264,24 @@ func TestIngestHealthReviewActions(t *testing.T) {
 	w = owner.request("GET", "/admin/health?profile=2", "", "", true)
 	require.Contains(t, w.Body.String(), "Turn off duplicate review")
 
-	review.Set("receipt", receipts[2])
-	require.Equal(t, http.StatusSeeOther, post(&owner, "review", 2, review))
-	require.Equal(t, http.StatusConflict, post(&owner, "review", 2, review))
+	// A bulk action uses the same session gate and cannot replay onto the next batch.
+	bulk := url.Values{"decision": {"different"}, "digest": {digests[2]}}
+	require.Equal(t, http.StatusForbidden, post(&owner, "review-batch", 2, bulk))
+	bulk.Set("csrf_token", tokens[2])
+	require.Equal(t, http.StatusForbidden, post(&owner, "review-batch", 1, bulk))
+	bulk.Set("digest", digests[1])
+	require.Equal(t, http.StatusConflict, post(&owner, "review-batch", 2, bulk))
+	bulk.Set("digest", digests[2])
+	require.Equal(t, http.StatusSeeOther, post(&owner, "review-batch", 2, bulk))
+	require.Equal(t, http.StatusConflict, post(&owner, "review-batch", 2, bulk))
 	review.Set("receipt", receipts[1])
 	review.Set("csrf_token", tokens[1])
 	review.Set("decision", "same")
 	review.Set("candidate", firstCandidate)
 	require.Equal(t, http.StatusSeeOther, post(a, "review", 1, review))
-	count, err := a.store.Count(`SELECT count(*) FROM ingest_revisions WHERE author='user'`)
+	count, err := a.store.Count(`SELECT count(*) FROM ingest_revisions WHERE author='user'
+		AND ((profile_id=1 AND decision='same' AND json_extract(evidence,'$.decided_by')=1)
+		  OR (profile_id=2 AND decision='different' AND json_extract(evidence,'$.decided_by')=2))`)
 	require.NoError(t, err)
 	require.Equal(t, 2, count)
 	localized := httptest.NewRequest(http.MethodGet, "/admin/health?profile=2", nil)

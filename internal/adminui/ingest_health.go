@@ -72,7 +72,17 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	health, err := h.store.IngestHealth(r.Context(), profile.ID, page)
+	sourcePage := 1
+	if raw := r.URL.Query().Get("source_page"); raw != "" {
+		// Parse into 32 bits so converting a page to an offset cannot overflow.
+		requested, parseErr := strconv.ParseInt(raw, 10, 32)
+		if parseErr != nil || requested < 1 {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+		sourcePage = int(requested)
+	}
+	health, err := h.store.IngestHealth(r.Context(), profile.ID, page, sourcePage)
 	if err != nil {
 		h.fail(w, err)
 		return
@@ -110,9 +120,16 @@ func (h *Handler) mutateHealth(w http.ResponseWriter, r *http.Request, identity 
 			h.fail(w, db.ErrInvalidInput)
 			return
 		}
-		err = h.store.ResolveIngestReview(r.Context(), profile, db.IngestReviewDecision{
+		err = h.store.ResolveIngestReview(r.Context(), profile, identity.User.ID, db.IngestReviewDecision{
 			Receipt: receipt.String(), Version: version, Value: form.SingleValue("decision"), Candidate: form.SingleValue("candidate"),
 		})
+	case "/admin/health/review-batch":
+		if !fields(form, "decision", "digest") {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+		// The account ID always comes from the authorized session.
+		err = h.store.ResolveIngestReviewBatch(r.Context(), profile, identity.User.ID, form.SingleValue("decision"), form.SingleValue("digest"))
 	case "/admin/health/reprocess":
 		receipt, parseErr := uuid.Parse(form.SingleValue("receipt"))
 		if parseErr != nil || !fields(form, "receipt") {
