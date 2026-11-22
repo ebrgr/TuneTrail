@@ -4,6 +4,7 @@ title: 147 — Scrobbler Android nativo para o TuneTrail
 status: Aberta
 assignee: []
 created_date: '2026-11-16T01:05:00Z'
+updated_date: '2026-11-22T20:40:00Z'
 labels:
   - ingestao
 milestone: m-12
@@ -11,6 +12,7 @@ dependencies:
   - ISSUE-145
 documentation:
   - doc-038
+  - doc-045
 priority: low
 type: feature
 ordinal: 160000
@@ -29,3 +31,16 @@ Origem: estudo doc-038. Futuro: app Android que observa a reprodução de outros
 - [ ] #3 Falha de rede não perde escutas (fila local) e a deduplicação da ISSUE-081 é respeitada
 - [ ] #4 Permissões do Android explicadas ao usuário e testadas
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: Codex
+created: 2026-11-22T20:40:00Z
+
+---
+
+O estudo do Pano descreve captura de mídia, pré-processamento e fila offline. Usar os resultados da ISSUE-191 na avaliação de construir um cliente Android próprio ou recomendar a integração existente.
+
+---
+<!-- COMMENTS:END -->
