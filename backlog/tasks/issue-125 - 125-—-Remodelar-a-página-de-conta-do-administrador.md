@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:27:00Z'
+updated_date: '2026-11-22T22:28:00Z'
 labels:
   - ui
   - admin
@@ -188,6 +188,15 @@ created: 2026-11-22T22:27:00Z
 ---
 
 Publicação: versão 0.63 (tag `v0.63`), branch `feat/issue-125-remodelar-a-pagina-de-conta` integrada ao `main` por fast-forward.
+
+---
+
+author: claude
+created: 2026-11-22T22:28:00Z
+
+---
+
+Reviewer (reauditoria 3): APROVADO, sem BUG. Causa raiz do resgate corrigida (Origin: null sob no-referrer), caixa de orientação com Sair… e Todos os perfis, dropdown de ícones. Testes -race ok.
 
 ---
 <!-- COMMENTS:END -->
