@@ -3,7 +3,7 @@ id: ISSUE-184
 title: >-
   184 — Central de saúde com Inbox (recebido por API key e importações) e Outbox
   (relay)
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T23:31:00Z'
@@ -71,6 +71,15 @@ created: 2026-11-22T15:32:00Z
 ---
 
 Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG; consultas 6,3 a 8,3 ms com 300 mil recibos; tela conferida em 390/1100/1500 px; Advisor dispensado pelo usuário. ACs 1 a 5 marcados. Riscos aceitos: migração v19 de 7,0 s, escritas extras do resumo diário, classificação acoplada às tags do snapshot.
+
+---
+
+author: ebrgr
+created: 2026-11-22T15:32:00Z
+
+---
+
+Aceite do usuário em 22/11/2026: aceito sem Advisor e autorizado a publicar (sem push). Riscos aceitos e registrados: migração v19 leva 7,0 s no startup com 300 mil recibos; gatilhos do resumo diário acrescentam escritas na admissão (remedir o p95 de ACK na ISSUE-172); a classificação de metadados depende das tags JSON do snapshot.
 
 ---
 <!-- COMMENTS:END -->
