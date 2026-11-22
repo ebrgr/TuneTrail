@@ -33,6 +33,10 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	if err != nil || receipt.id == "" {
 		return false, err
 	}
+	// A parked receipt counts as progress but has no lease to resolve.
+	if receipt.lease == "" {
+		return true, nil
+	}
 	at, err := time.Parse(receiptTime, instant)
 	if err != nil {
 		return true, s.rejectIngest(ctx, receipt, "invalid_listened_at")
@@ -88,8 +92,9 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 
 // claimNextIngest reads a due receipt and atomically reserves its lease.
 func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, string, error) {
-	now := s.ingestNow().Unix()
-	receipt := claimedReceipt{lease: uuid.NewString()}
+	clock := s.ingestNow()
+	now := clock.Unix()
+	var receipt claimedReceipt
 	var snapshot, instant string
 	const nextReceipt = `SELECT receipt_id FROM ingest_events INDEXED BY idx_ingest_resolver_queue
 		WHERE mode='active' AND closed_at IS NULL
@@ -104,19 +109,37 @@ func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, s
 	if err != nil {
 		return claimedReceipt{}, "", "", err
 	}
-	// An expired lease resumes the interrupted attempt while still recording another claim.
-	err = s.db.QueryRowContext(ctx, `UPDATE ingest_events SET lease_owner=?,lease_until=?,work_version=work_version+1,
-		attempt_count=attempt_count+1,retry_attempt_base=retry_attempt_base+
-		CASE WHEN lease_until IS NOT NULL AND attempt_count>retry_attempt_base THEN 1 ELSE 0 END
-		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND parked_at IS NULL AND state IN ('received','retryable')
-		AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
-		RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,resolver_variant,coalesce(file_format,''),attempt_count-retry_attempt_base,delivery_policy`,
-		receipt.lease, now+120, next, now, now).Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source, &receipt.variant, &receipt.format, &receipt.attempts, &receipt.deliveryPolicy)
+	// Decide under the update's writer lock. A due receipt at the cap parks without issuing another claim.
+	err = s.db.QueryRowContext(ctx, `WITH candidate AS MATERIALIZED (
+		SELECT receipt_id, attempt_count-claim_attempt_base>=? AS exhausted FROM ingest_events
+		WHERE receipt_id=? AND mode='active' AND closed_at IS NULL AND parked_at IS NULL
+		AND state IN ('received','retryable') AND coalesce(next_attempt_at,0)<=? AND coalesce(lease_until,0)<=?
+	)
+	UPDATE ingest_events SET
+		lease_owner=CASE WHEN exhausted THEN NULL ELSE ? END,
+		lease_until=CASE WHEN exhausted THEN NULL ELSE ? END,
+		work_version=work_version+1,
+		attempt_count=attempt_count+NOT exhausted,
+		retry_attempt_base=retry_attempt_base+
+			CASE WHEN NOT exhausted AND lease_until IS NOT NULL AND attempt_count>retry_attempt_base THEN 1 ELSE 0 END,
+		state=CASE WHEN exhausted THEN 'retryable' ELSE state END,
+		next_attempt_at=CASE WHEN exhausted THEN NULL ELSE next_attempt_at END,
+		parked_at=CASE WHEN exhausted THEN ? END,
+		park_reason=CASE WHEN exhausted THEN ? END
+	FROM candidate WHERE ingest_events.receipt_id=candidate.receipt_id
+	RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,
+		resolver_variant,coalesce(file_format,''),attempt_count-retry_attempt_base,delivery_policy,coalesce(lease_owner,'')`,
+		maxIngestClaims, next, now, now, uuid.NewString(), now+120, now, ingestLeaseExhausted).
+		Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source,
+			&receipt.variant, &receipt.format, &receipt.attempts, &receipt.deliveryPolicy, &receipt.lease)
 	if errors.Is(err, sql.ErrNoRows) {
 		return claimedReceipt{}, "", "", nil
 	}
 	if err != nil {
 		return claimedReceipt{}, "", "", err
+	}
+	if receipt.lease == "" {
+		s.warnParkedIngest(ctx, ingestAlertKey{profile: receipt.profile, reason: ingestLeaseExhausted}, clock)
 	}
 	return receipt, snapshot, instant, nil
 }

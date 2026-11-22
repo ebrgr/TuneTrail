@@ -80,7 +80,7 @@ func IsRoute(method, path string) bool {
 // isHealthAction lists the health routes that can mutate ingestion state.
 func isHealthAction(path string) bool {
 	switch path {
-	case "/admin/health/reprocess", "/admin/health/review", "/admin/health/review-setting", "/admin/health/review-batch":
+	case "/admin/health/reprocess", "/admin/health/reprocess-all", "/admin/health/review", "/admin/health/review-setting", "/admin/health/review-batch":
 		return true
 	}
 	return false

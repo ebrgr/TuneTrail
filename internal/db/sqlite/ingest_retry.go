@@ -11,6 +11,8 @@ import (
 
 const (
 	maxIngestAttempts    = 5
+	maxIngestClaims      = 5 * maxIngestAttempts
+	ingestLeaseExhausted = "lease_exhausted"
 	ingestRetryExhausted = "retry_exhausted"
 )
 
@@ -50,7 +52,7 @@ func (s *Sqlite) retryIngest(ctx context.Context, r claimedReceipt, cause error)
 	return errors.Join(cause, err)
 }
 
-// warnParkedIngest coalesces warnings per profile and reason for the lifetime of the worker.
+// warnParkedIngest coalesces warnings per profile and reason within a one-minute window.
 func (s *Sqlite) warnParkedIngest(ctx context.Context, key ingestAlertKey, now time.Time) {
 	s.ingestAlertMu.Lock()
 	for old, until := range s.ingestAlerts {
@@ -98,24 +100,38 @@ func (s *Sqlite) rejectIngest(ctx context.Context, r claimedReceipt, reason stri
 	return nil
 }
 
-// ReprocessIngest grants a fresh budget to a parked receipt in the authorized profile.
-// A replay with no parked receipt is a no-op, including receipts belonging to another profile.
-func (s *Sqlite) ReprocessIngest(ctx context.Context, profile int32, receipt string) error {
-	// Observe both fences in the same writer transaction that releases the receipt.
+// requeueParkedIngest resets both budgets and records the latest operator atomically.
+const requeueParkedIngest = `UPDATE ingest_events SET next_attempt_at=?,parked_at=NULL,park_reason=NULL,
+	retry_attempt_base=attempt_count,claim_attempt_base=attempt_count,work_version=work_version+1,
+	reprocessed_at=?,reprocessed_by=? WHERE profile_id=? AND parked_at IS NOT NULL`
+
+// ReprocessIngest grants a fresh budget to one parked receipt in the authorized profile.
+func (s *Sqlite) ReprocessIngest(ctx context.Context, profile, actor int32, receipt string) error {
+	// The parked predicate makes a replay or a receipt from another profile a no-op.
+	now := s.ingestNow().Unix()
+	_, err := s.db.ExecContext(ctx, requeueParkedIngest+` AND receipt_id=?`, now, now, actor, profile, receipt)
+	return err
+}
+
+// ReprocessAllIngest grants a fresh budget to every parked receipt in the authorized profile.
+func (s *Sqlite) ReprocessAllIngest(ctx context.Context, profile, actor int32) error {
+	const batchSize = 500
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		var resolution, work int64
-		err := tx.QueryRowContext(ctx, `SELECT resolution_version,work_version FROM ingest_events
-			WHERE profile_id=? AND receipt_id=? AND parked_at IS NOT NULL`, profile, receipt).Scan(&resolution, &work)
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
+		now := s.ingestNow().Unix()
+		// Bound each statement while keeping the operation atomic with respect to claims and replays.
+		for {
+			result, err := tx.ExecContext(ctx, `WITH batch AS MATERIALIZED (
+				SELECT receipt_id FROM ingest_events WHERE profile_id=? AND parked_at IS NOT NULL
+				ORDER BY parked_at DESC,receipt_id DESC LIMIT ?
+			) `+requeueParkedIngest+` AND receipt_id IN (SELECT receipt_id FROM batch)`,
+				profile, batchSize, now, now, actor, profile)
+			if err != nil {
+				return err
+			}
+			changed, err := result.RowsAffected()
+			if err != nil || changed < batchSize {
+				return err
+			}
 		}
-		if err != nil {
-			return err
-		}
-		_, err = tx.ExecContext(ctx, `UPDATE ingest_events SET state='retryable',next_attempt_at=?,parked_at=NULL,
-			park_reason=NULL,retry_attempt_base=attempt_count,work_version=work_version+1
-			WHERE profile_id=? AND receipt_id=? AND parked_at IS NOT NULL AND resolution_version=? AND work_version=?`,
-			s.ingestNow().Unix(), profile, receipt, resolution, work)
-		return err
 	})
 }

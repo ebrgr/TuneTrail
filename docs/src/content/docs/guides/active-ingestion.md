@@ -299,5 +299,14 @@ Open **Health** in the administration menu and look under **Permanent failures**
 The heading shows the total and the list shows the 25 most recently parked
 receipts. The profile owner can view their own queue, and root can select any
 profile. After correcting the cause, select **Reprocess** to queue the receipt
-immediately with a fresh five-attempt budget. The displayed attempt count tracks
-all claims for that receipt, including recoveries after an interrupted attempt.
+immediately, or **Reprocess all** to queue every parked receipt for the selected
+profile. Both actions grant a fresh five-attempt budget and record the account ID
+and time of the latest reprocessing on each affected receipt.
+
+The displayed attempt count tracks all claims for that receipt, including
+recoveries after an interrupted attempt. If a receipt still needs processing
+after 25 claims in the current cycle, the resolver parks it with the reason
+`lease_exhausted`. SQLite schema v18 starts a fresh claim budget for existing
+receipts while preserving their lifetime counts and retry state. To return to
+schema v17, restore the `.pre-ingest-reprocess-*.bak` backup made during the
+upgrade.

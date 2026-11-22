@@ -27,6 +27,7 @@
   "admin.health.failures": "Permanent failures",
   "admin.health.receipt": "Receipt",
   "admin.health.reprocess": "Reprocess",
+  "admin.health.reprocess_all": "Reprocess all",
   "admin.health.no_failures": "No permanent failures.",
   "admin.health.title": "Ingestion health",
   "admin.health.nav": "Health",

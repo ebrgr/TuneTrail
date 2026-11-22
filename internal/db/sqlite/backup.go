@@ -86,6 +86,10 @@ func backupBeforeUpgrade(ctx context.Context, conn *sql.DB, databasePath string,
 	if version == 14 {
 		pattern = ".pre-archive-export-boundary-*.bak"
 	}
+	// Preserve the audit-free schema and original counters before starting the claim budgets.
+	if version == 17 {
+		pattern = ".pre-ingest-reprocess-*.bak"
+	}
 	filename, err := tempDatabase(filepath.Dir(databasePath), filepath.Base(databasePath)+pattern)
 	if err != nil {
 		return "", err

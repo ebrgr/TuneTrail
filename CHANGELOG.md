@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Ingestion Health lets profile owners and root reprocess all parked receipts for a profile and records the account and time of each receipt’s latest reprocessing. The resolver parks receipts that would otherwise exceed 25 claims per reprocessing cycle (ISSUE-182).
+
 ## [0.57] - 2026-11-21
 
 - Profile owners and root can turn on duplicate review in Ingestion health, inspect evidence, and decide individually or in batches. The revision records the deciding account. With review off, indistinguishable same-second repeats count once. Distinct trusted event IDs and distinct rows in a file remain separate in either mode. With review on, an exact trusted-ID replay of a resolved non-file submission can be reviewed (ISSUE-181).

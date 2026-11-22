@@ -27,6 +27,7 @@
   "admin.health.failures": "Falhas permanentes",
   "admin.health.receipt": "Recibo",
   "admin.health.reprocess": "Reprocessar",
+  "admin.health.reprocess_all": "Reprocessar todos",
   "admin.health.no_failures": "Nenhuma falha permanente.",
   "admin.health.title": "Saúde da ingestão",
   "admin.health.nav": "Saúde",

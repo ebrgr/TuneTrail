@@ -8,7 +8,8 @@ import (
 // IngestHealthStore provides profile diagnostics and manual recovery.
 type IngestHealthStore interface {
 	IngestHealth(context.Context, int32, ...int) (IngestHealth, error)
-	ReprocessIngest(context.Context, int32, string) error
+	ReprocessIngest(context.Context, int32, int32, string) error
+	ReprocessAllIngest(context.Context, int32, int32) error
 	SetIngestReview(context.Context, int32, bool) error
 	ResolveIngestReview(context.Context, int32, int32, IngestReviewDecision) error
 	ResolveIngestReviewBatch(context.Context, int32, int32, string, string) error

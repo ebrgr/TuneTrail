@@ -515,6 +515,11 @@
 
   <section class="card ingestion-diagnostics" aria-labelledby="health-failures">
     <h2 id="health-failures">Permanent failures <span>(1)</span></h2>
+      <form class="ingestion-reprocess" method="post" action="/admin/health/reprocess-all?profile=1">
+        <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+        <input type="hidden" name="profile" value="1">
+        <button type="submit">Reprocess all</button>
+      </form>
       <details>
         <summary>listenbrainz · <time datetime="2024-05-01T12:15:00Z">2024-05-01 12:15:00 UTC</time></summary>
         <dl>

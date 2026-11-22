@@ -137,7 +137,18 @@ func (h *Handler) mutateHealth(w http.ResponseWriter, r *http.Request, identity 
 			return
 		}
 		anchor = "health-failures"
-		err = h.store.ReprocessIngest(r.Context(), profile, receipt.String())
+		err = h.store.ReprocessIngest(r.Context(), profile, identity.User.ID, receipt.String())
+	case "/admin/health/reprocess-all":
+		requested, parseErr := parseID(form.SingleValue("profile"))
+		if parseErr != nil || !fields(form, "profile") {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+		anchor = "health-failures"
+		// A form rendered for another profile must not reprocess this queue.
+		if requested == profile {
+			err = h.store.ReprocessAllIngest(r.Context(), profile, identity.User.ID)
+		}
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

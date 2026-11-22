@@ -125,6 +125,13 @@
 
   <section class="card ingestion-diagnostics" aria-labelledby="health-failures">
     <h2 id="health-failures">{{tr "admin.health.failures" "Permanent failures"}} <span>({{.Health.FailureCount}})</span></h2>
+    {{- if .Health.FailureCount}}
+      <form class="ingestion-reprocess" method="post" action="/admin/health/reprocess-all?profile={{.Profile.ID}}">
+        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+        <input type="hidden" name="profile" value="{{.Profile.ID}}">
+        <button type="submit">{{tr "admin.health.reprocess_all" "Reprocess all"}}</button>
+      </form>
+    {{- end}}
     {{- range .Health.Failures}}
       <details>
         <summary>{{.Source}} · {{template "admin/health-time" .Parked}}</summary>

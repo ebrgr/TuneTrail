@@ -148,28 +148,51 @@ func TestIngestHealthReprocess(t *testing.T) {
 	rootToken := csrf.FindStringSubmatch(rootPage.Body.String())
 	require.Len(t, rootToken, 2)
 
-	post := func(app *profileTestApp, profile int, receipt, token string) int {
+	post := func(app *profileTestApp, profile int, action, field, value, token string) int {
 		t.Helper()
-		form := url.Values{"csrf_token": {token}, "receipt": {receipt}}
-		r := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/admin/health/reprocess?profile=%d", profile), strings.NewReader(form.Encode()))
+		form := url.Values{"csrf_token": {token}, field: {value}}
+		r := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/admin/health/%s?profile=%d", action, profile), strings.NewReader(form.Encode()))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: app.cookie})
 		w := httptest.NewRecorder()
 		app.router.ServeHTTP(w, r)
 		return w.Code
 	}
-	require.Equal(t, http.StatusForbidden, post(&owner, 1, first, ownerToken[1]))
-	require.Equal(t, http.StatusForbidden, post(&owner, 2, second, ""))
-	require.Equal(t, http.StatusForbidden, post(&owner, 2, second, rootToken[1]))
-	require.Equal(t, http.StatusSeeOther, post(&owner, 2, first, ownerToken[1]))
+	require.Equal(t, http.StatusForbidden, post(&owner, 1, "reprocess", "receipt", first, ownerToken[1]))
+	require.Equal(t, http.StatusForbidden, post(&owner, 2, "reprocess", "receipt", second, ""))
+	require.Equal(t, http.StatusForbidden, post(&owner, 2, "reprocess", "receipt", second, rootToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(&owner, 2, "reprocess", "receipt", first, ownerToken[1]))
 	parked, err := a.store.Count(`SELECT count(*) FROM ingest_events WHERE parked_at IS NOT NULL`)
 	require.NoError(t, err)
 	require.Equal(t, 2, parked)
-	require.Equal(t, http.StatusSeeOther, post(&owner, 2, second, ownerToken[1]))
-	require.Equal(t, http.StatusSeeOther, post(&owner, 2, second, ownerToken[1]))
-	require.Equal(t, http.StatusSeeOther, post(a, 1, first, rootToken[1]))
+	// A stale form or a form submitted against a different profile cannot affect either queue.
+	require.Contains(t, ownerPage.Body.String(), "/admin/health/reprocess-all?profile=2")
+	require.Equal(t, http.StatusForbidden, post(&owner, 1, "reprocess-all", "profile", "1", ownerToken[1]))
+	require.Equal(t, http.StatusForbidden, post(&owner, 2, "reprocess-all", "profile", "2", ""))
+	require.Equal(t, http.StatusForbidden, post(&owner, 2, "reprocess-all", "profile", "2", rootToken[1]))
+	require.Equal(t, http.StatusNotFound, a.request("GET", "/admin/health/reprocess-all?profile=1", "", "", true).Code)
+	require.Equal(t, http.StatusSeeOther, post(a, 1, "reprocess-all", "profile", "2", rootToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(&owner, 2, "reprocess-all", "profile", "2", ownerToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(a, 2, "reprocess-all", "profile", "2", rootToken[1]))
+	parked, err = a.store.Count(`SELECT count(*) FROM ingest_events WHERE profile_id=1 AND parked_at IS NOT NULL
+		AND work_version=5 AND reprocessed_by IS NULL`)
+	require.NoError(t, err)
+	require.Equal(t, 1, parked)
+	require.Equal(t, http.StatusSeeOther, post(a, 1, "reprocess-all", "profile", "1", rootToken[1]))
+
+	// Park the first receipt again and verify that a single reprocess updates its audit.
+	var reprocessedAt int64
+	require.NoError(t, a.store.QueryRow(`SELECT reprocessed_at FROM ingest_events WHERE receipt_id=? AND reprocessed_by=1`, first).Scan(&reprocessedAt))
+	require.Positive(t, reprocessedAt)
+	require.NoError(t, a.store.Exec(`UPDATE ingest_events SET parked_at=1,park_reason='retry_exhausted',
+		reprocessed_at=1 WHERE receipt_id=?`, first))
+	require.Equal(t, http.StatusSeeOther, post(a, 1, "reprocess", "receipt", first, rootToken[1]))
+	require.Equal(t, http.StatusSeeOther, post(a, 1, "reprocess", "receipt", first, rootToken[1]))
 	requeued, err := a.store.Count(`SELECT count(*) FROM ingest_events WHERE parked_at IS NULL
-		AND next_attempt_at IS NOT NULL AND attempt_count=5 AND retry_attempt_base=5 AND work_version=6`)
+		AND next_attempt_at IS NOT NULL AND attempt_count=5 AND retry_attempt_base=5 AND claim_attempt_base=5
+		AND reprocessed_at=next_attempt_at AND reprocessed_at>1
+		AND ((profile_id=1 AND work_version=7 AND reprocessed_by=1)
+		  OR (profile_id=2 AND work_version=6 AND reprocessed_by=2))`)
 	require.NoError(t, err)
 	require.Equal(t, 2, requeued)
 	require.NoError(t, a.store.Exec(`DROP TRIGGER health_fixture_failure`))
