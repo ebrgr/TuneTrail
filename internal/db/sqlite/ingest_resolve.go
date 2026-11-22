@@ -16,7 +16,12 @@ import (
 	"github.com/google/uuid"
 )
 
-const activeRuleVersion = "active-v1"
+const (
+	activeRuleVersion       = "active-v1"
+	ingestLease             = 120 * time.Second
+	ingestRetryWriteTimeout = 5 * time.Second
+	ingestAttemptTimeout    = ingestLease - 20*time.Second
+)
 
 var errIngestTrackMissing = errors.New("ingest track no longer exists")
 
@@ -29,6 +34,12 @@ type claimedReceipt struct {
 
 // ResolveNextIngest claims one active receipt independently of the admission flags.
 func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCaller) (bool, error) {
+	// Keep the resolution deadline shorter than the claim lease.
+	return s.resolveNextIngest(ctx, mbzc, ingestAttemptTimeout)
+}
+
+// resolveNextIngest keeps the resolution deadline separate from retry persistence.
+func (s *Sqlite) resolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCaller, timeout time.Duration) (bool, error) {
 	receipt, snapshot, instant, err := s.claimNextIngest(ctx)
 	if err != nil || receipt.id == "" {
 		return false, err
@@ -37,15 +48,32 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	if receipt.lease == "" {
 		return true, nil
 	}
+	attemptCtx, cancel := context.WithTimeout(ctx, timeout)
+	err = s.resolveIngestClaim(attemptCtx, receipt, snapshot, instant, mbzc)
+	cancel()
+	if err == nil {
+		return true, nil
+	}
+	// A canceled worker leaves the lease for recovery without consuming a retry.
+	if ctx.Err() != nil {
+		return true, err
+	}
+	retryCtx, cancelRetry := context.WithTimeout(ctx, ingestRetryWriteTimeout)
+	defer cancelRetry()
+	return true, s.retryIngest(retryCtx, receipt, err)
+}
+
+// resolveIngestClaim uses the attempt context through the decision commit.
+func (s *Sqlite) resolveIngestClaim(ctx context.Context, receipt claimedReceipt, snapshot, instant string, mbzc mbz.MusicBrainzCaller) error {
 	at, err := time.Parse(receiptTime, instant)
 	if err != nil {
-		return true, s.rejectIngest(ctx, receipt, "invalid_listened_at")
+		return s.rejectIngest(ctx, receipt, "invalid_listened_at")
 	}
 	receipt.unix = at.Unix()
 	// Decode as an object so a JSON null is rejected as well as syntax and type errors.
 	var decoded *ingest.Snapshot
 	if err := json.Unmarshal([]byte(snapshot), &decoded); err != nil || decoded == nil {
-		return true, s.rejectIngest(ctx, receipt, "invalid_snapshot")
+		return s.rejectIngest(ctx, receipt, "invalid_snapshot")
 	}
 	receipt.snapshot = *decoded
 	receipt.client = receipt.snapshot.Client
@@ -60,11 +88,12 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 		// Finish remote verification well before the 120-second claim expires.
 		proofCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
 		proof := verifyOccurrence(proofCtx, receipt.snapshot, mbzc, &s.occurrenceProofCache)
+		err := proofCtx.Err()
 		cancel()
-		if err := s.finishOccurrence(ctx, receipt, proof); err != nil {
-			return true, s.retryIngest(ctx, receipt, err)
+		if err != nil {
+			return err
 		}
-		return true, nil
+		return s.finishOccurrence(ctx, receipt, proof)
 	}
 	// Only the native file adapter can pin a locally associated track.
 	if receipt.source == ingest.ShadowSourceFile {
@@ -73,21 +102,15 @@ func (s *Sqlite) ResolveNextIngest(ctx context.Context, mbzc mbz.MusicBrainzCall
 	if receipt.track != 0 {
 		err = s.finishIngest(ctx, receipt)
 		if !errors.Is(err, errIngestTrackMissing) {
-			if err != nil {
-				return true, s.retryIngest(ctx, receipt, err)
-			}
-			return true, nil
+			return err
 		}
 	}
 	// A native track can disappear after admission. Reassociate from the durable snapshot.
 	receipt.track, err = catalog.ResolveListenTrack(ctx, s, ingestCatalogOptions(receipt.snapshot, receipt.source, mbzc))
-	if err == nil {
-		err = s.finishIngest(ctx, receipt)
-	}
 	if err != nil {
-		return true, s.retryIngest(ctx, receipt, err)
+		return err
 	}
-	return true, nil
+	return s.finishIngest(ctx, receipt)
 }
 
 // claimNextIngest reads a due receipt and atomically reserves its lease.
@@ -129,7 +152,7 @@ func (s *Sqlite) claimNextIngest(ctx context.Context) (claimedReceipt, string, s
 	FROM candidate WHERE ingest_events.receipt_id=candidate.receipt_id
 	RETURNING receipt_id,profile_id,resolution_version,work_version,listened_at,original_snapshot,source_type,
 		resolver_variant,coalesce(file_format,''),attempt_count-retry_attempt_base,delivery_policy,coalesce(lease_owner,'')`,
-		maxIngestClaims, next, now, now, uuid.NewString(), now+120, now, ingestLeaseExhausted).
+		maxIngestClaims, next, now, now, uuid.NewString(), now+int64(ingestLease/time.Second), now, ingestLeaseExhausted).
 		Scan(&receipt.id, &receipt.profile, &receipt.version, &receipt.work, &instant, &snapshot, &receipt.source,
 			&receipt.variant, &receipt.format, &receipt.attempts, &receipt.deliveryPolicy, &receipt.lease)
 	if errors.Is(err, sql.ErrNoRows) {

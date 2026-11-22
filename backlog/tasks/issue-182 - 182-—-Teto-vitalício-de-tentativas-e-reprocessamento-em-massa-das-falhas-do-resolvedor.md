@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T21:57:00Z'
-updated_date: '2026-11-22T01:24:00Z'
+updated_date: '2026-11-22T14:44:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -69,6 +69,15 @@ created: 2026-11-22T01:24:00Z
 ---
 
 Advisor (effort high): APROVADO sem falhas críticas. Melhorias: prazo por tentativa abaixo da lease (o teto só dispara se a tentativa voltar), orçamento menor ao reprocessar lease_exhausted, commit por lote no reprocessar todos, histórico de reprocessamentos. Ver backlog/evidencias/issue-182/PARECER-ADVISOR.md.
+
+---
+
+author: Codex
+created: 2026-11-22T14:44:00Z
+
+---
+
+Verificação das correções do Advisor: prazo de 100 s por tentativa e gravação de retry com prazo próprio; reprocessamento de lease_exhausted limitado a cinco claims; histórico em ingest_revisions e auditoria mais recente mantida. Lotes mantidos em uma transação. make check passou (13/13 E2E), testes direcionados com -race passaram e a referência UI coincide nos 176 arquivos. Mediana de 150,22 ms para reprocessar e auditar 10 mil recibos.
 
 ---
 <!-- COMMENTS:END -->

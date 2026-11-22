@@ -113,7 +113,7 @@ func TestIngestHealthReprocess(t *testing.T) {
 	}
 	// Advance to the fifth claim. The trigger aborts the decision and its listen together.
 	require.NoError(t, a.store.Exec(`UPDATE ingest_events SET attempt_count=4,work_version=4;
-		CREATE TRIGGER health_fixture_failure BEFORE INSERT ON ingest_revisions
+		CREATE TRIGGER health_fixture_failure BEFORE INSERT ON ingest_revisions WHEN NEW.author='automatic'
 		BEGIN SELECT RAISE(ABORT, 'persistent fixture failure'); END`))
 	for range 2 {
 		found, err := a.store.ResolveNextIngest(t.Context(), &mbz.MbzErrorCaller{})

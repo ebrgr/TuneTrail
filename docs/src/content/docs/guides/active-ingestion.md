@@ -291,22 +291,28 @@ separately because restoring the backup rolls back later local changes.
 
 The active resolver makes up to five automatic attempts for transient failures,
 with waits of 1, 2, 4, and 8 minutes. After the fifth failure it parks the
-receipt and keeps the original submission and its idempotency key. An unreadable
-listen time or snapshot is recorded as invalid and closes without further
-automatic attempts.
+receipt and keeps the original submission and its idempotency key. Each
+resolution attempt has a 100-second deadline within its 120-second lease.
+Occurrence proof has a 20-second deadline within the attempt. A timeout follows
+the same retry schedule. On worker shutdown, the lease can be recovered without
+spending a retry. An unreadable listen time or snapshot is recorded as invalid
+and closes without further automatic attempts.
 
 Open **Health** in the administration menu and look under **Permanent failures**.
 The heading shows the total and the list shows the 25 most recently parked
 receipts. The profile owner can view their own queue, and root can select any
 profile. After correcting the cause, select **Reprocess** to queue the receipt
 immediately, or **Reprocess all** to queue every parked receipt for the selected
-profile. Both actions grant a fresh five-attempt budget and record the account ID
-and time of the latest reprocessing on each affected receipt.
+profile. Both actions grant a fresh five-attempt budget and append an audit revision with the
+account ID and time. The receipt also stores these details for its latest
+reprocessing.
 
 The displayed attempt count tracks all claims for that receipt, including
 recoveries after an interrupted attempt. If a receipt still needs processing
-after 25 claims in the current cycle, the resolver parks it with the reason
-`lease_exhausted`. SQLite schema v18 starts a fresh claim budget for existing
+after 25 claims, the resolver parks it with the reason `lease_exhausted`.
+Reprocessing a receipt parked for `lease_exhausted` allows five more claims.
+Reprocessing a receipt parked for `retry_exhausted` restores the full 25-claim
+budget. SQLite schema v18 starts a fresh claim budget for existing
 receipts while preserving their lifetime counts and retry state. To return to
 schema v17, restore the `.pre-ingest-reprocess-*.bak` backup made during the
 upgrade.

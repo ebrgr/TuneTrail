@@ -36,3 +36,27 @@ mais lento. A medição não inclui latência HTTP ou contenção.
 - A referência ISSUE-075 regenerada coincide nos 176 arquivos. A tradução
   atualiza o hash de geração nos HTMLs públicos. `health.css` tem 68 linhas
   e usa apenas os breakpoints 40, 64 e 90 rem.
+
+## Correções após o parecer
+
+A mesma medição, com uma revisão de auditoria por recibo, levou 152,05 ms,
+158,17 ms, 150,22 ms, 145,35 ms e 146,42 ms. A mediana foi de 150,22 ms para
+10 mil recibos. Os lotes de até 500 continuam na mesma transação, com lock
+de escrita até o commit.
+
+- A tentativa usa um prazo de 100 s dentro da lease de 120 s. A prova de
+  ocorrência mantém seu prazo de 20 s. O teste simula um MusicBrainz que
+  bloqueia até o contexto expirar e cobre as quatro esperas, o estacionamento
+  na quinta falha e o processamento do recibo seguinte. O teste de shutdown
+  verifica a recuperação da lease sem consumir uma tentativa do orçamento.
+- O teste de leases expiradas cobre 25 claims no ciclo inicial e cinco após
+  reprocessar um `lease_exhausted`. O teste de auditoria cobre também o
+  orçamento cheio de `retry_exhausted`, o isolamento entre perfis e a
+  ausência de duplicação ao repetir a ação.
+- A auditoria usa `author='user'` e razão `reprocessed` com a decisão
+  não final `review`, permitida pelo CHECK existente. Cada ação incrementa
+  `resolution_version` e grava `evidence.decided_by` e `created_at` na
+  mesma transação que atualiza o último reprocessamento do recibo.
+- Após as correções, `make check` passou com 13 cenários E2E. Os testes
+  direcionados com `-race` passaram em `internal/db/sqlite` e `engine`.
+  A comparação da referência ISSUE-075 confirmou zero diferenças.

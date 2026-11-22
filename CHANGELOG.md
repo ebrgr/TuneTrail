@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Ingestion Health lets profile owners and root reprocess all parked receipts for a profile and records the account and time of each receipt’s latest reprocessing. The resolver parks receipts that would otherwise exceed 25 claims per reprocessing cycle (ISSUE-182).
+- Ingestion Health lets profile owners and root reprocess all parked receipts for a profile and logs each reprocessing with the account ID and time. Resolution attempts have a 100-second deadline, and receipts parked after exhausting their claim budget get five more claims when reprocessed (ISSUE-182).
 
 ## [0.57] - 2026-11-21
 
