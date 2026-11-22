@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T23:23:00Z'
+updated_date: '2026-11-22T23:31:00Z'
 labels:
   - ui
   - admin
@@ -91,6 +91,15 @@ created: 2026-11-22T23:23:00Z
 ---
 
 Fase 2 implementada (make check verde; sem push/merge/publish/Done; sem capturas, usuário testa no servidor). Entrega: /account vira 'Minha conta' com cinco abas (Conta | Perfil | Chaves de API | Histórico | Relay) em /account, /account/profile, /account/keys, /account/history, /account/relay (alvo derivado da sessão, sem ID nem query; entram em IsPage/authorizePage e no retorno pós-login). /admin?profile=<próprio> e section=profiles|keys|relay|import|export redirecionam 303 para a aba própria; section=account&profile=<próprio> para /account. Root em outra conta: /admin?profile=N (e section=account|keys|import|relay) no mesmo shell em modo contexto (banner 'Nome (@slug) · você está operando como administrador', Você: <root>, Voltar), aba Conta com token, papel e revisão de exclusão (nunca para comum ou dono: 403). Administração: lista de contas e perfis em cartões + criar conta e perfil (/admin e ?section=profiles). Menu: sem 'Meu perfil'; Saúde fica no menu (dono e root); /admin/health só teve o link 'Configurar perfil' ajustado. Todos os POST, CSRF, ticket único, SameOrigin e autorização intactos; só muda o destino do 303 (dono -> /account/<aba>, root em outra conta -> contexto). Com JS: identidade/avatar/chaves/relay/papel atualizam só o cartão (enhance.js: formaction do submitter, multipart e data-slug); importação segue página inteira. Testes alterados: internal/adminui/{account_tokens,admin}_test.go; engine/{account_issue125,admin_badge_109,adminui_import,auth_issue159,authorization_issue160,i18n_admin_052,import_permissions_issue160,navigation_issue163,visibility_issue161}_test.go; scripts/validate_admin_webui.py e validate_isolation.py (e2e); referência backlog/evidencias/ISSUE-075/reference regenerada (28 arquivos). Novos: internal/webassets/account_tabs_test.go e engine/account_tabs_126_test.go (comum, dono, root, root em contexto, redirecionamentos, fragmentos, 403 sem vazamento). Pendente: capturas e aceite visual do usuário (AC4).
+
+---
+
+author: claude
+created: 2026-11-22T23:31:00Z
+
+---
+
+Reviewer: APROVADO, sem BUG. Sonda HTTP em binário real com três papéis (26 verificações OK): comum sem controles de root e 403 nas rotas root; root com lista e contexto; redirecionamento do próprio perfil; POST em perfil alheio 403. Riscos baixos: aceite visual pendente, cartão único por ação com JS, N consultas na lista root. Removidos dois arquivos de trava de teste commitados por engano.
 
 ---
 <!-- COMMENTS:END -->
