@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T15:05:00Z'
-updated_date: '2026-11-22T15:45:00Z'
+updated_date: '2026-11-22T15:52:00Z'
 labels:
   - ingestao
   - ui
@@ -50,6 +50,15 @@ created: 2026-11-22T15:45:00Z
 ---
 
 Verificação: descarte individual e em lotes de até 25 por perfil, com confirmação, CSRF, digest, CAS e auditoria mínima no schema v20. As projeções permanecem consistentes. Testes direcionados com -race e make check com 13/13 E2E passaram. A referência ISSUE-075 foi regenerada e conferida no Orca a 390, 1100 e 1500 px. Mediana de 2,498 s de escrita para 10 mil recibos sintéticos, sem tráfego concorrente. Encaminhada à revisão técnica.
+
+---
+
+author: claude
+created: 2026-11-22T15:52:00Z
+
+---
+
+Reviewer: provável BUG não executado: ingest_discards tem PK (profile_id, receipt_id) e o INSERT de rastro não trata conflito; o recibo de revisão de reenvio de ID confiável tem ID determinístico, então descartar, reenviar e descartar de novo viola a PK, dá erro 500 e desfaz o lote (recibo indescartável). RISCOs: lotes de 25 com confirmação a cada lote (10 mil = 400 confirmações), sem retenção do rastro. Testes sqlite -race, engine, handlers, middleware, adminui e webui OK. Ver backlog/evidencias/issue-185/PARECER-REVIEWER.md. Advisor recomendado (exclusão de dados), pendente a pedido do usuário.
 
 ---
 <!-- COMMENTS:END -->
