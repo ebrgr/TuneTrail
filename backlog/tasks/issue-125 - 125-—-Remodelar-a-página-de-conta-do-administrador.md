@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:16:00Z'
+updated_date: '2026-11-22T22:19:00Z'
 labels:
   - ui
   - admin
@@ -116,6 +116,15 @@ created: 2026-11-22T22:16:00Z
 ---
 
 Resgate (22/11/2026): caixa de aviso no topo de /admin/redeem (role=note, estilo .account-warning) com links reais Sair… (/admin/sign-out) e Todos os perfis (/). Sem sessão: versão informativa; com sessão (SessionIdentity ok): versão enfática com o username da própria sessão. CSRF/origem e regras de senha inalterados. Testes em engine/account_issue125_test.go (visitante, root, comum, pt-BR, sem eco de token/senha). make check verde.
+
+---
+
+author: claude
+created: 2026-11-22T22:19:00Z
+
+---
+
+Ícone (22/11/2026): campo de texto 'Ícone' virou <select> na criação de conta/perfil e no avatar (music, headphones, disc, radio, user + Iniciais sem ícone), ícone atual pré-selecionado, rótulos en/pt-BR; contrato do servidor inalterado (valor desconhecido recusado com 400; ícone inválido gravado antes mostra Iniciais). Zona de perigo mantida vazia em /account por decisão do usuário. Teste TestProfileIconSelect125; make check verde.
 
 ---
 <!-- COMMENTS:END -->
