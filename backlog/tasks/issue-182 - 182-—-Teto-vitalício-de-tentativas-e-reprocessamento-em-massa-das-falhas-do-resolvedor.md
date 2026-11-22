@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T21:57:00Z'
-updated_date: '2026-11-22T01:11:00Z'
+updated_date: '2026-11-22T01:16:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -51,6 +51,15 @@ created: 2026-11-22T01:11:00Z
 ---
 
 Verificação: teto de 25 claims por ciclo, ação em massa por perfil e auditoria unitária e em massa implementados. make check passou (13 E2E), assim como os testes direcionados com -race. Referência ISSUE-075 regenerada. Mediana de 116,20 ms para 10 mil estacionados em SQLite local.
+
+---
+
+author: claude
+created: 2026-11-22T01:16:00Z
+
+---
+
+Reviewer: sem BUG; 3 RISCOs de operação (reprocessar todos numa única transação sob o escritor; reprocessamento unitário sem releitura de versões; migração reinicia o orçamento dos recibos abertos). Testes sqlite -race, engine, adminui e webui OK. Ver backlog/evidencias/issue-182/PARECER-REVIEWER.md. Advisor (effort high) recomendado por lease e concorrência; pendente a pedido do usuário.
 
 ---
 <!-- COMMENTS:END -->
