@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T17:02:00Z'
-updated_date: '2026-11-22T17:09:00Z'
+updated_date: '2026-11-22T17:31:00Z'
 labels:
   - ingestao
   - catalogo
@@ -49,6 +49,15 @@ created: 2026-11-22T17:09:00Z
 ---
 
 Verificação: o resolvedor aceita escutas sem álbum com release_id nulo e reutiliza ocorrências por título/alias e créditos exatos. Múltiplas candidatas continuam pendentes. O lote sintético HTTP reproduziu 2.250 requisições e 80 escutas prévias no piloto: ambos os escritores chegaram a 2.125 escutas, incluindo 205 sem álbum. Os outros perfis ficaram com 6 e 0. Artista ou título ausente retornou 400 nos dois modos. Testes cobrem reenvio no mesmo segundo com e sem Revisar, ranking, Inbox, exportação e restauração v2 e intenção de relay. make check passou. O AC 4 segue aberto por depender do Advisor. Recibos antigos em release_missing não foram retroprocessados.
+
+---
+
+author: claude
+created: 2026-11-22T17:31:00Z
+
+---
+
+Reviewer: sem BUG executado; RISCO MÉDIO não executado: o crédito da ocorrência sem álbum liga artist_id por alias com LIMIT 1 sem ORDER BY (dois artistas com o mesmo alias podem ser confundidos). RISCOs: ranking por gravação divide a faixa entre a gravação do álbum e a sem álbum sem MBID; MBID declarado cria gravação não validada; recibos antigos release_missing não são reenfileirados. Testes sqlite -race (timeout de 30 min, 614 s), engine, handlers, middleware, adminui e webui OK. Ver backlog/evidencias/issue-186/PARECER-REVIEWER.md. Advisor (effort high) obrigatório por tocar a identidade.
 
 ---
 <!-- COMMENTS:END -->
