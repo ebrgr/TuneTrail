@@ -53,8 +53,10 @@ api.vet:
 	CGO_ENABLED=0 go vet ./...
 
 # External assets read through os.Root are not reliably observed by the Go test result cache.
+# The per-package limit leaves room for 2-vCPU CI runners: internal/db/sqlite and engine
+# grew past 60s there after ISSUE-173..188 (v0.62 CI failed on the old limit).
 api.test:
-	CGO_ENABLED=0 go test -count=1 ./... -timeout 60s
+	CGO_ENABLED=0 go test -count=1 ./... -timeout 10m
 
 api.race:
 	CGO_ENABLED=1 go test -race -count=1 ./... -timeout 120s
