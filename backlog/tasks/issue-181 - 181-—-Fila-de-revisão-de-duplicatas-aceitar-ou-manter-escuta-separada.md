@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-22T00:26:00Z'
+updated_date: '2026-11-22T00:30:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -94,6 +94,15 @@ created: 2026-11-22T00:26:00Z
 ---
 
 Correções verificadas: colisão exata com Revisar desligado volta a registrar duplicate/same, e a janela de ±2 s aceita escutas separadas. A central tem contador e ações em massa de até 25 recibos, com CAS, CSRF e ID da conta na revisão. O resumo paginado do schema v17 preserva fontes antigas. Testes focados, corrida, EXPLAIN com 300 mil recibos, referência ISSUE-075 e make check passaram.
+
+---
+
+author: claude
+created: 2026-11-22T00:30:00Z
+
+---
+
+Reviewer (reauditoria do commit b0c1b66): sem BUG executado; RISCO ALTO não executado: o braço de colisão exata no mesmo segundo em occurrenceListenCandidates não exclui repetições legítimas (IDs externos confiáveis distintos; linhas idênticas de arquivo com ordinais distintos), que com o Revisar desligado viram duplicate/same e deixam de ser contadas. Demais correções OK. Ver PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->
