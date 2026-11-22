@@ -4,7 +4,7 @@ title: 128 — Remodelar login, revisões e mensagens da administração
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T20:44:00Z'
+updated_date: '2026-11-22T20:45:00Z'
 labels:
   - ui
   - admin
@@ -52,6 +52,15 @@ created: 2026-11-22T20:44:00Z
 ---
 
 Início (22/11/2026): decisão de executar a 128 agora, em paralelo à fase 2 da 172, num agente Claude em worktree própria (para não competir pela cota do Codex). Fallback provisório do usuário comum até a ISSUE-125 criar /account: diretório público ou /admin?section=account; trocar para /account na 125. Cortes: A (login /login, resgate neutro, 401/403/404 e mensagem única), B (catalog-review e profile-review com resumo, lista e zona de perigo, escopo dono/root), C (capturas 390/768/1440 em Yuu e Pearl, referência visual, i18n, acessibilidade e sem JS). Reviewer ao final; Advisor só se tocar credenciais, bcrypt ou lock do resgate.
+
+---
+
+author: claude
+created: 2026-11-22T20:45:00Z
+
+---
+
+Suspensa pelo usuário em 22/11/2026 antes de qualquer código: fazer a ISSUE-125 (conta) primeiro, porque ela cria /account, destino pós-login do usuário comum que a 128 usa. Worktree preservada (feat/issue-128-remodelar-login-revisoes-e-mensagens, sem mudanças). Retomar depois da 125, trocando o fallback provisório para /account.
 
 ---
 <!-- COMMENTS:END -->
