@@ -13,9 +13,16 @@ for processing. The listen may take time to appear in the history. For a 503
 response, respect `Retry-After` before resending. The import summary shows
 **Pending** for submissions waiting on processing and **Duplicates** for
 completed submissions the importer recognized. Duplicate review is off by
-default. With review off, a repeat of the same track or occurrence in the same
-second links to the existing listen. The occurrence resolver keeps possible
-matches up to two seconds apart as separate listens.
+default. With review off, an indistinguishable repeat of the same track or
+occurrence in the same second links to the existing listen. The occurrence
+resolver keeps possible matches up to two seconds apart as separate listens.
+In either mode it preserves distinct trusted event IDs from the same source
+and identical rows at different positions in the same file.
+
+For a non-file submission with the same trusted event ID and payload, the
+original receipt keeps ownership of the key. When review is on and the
+original already links to a listen, the first replay opens one review
+receipt. Further replays reuse it.
 
 ## Review possible duplicates
 

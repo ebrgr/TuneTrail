@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-22T00:30:00Z'
+updated_date: '2026-11-22T00:53:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -103,6 +103,15 @@ created: 2026-11-22T00:30:00Z
 ---
 
 Reviewer (reauditoria do commit b0c1b66): sem BUG executado; RISCO ALTO não executado: o braço de colisão exata no mesmo segundo em occurrenceListenCandidates não exclui repetições legítimas (IDs externos confiáveis distintos; linhas idênticas de arquivo com ordinais distintos), que com o Revisar desligado viram duplicate/same e deixam de ser contadas. Demais correções OK. Ver PARECER-REVIEWER.md.
+
+---
+
+author: codex
+created: 2026-11-22T00:53:00Z
+
+---
+
+Verificação da correção final: o filtro de evidência de eventos distintos agora vale também para o segundo exato. Testes cobrem reentrega sem ID, ordinais distintos no mesmo arquivo, IDs confiáveis distintos, reenvio da mesma chave, isolamento entre perfis e Revisar ligado e desligado. Para uma reentrega por ID confiável fora de arquivo, depois de resolvido o recibo original, Revisar abre uma única pendência que preserva a chave original.
 
 ---
 <!-- COMMENTS:END -->

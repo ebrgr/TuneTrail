@@ -444,7 +444,14 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 			_, err := tx.ExecContext(ctx, `INSERT INTO ingest_observations(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)
 				VALUES(?,?,?,1,?,?,?,?) ON CONFLICT(profile_id,receipt_id,digest_version,snapshot_digest) DO NOTHING`,
 				uuid.NewString(), b.ProfileID, previous.ID, i.digest, ingest.DigestVersion, i.snapshot, b.ReceivedAt.Unix())
-			return result, err
+			if err != nil {
+				return result, err
+			}
+		}
+		// File replays keep their ordinal-based receipt semantics.
+		if variant == "occurrence" && policy != "" && b.FileDigest == "" &&
+			i.ExternalID != "" && previous.Digest == digest && (previous.State == "accepted" || previous.State == "duplicate") {
+			return reviewTrustedReplay(ctx, tx, b, i.Item, previous.ID, batchID, policy, result)
 		}
 		return result, nil
 	}

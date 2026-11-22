@@ -124,10 +124,10 @@ func TestOccurrenceReviewSetting(t *testing.T) {
 	s := convertedOccurrenceFixture(t)
 	ctx := t.Context()
 	snapshot := ingest.Snapshot{Title: "Review track", Artist: "Artist", Release: "Album"}
-	first := admitOccurrenceFixture(t, s, snapshot, 1000, "first")
+	first := admitOccurrenceFixture(t, s, snapshot, 1000, "")
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, first, "accepted")
-	repeat := admitOccurrenceFixture(t, s, snapshot, 1000, "repeat")
+	repeat := admitOccurrenceFixture(t, s, snapshot, 1000, "")
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, repeat, "duplicate")
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND origin='listenbrainz_api' AND listened_at=1000`))
@@ -138,9 +138,9 @@ func TestOccurrenceReviewSetting(t *testing.T) {
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, nearby, "accepted")
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND reason_codes='["review_deferred"]'`, nearby))
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(2,1,1)`)
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write,review) VALUES(2,1,1,1)`)
 	active, other, err := s.AdmitIngest(ctx, ingest.Batch{ProfileID: 2, Source: ingest.ShadowSourceListenBrainz,
-		Operation: "single", ClientKey: "other", ReceivedAt: time.Now(),
+		Operation: "single", ReceivedAt: time.Now(),
 		Items: []ingest.Item{{ListenedAt: time.Unix(1000, 0), Snapshot: snapshot}}}, true, nil, nil)
 	require.NoError(t, err)
 	require.True(t, active)
@@ -149,7 +149,7 @@ func TestOccurrenceReviewSetting(t *testing.T) {
 	requireReceiptState(t, s, other[0].ReceiptID, "accepted")
 
 	require.NoError(t, s.SetIngestReview(ctx, 1, true))
-	id := admitOccurrenceFixture(t, s, snapshot, 1000, "manual")
+	id := admitOccurrenceFixture(t, s, snapshot, 1000, "")
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, id, "pending_duplicate")
 	nearReview := admitOccurrenceFixture(t, s, snapshot, 1004, "near-review")

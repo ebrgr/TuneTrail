@@ -311,21 +311,23 @@ func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt
 }
 
 // occurrenceListenCandidates returns the review window and the first exact match, if any.
+// Evidence of distinct deliveries excludes a candidate even at the same second.
 func occurrenceListenCandidates(ctx context.Context, tx *sql.Conn, r claimedReceipt, occurrence int64) ([]string, string, error) {
 	if occurrence == 0 {
 		return nil, "", nil
 	}
 	rows, err := tx.QueryContext(ctx, `SELECT l.event_id,l.listened_at FROM listens l
 		WHERE l.profile_id=? AND l.track_id=? AND l.listened_at BETWEEN ? AND ?
-		AND (l.listened_at=? OR NOT EXISTS (
+		AND NOT EXISTS (
 			SELECT 1 FROM ingest_events prior JOIN ingest_events incoming ON incoming.receipt_id=?
 			WHERE (prior.profile_id,prior.event_id)=(l.profile_id,l.event_id) AND prior.state='accepted'
 			  AND prior.source_instance_id=incoming.source_instance_id AND (
-			    (prior.external_id_trusted=1 AND incoming.external_id_trusted=1 AND prior.external_namespace=incoming.external_namespace
+			    ((prior.external_id_trusted=1 OR json_type(prior.evidence,'$.trusted_replay')='true')
+			      AND incoming.external_id_trusted=1 AND prior.external_namespace=incoming.external_namespace
 			      AND prior.external_event_id<>incoming.external_event_id)
 			    OR (prior.file_digest=incoming.file_digest AND prior.file_format=incoming.file_format
-			      AND prior.format_version=incoming.format_version AND prior.item_ordinal<>incoming.item_ordinal))))
-		ORDER BY (l.listened_at=?) DESC,l.listened_at,l.event_id LIMIT 33`, r.profile, occurrence, r.unix-2, r.unix+2, r.unix, r.id, r.unix)
+			      AND prior.format_version=incoming.format_version AND prior.item_ordinal<>incoming.item_ordinal)))
+		ORDER BY (l.listened_at=?) DESC,l.listened_at,l.event_id LIMIT 33`, r.profile, occurrence, r.unix-2, r.unix+2, r.id, r.unix)
 	if err != nil {
 		return nil, "", err
 	}
