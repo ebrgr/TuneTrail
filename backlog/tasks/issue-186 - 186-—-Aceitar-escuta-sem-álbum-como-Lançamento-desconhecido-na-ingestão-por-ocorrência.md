@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T17:02:00Z'
-updated_date: '2026-11-22T19:29:00Z'
+updated_date: '2026-11-22T19:31:00Z'
 labels:
   - ingestao
   - catalogo
@@ -94,6 +94,15 @@ created: 2026-11-22T19:29:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito e publique').
+
+---
+
+author: ebrgr
+created: 2026-11-22T19:31:00Z
+
+---
+
+Publicação: versão 0.61 (tag `v0.61`), branch `feat/issue-186-aceitar-escuta-sem-album-como` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
