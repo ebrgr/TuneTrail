@@ -4,7 +4,7 @@ title: 128 — Remodelar login, revisões e mensagens da administração
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-22T20:44:00Z'
 labels:
   - ui
   - admin
@@ -43,6 +43,15 @@ created: 2026-11-20T18:33:00Z
 ---
 
 Reescopo (decisão do usuário em 20/11/2026, estudo da 163): login, resgate e estados 401/403/404 passam a atender todos os papéis, em /login com as entradas atuais preservadas, textos neutros e mensagens do estudo. Revisões ficam com escopo de dono ou root. Usa o retorno seguro da 163 e a confirmação de saída da 157.
+
+---
+
+author: claude
+created: 2026-11-22T20:44:00Z
+
+---
+
+Início (22/11/2026): decisão de executar a 128 agora, em paralelo à fase 2 da 172, num agente Claude em worktree própria (para não competir pela cota do Codex). Fallback provisório do usuário comum até a ISSUE-125 criar /account: diretório público ou /admin?section=account; trocar para /account na 125. Cortes: A (login /login, resgate neutro, 401/403/404 e mensagem única), B (catalog-review e profile-review com resumo, lista e zona de perigo, escopo dono/root), C (capturas 390/768/1440 em Yuu e Pearl, referência visual, i18n, acessibilidade e sem JS). Reviewer ao final; Advisor só se tocar credenciais, bcrypt ou lock do resgate.
 
 ---
 <!-- COMMENTS:END -->
