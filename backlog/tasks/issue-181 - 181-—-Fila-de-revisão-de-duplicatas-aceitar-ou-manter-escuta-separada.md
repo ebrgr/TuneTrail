@@ -1,11 +1,11 @@
 ---
 id: ISSUE-181
 title: '181 — Fila de revisão de duplicatas: aceitar ou manter escuta separada'
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-22T00:58:00Z'
+updated_date: '2026-11-22T01:03:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -121,6 +121,15 @@ created: 2026-11-22T00:58:00Z
 ---
 
 Reviewer (reauditoria final, commit 247a0f8): sem BUG; o RISCO ALTO anterior foi resolvido (repetições legítimas preservadas no mesmo segundo; testes a-f). Testes sqlite -race, engine, adminui e webui OK. Decisão de produto pendente: reenvio do mesmo ID externo confiável com Revisar ligado abre uma pendência (uma por original). Ver PARECER-REVIEWER.md.
+
+---
+
+author: ebrgr
+created: 2026-11-22T01:03:00Z
+
+---
+
+Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG após 2 reauditorias; Advisor reprovou com ressalvas e os itens foram corrigidos (reauditoria pelo Reviewer, aceita pelo usuário). ACs 1 a 6 marcados. Decisão de produto pendente: reenvio do mesmo ID externo confiável com Revisar ligado.
 
 ---
 <!-- COMMENTS:END -->
