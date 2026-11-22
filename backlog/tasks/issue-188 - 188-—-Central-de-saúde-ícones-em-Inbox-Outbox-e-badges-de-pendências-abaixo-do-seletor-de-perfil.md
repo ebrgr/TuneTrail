@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T19:36:00Z'
-updated_date: '2026-11-22T19:52:00Z'
+updated_date: '2026-11-22T19:54:00Z'
 labels:
   - ui
   - ingestao
@@ -88,6 +88,15 @@ created: 2026-11-22T19:52:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito e publique').
+
+---
+
+author: ebrgr
+created: 2026-11-22T19:54:00Z
+
+---
+
+Publicação: versão 0.62 (tag `v0.62`), branch `feat/issue-188-central-de-saude-icones-em` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

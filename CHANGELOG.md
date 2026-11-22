@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.62] - 2026-11-22
+
 - Ingestion health shows linked counts for open items in the selected profile and adds icons to the Inbox and Outbox headings (ISSUE-188).
 
 ## [0.61] - 2026-11-22
