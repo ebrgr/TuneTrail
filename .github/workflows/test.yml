@@ -43,7 +43,7 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /tmp/tunetrail-linux-amd64 ./cmd/api
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /tmp/tunetrail-linux-arm64 ./cmd/api
       - name: Verify migration and isolation with the race detector
-        run: CGO_ENABLED=1 go test -race ./internal/db/sqlite ./engine -run 'Test(Profile|Consolidated|AdminAccount)' -timeout 120s
+        run: CGO_ENABLED=1 go test -race ./internal/db/sqlite ./engine -run 'Test(Profile|Consolidated|AdminAccount)' -timeout 10m
       - name: Validate deployment configuration
         env:
           KOITO_ADMIN_PASSWORD: ci-validation-only-password

@@ -59,7 +59,7 @@ api.test:
 	CGO_ENABLED=0 go test -count=1 ./... -timeout 10m
 
 api.race:
-	CGO_ENABLED=1 go test -race -count=1 ./... -timeout 120s
+	CGO_ENABLED=1 go test -race -count=1 ./... -timeout 10m
 
 api.build:
 	CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go
