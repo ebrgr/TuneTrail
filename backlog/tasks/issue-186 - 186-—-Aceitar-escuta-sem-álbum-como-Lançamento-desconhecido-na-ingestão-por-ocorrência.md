@@ -69,4 +69,13 @@ created: 2026-11-22T19:26:00Z
 Correção do Reviewer: ocorrência sem álbum conserva o crédito observado e só vincula o artist_id quando o alias binário identifica um único artista. Com álbum, homônimos permanecem em pending_identity, sem criação ou vínculo no catálogo. O teste cobre dois artistas com MBIDs distintos. go test -count=1 -timeout 30m ./internal/db/sqlite ./engine e make check passaram, com 13/13 percursos E2E.
 
 ---
+
+author: advisor
+created: 2026-11-22T19:26:00Z
+
+---
+
+Advisor (effort high): APROVADO. Sem falhas críticas; correção de artistas homônimos validada (sem vínculo arbitrário, COLLATE BINARY na detecção). Follow-ups: relink de créditos órfãos; tratar receipts release_missing antigos no corte da 172.
+
+---
 <!-- COMMENTS:END -->
