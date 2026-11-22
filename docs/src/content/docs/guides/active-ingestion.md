@@ -108,6 +108,18 @@ ListenBrainz submissions and ZIP archives, Last.fm, Spotify, Maloja, and
 TuneTrail/Koito imports. Existing active profiles continue to use the
 compatibility resolver.
 
+With occurrence writing, a listen with an artist and track title can be accepted
+without an album. It counts toward the recording and the profile total and
+appears under **Unknown release** when tracks are grouped by release. The
+legacy writer can fall back to an album named after the track. Occurrence
+writing leaves the release empty even when the recording has a known album.
+A matching title or exact alias and the same ordered artist credits reuse an
+existing release-less occurrence. An explicit recording MusicBrainz ID
+identifies the recording, and multiple matching occurrences stay pending.
+The Inbox reports the missing album as incomplete metadata. Accepted listens
+are eligible for relay, and v2 history archives preserve the empty release.
+An artist and track title are required.
+
 The occurrence resolver is opt-in and currently restricted to disposable test
 databases. Profiles with a configured ListenBrainz relay cannot convert.
 Conversion requires clearing unlinked shadow receipts and draining compatible

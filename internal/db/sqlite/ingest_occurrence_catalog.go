@@ -15,6 +15,10 @@ import (
 
 // resolveOccurrence ranks complete candidate sets under the same lock used to write.
 func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapshot, proof occurrenceProof) (occurrenceMatch, []string, error) {
+	// Release-less presentations are matched without track position or release proof.
+	if snapshot.Release == "" {
+		return resolveStandaloneOccurrence(ctx, tx, snapshot)
+	}
 	var match occurrenceMatch
 	if proof.evidence != nil && proof.evidence.ReleaseTitleDiffers {
 		// Match the presented metadata without reusing IDs from the mismatched release.
@@ -85,8 +89,8 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 		    WHERE t.track_id=o.id AND a.alias=c.value
 		    UNION ALL SELECT 1 FROM occurrence_credits oc WHERE oc.occurrence_id=o.id AND oc.name=c.value))
 		FROM occurrences o JOIN recordings r ON r.id=o.recording_id
-		WHERE (o.release_id=? OR (? AND o.release_id IS NULL)) OR o.track_mbid=?
-		ORDER BY o.id`, snapshot.Title, snapshot.Title, string(credits), match.release, snapshot.Release == "", track)
+		WHERE o.release_id=? OR o.track_mbid=?
+		ORDER BY o.id`, snapshot.Title, snapshot.Title, string(credits), match.release, track)
 	if err != nil {
 		return match, nil, err
 	}
@@ -153,6 +157,66 @@ func resolveOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsh
 	return match, nil, nil
 }
 
+// resolveStandaloneOccurrence matches only release-less presentations with exact,
+// ordered credits. A recording MBID narrows identity without supplying an album.
+func resolveStandaloneOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapshot) (occurrenceMatch, []string, error) {
+	var match occurrenceMatch
+	credits, err := json.Marshal(observedCredits(snapshot))
+	if err != nil {
+		return match, nil, err
+	}
+	mbid := standaloneRecordingMBID(snapshot)
+	if mbid != "" {
+		err := tx.QueryRowContext(ctx, `SELECT id FROM recordings WHERE musicbrainz_id=?`, mbid).Scan(&match.recording)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return match, nil, err
+		}
+	}
+	rows, err := tx.QueryContext(ctx, `
+		WITH credits AS (SELECT key AS position,value AS name FROM json_each(?))
+		SELECT o.id,o.recording_id
+		FROM occurrences o
+		WHERE o.release_id IS NULL AND (?='' OR o.recording_id=?)
+		  AND (o.presented_title=? OR EXISTS (
+		    SELECT 1 FROM track_aliases t WHERE t.track_id=o.id AND t.alias=?))
+		  AND (SELECT count(*) FROM occurrence_credits oc WHERE oc.occurrence_id=o.id)=(SELECT count(*) FROM credits)
+		  AND NOT EXISTS (
+		    SELECT 1 FROM credits c WHERE NOT EXISTS (
+		      SELECT 1 FROM occurrence_credits oc WHERE oc.occurrence_id=o.id AND oc.position=c.position
+		      AND (oc.name=c.name OR EXISTS (
+		        SELECT 1 FROM artist_aliases a WHERE a.artist_id=oc.artist_id AND a.alias=c.name))))
+		ORDER BY o.id LIMIT 33`, string(credits), mbid, match.recording, snapshot.Title, snapshot.Title)
+	if err != nil {
+		return match, nil, err
+	}
+	defer rows.Close()
+	var candidate occurrenceMatch
+	var candidates []string
+	for rows.Next() {
+		if err := rows.Scan(&candidate.id, &candidate.recording); err != nil {
+			return match, nil, err
+		}
+		candidates = append(candidates, "occurrence:"+strconv.FormatInt(candidate.id, 10))
+	}
+	if err := rows.Err(); err != nil {
+		return match, nil, err
+	}
+	if len(candidates) == 1 {
+		return candidate, nil, nil
+	}
+	return match, candidates, nil
+}
+
+// A mapped MBID remains a hint. A source declaration can identify a recording
+// without release proof, but retains the schema's unvalidated provenance.
+func standaloneRecordingMBID(snapshot ingest.Snapshot) string {
+	id := uuidFromSnapshot(snapshot.Recording)
+	if id == uuid.Nil {
+		return ""
+	}
+	return id.String()
+}
+
 // occurrenceReleaseCandidates keeps release identity separate from recording identity.
 func occurrenceReleaseCandidates(ctx context.Context, tx *sql.Conn, title, mbid, credits string) ([]string, error) {
 	if title == "" {
@@ -192,8 +256,11 @@ func occurrenceReleaseCandidates(ctx context.Context, tx *sql.Conn, title, mbid,
 // createOccurrence installs presentation and the compatibility bridge before linking a listen.
 func createOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapshot, proof occurrenceProof, match occurrenceMatch) (occurrenceMatch, error) {
 	if snapshot.Release == "" {
+		// The legacy writer falls back to the track title as the album name.
+		// Keep the same listen count with a NULL release, which readers expose as
+		// unknown and the archive preserves. Inbox completeness uses the snapshot.
 		if match.recording == 0 {
-			err := tx.QueryRowContext(ctx, `INSERT INTO recordings DEFAULT VALUES RETURNING id`).Scan(&match.recording)
+			err := tx.QueryRowContext(ctx, `INSERT INTO recordings(musicbrainz_id) VALUES(nullif(?,'')) RETURNING id`, standaloneRecordingMBID(snapshot)).Scan(&match.recording)
 			if err != nil {
 				return match, err
 			}
@@ -204,7 +271,8 @@ func createOccurrence(ctx context.Context, tx *sql.Conn, snapshot ingest.Snapsho
 			return match, err
 		}
 		for position, name := range observedCredits(snapshot) {
-			if _, err := tx.ExecContext(ctx, `INSERT INTO occurrence_credits(occurrence_id,position,name) VALUES(?,?,?)`, match.id, position, name); err != nil {
+			if _, err := tx.ExecContext(ctx, `INSERT INTO occurrence_credits(occurrence_id,position,name,artist_id)
+				VALUES(?,?,?,(SELECT artist_id FROM artist_aliases WHERE alias=? COLLATE BINARY LIMIT 1))`, match.id, position, name, name); err != nil {
 				return match, err
 			}
 		}

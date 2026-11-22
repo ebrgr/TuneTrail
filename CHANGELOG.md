@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Occurrence ingestion accepts listens without an album and counts them under Unknown release in track rankings grouped by release (ISSUE-186).
+
 ## [0.60] - 2026-11-22
 
 - Profile owners and root can discard receipts without a listen in Ingestion health, individually or all at once with a single confirmation. Each discard leaves a minimal audit entry with 90-day retention (ISSUE-185).

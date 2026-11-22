@@ -3,9 +3,11 @@ id: ISSUE-186
 title: >-
   186 — Aceitar escuta sem álbum como Lançamento desconhecido na ingestão por
   ocorrência
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-22T17:02:00Z'
+updated_date: '2026-11-22T17:09:00Z'
 labels:
   - ingestao
   - catalogo
@@ -23,8 +25,30 @@ Origem: ensaio da fase 1 da ISSUE-172 (backlog/evidencias/issue-172/ENSAIO.md) e
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Escuta sem álbum é aceita pela ingestão por ocorrência como ocorrência sem lançamento (Lançamento desconhecido), conta no total e na gravação e nunca em um álbum real
-- [ ] #2 Reenvios e escutas repetidas da mesma faixa sem álbum reutilizam a mesma ocorrência e gravação por alias e créditos exatos, sem criar uma por escuta; ambiguidade segue para pending_identity
-- [ ] #3 Paridade de contagem com o escritor legado no lote do ensaio (as 205 escutas sem álbum passam a ser contadas); escutas sem artista ou título continuam rejeitadas
+- [x] #1 Escuta sem álbum é aceita pela ingestão por ocorrência como ocorrência sem lançamento (Lançamento desconhecido), conta no total e na gravação e nunca em um álbum real
+- [x] #2 Reenvios e escutas repetidas da mesma faixa sem álbum reutilizam a mesma ocorrência e gravação por alias e créditos exatos, sem criar uma por escuta; ambiguidade segue para pending_identity
+- [x] #3 Paridade de contagem com o escritor legado no lote do ensaio (as 205 escutas sem álbum passam a ser contadas); escutas sem artista ou título continuam rejeitadas
 - [ ] #4 Inbox (incompleto), ranking por lançamento (balde), exportação e reimportação e relay tratam a ocorrência sem lançamento; testes por classe; make check passa; Advisor (effort high) registrado
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-22T17:03:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-186` na branch `feat/issue-186-aceitar-escuta-sem-album-como` criada a partir de `main`.
+
+---
+
+author: Codex
+created: 2026-11-22T17:09:00Z
+
+---
+
+Verificação: o resolvedor aceita escutas sem álbum com release_id nulo e reutiliza ocorrências por título/alias e créditos exatos. Múltiplas candidatas continuam pendentes. O lote sintético HTTP reproduziu 2.250 requisições e 80 escutas prévias no piloto: ambos os escritores chegaram a 2.125 escutas, incluindo 205 sem álbum. Os outros perfis ficaram com 6 e 0. Artista ou título ausente retornou 400 nos dois modos. Testes cobrem reenvio no mesmo segundo com e sem Revisar, ranking, Inbox, exportação e restauração v2 e intenção de relay. make check passou. O AC 4 segue aberto por depender do Advisor. Recibos antigos em release_missing não foram retroprocessados.
+
+---
+<!-- COMMENTS:END -->

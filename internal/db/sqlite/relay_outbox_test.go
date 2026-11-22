@@ -407,7 +407,7 @@ func TestRelayOccurrenceIntent(t *testing.T) {
 	now := time.Now().UTC().Truncate(time.Second)
 	relayReceipt(t, s, 1, "accepted", "occurrence", 0, now)
 	relayReceipt(t, s, 1, "ambiguous", "occurrence", 0, now.Add(time.Hour))
-	// A snapshot without release cannot materialize an occurrence.
+	// An accepted release-less snapshot has the same delivery intent.
 	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
 		received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,resolver_variant,delivery_policy)
 		VALUES('missing',1,'origin:1',1,'listenbrainz','1','missing',0,'single',?,?,'second','start',
@@ -423,7 +423,7 @@ func TestRelayOccurrenceIntent(t *testing.T) {
 		WHERE e.receipt_id='accepted-repeat' AND original.receipt_id='accepted' AND e.state='duplicate'`))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='ambiguous' AND state='pending_duplicate'"))
 	require.Greater(t, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE mode='active' AND state='accepted'"), 0)
-	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='missing' AND state='pending_identity'"))
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE receipt_id='missing' AND state='accepted'"))
 	require.Equal(t, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE mode='active' AND state='accepted'"),
 		scalar(t, s, "SELECT count(*) FROM outbox WHERE format_version=1 AND delivery_key=event_id"))
 }

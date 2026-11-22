@@ -20,14 +20,12 @@ import (
 const defaultItemsPerPage = 20
 
 type Sqlite struct {
-	db *sql.DB
-	// Standalone occurrences are enabled only by disposable resolver fixtures.
-	allowStandaloneOccurrences bool
-	occurrenceProofCache       occurrenceReleaseCache
-	relayJitter                func(int64) int64
-	ingestClock                func() time.Time
-	ingestAlertMu              sync.Mutex
-	ingestAlerts               map[ingestAlertKey]time.Time
+	db                   *sql.DB
+	occurrenceProofCache occurrenceReleaseCache
+	relayJitter          func(int64) int64
+	ingestClock          func() time.Time
+	ingestAlertMu        sync.Mutex
+	ingestAlerts         map[ingestAlertKey]time.Time
 }
 
 func New() (*Sqlite, error) {

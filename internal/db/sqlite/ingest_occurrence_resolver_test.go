@@ -146,7 +146,6 @@ func TestOccurrenceResolverIntro(t *testing.T) {
 		snapshot,
 		{Title: "Intro", Artist: "Artist", Release: release.Title, DiscNumber: 2, TrackNumber: 1, TrackMBID: tracks[0].ID},
 		{Title: "Intro", Artist: "Artist", Release: "Wrong album", TrackMBID: tracks[0].ID},
-		{Title: "No album", Artist: "Artist"},
 	} {
 		id := admitOccurrenceFixture(t, s, item, 301, uuid.NewString())
 		resolveOccurrenceFixture(t, s, nil)
@@ -245,15 +244,17 @@ func TestOccurrenceResolverCut(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=900`))
 }
 
+// TestOccurrenceResolverStandalone persists a new declared recording without an album.
 func TestOccurrenceResolverStandalone(t *testing.T) {
 	s := convertedOccurrenceFixture(t)
-	s.allowStandaloneOccurrences = true
-	item := ingest.Snapshot{Title: "Solo", ArtistNames: []string{"A", "B"}}
+	item := ingest.Snapshot{Title: "Solo", ArtistNames: []string{"A", "B"}, Recording: fixtureRecording}
 	id := admitOccurrenceFixture(t, s, item, 901, "standalone")
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, id, "accepted")
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences WHERE release_id IS NULL AND legacy_track_id IS NULL AND presented_title='Solo'`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM occurrence_credits`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM recordings r JOIN occurrences o ON o.recording_id=r.id
+		WHERE o.presented_title='Solo' AND r.musicbrainz_id=? AND r.mbid_source='legacy_declared'`, fixtureRecording))
 }
 
 // TestOccurrenceProvisionalPromotion verifies that later proof keeps the original bridge and recording.
@@ -636,4 +637,106 @@ func TestProfileDeleteRemovesResolvedOccurrencePending(t *testing.T) {
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, recreated, "accepted")
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE event_id=?`, event))
+}
+
+// TestOccurrenceStandaloneExactCredits guards against partial-credit matches and homonyms.
+func TestOccurrenceStandaloneExactCredits(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `INSERT INTO artist_aliases VALUES(1,'Artist alias','Fixture',0)`)
+	for i, item := range []ingest.Snapshot{
+		{Title: "Solo", ArtistNames: []string{"Artist", "Guest"}},
+		{Title: "Solo", ArtistNames: []string{"Artist alias", "Guest"}},
+		{Title: "Solo", Artist: "Artist"},
+		{Title: "Solo", Artist: "Other artist"},
+		{Title: "Another", Artist: "Artist"},
+	} {
+		id := admitOccurrenceFixture(t, s, item, 2000+int64(i)*10, "")
+		resolveOccurrenceFixture(t, s, nil)
+		requireReceiptState(t, s, id, "accepted")
+	}
+	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM occurrences WHERE release_id IS NULL`))
+	require.Equal(t, 4, scalar(t, s, `SELECT count(DISTINCT recording_id) FROM occurrences WHERE release_id IS NULL`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(DISTINCT track_id) FROM listens WHERE listened_at IN (2000,2010)`))
+
+	execSQL(t, s, `INSERT INTO recordings DEFAULT VALUES;
+		INSERT INTO occurrences(recording_id,presented_title) VALUES(last_insert_rowid(),'Solo');
+		INSERT INTO occurrence_credits(occurrence_id,position,name) VALUES(last_insert_rowid(),0,'Artist')`)
+	id := admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Solo", Artist: "Artist"}, 2050, "")
+	resolveOccurrenceFixture(t, s, nil)
+	requireReceiptState(t, s, id, "pending_identity")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND reason_codes='["ambiguous_occurrence"]'`, id))
+}
+
+// TestOccurrenceStandaloneRecordingAndReaders checks known recordings, rankings and archive recovery.
+func TestOccurrenceStandaloneRecordingAndReaders(t *testing.T) {
+	ctx := db.WithProfile(t.Context(), 1)
+	s := convertedOccurrenceFixture(t)
+	execSQL(t, s, `UPDATE recordings SET musicbrainz_id=? WHERE id=(SELECT recording_id FROM occurrences WHERE id=1)`, fixtureRecording)
+	for _, stamp := range []int64{2000, 2010} {
+		item := ingest.Snapshot{Title: "Standalone", Artist: "Artist", Recording: fixtureRecording, ReleaseMBID: uuid.NewString()}
+		id := admitOccurrenceFixture(t, s, item, stamp, "")
+		resolveOccurrenceFixture(t, s, nil)
+		requireReceiptState(t, s, id, "accepted")
+	}
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM occurrences
+		WHERE release_id IS NULL AND recording_id=(SELECT recording_id FROM occurrences WHERE id=1)`))
+
+	opts := db.GetItemsOpts{Page: 1, Limit: 100, Timeframe: db.Timeframe{Period: db.PeriodAllTime}}
+	recordings, err := s.GetTopTracksPaginated(ctx, opts)
+	require.NoError(t, err)
+	opts.TrackGrouping = db.TrackByRelease
+	releases, err := s.GetTopTracksPaginated(ctx, opts)
+	require.NoError(t, err)
+	var recordingTotal, releaseTotal, unknownTotal int64
+	for _, row := range recordings.Items {
+		recordingTotal += row.Item.ListenCount
+	}
+	for _, row := range releases.Items {
+		releaseTotal += row.Item.ListenCount
+		if row.Item.AlbumID == 0 {
+			unknownTotal += row.Item.ListenCount
+		}
+	}
+	require.EqualValues(t, 2, unknownTotal)
+	require.EqualValues(t, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1`), recordingTotal)
+	require.Equal(t, recordingTotal, releaseTotal)
+
+	inbox, err := s.IngestInbox(ctx, 1, nil, time.Now().Add(-time.Hour), time.Now().Add(time.Second))
+	require.NoError(t, err)
+	require.Len(t, inbox, 1)
+	require.EqualValues(t, 2, inbox[0].Accepted)
+	require.EqualValues(t, 2, inbox[0].Incomplete)
+	require.Zero(t, inbox[0].Missing)
+
+	items, err := s.GetExportPage(ctx, db.GetExportPageOpts{ProfileID: 1, Limit: 100})
+	require.NoError(t, err)
+	target := convertedOccurrenceFixture(t)
+	require.NoError(t, target.Exec(`DELETE FROM listens`))
+	count, err := target.RestoreArchive(ctx, 1, items)
+	require.NoError(t, err)
+	require.Equal(t, len(items), count)
+	require.Equal(t, 2, scalar(t, target, `SELECT count(*) FROM listens l JOIN occurrences o ON o.id=l.track_id
+		WHERE l.profile_id=1 AND o.release_id IS NULL AND o.presented_title='Standalone'`))
+}
+
+// TestOccurrenceStandaloneSameSecond covers both duplicate review settings.
+func TestOccurrenceStandaloneSameSecond(t *testing.T) {
+	for _, tc := range []struct {
+		name, state string
+		review      bool
+	}{{"off", "duplicate", false}, {"on", "pending_duplicate", true}} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := convertedOccurrenceFixture(t)
+			require.NoError(t, s.SetIngestReview(t.Context(), 1, tc.review))
+			item := ingest.Snapshot{Title: "Same second", Artist: "Artist"}
+			first := admitOccurrenceFixture(t, s, item, 2000, "first")
+			resolveOccurrenceFixture(t, s, nil)
+			requireReceiptState(t, s, first, "accepted")
+			require.Equal(t, first, admitOccurrenceFixture(t, s, item, 2000, "first"))
+			repeat := admitOccurrenceFixture(t, s, item, 2000, "")
+			resolveOccurrenceFixture(t, s, nil)
+			requireReceiptState(t, s, repeat, tc.state)
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=2000`))
+		})
+	}
 }

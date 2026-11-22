@@ -195,15 +195,13 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		if proof.conflict {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "contradictory_musicbrainz_identity", precision, nil, "", proof.evidence)
 		}
-		if r.snapshot.Release == "" && !s.allowStandaloneOccurrences {
-			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "release_missing", precision, nil, "", proof.evidence)
-		}
 		if origin == "" || strings.TrimSpace(r.snapshot.Title) == "" || len(observedCredits(r.snapshot)) == 0 || r.snapshot.DiscNumber < 0 || r.snapshot.TrackNumber < 0 {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "unresolved_identity", precision, nil, "", proof.evidence)
 		}
 		if admissionReason == "client_batch_conflict" {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_duplicate", admissionReason, precision, nil, "", proof.evidence)
 		}
+		// Release-less listens use the usual duplicate decision and relay transaction.
 		match, conflicts, err := resolveOccurrence(ctx, tx, r.snapshot, proof)
 		if err != nil {
 			return err
