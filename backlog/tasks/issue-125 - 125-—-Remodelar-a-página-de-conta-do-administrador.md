@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:25:00Z'
+updated_date: '2026-11-22T22:27:00Z'
 labels:
   - ui
   - admin
@@ -182,4 +182,12 @@ Aceite: aprovada pelo usuário em 22/11/2026, após testar no servidor (aceite v
 
 ---
 
+author: ebrgr
+created: 2026-11-22T22:27:00Z
+
+---
+
+Publicação: versão 0.63 (tag `v0.63`), branch `feat/issue-125-remodelar-a-pagina-de-conta` integrada ao `main` por fast-forward.
+
+---
 <!-- COMMENTS:END -->
