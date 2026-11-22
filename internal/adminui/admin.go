@@ -113,6 +113,8 @@ type view struct {
 	Keys                                []models.ApiKey
 	RelayURL, CSRF, Next, Notice, Error string
 	Health                              *db.IngestHealth
+	Discard                             db.IngestDiscardPreview
+	DiscardTarget                       string
 	Inbox                               []db.IngestInboxGroup
 	InboxKeys                           []db.IngestInboxGroup
 	InboxDays                           int

@@ -1,15 +1,19 @@
 ---
 id: ISSUE-185
 title: 185 — Descartar recibos que não deram certo na central de saúde
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-22T15:05:00Z'
+updated_date: '2026-11-22T15:45:00Z'
 labels:
   - ingestao
   - ui
 milestone: m-11
 dependencies:
   - ISSUE-182
+references:
+  - backlog/evidencias/issue-185/VERIFICACAO.md
 type: feature
 ordinal: 198000
 ---
@@ -22,8 +26,30 @@ Pedido do usuário em 22/11/2026. Hoje a central de saúde reprocessa recibos es
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A central de saúde oferece Descartar, individual e em massa, para recibos estacionados, pendentes e inválidos do perfil, para dono e root, via POST com CSRF e confirmação, de forma idempotente
-- [ ] #2 O descarte grava um rastro mínimo (quem, quando, motivo e identificador) sem o corpo bruto; recibos ligados a uma escuta são recusados com orientação para a exclusão de escuta
-- [ ] #3 A tela e a documentação informam que o que já foi enviado ao relay não é apagado no destino
-- [ ] #4 Testes de isolamento entre perfis, repetição, concorrência com o resolvedor e com a revisão da ISSUE-181; make check passa
+- [x] #1 A central de saúde oferece Descartar, individual e em massa, para recibos estacionados, pendentes e inválidos do perfil, para dono e root, via POST com CSRF e confirmação, de forma idempotente
+- [x] #2 O descarte grava um rastro mínimo (quem, quando, motivo e identificador) sem o corpo bruto; recibos ligados a uma escuta são recusados com orientação para a exclusão de escuta
+- [x] #3 A tela e a documentação informam que o que já foi enviado ao relay não é apagado no destino
+- [x] #4 Testes de isolamento entre perfis, repetição, concorrência com o resolvedor e com a revisão da ISSUE-181; make check passa
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-22T15:34:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-185` na branch `feat/issue-185-descartar-recibos-que-nao-deram` criada a partir de `main`.
+
+---
+
+author: Codex
+created: 2026-11-22T15:45:00Z
+
+---
+
+Verificação: descarte individual e em lotes de até 25 por perfil, com confirmação, CSRF, digest, CAS e auditoria mínima no schema v20. As projeções permanecem consistentes. Testes direcionados com -race e make check com 13/13 E2E passaram. A referência ISSUE-075 foi regenerada e conferida no Orca a 390, 1100 e 1500 px. Mediana de 2,498 s de escrita para 10 mil recibos sintéticos, sem tráfego concorrente. Encaminhada à revisão técnica.
+
+---
+<!-- COMMENTS:END -->

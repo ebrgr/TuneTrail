@@ -92,6 +92,9 @@ func TestIngestHealthIsolation(t *testing.T) {
 			}
 		})
 	}
+	linked := a.request(http.MethodGet, health+"?profile=1&discard_receipt=health%3A1", "", "", true)
+	require.Equal(t, http.StatusConflict, linked.Code)
+	require.Contains(t, linked.Body.String(), "Use listen deletion for receipts linked to a listen.")
 }
 
 // TestIngestHealthReprocess uses the same profile authorization for the queue and its action.
@@ -344,4 +347,78 @@ func TestIngestHealthInboxKeyFilter(t *testing.T) {
 	for _, private := range []string{"INBOX_SECRET", "Track from B", "Track from a different profile", "second-key"} {
 		require.NotContains(t, body, private)
 	}
+}
+
+// TestIngestHealthDiscard submits the actual confirmation fields rendered to each account.
+func TestIngestHealthDiscard(t *testing.T) {
+	a := newProfileTestApp(t)
+	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2;
+		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)`))
+	for _, key := range []string{"first-key", "second-key"} {
+		w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Discard fixture", 1714564800), key, false)
+		require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+	}
+	var first, second string
+	require.NoError(t, a.store.QueryRow(`SELECT receipt_id FROM ingest_events WHERE profile_id=1`).Scan(&first))
+	require.NoError(t, a.store.QueryRow(`SELECT receipt_id FROM ingest_events WHERE profile_id=2`).Scan(&second))
+
+	session, err := a.store.SaveSession(t.Context(), 2, time.Now().Add(time.Hour), false)
+	require.NoError(t, err)
+	owner := *a
+	owner.cookie = session.ID.String()
+
+	formFrom := func(app *profileTestApp, path string) url.Values {
+		t.Helper()
+		w := app.request(http.MethodGet, path, "", "", true)
+		body := w.Body.String()
+		require.Equal(t, http.StatusOK, w.Code, body)
+		require.Contains(t, body, "Confirm discard")
+		require.Contains(t, body, "Listens already sent to a relay remain at the destination.")
+		formTag := regexp.MustCompile(`(?s)<form [^>]*action="/admin/health/discard\?[^"]*"[^>]*>(.*?)</form>`)
+		rendered := formTag.FindStringSubmatch(body)
+		require.Len(t, rendered, 2)
+		form := url.Values{}
+		for _, match := range regexp.MustCompile(`name="([^"]+)" value="([^"]+)"`).FindAllStringSubmatch(rendered[1], -1) {
+			form.Set(match[1], match[2])
+		}
+		require.NotEmpty(t, form.Get("digest"))
+		require.NotEmpty(t, form.Get("csrf_token"))
+		return form
+	}
+	post := func(app *profileTestApp, path string, form url.Values) *httptest.ResponseRecorder {
+		t.Helper()
+		r := httptest.NewRequest(http.MethodPost, path, strings.NewReader(form.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		r.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: app.cookie})
+		w := httptest.NewRecorder()
+		app.router.ServeHTTP(w, r)
+		return w
+	}
+
+	const action = "/admin/health/discard?profile="
+	one := formFrom(&owner, "/admin/health?profile=2&discard_receipt="+second)
+	require.Equal(t, second, one.Get("receipt"))
+	rootBatch := formFrom(a, "/admin/health?profile=1")
+	require.Empty(t, rootBatch.Get("receipt"))
+	require.Equal(t, http.StatusNotFound, owner.request(http.MethodGet, action+"2", "", "", true).Code)
+	require.Equal(t, http.StatusForbidden, post(&owner, action+"1", one).Code)
+	require.Equal(t, http.StatusForbidden, post(a, action+"2", one).Code)
+	token := one.Get("csrf_token")
+	one.Del("csrf_token")
+	require.Equal(t, http.StatusForbidden, post(&owner, action+"2", one).Code)
+	one.Set("csrf_token", token)
+	one.Del("confirm")
+	require.Equal(t, http.StatusBadRequest, post(&owner, action+"2", one).Code)
+	one.Set("confirm", "1")
+	require.Equal(t, http.StatusSeeOther, post(&owner, action+"2", one).Code)
+	require.Equal(t, http.StatusSeeOther, post(&owner, action+"2", one).Code)
+	rootBatch.Set("receipt", second)
+	require.Equal(t, http.StatusNotFound, post(a, action+"1", rootBatch).Code)
+	rootBatch.Del("receipt")
+	require.Equal(t, http.StatusSeeOther, post(a, action+"1", rootBatch).Code)
+	require.Equal(t, http.StatusConflict, post(a, action+"1", rootBatch).Code)
+	count, err := a.store.Count(`SELECT count(*) FROM ingest_discards WHERE
+		(profile_id=1 AND actor_id=1 AND receipt_id=?) OR (profile_id=2 AND actor_id=2 AND receipt_id=?)`, first, second)
+	require.NoError(t, err)
+	require.EqualValues(t, 2, count)
 }

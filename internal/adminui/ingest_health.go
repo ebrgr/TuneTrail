@@ -10,6 +10,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/i18n"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"github.com/google/uuid"
@@ -124,12 +125,28 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 			inbox = append(inbox, group)
 		}
 	}
+	// A receipt link from another section opens its individual confirmation.
+	discardTarget := r.URL.Query().Get("discard_receipt")
+	discardPage := 1
+	if raw := r.URL.Query().Get("discard_page"); raw != "" && discardTarget == "" {
+		discardPage, err = strconv.Atoi(raw)
+		if err != nil {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+	}
+	discard, err := h.store.IngestDiscardPreview(r.Context(), profile.ID, discardTarget, discardPage)
+	if err != nil {
+		h.failHealthDiscard(w, r, identity, err)
+		return
+	}
 	if admin.AuthorizeAction(identity.User, admin.ManageAccounts, nil) != nil {
 		profiles = nil
 	}
 	h.render(w, http.StatusOK, view{
 		Nav: h.navigation(r, identity, profile, "health"), Health: &health,
 		Profile: profile, Profiles: profiles, User: identity.User, CSRF: token,
+		Discard: discard, DiscardTarget: discardTarget,
 		Inbox: inbox, InboxKeys: keys, InboxDays: days, InboxKey: key,
 	})
 }
@@ -144,6 +161,18 @@ func (h *Handler) mutateHealth(w http.ResponseWriter, r *http.Request, identity 
 	defer form.Close()
 	anchor := "health-review"
 	switch r.URL.Path {
+	case "/admin/health/discard":
+		if !fields(form, "receipt", "digest", "confirm") || form.SingleValue("confirm") != "1" {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+		anchor = "health-discard"
+		// The store revalidates the confirmed versions against this authorized profile.
+		err = h.store.DiscardIngestPending(r.Context(), profile, identity.User.ID, form.SingleValue("receipt"), form.SingleValue("digest"))
+		if err != nil {
+			h.failHealthDiscard(w, r, identity, err)
+			return
+		}
 	case "/admin/health/review-setting":
 		enabled := form.SingleValue("enabled")
 		if !fields(form, "enabled") || (enabled != "1" && enabled != "0") {
@@ -196,4 +225,14 @@ func (h *Handler) mutateHealth(w http.ResponseWriter, r *http.Request, identity 
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/admin/health?profile=%d#%s", profile, anchor), http.StatusSeeOther)
+}
+
+// failHealthDiscard gives linked receipts the same guidance as the confirmation.
+func (h *Handler) failHealthDiscard(w http.ResponseWriter, r *http.Request, identity admin.Identity, err error) {
+	if errors.Is(err, db.ErrIngestDiscardListen) {
+		const message = "Use listen deletion for receipts linked to a listen."
+		textError(w, adminFormat(i18n.ViewOf(w), "admin.health.discard_linked", message, nil), http.StatusConflict)
+		return
+	}
+	h.failForSession(w, r, identity, err)
 }

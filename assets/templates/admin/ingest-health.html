@@ -16,6 +16,7 @@
     </form>
   {{end}}
   <nav class="admin-sections" aria-label="{{tr "admin.health.review_queue" "Pending reviews"}}">
+    <a href="#health-discard">{{tr "admin.health.discard" "Discard"}}</a>
     <a href="#health-review">{{tr "admin.health.review_queue" "Pending reviews"}} ({{.Health.ReviewCount}})</a>
   </nav>
   <div class="ingestion-health-grid">
@@ -106,6 +107,9 @@
             {{tr "admin.health.review_unavailable" "This receipt has no resolved track or existing listen to review."}}
           </p>
         {{- end}}
+        <nav class="admin-sections ingestion-discard-link">
+          <a href="/admin/health?profile={{$.Profile.ID}}&amp;discard_receipt={{.Receipt}}#health-discard">{{tr "admin.health.discard" "Discard"}}</a>
+        </nav>
       </details>
     {{- else}}
       <p>{{tr "admin.health.no_reviews" "No pending duplicate reviews."}}</p>
@@ -148,11 +152,15 @@
           <input type="hidden" name="receipt" value="{{.Receipt}}">
           <button type="submit">{{tr "admin.health.reprocess" "Reprocess"}}</button>
         </form>
+        <nav class="admin-sections ingestion-discard-link">
+          <a href="/admin/health?profile={{$.Profile.ID}}&amp;discard_receipt={{.Receipt}}#health-discard">{{tr "admin.health.discard" "Discard"}}</a>
+        </nav>
       </details>
     {{- else}}
       <p>{{tr "admin.health.no_failures" "No permanent failures."}}</p>
     {{- end}}
   </section>
+  {{- template "admin/health-discard" .}}
   <section class="card ingestion-diagnostics" aria-labelledby="health-sources">
     <h3 id="health-sources">{{tr "admin.health.sources" "Sources and last submission"}}</h3>
     {{- range .Health.Sources}}
@@ -314,3 +322,69 @@
   </div>
   <div>{{template "admin/health-time" .At}}{{with .Client}} · {{.}}{{end}}</div>
 {{end}}
+
+{{define "admin/health-discard"}}
+  <section class="card ingestion-diagnostics" aria-labelledby="health-discard">
+    <h3 id="health-discard">{{tr "admin.health.discard_queue" "Discard receipts without a listen"}}</h3>
+    {{- if .Discard.Batch.Count}}
+      <details>
+        <summary>{{tr "admin.health.discard_batch" "Discard oldest eligible receipts"}} ({{.Discard.Batch.Count}})</summary>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile={{.Profile.ID}}">
+          <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+          <input type="hidden" name="digest" value="{{.Discard.Batch.Digest}}">
+          {{- template "admin/health-discard-confirm"}}
+        </form>
+      </details>
+    {{- end}}
+    {{- range .Discard.Receipts}}
+      <details {{if $.DiscardTarget}}open{{end}}>
+        <summary>{{.Source}} · {{template "admin/health-time" .Received}} · {{template "admin/health-discard-state" .}}</summary>
+        <dl>
+          <dt>{{tr "admin.health.receipt" "Receipt"}}</dt><dd><samp>{{.Receipt}}</samp></dd>
+          <dt>{{tr "admin.health.reason" "Reason code"}}</dt>
+          <dd>{{if .ParkReason}}<samp>{{.ParkReason}}</samp>{{else}}{{template "admin/health-code" .Reason}}{{end}}</dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile={{$.Profile.ID}}">
+          <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
+          <input type="hidden" name="receipt" value="{{.Receipt}}">
+          <input type="hidden" name="digest" value="{{.Digest}}">
+          {{- template "admin/health-discard-confirm"}}
+        </form>
+      </details>
+    {{- else}}
+      <p>{{tr "admin.health.discard_empty" "No eligible receipts on this page."}}</p>
+    {{- end}}
+    {{- if or .DiscardTarget .Discard.More (gt .Discard.Page 1)}}
+      <nav class="admin-sections" aria-labelledby="health-discard">
+        {{- if or .DiscardTarget (gt .Discard.Page 1)}}
+          <a href="/admin/health?profile={{.Profile.ID}}#health-discard">{{tr "admin.health.discard_first" "First page"}}</a>
+        {{- end}}
+        {{- if .Discard.More}}
+          <a href="/admin/health?profile={{.Profile.ID}}&amp;discard_page={{.Discard.Next}}#health-discard">{{tr "admin.health.review_next" "Next page"}}</a>
+        {{- end}}
+      </nav>
+    {{- end}}
+  </section>
+{{- end}}
+
+{{define "admin/health-discard-confirm"}}
+  <p class="ingestion-discard-warning">{{tr "admin.health.discard_warning"
+    "Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen."}}</p>
+  <button type="submit" name="confirm" value="1">{{tr "admin.health.discard_confirm" "Confirm discard"}}</button>
+{{end}}
+
+{{define "admin/health-discard-state" -}}
+  {{- if .ParkReason -}}
+    {{tr "admin.health.discard_parked" "Parked"}}
+  {{- else if eq .State "received" -}}
+    {{tr "admin.health.discard_state.received" "Received"}}
+  {{- else if eq .State "retryable" -}}
+    {{tr "admin.health.discard_state.retryable" "Awaiting retry"}}
+  {{- else if eq .State "pending_identity" -}}
+    {{tr "admin.health.discard_state.pending_identity" "Awaiting identification"}}
+  {{- else if eq .State "pending_duplicate" -}}
+    {{tr "admin.health.discard_state.pending_duplicate" "Awaiting duplicate review"}}
+  {{- else -}}
+    {{tr "admin.health.discard_state.invalid" "Invalid"}}
+  {{- end -}}
+{{- end}}

@@ -304,6 +304,7 @@ func (s *Sqlite) PurgeAllData(ctx context.Context) error {
 		`DELETE FROM listens`,
 		`DELETE FROM relay_sent_archive`,
 		`DELETE FROM ingest_events`,
+		`DELETE FROM ingest_discards`,
 		`DELETE FROM tracks`,
 		`DELETE FROM releases`,
 		`DELETE FROM artists`,

@@ -14,7 +14,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=47ad7dc74b108c1113659301460281f7ddd7cf717113f216477daeff25487fc6">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=782cd4e9642312329c95c16f36d6b749ff8d1afb5d8c7448b60bfc6c22cd769b">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=9c2de13e09eca06a2886463bdb012dcba5d419ab1cedf0b740cbcffa2b2d6bdc"></script>
       
@@ -449,6 +449,7 @@
     </form>
   
   <nav class="admin-sections" aria-label="Pending reviews">
+    <a href="#health-discard">Discard</a>
     <a href="#health-review">Pending reviews (1)</a>
   </nav>
   <div class="ingestion-health-grid">
@@ -577,6 +578,9 @@
             <input type="hidden" name="decision" value="different">
             <button type="submit">Keep as a separate listen</button>
           </form>
+        <nav class="admin-sections ingestion-discard-link">
+          <a href="/admin/health?profile=1&amp;discard_receipt=f0000000-0000-4000-8000-000000000181#health-discard">Discard</a>
+        </nav>
       </details>
   </section>
 
@@ -598,6 +602,102 @@
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000173">
           <button type="submit">Reprocess</button>
+        </form>
+        <nav class="admin-sections ingestion-discard-link">
+          <a href="/admin/health?profile=1&amp;discard_receipt=f0000000-0000-4000-8000-000000000173#health-discard">Discard</a>
+        </nav>
+      </details>
+  </section>
+  <section class="card ingestion-diagnostics" aria-labelledby="health-discard">
+    <h3 id="health-discard">Discard receipts without a listen</h3>
+      <details>
+        <summary>Discard oldest eligible receipts (5)</summary>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
+          <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="digest" value="dc02b53a9ce91571fac241b3e606829c5b4ccc94b04e6872ffb57ae9602295e6">
+  <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+  <button type="submit" name="confirm" value="1">Confirm discard</button>
+
+        </form>
+      </details>
+      <details >
+        <summary>listenbrainz · <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · Parked</summary>
+        <dl>
+          <dt>Receipt</dt><dd><samp>f0000000-0000-4000-8000-000000000173</samp></dd>
+          <dt>Reason code</dt>
+          <dd><samp>retry_exhausted</samp></dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
+          <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000173">
+          <input type="hidden" name="digest" value="fc4efa17ddfaf171a1ffe91923d25dae6af030a1fedf5f86f8301c704eaa7e4c">
+  <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+  <button type="submit" name="confirm" value="1">Confirm discard</button>
+
+        </form>
+      </details>
+      <details >
+        <summary>listenbrainz · <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · Received</summary>
+        <dl>
+          <dt>Receipt</dt><dd><samp>reference-receipt</samp></dd>
+          <dt>Reason code</dt>
+          <dd><samp>ambiguous_time_candidate</samp></dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
+          <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="receipt" value="reference-receipt">
+          <input type="hidden" name="digest" value="88859c230a4963bfcd168732215a709fb32d5fafaacb034df6276e52d39e34f9">
+  <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+  <button type="submit" name="confirm" value="1">Confirm discard</button>
+
+        </form>
+      </details>
+      <details >
+        <summary>listenbrainz · <time datetime="2024-05-01T12:02:00Z">2024-05-01 12:02:00 UTC</time> · Awaiting duplicate review</summary>
+        <dl>
+          <dt>Receipt</dt><dd><samp>f0000000-0000-4000-8000-000000000181</samp></dd>
+          <dt>Reason code</dt>
+          <dd><samp>legacy_identity_collision</samp></dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
+          <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="receipt" value="f0000000-0000-4000-8000-000000000181">
+          <input type="hidden" name="digest" value="d1fd35f197f5df18a4c6b6159d840fb03cb7b7f022f543aadba5859c8685bc91">
+  <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+  <button type="submit" name="confirm" value="1">Confirm discard</button>
+
+        </form>
+      </details>
+      <details >
+        <summary>listenbrainz · <time datetime="2024-06-01T11:30:00Z">2024-06-01 11:30:00 UTC</time> · Received</summary>
+        <dl>
+          <dt>Receipt</dt><dd><samp>inbox-missing</samp></dd>
+          <dt>Reason code</dt>
+          <dd>Not recorded</dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
+          <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="receipt" value="inbox-missing">
+          <input type="hidden" name="digest" value="b17fcd694191a706d1bdbb1253b12685613d64ee1684cff035fd0b031a786fab">
+  <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+  <button type="submit" name="confirm" value="1">Confirm discard</button>
+
+        </form>
+      </details>
+      <details >
+        <summary>listenbrainz · <time datetime="2024-06-01T11:35:00Z">2024-06-01 11:35:00 UTC</time> · Received</summary>
+        <dl>
+          <dt>Receipt</dt><dd><samp>inbox-incomplete</samp></dd>
+          <dt>Reason code</dt>
+          <dd>Not recorded</dd>
+        </dl>
+        <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
+          <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <input type="hidden" name="receipt" value="inbox-incomplete">
+          <input type="hidden" name="digest" value="10df31d18c7b4625943375b6164dbcf4d3a2134e1920804a5713f93803a050a1">
+  <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
+  <button type="submit" name="confirm" value="1">Confirm discard</button>
+
         </form>
       </details>
   </section>

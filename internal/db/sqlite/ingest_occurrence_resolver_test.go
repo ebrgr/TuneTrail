@@ -532,17 +532,27 @@ func TestOccurrenceReimportAfterDeletion(t *testing.T) {
 	}
 }
 
-// TestOccurrenceDiscardPending revokes an in-flight lease and releases the key.
+// TestOccurrenceDiscardPending protects an active claim and releases the key after expiry.
 func TestOccurrenceDiscardPending(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	s := convertedOccurrenceFixture(t)
+	now := time.Now()
+	s.ingestClock = func() time.Time { return now }
 	snapshot := ingest.Snapshot{Title: "Discarded", Artist: "Artist", Release: "Album"}
 	id := admitOccurrenceFixture(t, s, snapshot, 1900, "discard")
+	preview, err := s.IngestDiscardPreview(ctx, 1, id, 1)
+	require.NoError(t, err)
+	digest := preview.Receipts[0].Digest
 	lease, _, _, err := s.claimNextIngest(ctx)
 	require.NoError(t, err)
 	require.Equal(t, id, lease.id)
-	require.ErrorIs(t, s.DiscardIngestPending(ctx, 2, id), db.ErrNotFound)
-	require.NoError(t, s.DiscardIngestPending(ctx, 1, id))
+	require.ErrorIs(t, s.DiscardIngestPending(ctx, 2, 7, id, digest), db.ErrNotFound)
+	require.ErrorIs(t, s.DiscardIngestPending(ctx, 1, 7, id, digest), db.ErrConflict)
+	now = now.Add(3 * time.Minute)
+	require.ErrorIs(t, s.DiscardIngestPending(ctx, 1, 7, id, digest), db.ErrConflict)
+	preview, err = s.IngestDiscardPreview(ctx, 1, id, 1)
+	require.NoError(t, err)
+	require.NoError(t, s.DiscardIngestPending(ctx, 1, 7, id, preview.Receipts[0].Digest))
 	lease.snapshot = snapshot
 	lease.unix = 1900
 	require.NoError(t, s.finishOccurrence(ctx, lease, occurrenceProof{}))

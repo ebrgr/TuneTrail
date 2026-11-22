@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -14,6 +15,8 @@ type IngestHealthStore interface {
 	SetIngestReview(context.Context, int32, bool) error
 	ResolveIngestReview(context.Context, int32, int32, IngestReviewDecision) error
 	ResolveIngestReviewBatch(context.Context, int32, int32, string, string) error
+	IngestDiscardPreview(context.Context, int32, string, int) (IngestDiscardPreview, error)
+	DiscardIngestPending(context.Context, int32, int32, string, string) error
 	ListenProvenance(context.Context, int32, int32, int64, ...string) ([]ListenProvenance, error)
 }
 
@@ -102,4 +105,19 @@ type IngestInboxGroup struct {
 type IngestInboxExample struct {
 	Title, Artist, Client string
 	At                    time.Time
+}
+
+// ErrIngestDiscardListen directs linked receipts to the normal listen deletion flow.
+var ErrIngestDiscardListen = errors.New("use listen deletion for this receipt")
+
+type IngestDiscardPreview struct {
+	Receipts   []IngestDiscardReceipt
+	Batch      IngestReviewBatch
+	Page, Next int
+	More       bool
+}
+
+type IngestDiscardReceipt struct {
+	Receipt, State, Source, Reason, ParkReason, Digest string
+	Received                                           time.Time
 }

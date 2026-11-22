@@ -339,3 +339,16 @@ or reprocess parked receipts.
 
 The **Outbox** shows relay delivery status, including queued deliveries, pauses,
 and failures.
+
+### Discard receipts without a listen
+
+Profile owners and root can use **Discard** in **Ingestion health** to remove
+parked, pending, or invalid receipts that have no listen and no active resolution
+lease. Open the receipt or the batch of up to 25 oldest eligible receipts, then
+select **Confirm discard**. If a receipt in the selection changes before you
+confirm, reload the page and review the new selection.
+
+Discarding permanently deletes the receipt and retains its ID, source state
+and reason codes, discard time, and the acting account ID in the profile's
+audit record. Use listen deletion for receipts linked to a listen. Listens
+already sent to a relay remain at the destination.

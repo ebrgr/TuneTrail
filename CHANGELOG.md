@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Profile owners and root can discard receipts without a listen in Ingestion health, individually or in confirmed batches, with a minimal audit record (ISSUE-185).
+
 ## [0.59] - 2026-11-22
 
 - Ingestion health separates incoming receipts from relay deliveries and shows receipt counts and missing metadata by API key, client, and time window (ISSUE-184).

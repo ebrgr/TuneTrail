@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/dedup"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 )
@@ -170,28 +169,6 @@ func deleteSelectedActiveReceipts(ctx context.Context, tx *sql.Tx, profile int32
 		resolved_at=unixepoch(),closed_at=unixepoch(),lease_owner=NULL,lease_until=NULL,next_attempt_at=NULL
 		WHERE `+scope, activeRuleVersion, profile, string(selected))
 	return err
-}
-
-// DiscardIngestPending removes a profile's explicitly selected pending receipt without a tombstone.
-func (s *Sqlite) DiscardIngestPending(ctx context.Context, profile int32, receipt string) error {
-	if profile <= 0 || receipt == "" {
-		return db.ErrInvalidInput
-	}
-	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		result, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND receipt_id=? AND mode='active' AND resolver_variant='occurrence'
-			AND event_id IS NULL AND closed_at IS NULL AND state IN ('pending_identity','pending_duplicate','received','retryable')`, profile, receipt)
-		if err != nil {
-			return err
-		}
-		count, err := result.RowsAffected()
-		if err != nil {
-			return err
-		}
-		if count == 0 {
-			return db.ErrNotFound
-		}
-		return nil
-	})
 }
 
 // receiptSourcePrefix keeps receipt creation and integration cleanup on the same identity format.
