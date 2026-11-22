@@ -1,11 +1,11 @@
 ---
 id: ISSUE-125
 title: 125 — Remodelar a página de conta do administrador
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:19:00Z'
+updated_date: '2026-11-22T22:25:00Z'
 labels:
   - ui
   - admin
@@ -28,11 +28,11 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Cartões Identidade, Senha e Sessão no padrão comum, em uma ou duas colunas conforme a largura
-- [ ] #2 Sair com peso secundário; mensagens junto do cartão
-- [ ] #3 Funciona sem JavaScript; com JavaScript atualiza só o cartão
-- [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
-- [ ] #5 Conta acessível a qualquer sessão autenticada em /account, sem cair no 403 do usuário comum
+- [x] #1 Cartões Identidade, Senha e Sessão no padrão comum, em uma ou duas colunas conforme a largura
+- [x] #2 Sair com peso secundário; mensagens junto do cartão
+- [x] #3 Funciona sem JavaScript; com JavaScript atualiza só o cartão
+- [x] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
+- [x] #5 Conta acessível a qualquer sessão autenticada em /account, sem cair no 403 do usuário comum
 <!-- AC:END -->
 
 ## Comments
@@ -125,6 +125,15 @@ created: 2026-11-22T22:19:00Z
 ---
 
 Ícone (22/11/2026): campo de texto 'Ícone' virou <select> na criação de conta/perfil e no avatar (music, headphones, disc, radio, user + Iniciais sem ícone), ícone atual pré-selecionado, rótulos en/pt-BR; contrato do servidor inalterado (valor desconhecido recusado com 400; ícone inválido gravado antes mostra Iniciais). Zona de perigo mantida vazia em /account por decisão do usuário. Teste TestProfileIconSelect125; make check verde.
+
+---
+
+author: claude
+created: 2026-11-22T22:25:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 22/11/2026, após testar no servidor (aceite visual feito pelo usuário; capturas dispensadas).
 
 ---
 <!-- COMMENTS:END -->
