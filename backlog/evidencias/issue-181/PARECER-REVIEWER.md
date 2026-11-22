@@ -11,3 +11,14 @@ Base: leitura do diff e dos arquivos centrais; os testes focados foram disparado
 - [OK] Decisão em transação única sob `BEGIN IMMEDIATE`, com CAS por `resolution_version`, estado pendente, candidato validado dentro da evidência e do perfil; "mantida separada" cria a escuta e a intenção de outbox juntas; decisão repetida ou oposta concorrente devolve conflito (teste de corrida, 10 execuções com -race); POST + CSRF; flag por perfil com `SetIngestReview`; medição: fontes 1032 → 44 ms e decisões 283 → 0,1 ms com 300 mil recibos.
 
 Sem BUG confirmado. Os dois primeiros riscos merecem decisão do usuário (padrão da flag; janela de fontes).
+
+## Reauditoria após as correções (commit b0c1b66, schema v17)
+
+Escopo: só o que mudou desde 4c2cae3 (`finishOccurrence`/`occurrenceListenCandidates`, `ingest_review_batch.go`, migração 017, `ingest_health.go`). Testes disparados por mim (resultado ao final desta seção).
+
+- [RISCO ALTO, não executado] internal/db/sqlite/ingest_occurrence.go:occurrenceListenCandidates — o braço `l.listened_at=?` aceita como candidato exato qualquer escuta do mesmo perfil e ocorrência no mesmo segundo, **sem** a exclusão `NOT EXISTS` que protege as repetições legítimas (IDs externos confiáveis distintos na mesma fonte; mesma linha repetida num arquivo com ordinais distintos). Antes da correção esse caso ia para `pending_duplicate`; agora, com o Revisar desligado, vira `duplicate/same` fechado e a escuta não é contada. O doc-039 manda preservar repetições dentro do arquivo e eventos distintos do mesmo segundo com IDs distintos. Sugestão: aplicar a mesma exclusão ao braço exato (só é "exato" se não houver evidência de eventos distintos) e cobrir com teste de arquivo com duas linhas idênticas e de dois IDs externos confiáveis no mesmo segundo.
+- [RISCO] migração 017 — gatilho em cada INSERT de `ingest_events` (UPSERT no resumo) e gatilho em cada DELETE; o backfill percorre todo o histórico (2,06 s na fixture de 300 mil). Há backup e guarda de downgrade. Aceitável.
+- [RISCO] ingest_review_batch.go — a seleção percorre as pendências até achar 25 elegíveis, sob o escritor; com fila grande e poucos elegíveis o tempo cresce. Documentado pelo Codex.
+- [OK] ação em massa presa a um digest calculado no servidor (reler a seleção e comparar; qualquer mudança devolve conflito e desfaz o lote inteiro); candidato único validado; transação única; ID da conta em `evidence.decided_by`; resumo de fontes sem janela, paginado em 100, 0,1 ms com 300 mil recibos; FK do resumo tem a mesma semântica diferida da tabela de recibos.
+
+Resultado dos testes: ver comentário na tarefa.
