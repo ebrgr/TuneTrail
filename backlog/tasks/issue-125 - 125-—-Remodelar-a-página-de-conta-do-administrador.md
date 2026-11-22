@@ -1,10 +1,11 @@
 ---
 id: ISSUE-125
 title: 125 — Remodelar a página de conta do administrador
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:17:00Z'
+updated_date: '2026-11-22T20:58:00Z'
 labels:
   - ui
   - admin
@@ -55,48 +56,21 @@ Início (22/11/2026): decisão do usuário de fazer a 125 antes da 128, pois ela
 
 ---
 
-author: claude
-created: 2026-11-22T20:48:00Z
+author: ebrgr
+created: 2026-11-22T20:45:00Z
 
 ---
 
-Decisão do usuário (22/11/2026): sem capturas de tela nesta issue; o aceite visual será feito por ele no servidor. O critério #4 passa a ser verificado pelo usuário.
-
----
-
-author: claude
-created: 2026-11-22T21:15:00Z
-
----
-
-Teste do usuário no servidor (22/11/2026): resgate de token em /admin/redeem mostrou 'Sua conta não tem permissão para acessar esta página.' e a página não orienta a senha. Diagnóstico: falha de CSRF/preauth no POST é exibida com a mensagem genérica de 403 (reproduzido com token CSRF inválido); fluxo normal funciona. Causa provável: cookies sem separação por porta em 127.0.0.1 (instância 4110 e 4125). Ajuste incluído na 125: mensagem de página expirada, regras da senha e confirmação no resgate, sucesso leva ao login com aviso.
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-125` na branch `feat/issue-125-remodelar-a-pagina-de-conta` criada a partir de `main`.
 
 ---
 
 author: claude
-created: 2026-11-22T21:20:00Z
+created: 2026-11-22T20:58:00Z
 
 ---
 
-Requisito do usuário (22/11/2026): todas as telas tocadas pela 125 seguem o padrão de cores e os mesmos estados de hover, active e foco do restante do app (tokens de tokens.css, button.large-button, a:hover, focus-visible global, .admin-sections), nos temas Yuu e Pearl, sem cor fixa nova.
-
----
-
-author: claude
-created: 2026-11-22T22:13:00Z
-
----
-
-Pedido do usuário (22/11/2026): a página de resgate deve ter uma caixa explícita orientando a sair do perfil root e abrir 'Todos os perfis' (/) antes de resgatar; com sessão aberta, versão enfática com Sair…. Perguntas em aberto levadas ao usuário: zona de perigo vazia na /account (recomendado remover até existir ação) e seletor de ícones do avatar (hoje campo de texto com 5 nomes; mover para a ISSUE-126 ou corrigir já).
-
----
-
-author: claude
-created: 2026-11-22T22:17:00Z
-
----
-
-Decisões do usuário (22/11/2026): manter a zona de perigo vazia em /account; trocar já o campo de texto de ícone por dropdown (5 ícones + iniciais) na criação do perfil e no avatar, dentro da 125. A separação de 'Meu perfil' e 'Minha conta' segue na ISSUE-126.
+Implementação (22/11/2026): GET /account para qualquer sessão (comum, dono, root) com cartões Identidade, Senha (aviso antes de enviar, requisitos, erros por campo com role=alert/aria-describedby), Sessão (Sair… secundário via /admin/sign-out) e zona de perigo reservada vazia. /admin?section=account redireciona 303 para /account (após autorização). AccountDestination=/account (menu, atalhos, fallback pós-login, tela de confirmação de saída). Sem JS: POST completo com erro no cartão; com JS: fragmento do cartão (mecanismo da 124, X-TuneTrail-Fragment/Submission). 'account' virou slug reservado. Credenciais, bcrypt, sessões e lock do resgate não foram tocados (ChangeAccount reutilizado). Verificação: make check verde (go test, ui.reference.check com ISSUE-075/reference regenerada, e2e 13/13); testes novos em engine/account_issue125_test.go. Capturas 390/768/1440: dispensadas por decisão do usuário (ele testa no servidor); critério #4 segue pendente de aceite visual.
 
 ---
 <!-- COMMENTS:END -->
