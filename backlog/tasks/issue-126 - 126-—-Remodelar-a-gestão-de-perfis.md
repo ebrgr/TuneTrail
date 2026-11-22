@@ -1,10 +1,11 @@
 ---
 id: ISSUE-126
 title: 126 — Remodelar a gestão de perfis
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T22:51:00Z'
+updated_date: '2026-11-22T22:53:00Z'
 labels:
   - ui
   - admin
@@ -14,6 +15,7 @@ dependencies:
   - ISSUE-163
 references:
   - backlog/evidencias/issue-163/ESTUDO.md
+  - backlog/evidencias/issue-126/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 139000
@@ -53,6 +55,24 @@ created: 2026-11-22T22:51:00Z
 ---
 
 Decisão do usuário (22/11/2026): despachar a 126 a um agente Claude em worktree própria, com FASE DE DESENHO primeiro. Hoje 'Minha conta' (/account) e 'Meu perfil' (/admin?profile=N) parecem a mesma coisa e há dois caminhos para a gestão de perfil e conta. O agente deve avaliar a proposta original da 126 e alternativas (por exemplo um local único com abas Conta, Perfil, Chaves de API, Histórico, Relay, Saúde, e uma área root separada de Administração), apresentar opções com prós e contras e recomendação e PARAR para decisão do usuário antes de implementar. Sem capturas; o usuário testa no servidor.
+
+---
+
+author: ebrgr
+created: 2026-11-22T22:51:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-126` na branch `feat/issue-126-remodelar-a-gestao-de-perfis` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-22T22:53:00Z
+
+---
+
+Fase 1 (desenho) concluída, sem implementação. Estudo em backlog/evidencias/issue-126/ESTUDO.md. Recomendação A′: um único 'Minha conta' em /account com abas (Conta | Perfil | Chaves de API | Histórico | Relay | Saúde), alvo derivado da sessão e sem 'Meu perfil' separado; área root 'Administração' (Contas e perfis, Saúde, Servidor); root edita outra pessoa no mesmo shell em modo contexto (/admin?profile=N, cabeçalho 'Você x Maria') com aba Conta root. /admin?profile=<próprio> redireciona (303) para /account/profile; todas as URLs atuais e todos os POST permanecem. Descartadas: proposta original isolada (mantém dois caminhos), B (duas áreas), C (centrar no perfil), D (página única). Plano em 6 cortes com make check verde. Aguardando decisão do usuário (5 perguntas no §12) antes de implementar.
 
 ---
 <!-- COMMENTS:END -->
