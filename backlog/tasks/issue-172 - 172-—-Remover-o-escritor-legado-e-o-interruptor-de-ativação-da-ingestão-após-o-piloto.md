@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-19T19:58:00Z'
-updated_date: '2026-11-21T23:22:00Z'
+updated_date: '2026-11-22T17:02:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -41,6 +41,15 @@ created: 2026-11-21T23:22:00Z
 ---
 
 Decisão do usuário (21/11/2026): mudança de plano. Depois de concluir a ISSUE-181 (e a 182), ligar o código novo e remover o legado sem esperar as 3 semanas de sombra. Consequências registradas: (1) os limiares aprovados passam a ser comprovados por ensaio sintético com carga e por cópia de snapshot autorizado, não por produção; (2) o corte só é reversível por backup, então o backup verificado e a restauração testada são pré-requisito; (3) Advisor (effort high, concorrência e migração de dados) obrigatório antes do aceite; (4) a janela de manutenção de 10 minutos continua. Risco aceito pelo usuário: sem o período de sombra, problemas de dados reais só aparecem depois do corte.
+
+---
+
+author: ebrgr
+created: 2026-11-22T17:02:00Z
+
+---
+
+Decisões do usuário após o ensaio da fase 1 (22/11/2026): (1) escutas sem álbum são aceitas como Lançamento desconhecido (nova ISSUE-186, pré-requisito do corte); (2) o padrão da flag Revisar é LIGADO: a ativação da ingestão por perfil e a migração do corte passam a definir review=1 por padrão; (3) o timeout de 20 s da prova do MusicBrainz continua reagendando o recibo. Pendências da fase 2: ISSUE-186; reescrever as fixtures que gravam pelo escritor legado (291 falhas com ocorrência por padrão no ensaio) e as expectativas síncronas e de relay; remover escritor legado, interruptor, flags e índice legado; Advisor obrigatório antes do aceite.
 
 ---
 <!-- COMMENTS:END -->
