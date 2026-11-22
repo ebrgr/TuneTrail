@@ -1,11 +1,11 @@
 ---
 id: ISSUE-185
 title: 185 — Descartar recibos que não deram certo na central de saúde
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T15:05:00Z'
-updated_date: '2026-11-22T16:07:00Z'
+updated_date: '2026-11-22T16:15:00Z'
 labels:
   - ingestao
   - ui
@@ -78,6 +78,15 @@ created: 2026-11-22T16:07:00Z
 ---
 
 Reviewer (reauditoria do commit 6981a53): sem BUG; o bug do descarte repetido foi corrigido (id por descarte e geração no CAS), descarte em massa com confirmação única do conjunto e lotes de 500, retenção de 90 dias. RISCOs: releitura do conjunto restante a cada lote (O(n²/500)); recibo novo durante o descarte provoca conflito e interrompe os lotes seguintes. Testes sqlite -race, engine, handlers, middleware, adminui e webui OK. Ver PARECER-REVIEWER.md. Advisor (exclusão de dados) pendente a pedido do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-22T16:15:00Z
+
+---
+
+Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG após reauditoria; tela conferida em 390/1100/1500 px; Advisor dispensado pelo usuário. ACs 1 a 4 marcados. Riscos aceitos: releitura do conjunto restante a cada lote; recibo novo durante o descarte interrompe os lotes seguintes.
 
 ---
 <!-- COMMENTS:END -->
