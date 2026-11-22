@@ -100,3 +100,72 @@ func OwnProfile(actor *models.User, profiles []models.ListeningProfile) *models.
 	}
 	return nil
 }
+
+// Tabs of the shared account shell (ISSUE-126). One set serves the signed-in user's own
+// account ("self") and a root operating another account ("context").
+const (
+	TabAccount = "account"
+	TabProfile = "profile"
+	TabKeys    = "keys"
+	TabHistory = "history"
+	TabRelay   = "relay"
+)
+
+// accountTabOrder is the visual order of the tabs.
+var accountTabOrder = []struct{ Tab, Label, Fallback string }{
+	{TabAccount, "account.tab.account", "Account"},
+	{TabProfile, "account.tab.profile", "Profile"},
+	{TabKeys, "account.tab.keys", "API keys"},
+	{TabHistory, "account.tab.history", "History"},
+	{TabRelay, "account.tab.relay", "Relay"},
+}
+
+// AccountTabURL returns the address of a tab. In self mode the target is the session's own
+// profile, so the address never carries an ID; in context mode it is the administration URL.
+func AccountTabURL(self bool, profileID int32, tab string) string {
+	if self {
+		if tab == TabAccount {
+			return AccountDestination
+		}
+		return AccountDestination + "/" + tab
+	}
+	switch tab {
+	case TabAccount:
+		return fmt.Sprintf("/admin?section=account&profile=%d", profileID)
+	case TabKeys:
+		return fmt.Sprintf("/admin?section=keys&profile=%d", profileID)
+	case TabHistory:
+		return fmt.Sprintf("/admin?section=import&profile=%d", profileID)
+	case TabRelay:
+		return fmt.Sprintf("/admin?section=relay&profile=%d", profileID)
+	}
+	return fmt.Sprintf("/admin?profile=%d", profileID)
+}
+
+// TabFromSection maps the legacy /admin?section= values to a tab. It reports false for
+// sections that are not tabs (for example an unknown value).
+func TabFromSection(section string) (string, bool) {
+	switch section {
+	case "", "profiles":
+		return TabProfile, true
+	case "account":
+		return TabAccount, true
+	case "keys":
+		return TabKeys, true
+	case "import", "export":
+		return TabHistory, true
+	case "relay":
+		return TabRelay, true
+	}
+	return "", false
+}
+
+// AccountTabs lists the five tabs for a target profile, marking current. The caller decides
+// the mode from the session, never from the request.
+func AccountTabs(self bool, profileID int32, current string) []NavLink {
+	tabs := make([]NavLink, 0, len(accountTabOrder))
+	for _, t := range accountTabOrder {
+		tabs = append(tabs, NavLink{URL: AccountTabURL(self, profileID, t.Tab), Label: t.Label, Fallback: t.Fallback, Current: t.Tab == current})
+	}
+	return tabs
+}
