@@ -17,11 +17,19 @@ and separate listener passwords are not provided.
 
 ## Manage profiles
 
-Open **Settings → Administration**, sign in with the administrator account, and
-select a profile. These links open the server-rendered administration;
-`/admin?profile=<id>` preserves the selection.
-Account settings are under `/admin?section=account`. Forms bind their destination
-to the profile ID and slug, independently of other open tabs.
+Every signed-in user manages their own account and profile in one place,
+**My account** (`/account`), which has five tabs: **Account** (username,
+password, session), **Profile** (name, URL name, listen protection, avatar),
+**API keys**, **History** (import and export) and **Relay**. The address never
+carries an ID: the target is always the signed-in user's own profile. The old
+`/admin?profile=<id>` address of your own profile redirects to `/account/profile`.
+
+Administrators also have **Administration** (`/admin?section=profiles`), a list of
+accounts and profiles with the form to create a new one. Opening another account
+there shows the same five tabs under a banner naming that person and
+saying you are operating as administrator; its Account tab holds the root tools
+(recovery token, administrator role, deletion review). Forms bind their
+destination to the profile ID and slug, independently of other open tabs.
 
 Create or edit a display name, URL name and optional photo or fallback icon.
 Renaming a URL keeps the profile's ID, history, keys and forwarding configuration;
