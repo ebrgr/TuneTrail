@@ -786,5 +786,7 @@
   "admin.redeem.steps": "Informe seu usuário, o token que recebeu do administrador e escolha uma senha. Depois, entre normalmente.",
   "admin.redeem.password_rules": "No mínimo 8 caracteres e no máximo 72 bytes (letras acentuadas e emojis ocupam mais de um byte). Não há outras regras de composição: uma frase longa ou um gerenciador de senhas funciona bem.",
   "admin.account.redeemed": "Senha definida. Entre com seu usuário e a nova senha.",
-  "admin.message.page_expired": "Esta página expirou ou foi aberta em outra aba. Tente novamente."
+  "admin.message.page_expired": "Esta página expirou ou foi aberta em outra aba. Tente novamente.",
+  "admin.redeem.before": "Antes de resgatar: se você estiver conectado como administrador (root), saia desta conta primeiro e depois abra Todos os perfis para continuar.",
+  "admin.redeem.signed_in": "Você está conectado como {{.Username}}. Para resgatar o token de outra conta, saia primeiro."
 }

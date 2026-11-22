@@ -1,3 +1,25 @@
+{{/* Top of /admin/redeem: redemption needs a browser without an open account (ISSUE-125). */}}
+{{define "admin/redeem-notice"}}
+  <div class="account-warning" role="note">
+    {{if .RedeemSession}}
+      <p><strong>
+        {{- trn "admin.redeem.signed_in" "You are signed in as {{.Username}}. To redeem the token of another account, sign out first."
+          "Username" .RedeemSession -}}
+      </strong></p>
+    {{else}}
+      <p>
+        {{- tr "admin.redeem.before"
+          (printf "%s%s" "Before redeeming: if you are signed in as an administrator (root), "
+            "sign out of that account first, then open All profiles to continue.") -}}
+      </p>
+    {{end}}
+    <p class="account-notice-links">
+      <a class="account-secondary" href="/admin/sign-out">{{tr "admin.account.sign_out" "Sign out…"}}</a>
+      <a class="account-secondary" href="/">{{tr "ui.all_profiles" "All profiles"}}</a>
+    </p>
+  </div>
+{{end}}
+
 {{define "admin/account"}}
   <p class="sr-only" role="status" data-enhance-status></p>
   <div class="account-grid">

@@ -786,5 +786,7 @@
   "admin.redeem.steps": "Enter your username, the token you received from the administrator and choose a password. Then sign in as usual.",
   "admin.redeem.password_rules": "At least 8 characters and at most 72 bytes (accents and emoji use more than one). No other rules: a long phrase or a password manager works well.",
   "admin.account.redeemed": "Password set. Sign in with your username and the new password.",
-  "admin.message.page_expired": "This page expired or was opened in another tab. Try again."
+  "admin.message.page_expired": "This page expired or was opened in another tab. Try again.",
+  "admin.redeem.before": "Before redeeming: if you are signed in as an administrator (root), sign out of that account first, then open All profiles to continue.",
+  "admin.redeem.signed_in": "You are signed in as {{.Username}}. To redeem the token of another account, sign out first."
 }

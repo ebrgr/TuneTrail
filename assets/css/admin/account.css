@@ -37,6 +37,8 @@
 }
 .admin-main .account-secondary:hover { background:var(--color-bg-tertiary); }
 .admin-main .account-secondary:active { background:var(--color-bg-tertiary); }
+.admin-main .account-notice-links { display:flex; flex-wrap:wrap; gap:var(--space-2); margin:var(--space-2) 0 0; }
+.admin-main .account-notice-links .account-secondary { margin-top:0; }
 .admin-main .account-danger { border-style:dashed; }
 .admin-main .account-danger p { margin-bottom:0; }
 @media (min-width:40rem) {

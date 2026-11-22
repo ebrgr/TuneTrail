@@ -77,6 +77,10 @@ func (h *Handler) renderRedeem(w http.ResponseWriter, r *http.Request, status in
 		return
 	}
 	v.CSRF, v.Error, v.RedeemField = csrf, message, field
+	// An open session in this browser only ever contributes its own username to the notice.
+	if id, err := adminweb.SessionIdentity(r, h.store); err == nil && id.User != nil {
+		v.RedeemSession = id.User.Username
+	}
 	h.render(w, status, v)
 }
 

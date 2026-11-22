@@ -141,3 +141,50 @@ func TestRedeemSignInNotice125(t *testing.T) {
 	require.Contains(t, stale.Body.String(), "This page expired or was opened in another tab. Try again.")
 	require.NotContains(t, stale.Body.String(), "does not have permission")
 }
+
+// TestRedeemNoticeBox125 shows the sign-out notice on /admin/redeem for visitors and open sessions.
+func TestRedeemNoticeBox125(t *testing.T) {
+	a := taskApp139(t)
+	ctx := context.Background()
+	_, err := a.store.SaveUser(ctx, db.SaveUserOpts{Username: "listener", Password: "test-password", Role: models.UserRoleUser})
+	require.NoError(t, err)
+	ordinary, err := admin.Login(ctx, a.store, "listener", "test-password", false)
+	require.NoError(t, err)
+
+	visitor := taskRequest139(a, "GET", "/admin/redeem", "", nil, nil)
+	require.Equal(t, 200, visitor.Code)
+	body := visitor.Body.String()
+	require.Contains(t, body, `class="account-warning" role="note"`)
+	require.Contains(t, body, "Before redeeming: if you are signed in as an administrator (root)")
+	require.Contains(t, body, `href="/admin/sign-out"`)
+	require.Contains(t, body, `>All profiles</a>`)
+	require.NotContains(t, body, "You are signed in as")
+
+	pt := taskRequest139(a, "GET", "/admin/redeem", "", nil, map[string]string{"Accept-Language": "pt-BR"})
+	require.Contains(t, pt.Body.String(), "Antes de resgatar: se você estiver conectado como administrador (root)")
+	require.Contains(t, pt.Body.String(), ">Todos os perfis</a>")
+
+	for name, cookie := range map[string]string{"root": a.cookie, "ordinary": ordinary.ID.String()} {
+		page := taskRequest139(a, "GET", "/admin/redeem", cookie, nil, nil)
+		require.Equal(t, 200, page.Code, name)
+		require.Contains(t, page.Body.String(), "To redeem the token of another account, sign out first.", name)
+		require.Contains(t, page.Body.String(), `href="/admin/sign-out"`, name)
+		require.NotContains(t, page.Body.String(), "Before redeeming", name)
+	}
+	ptSession := taskRequest139(a, "GET", "/admin/redeem", ordinary.ID.String(), nil, map[string]string{"Accept-Language": "pt-BR"})
+	require.Contains(t, ptSession.Body.String(), "Você está conectado como listener. Para resgatar o token de outra conta, saia primeiro.")
+
+	// A failed redemption keeps the notice and never echoes the token or password.
+	page := taskRequest139(a, "GET", "/admin/redeem", "", nil, nil)
+	form := url.Values{"csrf_token": {taskField139(t, page, "csrf_token")}, "username": {"listener"}, "account_token": {"secret-token-value"},
+		"password": {"secret-password-1"}, "confirm_password": {"different-password"}}
+	cookie := ""
+	for _, c := range page.Result().Cookies() {
+		cookie += c.Name + "=" + c.Value + "; "
+	}
+	failed := taskRequest139(a, "POST", "/admin/redeem", "", form, map[string]string{"Cookie": cookie})
+	require.Equal(t, 400, failed.Code)
+	require.Contains(t, failed.Body.String(), `role="note"`)
+	require.NotContains(t, failed.Body.String(), "secret-token-value")
+	require.NotContains(t, failed.Body.String(), "secret-password-1")
+}

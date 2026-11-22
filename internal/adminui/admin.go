@@ -129,6 +129,7 @@ type view struct {
 	IssuedToken                         string
 	AccountPage                         *accountState
 	RedeemUsername, RedeemField         string
+	RedeemSession                       string
 }
 
 // New constructs the protected handler and a bounded pre-login endpoint.

@@ -44,6 +44,7 @@
             <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
             <p><a href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.profile" "Profile"}}</a></p>
           {{else if .Redeem}}
+            {{template "admin/redeem-notice" .}}
             <p>
               {{- tr "admin.redeem.steps" "Enter your username, the token you received from the administrator and choose a password. Then sign in as usual." -}}
             </p>
