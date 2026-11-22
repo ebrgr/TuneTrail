@@ -3,11 +3,11 @@ id: ISSUE-186
 title: >-
   186 — Aceitar escuta sem álbum como Lançamento desconhecido na ingestão por
   ocorrência
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T17:02:00Z'
-updated_date: '2026-11-22T19:26:00Z'
+updated_date: '2026-11-22T19:29:00Z'
 labels:
   - ingestao
   - catalogo
@@ -76,6 +76,24 @@ created: 2026-11-22T19:26:00Z
 ---
 
 Advisor (effort high): APROVADO. Sem falhas críticas; correção de artistas homônimos validada (sem vínculo arbitrário, COLLATE BINARY na detecção). Follow-ups: relink de créditos órfãos; tratar receipts release_missing antigos no corte da 172.
+
+---
+
+author: ebrgr
+created: 2026-11-22T19:29:00Z
+
+---
+
+Verificação: Reviewer sem BUG; Advisor (effort high) APROVADO; make check 13/13 E2E
+
+---
+
+author: evertonberger
+created: 2026-11-22T19:29:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito e publique').
 
 ---
 <!-- COMMENTS:END -->
