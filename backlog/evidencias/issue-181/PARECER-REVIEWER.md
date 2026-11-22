@@ -22,3 +22,14 @@ Escopo: só o que mudou desde 4c2cae3 (`finishOccurrence`/`occurrenceListenCandi
 - [OK] ação em massa presa a um digest calculado no servidor (reler a seleção e comparar; qualquer mudança devolve conflito e desfaz o lote inteiro); candidato único validado; transação única; ID da conta em `evidence.decided_by`; resumo de fontes sem janela, paginado em 100, 0,1 ms com 300 mil recibos; FK do resumo tem a mesma semântica diferida da tabela de recibos.
 
 Resultado dos testes: ver comentário na tarefa.
+
+## Reauditoria final (commit 247a0f8)
+
+Escopo: só o que mudou desde b0c1b66 (`occurrenceListenCandidates`, `ingest_trusted_replay.go`, `receiveActiveItem`, testes novos). Testes disparados por mim; resultado no comentário da tarefa.
+
+- [OK] occurrenceListenCandidates — a exclusão de evidência de eventos distintos (ID externo confiável distinto na mesma fonte; ordinal diferente no mesmo arquivo) agora vale também para o mesmo segundo; o RISCO ALTO da reauditoria anterior está resolvido. Testes novos cobrem os casos (a) a (f) pedidos (`TestOccurrenceDistinctSameSecond`, `TestOccurrenceTrustedReplay`).
+- [RISCO] internal/db/sqlite/ingest_trusted_replay.go — com o Revisar ligado, o reenvio do **mesmo ID externo confiável** abre um recibo de revisão `pending_duplicate` (um por original, id determinístico, sem inundar a fila). Esse comportamento veio do caso (f) que eu pedi no prompt; um mesmo ID confiável é por definição a mesma entrega, então tratá-lo como candidato a revisão é discutível (a idempotência já resolve). Decisão de produto: manter (útil para auditar reenvios) ou devolver o resultado idempotente sem fila. Não é bug.
+- [RISCO] ingest_review_test.go — o Codex trocou as chaves de idempotência dos testes ("first", "repeat", "manual") por vazio para exercitar o caminho sem ID; duas chaves diferentes no mesmo segundo continuam candidatas porque só IDs externos e ordinais de arquivo contam como evidência de eventos distintos. Coerente com o contrato; vale um teste nomeado para esse caso.
+- [OK] índice único do ID externo continua dono do recibo original (a cópia de revisão entra com `external_id_trusted=0`); `ON CONFLICT(receipt_id) DO NOTHING` garante idempotência da pendência.
+
+Sem BUG. Falta apenas a decisão de produto sobre o reenvio do mesmo ID confiável com Revisar ligado.
