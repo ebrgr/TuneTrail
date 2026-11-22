@@ -66,6 +66,15 @@ Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-125
 ---
 
 author: claude
+created: 2026-11-22T20:48:00Z
+
+---
+
+Decisão do usuário (22/11/2026): sem capturas de tela nesta issue; o aceite visual será feito por ele no servidor. O critério #4 passa a ser verificado pelo usuário.
+
+---
+
+author: claude
 created: 2026-11-22T20:58:00Z
 
 ---
@@ -80,6 +89,24 @@ created: 2026-11-22T21:03:00Z
 ---
 
 Reviewer: APROVADO, sem BUG. Riscos baixos: slug 'account' reservado, POST /account sem restrição de método, falta mensagem 'senha alterada' pós-troca (ISSUE-128), /account com query dá 400. Testes adminui/adminweb/webassets/webui/admin/engine ok. Aceite visual do usuário no servidor (sem capturas, por decisão dele).
+
+---
+
+author: claude
+created: 2026-11-22T21:15:00Z
+
+---
+
+Teste do usuário no servidor (22/11/2026): resgate de token em /admin/redeem mostrou 'Sua conta não tem permissão para acessar esta página.' e a página não orienta a senha. Diagnóstico: falha de CSRF/preauth no POST é exibida com a mensagem genérica de 403 (reproduzido com token CSRF inválido); fluxo normal funciona. Causa provável: cookies sem separação por porta em 127.0.0.1 (instância 4110 e 4125). Ajuste incluído na 125: mensagem de página expirada, regras da senha e confirmação no resgate, sucesso leva ao login com aviso.
+
+---
+
+author: claude
+created: 2026-11-22T21:20:00Z
+
+---
+
+Requisito do usuário (22/11/2026): todas as telas tocadas pela 125 seguem o padrão de cores e os mesmos estados de hover, active e foco do restante do app (tokens de tokens.css, button.large-button, a:hover, focus-visible global, .admin-sections), nos temas Yuu e Pearl, sem cor fixa nova.
 
 ---
 
@@ -111,11 +138,29 @@ Causa raiz do erro do usuário em /admin/redeem (22/11/2026): a página de resga
 ---
 
 author: claude
+created: 2026-11-22T22:13:00Z
+
+---
+
+Pedido do usuário (22/11/2026): a página de resgate deve ter uma caixa explícita orientando a sair do perfil root e abrir 'Todos os perfis' (/) antes de resgatar; com sessão aberta, versão enfática com Sair…. Perguntas em aberto levadas ao usuário: zona de perigo vazia na /account (recomendado remover até existir ação) e seletor de ícones do avatar (hoje campo de texto com 5 nomes; mover para a ISSUE-126 ou corrigir já).
+
+---
+
+author: claude
 created: 2026-11-22T22:16:00Z
 
 ---
 
 Resgate (22/11/2026): caixa de aviso no topo de /admin/redeem (role=note, estilo .account-warning) com links reais Sair… (/admin/sign-out) e Todos os perfis (/). Sem sessão: versão informativa; com sessão (SessionIdentity ok): versão enfática com o username da própria sessão. CSRF/origem e regras de senha inalterados. Testes em engine/account_issue125_test.go (visitante, root, comum, pt-BR, sem eco de token/senha). make check verde.
+
+---
+
+author: claude
+created: 2026-11-22T22:17:00Z
+
+---
+
+Decisões do usuário (22/11/2026): manter a zona de perigo vazia em /account; trocar já o campo de texto de ícone por dropdown (5 ícones + iniciais) na criação do perfil e no avatar, dentro da 125. A separação de 'Meu perfil' e 'Minha conta' segue na ISSUE-126.
 
 ---
 
@@ -136,4 +181,5 @@ created: 2026-11-22T22:25:00Z
 Aceite: aprovada pelo usuário em 22/11/2026, após testar no servidor (aceite visual feito pelo usuário; capturas dispensadas).
 
 ---
+
 <!-- COMMENTS:END -->
