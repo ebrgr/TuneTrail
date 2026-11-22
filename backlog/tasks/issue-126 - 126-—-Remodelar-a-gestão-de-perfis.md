@@ -4,7 +4,7 @@ title: 126 — Remodelar a gestão de perfis
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-22T22:51:00Z'
 labels:
   - ui
   - admin
@@ -44,6 +44,15 @@ created: 2026-11-20T18:33:00Z
 ---
 
 Reescopo (decisão do usuário em 20/11/2026, estudo da 163): absorve «Meu perfil» (gestão própria, sem informar ID ou slug) e a lista root de contas e perfis, reaproveitando os serviços da 160/162, com o aviso de que o relay segue ativo junto à opção de proteção. A exclusão de conta é zona root.
+
+---
+
+author: claude
+created: 2026-11-22T22:51:00Z
+
+---
+
+Decisão do usuário (22/11/2026): despachar a 126 a um agente Claude em worktree própria, com FASE DE DESENHO primeiro. Hoje 'Minha conta' (/account) e 'Meu perfil' (/admin?profile=N) parecem a mesma coisa e há dois caminhos para a gestão de perfil e conta. O agente deve avaliar a proposta original da 126 e alternativas (por exemplo um local único com abas Conta, Perfil, Chaves de API, Histórico, Relay, Saúde, e uma área root separada de Administração), apresentar opções com prós e contras e recomendação e PARAR para decisão do usuário antes de implementar. Sem capturas; o usuário testa no servidor.
 
 ---
 <!-- COMMENTS:END -->
