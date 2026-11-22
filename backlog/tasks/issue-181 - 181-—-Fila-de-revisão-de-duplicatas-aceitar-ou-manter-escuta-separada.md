@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-22T00:53:00Z'
+updated_date: '2026-11-22T00:58:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -112,6 +112,15 @@ created: 2026-11-22T00:53:00Z
 ---
 
 Verificação da correção final: o filtro de evidência de eventos distintos agora vale também para o segundo exato. Testes cobrem reentrega sem ID, ordinais distintos no mesmo arquivo, IDs confiáveis distintos, reenvio da mesma chave, isolamento entre perfis e Revisar ligado e desligado. Para uma reentrega por ID confiável fora de arquivo, depois de resolvido o recibo original, Revisar abre uma única pendência que preserva a chave original.
+
+---
+
+author: claude
+created: 2026-11-22T00:58:00Z
+
+---
+
+Reviewer (reauditoria final, commit 247a0f8): sem BUG; o RISCO ALTO anterior foi resolvido (repetições legítimas preservadas no mesmo segundo; testes a-f). Testes sqlite -race, engine, adminui e webui OK. Decisão de produto pendente: reenvio do mesmo ID externo confiável com Revisar ligado abre uma pendência (uma por original). Ver PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->
