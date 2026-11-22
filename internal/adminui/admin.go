@@ -117,6 +117,7 @@ type view struct {
 	DiscardTarget                       string
 	Inbox                               []db.IngestInboxGroup
 	InboxKeys                           []db.IngestInboxGroup
+	InboxMetadataIssues                 int64
 	InboxDays                           int
 	InboxKey                            string
 	RelayState                          *relay.ProfileView

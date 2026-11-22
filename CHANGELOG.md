@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Ingestion health shows linked counts for open items in the selected profile and adds icons to the Inbox and Outbox headings (ISSUE-188).
+
 ## [0.61] - 2026-11-22
 
 - Occurrence ingestion accepts listens without an album and counts them under Unknown release in track rankings grouped by release (ISSUE-186).

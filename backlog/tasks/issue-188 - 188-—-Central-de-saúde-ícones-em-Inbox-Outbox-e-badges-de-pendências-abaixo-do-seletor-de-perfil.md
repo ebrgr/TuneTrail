@@ -3,15 +3,18 @@ id: ISSUE-188
 title: >-
   188 — Central de saúde: ícones em Inbox/Outbox e badges de pendências abaixo
   do seletor de perfil
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-22T19:36:00Z'
-updated_date: '2026-11-22T19:38:00Z'
+updated_date: '2026-11-22T19:43:00Z'
 labels:
   - ui
   - ingestao
 milestone: m-13
 dependencies: []
+references:
+  - backlog/evidencias/issue-188/manifest.json
 type: feature
 ordinal: 201000
 ---
@@ -31,6 +34,24 @@ created: 2026-11-22T19:38:00Z
 ---
 
 Decisão do usuário (22/11/2026): combinação A — ícones Lucide Inbox (Inbox) e Send (Outbox). Ícones opcionais nas badges: ListChecks (revisões, aviso), CircleAlert (falhas permanentes, erro), TriangleAlert (metadados, aviso), RefreshCw (retry do outbox), Check (zerado). Interpretação das badges mantida como descrita; Reviewer após a entrega.
+
+---
+
+author: ebrgr
+created: 2026-11-22T19:38:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-188` na branch `feat/issue-188-central-de-saude-icones-em` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-22T19:43:00Z
+
+---
+
+Verificação: /admin/health exibe ícones decorativos nos títulos e quatro badges com links para as seções. Os totais usam dados já carregados do perfil, e a badge de metadados acompanha a janela e o filtro de chave do Inbox. Testes dos pacotes afetados com TUNETRAIL_WEB_DIR apontando para assets passaram, cobrindo contagens, zeros neutros, isolamento entre perfis e ícones. A referência de UI foi regenerada e make check passou (13/13 jornadas E2E). Capturas em Chromium nos temas Yuu e Pearl verificaram contraste mínimo de 6,38:1, foco e navegação por teclado.
 
 ---
 <!-- COMMENTS:END -->

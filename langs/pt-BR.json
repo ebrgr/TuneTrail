@@ -1,4 +1,7 @@
 {
+  "admin.health.open_items": "Pendências em aberto",
+  "admin.health.metadata_issues": "Metadados faltantes ou incompletos",
+  "admin.health.relay_pending": "Entregas pendentes no Outbox",
   "admin.health.inbox": "Inbox",
   "admin.health.outbox": "Outbox",
   "admin.health.imports": "Importações",

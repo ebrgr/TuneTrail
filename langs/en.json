@@ -1,4 +1,7 @@
 {
+  "admin.health.open_items": "Open items",
+  "admin.health.metadata_issues": "Missing or incomplete metadata",
+  "admin.health.relay_pending": "Pending Outbox deliveries",
   "admin.health.inbox": "Inbox",
   "admin.health.outbox": "Outbox",
   "admin.health.imports": "File imports",

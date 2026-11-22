@@ -117,12 +117,15 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var inbox, keys []db.IngestInboxGroup
+	var metadataIssues int64
 	for _, group := range groups {
 		if len(keys) == 0 || keys[len(keys)-1].Key != group.Key {
 			keys = append(keys, group)
 		}
 		if key == "" || selected == group.Key {
 			inbox = append(inbox, group)
+			// Match the Inbox window and key filter using the existing group totals.
+			metadataIssues += group.Missing + group.Incomplete
 		}
 	}
 	// A receipt link from another section opens its individual confirmation.
@@ -147,7 +150,7 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 		Nav: h.navigation(r, identity, profile, "health"), Health: &health,
 		Profile: profile, Profiles: profiles, User: identity.User, CSRF: token,
 		Discard: discard, DiscardTarget: discardTarget,
-		Inbox: inbox, InboxKeys: keys, InboxDays: days, InboxKey: key,
+		Inbox: inbox, InboxKeys: keys, InboxDays: days, InboxKey: key, InboxMetadataIssues: metadataIssues,
 	})
 }
 

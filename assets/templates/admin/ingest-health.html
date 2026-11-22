@@ -15,13 +15,27 @@
       <button>{{tr "admin.text.apply" "Apply"}}</button>
     </form>
   {{end}}
+  <nav class="ingestion-health-badges" aria-label="{{tr "admin.health.open_items" "Open items"}}">
+    <a href="#health-review"{{if .Health.ReviewCount}} data-tone="warning"{{end}}>
+      {{icon "ListChecks"}} <span>{{tr "admin.health.review_queue" "Pending reviews"}}: {{.Health.ReviewCount}}</span>
+    </a>
+    <a href="#health-failures"{{if .Health.FailureCount}} data-tone="error"{{end}}>
+      {{icon "CircleAlert"}} <span>{{tr "admin.health.failures" "Permanent failures"}}: {{.Health.FailureCount}}</span>
+    </a>
+    <a href="#health-receipts"{{if .InboxMetadataIssues}} data-tone="warning"{{end}}>
+      {{icon "TriangleAlert"}} <span>{{tr "admin.health.metadata_issues" "Missing or incomplete metadata"}}: {{.InboxMetadataIssues}}</span>
+    </a>
+    <a href="#health-relay"{{if .Health.Open}} data-tone="warning"{{end}}>
+      {{icon "RefreshCw"}} <span>{{tr "admin.health.relay_pending" "Pending Outbox deliveries"}}: {{.Health.Open}}</span>
+    </a>
+  </nav>
   <nav class="admin-sections" aria-label="{{tr "admin.health.review_queue" "Pending reviews"}}">
     <a href="#health-discard">{{tr "admin.health.discard" "Discard"}}</a>
     <a href="#health-review">{{tr "admin.health.review_queue" "Pending reviews"}} ({{.Health.ReviewCount}})</a>
   </nav>
   <div class="ingestion-health-grid">
   <div class="ingestion-health-column">
-  <h2>{{tr "admin.health.inbox" "Inbox"}}</h2>
+  <h2>{{icon "Inbox"}} {{tr "admin.health.inbox" "Inbox"}}</h2>
   {{template "admin/health-inbox" .}}
   <section class="card ingestion-diagnostics" aria-labelledby="health-review">
     <h3 id="health-review">{{tr "admin.health.review_queue" "Pending reviews"}}</h3>
@@ -217,7 +231,7 @@
   </section>
   </div>
   <div class="ingestion-health-column">
-  <h2>{{tr "admin.health.outbox" "Outbox"}}</h2>
+  <h2>{{icon "Send"}} {{tr "admin.health.outbox" "Outbox"}}</h2>
   <section class="card ingestion-diagnostics" aria-labelledby="health-relay">
     <h3 id="health-relay">{{tr "admin.health.relay" "Relay queue and failures"}}</h3>
     {{if .Health.RelayTracked}}

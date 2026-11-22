@@ -1,0 +1,38 @@
+{
+  "browser": "157.0.8103.79",
+  "fixtureOnly": true,
+  "externalFonts": "allowed; failures recorded",
+  "entries": [
+    {
+      "file": "admin-ingest-health-yuu-1440.png",
+      "page": "admin/ingest-health",
+      "theme": "yuu",
+      "width": 1440,
+      "height": 900,
+      "badgeTextContrast": [
+        12.742205882047342,
+        13.818334259140636,
+        12.742205882047342,
+        12.40802310806392
+      ],
+      "overflow": false,
+      "failedFonts": []
+    },
+    {
+      "file": "admin-ingest-health-pearl-390.png",
+      "page": "admin/ingest-health",
+      "theme": "pearl",
+      "width": 390,
+      "height": 900,
+      "badgeTextContrast": [
+        6.720238111248176,
+        6.487469728786812,
+        6.720238111248176,
+        6.384755551382257
+      ],
+      "overflow": false,
+      "failedFonts": []
+    }
+  ],
+  "typography": []
+}

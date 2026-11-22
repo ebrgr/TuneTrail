@@ -360,6 +360,19 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 }
 .admin-main .ingestion-health .admin-sections a:hover,
 .admin-main .ingestion-health .admin-sections a[aria-current=page] { background:var(--color-bg-tertiary); }
+.admin-main .ingestion-health-badges { display:flex; flex-wrap:wrap; gap:var(--space-2); }
+.admin-main .ingestion-health-badges a {
+  --badge-tone:var(--color-fg-secondary);
+  display:inline-flex; align-items:center; gap:var(--space-2); min-height:36px;
+  padding:4px 12px; border:1px solid var(--badge-tone); border-radius:var(--radius-md);
+  background:color-mix(in srgb,var(--badge-tone) 12%,var(--color-bg));
+  color:var(--color-fg); font-size:.875rem; text-decoration:none;
+}
+.admin-main .ingestion-health-badges a[data-tone="warning"] { --badge-tone:var(--color-warning); }
+.admin-main .ingestion-health-badges a[data-tone="error"] { --badge-tone:var(--color-error); }
+.admin-main .ingestion-health-badges a:hover { text-decoration:underline; }
+.admin-main .ingestion-health-badges svg,
+.admin-main .ingestion-health-column > h2 svg { width:18px; height:18px; flex-shrink:0; }
 .admin-main .ingestion-health form { flex-direction:row; flex-wrap:wrap; align-items:end; gap:var(--space-2); margin:0 0 var(--space-5); }
 .admin-main .ingestion-health label { display:flex; flex-direction:column; gap:6px; flex:1 1 11.25rem; width:auto; min-width:0; }
 .admin-main .ingestion-health select {
@@ -377,7 +390,7 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:var(--space-5);
 }
 .admin-main .ingestion-health-column { display:grid; min-width:0; gap:var(--space-5); }
-.admin-main .ingestion-health-column > h2 { margin:0; }
+.admin-main .ingestion-health-column > h2 { display:flex; align-items:center; gap:var(--space-2); margin:0; }
 .admin-main .ingestion-health .card { min-width:0; padding:var(--space-5); margin:0; overflow-wrap:anywhere; }
 .admin-main .ingestion-health .ingestion-reprocess { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .ingestion-discard-link { padding-inline:12px; }

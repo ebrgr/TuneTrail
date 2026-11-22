@@ -95,6 +95,14 @@ func TestIngestHealthIsolation(t *testing.T) {
 	linked := a.request(http.MethodGet, health+"?profile=1&discard_receipt=health%3A1", "", "", true)
 	require.Equal(t, http.StatusConflict, linked.Code)
 	require.Contains(t, linked.Body.String(), "Use listen deletion for receipts linked to a listen.")
+
+	// A retry counts only for the profile whose destination owns the delivery.
+	require.NoError(t, a.store.Exec(`UPDATE outbox SET state='retryable',next_attempt_at=? WHERE id='health:1'`, stamp))
+	for profile, count := range map[int]int{1: 1, 2: 0} {
+		page := a.request("GET", fmt.Sprintf("/admin/health?profile=%d", profile), "", "", true)
+		require.Equal(t, http.StatusOK, page.Code)
+		require.Contains(t, page.Body.String(), fmt.Sprintf("<span>Pending Outbox deliveries: %d</span>", count))
+	}
 }
 
 // TestIngestHealthReprocess uses the same profile authorization for the queue and its action.
@@ -136,6 +144,8 @@ func TestIngestHealthReprocess(t *testing.T) {
 	csrf := regexp.MustCompile(`name="csrf_token" value="([^"]+)"`)
 	ownerPage := owner.request("GET", "/admin/health?profile=2", "", "", true)
 	require.Equal(t, http.StatusOK, ownerPage.Code)
+	require.Contains(t, ownerPage.Body.String(), `href="#health-failures" data-tone="error"`)
+	require.Contains(t, ownerPage.Body.String(), "<span>Permanent failures: 1</span>")
 	require.Contains(t, ownerPage.Body.String(), second)
 	require.NotContains(t, ownerPage.Body.String(), first)
 	require.Contains(t, ownerPage.Body.String(), payload)
@@ -249,6 +259,8 @@ func TestIngestHealthReviewActions(t *testing.T) {
 		w := app.request("GET", fmt.Sprintf("/admin/health?profile=%d", profile), "", "", true)
 		html := w.Body.String()
 		require.Equal(t, http.StatusOK, w.Code, html)
+		require.Contains(t, html, `href="#health-review" data-tone="warning"`)
+		require.Contains(t, html, "<span>Pending reviews: 1</span>")
 		for _, want := range []string{"Pending reviews (1)", "Accept all as duplicates", "Keep all as separate listens", "View evidence", "Accept as duplicate", "Keep as a separate listen", receipts[profile]} {
 			require.Contains(t, html, want)
 		}
@@ -324,13 +336,27 @@ func TestIngestHealthReviewActions(t *testing.T) {
 
 func TestIngestHealthInboxKeyFilter(t *testing.T) {
 	a := newProfileTestApp(t)
+	// The empty profile shows four neutral links and decorative heading icons.
+	empty := a.request("GET", "/admin/health?profile=1", "", "", true)
+	require.Equal(t, http.StatusOK, empty.Code)
+	for anchor, label := range map[string]string{
+		"review": "Pending reviews", "failures": "Permanent failures",
+		"receipts": "Missing or incomplete metadata", "relay": "Pending Outbox deliveries",
+	} {
+		require.Regexp(t, `(?s)<a href="#health-`+anchor+`">\s*<svg .*?</svg>\s+<span>`+label+`: 0</span>\s*</a>`, empty.Body.String())
+	}
+	require.Regexp(t, `<h2><svg [^>]*class="lucide lucide-inbox" aria-hidden="true">.*?</svg>\s+Inbox</h2>`, empty.Body.String())
+	require.Regexp(t, `<h2><svg [^>]*class="lucide lucide-send" aria-hidden="true">.*?</svg>\s+Outbox</h2>`, empty.Body.String())
+
 	require.NoError(t, a.store.Exec(`INSERT INTO api_keys(id,key,profile_id,created_at,label)
 		VALUES(1841,'INBOX_SECRET_A',1,0,'Inbox player A'),(1842,'INBOX_SECRET_B',1,0,'Inbox player B')`))
 	for _, input := range []struct{ key, title string }{
 		{"INBOX_SECRET_A", "Track from A"}, {"INBOX_SECRET_B", "Track from B"},
 		{"second-key", "Track from a different profile"},
 	} {
-		result := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", input.title, 1714564800), input.key, false)
+		// Omit the release so each submitted receipt contributes to the metadata count.
+		payload := strings.Replace(listenBody("single", input.title, 1714564800), `"release_name":"Shared Album",`, "", 1)
+		result := a.request("POST", "/apis/listenbrainz/1/submit-listens", payload, input.key, false)
 		require.Equal(t, http.StatusOK, result.Code)
 	}
 	count, err := a.store.Count(`SELECT count(*) FROM ingest_events
@@ -341,6 +367,11 @@ func TestIngestHealthInboxKeyFilter(t *testing.T) {
 	page := a.request("GET", "/admin/health?profile=1&days=7&key=1841", "", "", true)
 	require.Equal(t, http.StatusOK, page.Code)
 	body := page.Body.String()
+	require.Contains(t, body, `href="#health-receipts" data-tone="warning"`)
+	require.Contains(t, body, "<span>Missing or incomplete metadata: 1</span>")
+	unfiltered := a.request("GET", "/admin/health?profile=1&days=7", "", "", true)
+	require.Equal(t, http.StatusOK, unfiltered.Code)
+	require.Contains(t, unfiltered.Body.String(), "<span>Missing or incomplete metadata: 2</span>")
 	require.Contains(t, body, "Inbox player A")
 	require.Contains(t, body, "Removed key")
 	require.Contains(t, body, "Track from A")

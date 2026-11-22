@@ -14,7 +14,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=7b192d6ad7cb30843a0605175900f6b3ac58367425ab953e4a78139da5dc9bd3">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=fe1dbc4c7ccbbee44e38ab61e88918a44d1ab18f2139b794d124350466ff5efc">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=9c2de13e09eca06a2886463bdb012dcba5d419ab1cedf0b740cbcffa2b2d6bdc"></script>
       
@@ -448,13 +448,32 @@
       <button>Apply</button>
     </form>
   
+  <nav class="ingestion-health-badges" aria-label="Open items">
+    <a href="#health-review" data-tone="warning">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-checks" aria-hidden="true"><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path></svg>
+ <span>Pending reviews: 1</span>
+    </a>
+    <a href="#health-failures" data-tone="error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-alert" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
+ <span>Permanent failures: 1</span>
+    </a>
+    <a href="#health-receipts" data-tone="warning">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+ <span>Missing or incomplete metadata: 2</span>
+    </a>
+    <a href="#health-relay">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-cw" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+ <span>Pending Outbox deliveries: 0</span>
+    </a>
+  </nav>
   <nav class="admin-sections" aria-label="Pending reviews">
     <a href="#health-discard">Discard</a>
     <a href="#health-review">Pending reviews (1)</a>
   </nav>
   <div class="ingestion-health-grid">
   <div class="ingestion-health-column">
-  <h2>Inbox</h2>
+  <h2><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-inbox" aria-hidden="true"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+ Inbox</h2>
   
 <section class="card ingestion-diagnostics" aria-labelledby="health-receipts">
   <h3 id="health-receipts">Receipts by key and client</h3>
@@ -771,7 +790,8 @@
   </section>
   </div>
   <div class="ingestion-health-column">
-  <h2>Outbox</h2>
+  <h2><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
+ Outbox</h2>
   <section class="card ingestion-diagnostics" aria-labelledby="health-relay">
     <h3 id="health-relay">Relay queue and failures</h3>
     
