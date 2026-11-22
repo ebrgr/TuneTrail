@@ -782,5 +782,9 @@
   "admin.account.error_username_invalid": "Use 1 to 32 letters, numbers, dots, underscores or hyphens.",
   "admin.account.error_username_taken": "This username is not available.",
   "admin.account.error_password_invalid": "Use between 8 and 72 characters.",
-  "admin.account.error_password_mismatch": "The password and confirmation do not match."
+  "admin.account.error_password_mismatch": "The password and confirmation do not match.",
+  "admin.redeem.steps": "Enter your username, the token you received from the administrator and choose a password. Then sign in as usual.",
+  "admin.redeem.password_rules": "At least 8 characters and at most 72 bytes (accents and emoji use more than one). No other rules: a long phrase or a password manager works well.",
+  "admin.account.redeemed": "Password set. Sign in with your username and the new password.",
+  "admin.message.page_expired": "This page expired or was opened in another tab. Try again."
 }

@@ -123,3 +123,21 @@ func TestAccountPasswordCard125(t *testing.T) {
 		require.NotContains(t, taskRequest139(a, "GET", "/account", c, nil, nil).Body.String(), `id="account-password"`)
 	}
 }
+
+// TestRedeemSignInNotice125 shows the explicit next step after a token redemption.
+func TestRedeemSignInNotice125(t *testing.T) {
+	a := taskApp139(t)
+	page := taskRequest139(a, "GET", "/admin?redeemed=1", "", nil, nil)
+	require.Equal(t, 200, page.Code)
+	require.Contains(t, page.Body.String(), "Password set. Sign in with your username and the new password.")
+	require.Contains(t, page.Body.String(), `action="/admin/login"`)
+	// A signed-in browser that follows the same redirect lands on its account.
+	signed := taskRequest139(a, "GET", "/admin?redeemed=1", a.cookie, nil, nil)
+	require.Equal(t, 303, signed.Code)
+	require.Equal(t, "/account", signed.Header().Get("Location"))
+	// A stale login form asks to retry instead of claiming a missing permission.
+	stale := taskRequest139(a, "POST", "/admin/login", "", url.Values{"csrf_token": {"stale"}, "username": {"x"}, "password": {"y"}}, nil)
+	require.Equal(t, 403, stale.Code)
+	require.Contains(t, stale.Body.String(), "This page expired or was opened in another tab. Try again.")
+	require.NotContains(t, stale.Body.String(), "does not have permission")
+}

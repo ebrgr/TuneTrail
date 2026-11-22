@@ -128,6 +128,7 @@ type view struct {
 	Account                             db.AccountDetails
 	IssuedToken                         string
 	AccountPage                         *accountState
+	RedeemUsername, RedeemField         string
 }
 
 // New constructs the protected handler and a bounded pre-login endpoint.
@@ -291,6 +292,11 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 			h.fail(w, err)
 			return
 		}
+		// A stale redemption redirect for an already signed-in browser lands on the account.
+		if r.URL.Query().Has("redeemed") {
+			http.Redirect(w, r, webassets.AccountDestination, http.StatusSeeOther)
+			return
+		}
 		if err := h.authorizePage(r, identity); err != nil {
 			h.failForSession(w, r, identity, err)
 			return
@@ -444,12 +450,27 @@ func (h *Handler) renderLogin(w http.ResponseWriter, r *http.Request, status int
 	if next == "" && query.Get("next") == "" {
 		next = adminweb.SafeReturn(r.URL.RequestURI())
 	}
-	h.render(w, status, view{Login: true, CSRF: token, Next: next, Error: message})
+	v := view{Login: true, CSRF: token, Next: next, Error: message}
+	// ISSUE-125: the redirect after a successful token redemption asks for a normal sign-in.
+	if query.Get("redeemed") == "1" {
+		v.Notice = adminText(i18n.ViewOf(w), "admin.account.redeemed", "Password set. Sign in with your username and the new password.")
+	}
+	h.render(w, status, v)
 }
 
 // postLogin validates preauthentication CSRF before checking credentials.
 func (h *Handler) postLogin(w http.ResponseWriter, r *http.Request) {
 	f, err := h.csrf.ParseLoginForm(w, r, adminweb.FormLimits{MaxBytes: 8192, TempDir: h.tempDir})
+	if errors.Is(err, adminweb.ErrCSRF) {
+		// ISSUE-125: an expired or foreign preauth cookie gets a fresh form, not a permission error.
+		token, tokenErr := h.csrf.LoginToken(w, r)
+		if tokenErr != nil {
+			h.fail(w, tokenErr)
+			return
+		}
+		h.render(w, http.StatusForbidden, view{Login: true, CSRF: token, Error: "This page expired or was opened in another tab. Try again."})
+		return
+	}
 	if err != nil {
 		h.fail(w, err)
 		return

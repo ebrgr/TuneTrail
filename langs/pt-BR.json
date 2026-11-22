@@ -782,5 +782,9 @@
   "admin.account.error_username_invalid": "Use de 1 a 32 letras, números, pontos, sublinhados ou hifens.",
   "admin.account.error_username_taken": "Este nome de usuário não está disponível.",
   "admin.account.error_password_invalid": "Use de 8 a 72 caracteres.",
-  "admin.account.error_password_mismatch": "A senha e a confirmação não são iguais."
+  "admin.account.error_password_mismatch": "A senha e a confirmação não são iguais.",
+  "admin.redeem.steps": "Informe seu usuário, o token que recebeu do administrador e escolha uma senha. Depois, entre normalmente.",
+  "admin.redeem.password_rules": "No mínimo 8 caracteres e no máximo 72 bytes (letras acentuadas e emojis ocupam mais de um byte). Não há outras regras de composição: uma frase longa ou um gerenciador de senhas funciona bem.",
+  "admin.account.redeemed": "Senha definida. Entre com seu usuário e a nova senha.",
+  "admin.message.page_expired": "Esta página expirou ou foi aberta em outra aba. Tente novamente."
 }

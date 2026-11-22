@@ -31,7 +31,7 @@
             {{- end -}}
           </h1>
           {{if .Error}}
-            <p role="alert">{{.Error}}</p>
+            <p id="form-error" role="alert">{{.Error}}</p>
           {{end}}
           {{if and .Notice (not .AccountPage)}}
             <p role="status">{{.Notice}}</p>
@@ -44,11 +44,32 @@
             <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
             <p><a href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.profile" "Profile"}}</a></p>
           {{else if .Redeem}}
+            <p>
+              {{- tr "admin.redeem.steps" "Enter your username, the token you received from the administrator and choose a password. Then sign in as usual." -}}
+            </p>
             <form method="post" action="/admin/redeem">
               <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              <label>{{tr "admin.text.username" "Username"}} <input name="username" autocomplete="username" required></label>
-              <label>{{tr "admin.account.token" "Account token"}} <input name="account_token" autocomplete="off" required></label>
-              <label>{{tr "admin.account.new_password" "New password"}} <input type="password" name="password" autocomplete="new-password" required></label>
+              <label>{{tr "admin.text.username" "Username"}}
+                <input name="username" value="{{.RedeemUsername}}" autocomplete="username" required>
+              </label>
+              <label>{{tr "admin.account.token" "Account token"}}
+                <input name="account_token" autocomplete="off" required
+                  {{if and .Error (eq .RedeemField "account_token")}}aria-invalid="true" aria-describedby="form-error"{{end}}>
+              </label>
+              <label>{{tr "admin.account.new_password" "New password"}}
+                <input type="password" name="password" autocomplete="new-password" minlength="8" required
+                  aria-describedby="redeem-password-rules{{if and .Error (eq .RedeemField "password")}} form-error{{end}}"
+                  {{if and .Error (eq .RedeemField "password")}}aria-invalid="true"{{end}}>
+              </label>
+              <small id="redeem-password-rules">
+                {{- tr "admin.redeem.password_rules"
+                  (printf "%s%s" "At least 8 characters and at most 72 bytes (accents and emoji use more than one). "
+                    "No other rules: a long phrase or a password manager works well.") -}}
+              </small>
+              <label>{{tr "admin.text.confirm_password" "Confirm password"}}
+                <input type="password" name="confirm_password" autocomplete="new-password" minlength="8" required
+                  {{if and .Error (eq .RedeemField "confirm_password")}}aria-invalid="true" aria-describedby="form-error"{{end}}>
+              </label>
               <button>{{tr "admin.account.redeem" "Redeem account token"}}</button>
             </form>
           {{else if .Login}}

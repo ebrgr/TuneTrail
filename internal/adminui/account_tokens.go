@@ -1,8 +1,12 @@
 package adminui
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
@@ -16,39 +20,84 @@ func (h *Handler) redeemAccount(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, db.ErrInvalidInput)
 		return
 	}
+	v := view{Redeem: true}
 	status := http.StatusOK
-	message := ""
 	if r.Method == http.MethodPost {
+		draft := peekRedeemUsername(r)
 		f, err := h.csrf.ParseLoginForm(w, r, adminweb.FormLimits{MaxBytes: 8192, TempDir: h.tempDir})
+		if errors.Is(err, adminweb.ErrCSRF) {
+			// ISSUE-125: a stale or foreign preauth cookie is not a permission problem. Show the
+			// form again with a fresh token; only the username is kept, never the token or password.
+			v.RedeemUsername = draft
+			h.renderRedeem(w, r, http.StatusForbidden, v, "This page expired or was opened in another tab. Try again.", "")
+			return
+		}
 		if err != nil {
 			h.fail(w, err)
 			return
 		}
 		defer f.Close()
-		if !fields(f, "username", "account_token", "password") {
+		if !fields(f, "username", "account_token", "password", "confirm_password") {
 			h.fail(w, db.ErrInvalidInput)
 			return
 		}
-		err = admin.RedeemProfileAccountToken(r.Context(), h.store, f.SingleValue("username"), f.SingleValue("account_token"), f.SingleValue("password"))
+		v.RedeemUsername = f.SingleValue("username")
+		password := f.SingleValue("password")
+		if password != f.SingleValue("confirm_password") {
+			h.renderRedeem(w, r, http.StatusBadRequest, v, msgPasswordMismatch, "confirm_password")
+			return
+		}
+		err = admin.RedeemProfileAccountToken(r.Context(), h.store, v.RedeemUsername, f.SingleValue("account_token"), password)
 		switch {
 		case err == nil:
-			http.Redirect(w, r, "/admin", http.StatusSeeOther)
+			// The sign-in form explains the next step; no session is created here.
+			http.Redirect(w, r, "/admin?redeemed=1", http.StatusSeeOther)
 			return
 		case errors.Is(err, db.ErrAccountToken):
 			status = http.StatusBadRequest
-			message = adminText(i18n.ViewOf(w), "admin.account.invalid_token", "Invalid or expired account token.")
+			h.renderRedeem(w, r, status, v, adminText(i18n.ViewOf(w), "admin.account.invalid_token", "Invalid or expired account token."), "account_token")
+			return
 		case errors.Is(err, db.ErrInvalidInput):
 			status = http.StatusBadRequest
-			message = adminText(i18n.ViewOf(w), "admin.account.invalid_password", "Use a password of at least 8 characters and at most 72 bytes.")
+			h.renderRedeem(w, r, status, v, adminText(i18n.ViewOf(w), "admin.account.invalid_password", "Use a password of at least 8 characters and at most 72 bytes."), "password")
+			return
 		default:
 			h.fail(w, err)
 			return
 		}
 	}
+	h.renderRedeem(w, r, status, v, "", "")
+}
+
+// renderRedeem issues a fresh pre-session token and renders the redemption form.
+func (h *Handler) renderRedeem(w http.ResponseWriter, r *http.Request, status int, v view, message, field string) {
 	csrf, err := h.csrf.LoginToken(w, r)
 	if err != nil {
 		h.fail(w, err)
 		return
 	}
-	h.render(w, status, view{Redeem: true, CSRF: csrf, Error: message})
+	v.CSRF, v.Error, v.RedeemField = csrf, message, field
+	h.render(w, status, v)
+}
+
+// peekRedeemUsername reads a short username from the leading bytes of an urlencoded body and
+// restores the body, so the CSRF parser sees the request unchanged. Nothing else is kept.
+func peekRedeemUsername(r *http.Request) string {
+	if r.Body == nil || !strings.HasPrefix(r.Header.Get("Content-Type"), "application/x-www-form-urlencoded") {
+		return ""
+	}
+	orig := r.Body
+	head, _ := io.ReadAll(io.LimitReader(orig, 8193))
+	r.Body = struct {
+		io.Reader
+		io.Closer
+	}{io.MultiReader(bytes.NewReader(head), orig), orig}
+	if len(head) > 8192 {
+		return ""
+	}
+	values, err := url.ParseQuery(string(head))
+	if err != nil || len(values.Get("username")) > 64 {
+		return ""
+	}
+	return values.Get("username")
 }
