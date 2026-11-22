@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.59] - 2026-11-22
+
 - Ingestion health separates incoming receipts from relay deliveries and shows receipt counts and missing metadata by API key, client, and time window (ISSUE-184).
 
 ## [0.58] - 2026-11-22

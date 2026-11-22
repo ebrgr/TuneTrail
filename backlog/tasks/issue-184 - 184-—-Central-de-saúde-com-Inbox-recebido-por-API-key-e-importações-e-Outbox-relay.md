@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T23:31:00Z'
-updated_date: '2026-11-22T15:32:00Z'
+updated_date: '2026-11-22T15:33:00Z'
 labels:
   - ingestao
   - ui
@@ -80,6 +80,15 @@ created: 2026-11-22T15:32:00Z
 ---
 
 Aceite do usuário em 22/11/2026: aceito sem Advisor e autorizado a publicar (sem push). Riscos aceitos e registrados: migração v19 leva 7,0 s no startup com 300 mil recibos; gatilhos do resumo diário acrescentam escritas na admissão (remedir o p95 de ACK na ISSUE-172); a classificação de metadados depende das tags JSON do snapshot.
+
+---
+
+author: ebrgr
+created: 2026-11-22T15:33:00Z
+
+---
+
+Publicação: versão 0.59 (tag `v0.59`), branch `feat/issue-184-central-de-saude-com-inbox` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
