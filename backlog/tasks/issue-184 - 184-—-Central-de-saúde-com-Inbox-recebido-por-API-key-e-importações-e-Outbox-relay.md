@@ -3,11 +3,11 @@ id: ISSUE-184
 title: >-
   184 — Central de saúde com Inbox (recebido por API key e importações) e Outbox
   (relay)
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T23:31:00Z'
-updated_date: '2026-11-22T15:23:00Z'
+updated_date: '2026-11-22T15:32:00Z'
 labels:
   - ingestao
   - ui
@@ -62,6 +62,15 @@ created: 2026-11-22T15:23:00Z
 ---
 
 Reviewer: sem BUG; 4 RISCOs (migração v19 com 7,0 s em 300 mil recibos e reconstrução de api_keys conferida; write amplification dos gatilhos do resumo diário; classificação de metadados acoplada às tags do snapshot; exemplo exibe título/artista ao dono e root). Testes sqlite -race, engine, handlers, middleware, adminui e webui OK. Ver backlog/evidencias/issue-184/PARECER-REVIEWER.md. Advisor (effort high) recomendado pela migração e exposição de dados; pendente a pedido do usuário.
+
+---
+
+author: ebrgr
+created: 2026-11-22T15:32:00Z
+
+---
+
+Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG; consultas 6,3 a 8,3 ms com 300 mil recibos; tela conferida em 390/1100/1500 px; Advisor dispensado pelo usuário. ACs 1 a 5 marcados. Riscos aceitos: migração v19 de 7,0 s, escritas extras do resumo diário, classificação acoplada às tags do snapshot.
 
 ---
 <!-- COMMENTS:END -->
