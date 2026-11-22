@@ -11,3 +11,15 @@ Base: leitura do diff e dos arquivos centrais; testes focados disparados por mim
 - [OK] escopo: só `event_id IS NULL` e estados `received/retryable/pending_identity/pending_duplicate/invalid` sem lease ativa; aceitos, duplicados e ligados a escuta ficam protegidos e orientam para a exclusão de escuta; sem evento não há intenção de relay (a outbox é por `event_id`); CAS por `resolution_version`, `work_version`, estado e `parked_at`; o descarte do lote é atômico (qualquer divergência desfaz tudo); POST + CSRF + confirmação; rastro sem snapshot nem corpo bruto; FKs em cascata removem observações e revisões, preservando só o rastro.
 
 Um provável bug (reenvio de ID confiável). Sem outros achados bloqueantes.
+
+## Reauditoria após as correções (commit 6981a53)
+
+Escopo: só o que mudou desde 2560826 (`ingest_discard.go`, migração 020, handler). Testes disparados por mim; resultado no comentário da tarefa.
+
+- [OK] BUG resolvido: `ingest_discards` ganhou `id AUTOINCREMENT` (uma linha por descarte, índice por recibo), e o CAS passou a incluir `received_at` e a "geração" do recibo (último id de descarte), de modo que um recibo recriado com o mesmo ID, as mesmas versões e o mesmo segundo é distinguido. A v20 ainda está só na branch (a v0.59 é v19), então editar a migração é seguro.
+- [OK] Operação em massa: uma confirmação cobre o conjunto elegível inteiro (digest sobre o conjunto ordenado, sem expor IDs no formulário); o servidor executa lotes de até 500, relendo e comparando o conjunto restante com a seleção original antes de cada lote; qualquer divergência devolve conflito e preserva os lotes já concluídos, com mensagem explícita na tela.
+- [OK] Retenção: 90 dias, com limpeza de até 500 linhas vencidas do perfil a cada descarte bem-sucedido.
+- [RISCO] discardIngestSet relê todo o conjunto restante a cada lote (custo O(n²/500)): 20 transações para 10 mil leem 200 mil linhas (2,8 s medidos), mas uma fila de centenas de milhares de recibos ficaria lenta; aceitável hoje, a medir de novo se as filas crescerem.
+- [RISCO] qualquer recibo novo que entre no conjunto elegível durante um descarte longo (nova falha, por exemplo) provoca conflito e interrompe o descarte nos lotes seguintes (seguro, mas exige reabrir a página).
+
+Sem BUG. Os riscos são de escala e usabilidade.
