@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T23:31:00Z'
-updated_date: '2026-11-22T15:17:00Z'
+updated_date: '2026-11-22T15:23:00Z'
 labels:
   - ingestao
   - ui
@@ -53,6 +53,15 @@ created: 2026-11-22T15:17:00Z
 ---
 
 Verificação: Inbox por chave e cliente, importações e metadados; Outbox de relay com revisão e reprocessamento no Inbox. Contadores abaixo de 9 ms nas três janelas com 300 mil recibos. Migração medida em 7,00 s durante o startup. Make check, testes direcionados com detector de corridas e Orca em 390, 1100 e 1500 px passaram. Evidência em backlog/evidencias/issue-184/VERIFICACAO.md.
+
+---
+
+author: claude
+created: 2026-11-22T15:23:00Z
+
+---
+
+Reviewer: sem BUG; 4 RISCOs (migração v19 com 7,0 s em 300 mil recibos e reconstrução de api_keys conferida; write amplification dos gatilhos do resumo diário; classificação de metadados acoplada às tags do snapshot; exemplo exibe título/artista ao dono e root). Testes sqlite -race, engine, handlers, middleware, adminui e webui OK. Ver backlog/evidencias/issue-184/PARECER-REVIEWER.md. Advisor (effort high) recomendado pela migração e exposição de dados; pendente a pedido do usuário.
 
 ---
 <!-- COMMENTS:END -->
