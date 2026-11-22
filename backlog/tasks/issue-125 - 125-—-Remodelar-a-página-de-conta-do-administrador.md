@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T21:52:00Z'
+updated_date: '2026-11-22T22:16:00Z'
 labels:
   - ui
   - admin
@@ -107,6 +107,15 @@ created: 2026-11-22T21:52:00Z
 ---
 
 Causa raiz do erro do usuário em /admin/redeem (22/11/2026): a página de resgate declarava Referrer-Policy: no-referrer; sob essa política os navegadores enviam Origin: null no POST do formulário, e a checagem same-origin recusava com a mensagem de permissão (curl e testes não reproduziam porque enviavam Origin correto). Correção: Referrer-Policy same-origin na página de resgate (sem segredo na URL; query é recusada), recusa de origem no resgate mostra a mensagem de página expirada com formulário novo, teste de regressão com Origin: null. make check verde, 13/13 E2E.
+
+---
+
+author: claude
+created: 2026-11-22T22:16:00Z
+
+---
+
+Resgate (22/11/2026): caixa de aviso no topo de /admin/redeem (role=note, estilo .account-warning) com links reais Sair… (/admin/sign-out) e Todos os perfis (/). Sem sessão: versão informativa; com sessão (SessionIdentity ok): versão enfática com o username da própria sessão. CSRF/origem e regras de senha inalterados. Testes em engine/account_issue125_test.go (visitante, root, comum, pt-BR, sem eco de token/senha). make check verde.
 
 ---
 <!-- COMMENTS:END -->
