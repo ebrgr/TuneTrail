@@ -3,7 +3,7 @@ id: ISSUE-182
 title: >-
   182 — Teto vitalício de tentativas e reprocessamento em massa das falhas do
   resolvedor
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T21:57:00Z'
@@ -96,6 +96,15 @@ created: 2026-11-22T14:58:00Z
 ---
 
 Verificação: make check 13/13 E2E (Codex); go test -race sqlite/engine/adminui/webui OK; Reviewer sem BUG após 2 reauditorias; Advisor (effort high) APROVADO, melhorias 1, 2 e 4 corrigidas, 3 ignorada por decisão do usuário. ACs 1 a 4 marcados. Risco aceito: timeout de 20 s da prova do MusicBrainz reagenda o recibo em vez de degradar.
+
+---
+
+author: ebrgr
+created: 2026-11-22T14:58:00Z
+
+---
+
+Aceite do usuário em 22/11/2026: aceito como está e autorizado a publicar (sem push). Risco aceito e registrado: o timeout de 20 s da prova do MusicBrainz agora reagenda o recibo (1/2/4/8 min, depois estaciona) em vez de seguir com identidade degradada; erros rápidos do MusicBrainz continuam degradando. Item 3 do Advisor (commit por lote no reprocessar todos) ignorado por decisão do usuário.
 
 ---
 <!-- COMMENTS:END -->
