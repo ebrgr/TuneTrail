@@ -1,5 +1,6 @@
-/* ISSUE-125: account cards (Identity, Password, Session, reserved danger zone).
-   Same card pattern as the search and theme panels: thin border, 8px corners, mobile first. */
+/* ISSUE-125: account cards and the token redemption form. Only theme tokens and the shared
+   states are used: global a:hover, the global :focus-visible ring (not redefined here),
+   the outlined-button look of button.large-button and the .admin-sections hover fill. */
 @layer pages {
 .admin-main .account-grid { display:grid; gap:var(--space-4); grid-template-columns:minmax(0,1fr); }
 .admin-main .account-card {
@@ -8,16 +9,19 @@
   border:1px solid var(--color-bg-tertiary);
   border-radius:var(--radius-md);
 }
-.admin-main .account-card[aria-busy=true] { opacity:.7; }
+.admin-main .account-card[aria-busy=true] { opacity:.6; }
 .admin-main .account-card h2 { font-size:1.25rem; margin:0 0 var(--space-2); }
-.admin-main .account-card form {
-  display:flex; flex-direction:column; align-items:stretch; gap:var(--space-3); margin:var(--space-3) 0 0;
-}
-.admin-main .account-card label { flex:0 0 auto; }
-.admin-main .account-card small { color:var(--color-fg-secondary); margin-top:calc(var(--space-2) * -1); }
-.admin-main .account-card button { align-self:flex-start; }
-.admin-main .account-card :is(input,button,a):focus-visible { outline:2px solid var(--color-fg); outline-offset:2px; }
-.admin-main .account-card input[aria-invalid=true] { border-color:var(--color-error); }
+.admin-main .account-form { display:flex; flex-direction:column; align-items:stretch; gap:var(--space-3); margin:var(--space-3) 0 0; }
+.admin-main .account-form label { flex:0 0 auto; }
+.admin-main .form-help { color:var(--color-fg-secondary); font-size:.875rem; margin-top:calc(var(--space-2) * -1); }
+.admin-main .account-form input:disabled { opacity:.6; }
+.admin-main .account-form input[aria-invalid=true] { border-color:var(--color-error); }
+/* Primary action: the standard administration button, with hover and pressed tones derived
+   from its own token mixed with the text colour (no new colour). */
+.admin-main .account-action { align-self:flex-start; transition:background-color .1s; }
+.admin-main .account-action:hover { background:color-mix(in srgb,var(--color-primary) 80%,var(--color-fg)); }
+.admin-main .account-action:active { background:color-mix(in srgb,var(--color-primary) 60%,var(--color-fg)); }
+.admin-main .account-action:disabled { opacity:.6; cursor:not-allowed; }
 .admin-main .account-message { margin:var(--space-3) 0 0; color:var(--color-fg); }
 .admin-main .account-error { color:var(--color-error); }
 .admin-main .account-warning {
@@ -25,13 +29,14 @@
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
   background:var(--color-bg); color:var(--color-fg);
 }
-/* Sign out is secondary: outlined, not filled like the primary actions. */
+/* Sign out is secondary: outlined like button.large-button, filled like .admin-sections a on hover. */
 .admin-main .account-secondary {
   display:inline-flex; align-items:center; min-height:44px; padding:10px 18px; margin-top:var(--space-2);
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
-  background:transparent; color:var(--color-fg); text-decoration:none; font-weight:500;
+  background:var(--color-bg); text-decoration:none; transition:background-color .1s;
 }
 .admin-main .account-secondary:hover { background:var(--color-bg-tertiary); }
+.admin-main .account-secondary:active { background:var(--color-bg-tertiary); }
 .admin-main .account-danger { border-style:dashed; }
 .admin-main .account-danger p { margin-bottom:0; }
 @media (min-width:40rem) {

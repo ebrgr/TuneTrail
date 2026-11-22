@@ -78,5 +78,25 @@ class WebStyleTests(unittest.TestCase):
         self.assertEqual(len(list(check.offenders(self.tree('  title="' + 'a b ' * 50 + '"')))), 1)
 
 
+    def test_fixed_colors_fail_in_token_only_css(self):
+        root = self.tree('', '.a{color:#fff;background:rgb(0 0 0);border-color:red}\n.b{color:var(--color-fg)}')
+        found = list(check.fixed_color_offenders(root, ['assets/css/a.css']))
+        # One report per offending line.
+        self.assertEqual([n for _, n, _ in found], [1])
+        ok = self.tree('', '/* #fff in a comment */\n.b{color:var(--color-fg);border:1px solid var(--color-bg-tertiary)}')
+        self.assertEqual(list(check.fixed_color_offenders(ok, ['assets/css/a.css'])), [])
+
+    def test_new_controls_define_interaction_states(self):
+        root = self.tree('', '.admin-main .account-action:hover{}\n.admin-main .account-action:active{}')
+        required = {'.account-action': [':hover', ':active', ':disabled']}
+        self.assertEqual(list(check.state_gaps(root, 'assets/css/a.css', required)), [('.account-action', ':disabled')])
+        bad = self.tree('', '.x{outline:2px solid var(--color-fg)}')
+        self.assertTrue(list(check.state_gaps(bad, 'assets/css/a.css', {})))
+
+    def test_repository_account_css_follows_the_shared_states(self):
+        self.assertEqual(list(check.fixed_color_offenders()), [])
+        self.assertEqual(list(check.state_gaps()), [])
+
+
 if __name__ == '__main__':
     unittest.main()

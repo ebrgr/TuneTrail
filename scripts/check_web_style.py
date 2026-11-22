@@ -76,6 +76,45 @@ def width_media_offenders(root=ROOT):
                 yield path.relative_to(root), text.count('\n', 0, match.start()) + 1, condition.strip()
 
 
+# Stylesheets that must use theme tokens and shared states only (ISSUE-125).
+TOKEN_ONLY = ['assets/css/admin/account.css']
+FIXED_COLOR = re.compile(r'#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(|'
+                         r'(?<![-\w])(?:red|white|black|gray|grey|blue|green|orange|yellow)(?![-\w])')
+# Interactive controls added by ISSUE-125 and the states each one must define.
+REQUIRED_STATES = {'.account-action': [':hover', ':active', ':disabled'], '.account-secondary': [':hover', ':active']}
+
+
+def _strip_comments(text):
+    return re.sub(r'/\*.*?\*/', lambda m: '\n' * m[0].count('\n'), text, flags=re.S)
+
+
+def fixed_color_offenders(root=ROOT, files=None):
+    """Yield (path, line, text) for a hard-coded colour in a token-only stylesheet."""
+    for name in files or TOKEN_ONLY:
+        path = root / name
+        if not path.exists():
+            continue
+        for number, line in enumerate(_strip_comments(path.read_text()).splitlines(), 1):
+            match = FIXED_COLOR.search(line)
+            if match:
+                yield path.relative_to(root), number, match[0]
+
+
+def state_gaps(root=ROOT, name='assets/css/admin/account.css', required=None):
+    """Yield (selector, state) for a missing interaction state; also reject a focus ring redefinition."""
+    path = root / name
+    if not path.exists():
+        return
+    text = _strip_comments(path.read_text())
+    for selector, states in (required or REQUIRED_STATES).items():
+        for state in states:
+            if not re.search(re.escape(selector) + re.escape(state) + r'\b', text):
+                yield selector, state
+    # The global :focus-visible ring is the single focus style; do not override it here.
+    if re.search(r'outline\s*:|:focus-visible', text):
+        yield 'outline', 'focus-visible (use the global ring)'
+
+
 def main():
     """Run readability, breakpoint and script-budget checks together for ui.check."""
     found = list(offenders())
@@ -90,7 +129,13 @@ def main():
     media = list(width_media_offenders())
     for path, number, condition in media:
         print(f'{path}:{number}: unsupported media query {condition}; use min-width 40rem, 64rem or 90rem')
-    return 1 if found or long or heavy or media else 0
+    colors = list(fixed_color_offenders())
+    for path, number, color in colors:
+        print(f'{path}:{number}: fixed colour {color}; use a theme token')
+    gaps = list(state_gaps())
+    for selector, state in gaps:
+        print(f'assets/css/admin/account.css: {selector} lacks {state}')
+    return 1 if found or long or heavy or media or colors or gaps else 0
 
 
 if __name__ == '__main__':

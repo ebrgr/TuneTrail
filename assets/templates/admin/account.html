@@ -19,7 +19,7 @@
     </p>
     {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
     {{if and $mine $a.Error}}<p id="account-identity-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
-    <form method="post" action="/admin/account/username" data-enhance>
+    <form method="post" class="account-form" action="/admin/account/username" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}
       <label>{{tr "admin.text.username" "Username"}}
@@ -27,8 +27,8 @@
           aria-describedby="account-username-help{{if and $mine $a.Error}} account-identity-error{{end}}"
           {{if and $mine $a.Error}}aria-invalid="true"{{end}}>
       </label>
-      <small id="account-username-help">{{tr "admin.account.username_help" "1 to 32 letters, numbers, dots, underscores or hyphens."}}</small>
-      <button>{{tr "admin.text.save_username" "Save username"}}</button>
+      <small class="form-help" id="account-username-help">{{tr "admin.account.username_help" "1 to 32 letters, numbers, dots, underscores or hyphens."}}</small>
+      <button class="account-action">{{tr "admin.text.save_username" "Save username"}}</button>
     </form>
   </section>
 {{end}}
@@ -42,7 +42,7 @@
       {{- tr "admin.account.password_warning" "Changing your password ends every session, including this one. You will need to sign in again." -}}
     </p>
     {{if and $mine $a.Error}}<p id="account-password-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
-    <form method="post" action="/admin/account/password" data-enhance>
+    <form method="post" class="account-form" action="/admin/account/password" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}
       <label>{{tr "admin.text.new_password" "New password"}}
@@ -50,13 +50,13 @@
           aria-describedby="account-password-warning account-password-help{{if and $mine $a.Error}} account-password-error{{end}}"
           {{if and $mine (eq $a.Field "password")}}aria-invalid="true"{{end}}>
       </label>
-      <small id="account-password-help">{{tr "admin.account.password_help" "Use between 8 and 72 characters."}}</small>
+      <small class="form-help" id="account-password-help">{{tr "admin.account.password_help" "Use between 8 and 72 characters."}}</small>
       <label>{{tr "admin.text.confirm_password" "Confirm password"}}
         <input type="password" name="confirm_password" autocomplete="new-password" required
           aria-describedby="account-password-warning{{if and $mine $a.Error}} account-password-error{{end}}"
           {{if and $mine (eq $a.Field "confirm_password")}}aria-invalid="true"{{end}}>
       </label>
-      <button aria-describedby="account-password-warning">{{tr "admin.text.change_password" "Change password"}}</button>
+      <button class="account-action" aria-describedby="account-password-warning">{{tr "admin.text.change_password" "Change password"}}</button>
     </form>
   </section>
 {{end}}

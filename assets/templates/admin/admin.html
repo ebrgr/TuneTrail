@@ -47,7 +47,7 @@
             <p>
               {{- tr "admin.redeem.steps" "Enter your username, the token you received from the administrator and choose a password. Then sign in as usual." -}}
             </p>
-            <form method="post" action="/admin/redeem">
+            <form class="account-form" method="post" action="/admin/redeem">
               <input type="hidden" name="csrf_token" value="{{.CSRF}}">
               <label>{{tr "admin.text.username" "Username"}}
                 <input name="username" value="{{.RedeemUsername}}" autocomplete="username" required>
@@ -61,7 +61,7 @@
                   aria-describedby="redeem-password-rules{{if and .Error (eq .RedeemField "password")}} form-error{{end}}"
                   {{if and .Error (eq .RedeemField "password")}}aria-invalid="true"{{end}}>
               </label>
-              <small id="redeem-password-rules">
+              <small class="form-help" id="redeem-password-rules">
                 {{- tr "admin.redeem.password_rules"
                   (printf "%s%s" "At least 8 characters and at most 72 bytes (accents and emoji use more than one). "
                     "No other rules: a long phrase or a password manager works well.") -}}
@@ -70,7 +70,7 @@
                 <input type="password" name="confirm_password" autocomplete="new-password" minlength="8" required
                   {{if and .Error (eq .RedeemField "confirm_password")}}aria-invalid="true" aria-describedby="form-error"{{end}}>
               </label>
-              <button>{{tr "admin.account.redeem" "Redeem account token"}}</button>
+              <button class="account-action">{{tr "admin.account.redeem" "Redeem account token"}}</button>
             </form>
           {{else if .Login}}
             <form method="post" action="/admin/login">
