@@ -4,7 +4,7 @@ title: 125 — Remodelar a página de conta do administrador
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T20:48:00Z'
+updated_date: '2026-11-22T21:15:00Z'
 labels:
   - ui
   - admin
@@ -61,6 +61,15 @@ created: 2026-11-22T20:48:00Z
 ---
 
 Decisão do usuário (22/11/2026): sem capturas de tela nesta issue; o aceite visual será feito por ele no servidor. O critério #4 passa a ser verificado pelo usuário.
+
+---
+
+author: claude
+created: 2026-11-22T21:15:00Z
+
+---
+
+Teste do usuário no servidor (22/11/2026): resgate de token em /admin/redeem mostrou 'Sua conta não tem permissão para acessar esta página.' e a página não orienta a senha. Diagnóstico: falha de CSRF/preauth no POST é exibida com a mensagem genérica de 403 (reproduzido com token CSRF inválido); fluxo normal funciona. Causa provável: cookies sem separação por porta em 127.0.0.1 (instância 4110 e 4125). Ajuste incluído na 125: mensagem de página expirada, regras da senha e confirmação no resgate, sucesso leva ao login com aviso.
 
 ---
 <!-- COMMENTS:END -->
