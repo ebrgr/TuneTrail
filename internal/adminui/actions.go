@@ -11,7 +11,6 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/relay"
-	"github.com/ebrgr/TuneTrail/internal/webassets"
 	"io"
 	"net/http"
 	"strconv"
@@ -79,34 +78,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	case "account/username", "account/password":
-		if (path == "account/username" && !fields(f, "username")) || (path == "account/password" && !fields(f, "password", "confirm_password")) {
-			h.fail(w, db.ErrInvalidInput)
-			return
-		}
-		var username, password *string
-		if path == "account/username" {
-			v := f.SingleValue("username")
-			username = &v
-		} else {
-			v := f.SingleValue("password")
-			if v != f.SingleValue("confirm_password") {
-				h.fail(w, db.ErrInvalidInput)
-				return
-			}
-			password = &v
-		}
-		changed, e := admin.ChangeAccount(r.Context(), h.store, identity.User, username, password)
-		if e != nil {
-			h.fail(w, e)
-			return
-		}
-		if changed {
-			adminweb.ClearSessionCookie(w, r)
-			adminweb.ClearPreauth(w, r)
-		} else {
-			h.putNotice(identity.SessionID, 0, "Account updated.")
-		}
-		http.Redirect(w, r, webassets.AccountDestination, 303)
+		h.accountAction(w, r, identity, f, path)
 		return
 	case "profile/create":
 		if !fields(f, "display_name", "slug", "icon", "image") {

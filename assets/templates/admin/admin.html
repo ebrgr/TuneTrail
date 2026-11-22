@@ -33,7 +33,7 @@
           {{if .Error}}
             <p role="alert">{{.Error}}</p>
           {{end}}
-          {{if .Notice}}
+          {{if and .Notice (not .AccountPage)}}
             <p role="status">{{.Notice}}</p>
           {{end}}
           {{if .Health}}
@@ -78,29 +78,7 @@
             {{with $nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
           {{else if .User}}
             {{if eq .Section "account"}}
-              <section>
-                <h2>{{tr "admin.text.account" "Account"}}</h2>
-                {{with $nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
-                <form method="post" action="/admin/account/username">
-                  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-                  {{if .Submission}}
-                    <input type="hidden" name="submission_token" value="{{.Submission}}">
-                  {{end}}
-                  <label>{{tr "admin.text.username" "Username"}} <input name="username" value="{{.User.Username}}" required></label>
-                  <button>{{tr "admin.text.save_username" "Save username"}}</button>
-                </form>
-                <form method="post" action="/admin/account/password">
-                  <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-                  {{if .Submission}}
-                    <input type="hidden" name="submission_token" value="{{.Submission}}">
-                  {{end}}
-                  <label>{{tr "admin.text.new_password" "New password"}} <input type="password" name="password" autocomplete="new-password" required></label>
-                  <label>
-                    {{- tr "admin.text.confirm_password" "Confirm password"}} <input type="password" name="confirm_password" autocomplete="new-password"
-                    required></label>
-                  <button>{{tr "admin.text.change_password" "Change password"}}</button>
-                </form>
-              </section>
+              {{template "admin/account" .}}
             {{else}}
               <section>
                 <h2>{{tr "admin.text.profiles" "Profiles"}}</h2>

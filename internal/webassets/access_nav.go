@@ -8,8 +8,8 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/models"
 )
 
-// AccountDestination is the existing account document, pending the ISSUE-125 route.
-const AccountDestination = "/admin?section=account"
+// AccountDestination is the account document open to every authenticated session (ISSUE-125).
+const AccountDestination = "/account"
 
 // NavLink describes a translated destination already authorized by the server.
 type NavLink struct {

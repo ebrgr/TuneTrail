@@ -1,4 +1,5 @@
 {
+  "admin/templates/account.html": "templates/admin/account.html",
   "admin/templates/admin.html": "templates/admin/admin.html",
   "admin/templates/catalog-review.html": "templates/admin/catalog-review.html",
   "admin/templates/head.html": "templates/shared/head.html",
@@ -11,6 +12,7 @@
   "public/palettes.json": "themes/palettes.json",
   "public/static/admin.css": [
     "css/admin/admin.css",
+    "css/admin/account.css",
     "css/admin/health.css"
   ],
   "public/static/admin.js": "js/admin.js",

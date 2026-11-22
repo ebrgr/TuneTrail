@@ -765,5 +765,22 @@
   "admin.relay.dns_scope": "If granted, HTTP permission follows this name. Private access is limited to the listed addresses.",
   "admin.relay.local_warning": "This exception opens access to loopback or link-local addresses.",
   "admin.relay.cancel": "Cancel",
-  "admin.relay.grant_changed": "Destination or policy changed. Review the destination and confirm again."
+  "admin.relay.grant_changed": "Destination or policy changed. Review the destination and confirm again.",
+  "admin.account.identity": "Identity",
+  "admin.account.identity_hint": "Your username is how you sign in. It is separate from your profile address and display name.",
+  "admin.account.username_help": "1 to 32 letters, numbers, dots, underscores or hyphens.",
+  "admin.account.password": "Password",
+  "admin.account.password_warning": "Changing your password ends every session, including this one. You will need to sign in again.",
+  "admin.account.password_help": "Use between 8 and 72 characters.",
+  "admin.account.session": "Session",
+  "admin.account.session_signed_in": "You are signed in as",
+  "admin.account.session_here": "in this browser.",
+  "admin.account.sign_out": "Sign out…",
+  "admin.account.danger": "Danger zone",
+  "admin.account.danger_empty": "There are no actions in this area yet.",
+  "admin.account.status_label": "Account status",
+  "admin.account.error_username_invalid": "Use 1 to 32 letters, numbers, dots, underscores or hyphens.",
+  "admin.account.error_username_taken": "This username is not available.",
+  "admin.account.error_password_invalid": "Use between 8 and 72 characters.",
+  "admin.account.error_password_mismatch": "The password and confirmation do not match."
 }

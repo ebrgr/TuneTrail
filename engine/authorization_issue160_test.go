@@ -167,7 +167,12 @@ func TestHTMLManagementMatrix160(t *testing.T) {
 		require.Equal(t, actor.other, taskRequest139(a, "GET", "/admin/profile/1/export", actor.cookie, nil, nil).Code)
 	}
 	for _, section := range []string{"account", "profiles", "keys", "relay", "import", "export"} {
-		require.Equal(t, 200, taskRequest139(a, "GET", fmt.Sprintf("/admin?section=%s&profile=%d", section, p.ID), cookie, nil, nil).Code, section)
+		want := 200
+		if section == "account" {
+			// ISSUE-125: the legacy account link redirects to /account after authorization.
+			want = 303
+		}
+		require.Equal(t, want, taskRequest139(a, "GET", fmt.Sprintf("/admin?section=%s&profile=%d", section, p.ID), cookie, nil, nil).Code, section)
 	}
 	for _, op := range []struct {
 		suffix string

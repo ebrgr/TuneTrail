@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- The account page moves to `/account` and opens for every signed-in user, not only administrators. It has Identity, Password and Session cards, warns before a password change that every session ends, and keeps `/admin?section=account` working by redirecting to it (ISSUE-125).
+- "My account" in the menu and the post-login destination of ordinary users point to `/account`; `account` is now a reserved profile slug (ISSUE-125).
+
 ## [0.62] - 2026-11-22
 
 - Ingestion health shows linked counts for open items in the selected profile and adds icons to the Inbox and Outbox headings (ISSUE-188).

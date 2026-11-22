@@ -52,13 +52,13 @@ func TestSignOutConfirmation157(t *testing.T) {
 		require.Empty(t, prefetch.Body.String())
 		for _, bad := range []string{"//outside.test", "https://outside.test/", "javascript:alert(1)", "/admin/logout"} {
 			cancel := taskRequest139(a, "GET", signOut157+"?return="+url.QueryEscape(bad), tc.cookie, nil, nil)
-			require.Contains(t, cancel.Body.String(), `href="/admin?section=account" autofocus aria-describedby="sign-out-description"`)
+			require.Contains(t, cancel.Body.String(), `href="/account" autofocus aria-describedby="sign-out-description"`)
 		}
 		_, err := admin.Authenticate(context.Background(), a.store, uuid.MustParse(tc.cookie))
 		require.NoError(t, err)
 	}
 	denied := taskRequest139(a, "GET", signOut157+"?return=%2Fadmin%2Fsettings", ordinary, nil, nil)
-	require.Contains(t, denied.Body.String(), `href="/admin?section=account" autofocus aria-describedby="sign-out-description"`)
+	require.Contains(t, denied.Body.String(), `href="/account" autofocus aria-describedby="sign-out-description"`)
 	allowed := taskRequest139(a, "GET", signOut157+"?return=%2Fadmin%2Fsettings", a.cookie, nil, nil)
 	require.Contains(t, allowed.Body.String(), `href="/admin/settings" autofocus aria-describedby="sign-out-description"`)
 	missing := taskRequest139(a, "GET", signOut157, "", nil, nil)
@@ -77,7 +77,7 @@ func TestSignOutSubmission157(t *testing.T) {
 	rootForm := signOutForm157(t, taskRequest139(a, "GET", signOut157, a.cookie, nil, nil))
 	secondTab := signOutForm157(t, taskRequest139(a, "GET", signOut157, a.cookie, nil, nil))
 	ordinaryForm := signOutForm157(t, taskRequest139(a, "GET", signOut157, ordinary, nil, nil))
-	edit := taskRequest139(a, "GET", "/admin?section=account", a.cookie, nil, nil)
+	edit := taskRequest139(a, "GET", "/account", a.cookie, nil, nil)
 	for _, value := range []string{"", "invalid", ordinaryForm.Get("csrf_token")} {
 		f := url.Values{"submission_token": {rootForm.Get("submission_token")}}
 		if value != "" {
@@ -133,7 +133,7 @@ func TestSignOutLinksKeepReadOrigin157(t *testing.T) {
 	for _, tc := range []struct{ path, cookie string }{
 		{"/admin/settings", a.cookie},
 		{"/admin?section=profiles", a.cookie},
-		{"/admin?section=account", ordinary},
+		{"/account", ordinary},
 		{"/second/manage/track/12/edit", a.cookie},
 		{"/", ordinary},
 	} {
@@ -147,7 +147,7 @@ func TestSignOutLinksKeepReadOrigin157(t *testing.T) {
 	}
 
 	invalid := taskRequest139(a, "GET", "/admin?section=account&next=https://outside.test", ordinary, nil, nil)
-	require.Equal(t, http.StatusOK, invalid.Code)
-	require.Contains(t, invalid.Body.String(), `href="/admin/sign-out"`)
-	require.NotContains(t, invalid.Body.String(), "/admin/sign-out?return=")
+	// ISSUE-125: the legacy account link redirects and never carries the invalid return.
+	require.Equal(t, http.StatusSeeOther, invalid.Code)
+	require.Equal(t, "/account", invalid.Header().Get("Location"))
 }

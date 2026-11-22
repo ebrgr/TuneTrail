@@ -21,7 +21,7 @@ func TestNavigationByPermission163(t *testing.T) {
 	require.NoError(t, a.store.Exec(fmt.Sprintf("INSERT INTO listens(profile_id,track_id,listened_at) VALUES(%d,12,100)", p.ID)))
 	scope := "/" + p.Slug
 	own := fmt.Sprintf("/admin?profile=%d", p.ID)
-	account := "/admin?section=account"
+	account := "/account"
 	for _, actor := range []struct {
 		name, cookie  string
 		listens, root bool
@@ -67,7 +67,7 @@ func TestNavigationByPermission163(t *testing.T) {
 	root := taskRequest139(a, "GET", own, a.cookie, nil, nil)
 	require.Contains(t, root.Body.String(), "Only this profile’s owner and administrators can view protected listens.")
 	page = taskRequest139(a, "GET", account, owner, nil, nil)
-	require.Regexp(t, `href="/admin\?section=account"\s+aria-current="page"`, page.Body.String())
+	require.Regexp(t, `href="/account"\s+aria-current="page"`, page.Body.String())
 	menu := taskRequest139(a, "GET", scope, owner, nil, nil)
 	require.Contains(t, menu.Body.String(), `href="/admin/sign-out?return=`)
 	require.NotContains(t, menu.Body.String(), `name="submission_token"`)
@@ -89,7 +89,7 @@ func TestLoginReturn163(t *testing.T) {
 	ctx := context.Background()
 	require.NoError(t, a.store.Exec(fmt.Sprintf("UPDATE listening_profiles SET require_login=1 WHERE id IN (2,%d)", p.ID)))
 	scope := "/" + p.Slug
-	const account = "/admin?section=account"
+	const account = "/account"
 	for _, tc := range []struct{ username, password, next, want string }{
 		{"owner160", "test-password", "", account},
 		{"owner160", "test-password", scope + "/listens", scope + "/listens"},

@@ -765,5 +765,22 @@
   "admin.relay.dns_scope": "Se concedida, a permissão HTTP acompanha este nome. O acesso privado vale para os endereços listados.",
   "admin.relay.local_warning": "Esta exceção libera acesso a endereços loopback ou link-local.",
   "admin.relay.cancel": "Cancelar",
-  "admin.relay.grant_changed": "O destino ou a política mudou. Confira o destino e confirme novamente."
+  "admin.relay.grant_changed": "O destino ou a política mudou. Confira o destino e confirme novamente.",
+  "admin.account.identity": "Identidade",
+  "admin.account.identity_hint": "O nome de usuário é o que você usa para entrar. Ele é separado do endereço e do nome de exibição do seu perfil.",
+  "admin.account.username_help": "De 1 a 32 letras, números, pontos, sublinhados ou hifens.",
+  "admin.account.password": "Senha",
+  "admin.account.password_warning": "Trocar a senha encerra todas as sessões, inclusive esta. Você precisará entrar de novo.",
+  "admin.account.password_help": "Use de 8 a 72 caracteres.",
+  "admin.account.session": "Sessão",
+  "admin.account.session_signed_in": "Você entrou como",
+  "admin.account.session_here": "neste navegador.",
+  "admin.account.sign_out": "Sair…",
+  "admin.account.danger": "Zona de perigo",
+  "admin.account.danger_empty": "Ainda não há ações nesta área.",
+  "admin.account.status_label": "Estado da conta",
+  "admin.account.error_username_invalid": "Use de 1 a 32 letras, números, pontos, sublinhados ou hifens.",
+  "admin.account.error_username_taken": "Este nome de usuário não está disponível.",
+  "admin.account.error_password_invalid": "Use de 8 a 72 caracteres.",
+  "admin.account.error_password_mismatch": "A senha e a confirmação não são iguais."
 }

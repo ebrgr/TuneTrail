@@ -87,7 +87,7 @@ func TestUserHTMLLoginAndLogout159(t *testing.T) {
 	logged := httptest.NewRecorder()
 	a.router.ServeHTTP(logged, r)
 	require.Equal(t, 303, logged.Code)
-	require.Equal(t, "/admin?section=account", logged.Header().Get("Location"))
+	require.Equal(t, "/account", logged.Header().Get("Location"))
 	var userCookie string
 	for _, cookie := range logged.Result().Cookies() {
 		if cookie.Name == "tunetrail_session" {
@@ -167,7 +167,7 @@ func TestUserTicketFloodKeepsAdminFormUsable159(t *testing.T) {
 	require.NoError(t, err)
 	session, err := admin.Login(context.Background(), a.store, "listener", "test-password", false)
 	require.NoError(t, err)
-	page := taskRequest139(a, "GET", "/admin?section=account", a.cookie, nil, nil)
+	page := taskRequest139(a, "GET", "/account", a.cookie, nil, nil)
 	require.Equal(t, 200, page.Code)
 	form := url.Values{"csrf_token": {taskField139(t, page, "csrf_token")}, "submission_token": {taskField139(t, page, "submission_token")}, "username": {"administrator"}}
 	for i := 0; i < 500; i++ {

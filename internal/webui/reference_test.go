@@ -181,7 +181,7 @@ func TestUIReference(t *testing.T) {
 	if session == nil {
 		t.Fatal("session missing")
 	}
-	for name, route := range map[string]string{"profiles": "/admin?profile=1", "account": "/admin?section=account", "sign-out": "/admin/sign-out", "settings": "/admin/settings", "artist": "/alpha/manage/artist/1", "album": "/alpha/manage/album/1", "track": "/alpha/manage/track/1", "merge": "/alpha/manage/track/1/review?action=merge&to=2", "delete": "/admin/profile/1/delete-review"} {
+	for name, route := range map[string]string{"profiles": "/admin?profile=1", "account": "/account", "sign-out": "/admin/sign-out", "settings": "/admin/settings", "artist": "/alpha/manage/artist/1", "album": "/alpha/manage/album/1", "track": "/alpha/manage/track/1", "merge": "/alpha/manage/track/1/review?action=merge&to=2", "delete": "/admin/profile/1/delete-review"} {
 		save("admin/"+name, route, admin, session)
 	}
 	// Export populated health diagnostics and provenance using fixed timestamps.

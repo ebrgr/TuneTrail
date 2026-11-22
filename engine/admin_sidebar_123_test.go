@@ -32,7 +32,7 @@ func TestAdminActionsItemsByRole(t *testing.T) {
 
 	admin := adminActions(t, a.request(http.MethodGet, "/default", "", "", true).Body.String())
 	// Account and profile management have independent destinations.
-	for _, link := range []string{`href="/admin?section=account"`, `href="/admin?section=profiles"`,
+	for _, link := range []string{`href="/account"`, `href="/admin?section=profiles"`,
 		`href="/admin/settings?profile=1"`} {
 		require.Contains(t, admin, link)
 	}
@@ -44,8 +44,8 @@ func TestAdminActionsCurrentInAdministration(t *testing.T) {
 	settings := adminActions(t, a.request(http.MethodGet, "/admin/settings", "", "", true).Body.String())
 	require.Regexp(t, `href="/admin/settings"\s+aria-current="page"`, settings)
 
-	account := adminActions(t, a.request(http.MethodGet, "/admin?section=account", "", "", true).Body.String())
-	require.Regexp(t, `href="/admin\?section=account"\s+aria-current="page"`, account)
+	account := adminActions(t, a.request(http.MethodGet, "/account", "", "", true).Body.String())
+	require.Regexp(t, `href="/account"\s+aria-current="page"`, account)
 
 	profiles := adminActions(t, a.request(http.MethodGet, "/admin?section=profiles", "", "", true).Body.String())
 	require.Regexp(t, `href="/admin\?section=profiles"\s+aria-current="page"`, profiles)
@@ -77,7 +77,7 @@ func TestAdminActionsPreAuthErrorShowsVisitorItems(t *testing.T) {
 // TestAdministrationPagesShowProfileHeader keeps the public header pattern in administration.
 func TestAdministrationPagesShowProfileHeader(t *testing.T) {
 	a := newProfileTestApp(t)
-	for _, path := range []string{"/admin/settings?profile=2", "/admin?section=account&profile=2", "/admin?profile=2"} {
+	for _, path := range []string{"/admin/settings?profile=2", "/admin?profile=2"} {
 		w := a.request(http.MethodGet, path, "", "", true)
 		require.Equal(t, http.StatusOK, w.Code, path)
 		body := w.Body.String()

@@ -1,0 +1,81 @@
+{{define "admin/account"}}
+  <p class="sr-only" role="status" data-enhance-status></p>
+  <div class="account-grid">
+    {{template "admin/account-identity" .}}
+    {{template "admin/account-password" .}}
+    {{template "admin/account-session" .}}
+    {{template "admin/account-danger" .}}
+  </div>
+{{end}}
+
+{{/* Each card is a swappable section (ISSUE-124): id and data-section match the fragment header. */}}
+{{define "admin/account-identity"}}
+  {{$a := .AccountPage}}
+  {{$mine := eq $a.Card "identity"}}
+  <section id="account-identity" class="account-card" data-section aria-labelledby="account-identity-title">
+    <h2 id="account-identity-title">{{tr "admin.account.identity" "Identity"}}</h2>
+    <p>
+      {{- tr "admin.account.identity_hint" "Your username is how you sign in. It is separate from your profile address and display name." -}}
+    </p>
+    {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
+    {{if and $mine $a.Error}}<p id="account-identity-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    <form method="post" action="/admin/account/username" data-enhance>
+      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+      {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}
+      <label>{{tr "admin.text.username" "Username"}}
+        <input name="username" value="{{$a.Username}}" autocomplete="username" required
+          aria-describedby="account-username-help{{if and $mine $a.Error}} account-identity-error{{end}}"
+          {{if and $mine $a.Error}}aria-invalid="true"{{end}}>
+      </label>
+      <small id="account-username-help">{{tr "admin.account.username_help" "1 to 32 letters, numbers, dots, underscores or hyphens."}}</small>
+      <button>{{tr "admin.text.save_username" "Save username"}}</button>
+    </form>
+  </section>
+{{end}}
+
+{{define "admin/account-password"}}
+  {{$a := .AccountPage}}
+  {{$mine := eq $a.Card "password"}}
+  <section id="account-password" class="account-card" data-section aria-labelledby="account-password-title">
+    <h2 id="account-password-title">{{tr "admin.account.password" "Password"}}</h2>
+    <p id="account-password-warning" class="account-warning">
+      {{- tr "admin.account.password_warning" "Changing your password ends every session, including this one. You will need to sign in again." -}}
+    </p>
+    {{if and $mine $a.Error}}<p id="account-password-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    <form method="post" action="/admin/account/password" data-enhance>
+      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+      {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}
+      <label>{{tr "admin.text.new_password" "New password"}}
+        <input type="password" name="password" autocomplete="new-password" required
+          aria-describedby="account-password-warning account-password-help{{if and $mine $a.Error}} account-password-error{{end}}"
+          {{if and $mine (eq $a.Field "password")}}aria-invalid="true"{{end}}>
+      </label>
+      <small id="account-password-help">{{tr "admin.account.password_help" "Use between 8 and 72 characters."}}</small>
+      <label>{{tr "admin.text.confirm_password" "Confirm password"}}
+        <input type="password" name="confirm_password" autocomplete="new-password" required
+          aria-describedby="account-password-warning{{if and $mine $a.Error}} account-password-error{{end}}"
+          {{if and $mine (eq $a.Field "confirm_password")}}aria-invalid="true"{{end}}>
+      </label>
+      <button aria-describedby="account-password-warning">{{tr "admin.text.change_password" "Change password"}}</button>
+    </form>
+  </section>
+{{end}}
+
+{{define "admin/account-session"}}
+  <section id="account-session" class="account-card" aria-labelledby="account-session-title">
+    <h2 id="account-session-title">{{tr "admin.account.session" "Session"}}</h2>
+    <p>
+      {{tr "admin.account.session_signed_in" "You are signed in as"}} <strong>{{.User.Username}}</strong>
+      {{tr "admin.account.session_here" "in this browser."}}
+    </p>
+    {{with .Nav.SignOut}}<a class="account-secondary" href="{{.URL}}">{{tr "admin.account.sign_out" "Sign out…"}}</a>{{end}}
+  </section>
+{{end}}
+
+{{/* Reserved for future destructive account actions; it holds none today. */}}
+{{define "admin/account-danger"}}
+  <section id="account-danger" class="account-card account-danger" aria-labelledby="account-danger-title">
+    <h2 id="account-danger-title">{{tr "admin.account.danger" "Danger zone"}}</h2>
+    <p>{{tr "admin.account.danger_empty" "There are no actions in this area yet."}}</p>
+  </section>
+{{end}}

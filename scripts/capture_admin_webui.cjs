@@ -15,7 +15,7 @@ if(!process.env.INTERACTIONS_ONLY){for(const theme of ['yuu','pearl'])for(const 
  const login=await context.request.post(origin+'/apis/web/v1/login',{data:{username:'validation-admin',password:'validation-password'},headers:{Origin:origin}});if(login.status()!==204)throw Error('Fictional login failed');await context.request.delete(origin+'/apis/web/v1/track/1/aliases',{data:{alias:'Fictional no-JS alias'},headers:{Origin:origin}});
  await goto('/admin?profile=1');if(mode==='react')await page.getByRole('heading',{name:'Profile details',exact:true}).waitFor();else await page.getByRole('heading',{name:'Mara Silva',exact:true}).waitFor();await shot('profiles');
  if(theme==='yuu'){
-  if(mode==='go'){await goto('/admin?section=account')}else{await goto('/admin?profile=1');await page.locator('summary').filter({hasText:'Administrator account'}).click();await scrollHeading('Account')};await shot('account','account section');
+  if(mode==='go'){await goto('/account')}else{await goto('/admin?profile=1');await page.locator('summary').filter({hasText:'Administrator account'}).click();await scrollHeading('Account')};await shot('account','account section');
   await goto('/admin?profile=1');await scrollHeading(mode==='go'?'API keys':'API keys for');await shot('keys','below fold: keys, values concealed');
   await goto('/admin?profile=1');await scrollHeading(mode==='go'?'Import and export':'Import history');await shot('import','below fold: import/export');
   await goto('/admin?profile=1');await scrollHeading(mode==='go'?'ListenBrainz relay':'ListenBrainz forwarding');await shot('relay','below fold: relay');

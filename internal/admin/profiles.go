@@ -18,7 +18,7 @@ import (
 )
 
 var profilePattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-var reservedProfiles = map[string]bool{"admin": true, "apis": true, "image": true, "public": true, "assets": true, "web-assets": true, "preview-assets": true, "artist": true, "album": true, "track": true, "chart": true, "listens": true, "rewind": true, "theme-helper": true}
+var reservedProfiles = map[string]bool{"admin": true, "account": true, "apis": true, "image": true, "public": true, "assets": true, "web-assets": true, "preview-assets": true, "artist": true, "album": true, "track": true, "chart": true, "listens": true, "rewind": true, "theme-helper": true}
 
 // contextMutex preserves the shared profile lock while allowing image requests to cancel.
 type contextMutex chan struct{}

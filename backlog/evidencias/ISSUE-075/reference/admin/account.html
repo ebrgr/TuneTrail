@@ -14,7 +14,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=5ffcc2248493c1587831ef136fad3bececbd38d19d301b465b9a9d2d83dfcb0e">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=6bae86618ea1e94df9a5a97acc082fbdb940f085d5807e849c5a947308c5df21">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=9c2de13e09eca06a2886463bdb012dcba5d419ab1cedf0b740cbcffa2b2d6bdc"></script>
       
@@ -88,7 +88,7 @@
         <section class="nav-admin-actions" aria-labelledby="nav-account-title">
           <h2 class="nav-group-title" id="nav-account-title">Account</h2>
           
-  <a class="nav-button" href="/admin?section=account" aria-current="page">
+  <a class="nav-button" href="/account" aria-current="page">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-keyhole" aria-hidden="true"><circle cx="12" cy="16" r="1"></circle><rect x="3" y="10" width="18" height="12" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg>
 <span class="nav-action-label">My account</span>
   </a>
@@ -99,7 +99,7 @@
   </a>
 
           
-  <a class="nav-button" href="/admin/sign-out?return=%2Fadmin%3Fsection%3Daccount" >
+  <a class="nav-button" href="/admin/sign-out?return=%2Faccount" >
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out" aria-hidden="true"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
 <span class="nav-action-label">Sign out</span>
   </a>
@@ -376,33 +376,73 @@
           
           
             
-              <section>
-                <h2>Account</h2>
-                
-  <a class="nav-button" href="/admin/sign-out?return=%2Fadmin%3Fsection%3Daccount" >
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out" aria-hidden="true"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
-<span class="nav-action-label">Sign out</span>
-  </a>
+              
+  <p class="sr-only" role="status" data-enhance-status></p>
+  <div class="account-grid">
+    
+  
+  
+  <section id="account-identity" class="account-card" data-section aria-labelledby="account-identity-title">
+    <h2 id="account-identity-title">Identity</h2>
+    <p>Your username is how you sign in. It is separate from your profile address and display name.</p>
+    
+    
+    <form method="post" action="/admin/account/username" data-enhance>
+      <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+      <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+      <label>Username
+        <input name="username" value="reference-admin" autocomplete="username" required
+          aria-describedby="account-username-help"
+          >
+      </label>
+      <small id="account-username-help">1 to 32 letters, numbers, dots, underscores or hyphens.</small>
+      <button>Save username</button>
+    </form>
+  </section>
 
-                <form method="post" action="/admin/account/username">
-                  <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-                  
-                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-                  
-                  <label>Username <input name="username" value="reference-admin" required></label>
-                  <button>Save username</button>
-                </form>
-                <form method="post" action="/admin/account/password">
-                  <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-                  
-                    <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
-                  
-                  <label>New password <input type="password" name="password" autocomplete="new-password" required></label>
-                  <label>Confirm password <input type="password" name="confirm_password" autocomplete="new-password"
-                    required></label>
-                  <button>Change password</button>
-                </form>
-              </section>
+    
+  
+  
+  <section id="account-password" class="account-card" data-section aria-labelledby="account-password-title">
+    <h2 id="account-password-title">Password</h2>
+    <p id="account-password-warning" class="account-warning">Changing your password ends every session, including this one. You will need to sign in again.</p>
+    
+    <form method="post" action="/admin/account/password" data-enhance>
+      <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+      <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+      <label>New password
+        <input type="password" name="password" autocomplete="new-password" required
+          aria-describedby="account-password-warning account-password-help"
+          >
+      </label>
+      <small id="account-password-help">Use between 8 and 72 characters.</small>
+      <label>Confirm password
+        <input type="password" name="confirm_password" autocomplete="new-password" required
+          aria-describedby="account-password-warning"
+          >
+      </label>
+      <button aria-describedby="account-password-warning">Change password</button>
+    </form>
+  </section>
+
+    
+  <section id="account-session" class="account-card" aria-labelledby="account-session-title">
+    <h2 id="account-session-title">Session</h2>
+    <p>
+      You are signed in as <strong>reference-admin</strong>
+      in this browser.
+    </p>
+    <a class="account-secondary" href="/admin/sign-out?return=%2Faccount">Sign out…</a>
+  </section>
+
+    
+  <section id="account-danger" class="account-card account-danger" aria-labelledby="account-danger-title">
+    <h2 id="account-danger-title">Danger zone</h2>
+    <p>There are no actions in this area yet.</p>
+  </section>
+
+  </div>
+
             
           
         </main>

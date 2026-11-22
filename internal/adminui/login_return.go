@@ -39,6 +39,9 @@ func (h *Handler) canReturnToRead(r *http.Request, actor *models.User, u *url.UR
 	read := r.Clone(r.Context())
 	read.Method, read.URL = http.MethodGet, u
 	switch u.Path {
+	case "/account":
+		// ISSUE-125: any authenticated session may return to its account page.
+		return u.RawQuery == "" && admin.AuthorizeAction(actor, admin.ManageAccount, nil) == nil
 	case "/admin":
 		return h.authorizePage(read, admin.Identity{User: actor}) == nil && h.returnProfileExists(read)
 	case "/admin/health":

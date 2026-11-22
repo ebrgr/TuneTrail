@@ -127,6 +127,7 @@ type view struct {
 	AccountsRoot, CanIssueToken, Redeem bool
 	Account                             db.AccountDetails
 	IssuedToken                         string
+	AccountPage                         *accountState
 }
 
 // New constructs the protected handler and a bounded pre-login endpoint.
@@ -276,6 +277,10 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		h.settingsPage(w, r, identity)
 		return
 	}
+	if r.URL.Path == "/account" {
+		h.accountPage(w, r)
+		return
+	}
 	if r.URL.Path == "/admin" && (r.Method == "GET" || r.Method == "HEAD") {
 		identity, err := adminweb.SessionIdentity(r, h.store)
 		if errors.Is(err, admin.ErrUnauthorized) {
@@ -288,6 +293,11 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := h.authorizePage(r, identity); err != nil {
 			h.failForSession(w, r, identity, err)
+			return
+		}
+		// ISSUE-125: the account document moved to /account; old links keep working.
+		if r.URL.Query().Get("section") == "account" {
+			http.Redirect(w, r, webassets.AccountDestination, http.StatusSeeOther)
 			return
 		}
 		h.page(w, r, identity)
@@ -517,7 +527,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 		section = "profiles"
 	}
 	switch section {
-	case "account", "profiles", "keys", "relay", "import", "export":
+	case "profiles", "keys", "relay", "import", "export":
 	default:
 		h.fail(w, db.ErrInvalidInput)
 		return
@@ -569,7 +579,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request, id admin.Identity
 	} else {
 		v.Notice = h.takeNotice(id.SessionID, 0, i18n.ViewOf(w))
 	}
-	v.Nav = h.navigation(r, id, v.Profile, navSection(section))
+	v.Nav = h.navigation(r, id, v.Profile, "profiles")
 	h.render(w, 200, v)
 }
 
@@ -647,13 +657,4 @@ func openImage(f *adminweb.PreparedForm) (*os.File, error) {
 		return nil, nil
 	}
 	return os.Open(u.Path)
-}
-
-// navSection marks the administration action for the home page: the account
-// section or, for every other section, the profiles item (ISSUE-123).
-func navSection(section string) string {
-	if section == "account" {
-		return "account"
-	}
-	return "profiles"
 }

@@ -24,6 +24,13 @@ func SafeReturn(raw string) string {
 	if err != nil {
 		return ""
 	}
+	// ISSUE-125: the account page takes no query and is a valid login return target.
+	if u.Path == "/account" {
+		if len(q) != 0 {
+			return ""
+		}
+		return u.String()
+	}
 	// Permit the exact authenticated configuration page as a login return target.
 	if u.Path == "/admin/settings" {
 		if len(q) != 0 {
@@ -49,7 +56,7 @@ func SafeReturn(raw string) string {
 			return ""
 		}
 		switch p[0] {
-		case "admin", "apis", "image", "assets", "public", "web-assets", "preview-assets", "theme-helper", "artist", "album", "track", "chart", "listens", "rewind":
+		case "admin", "account", "apis", "image", "assets", "public", "web-assets", "preview-assets", "theme-helper", "artist", "album", "track", "chart", "listens", "rewind":
 			return ""
 		}
 		valid := len(p) == 1 || len(p) == 2 && (p[1] == "listens" || p[1] == "rewind" || p[1] == "search") || len(p) == 4 && p[1] == "chart" && p[2] == "top" && (p[3] == "artists" || p[3] == "albums" || p[3] == "tracks")

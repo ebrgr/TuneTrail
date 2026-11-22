@@ -1,7 +1,7 @@
 [
   {
     "Name": "admin/account",
-    "Route": "/admin?section=account",
+    "Route": "/account",
     "Status": 200
   },
   {

@@ -15,7 +15,7 @@ func IsPage(path string) bool {
 		return false
 	}
 	// The ingestion health document shares the protected administration dispatcher.
-	if path == "/admin/health" || path == "/admin" || path == "/admin/settings" || path == "/admin/redeem" || path == "/admin/sign-out" {
+	if path == "/admin/health" || path == "/admin" || path == "/account" || path == "/admin/settings" || path == "/admin/redeem" || path == "/admin/sign-out" {
 		return true
 	}
 	p := strings.Split(strings.Trim(path, "/"), "/")
@@ -24,7 +24,7 @@ func IsPage(path string) bool {
 	}
 	if (len(p) == 4 || len(p) == 5 && (p[4] == "review" || adminweb.MediaTaskAllowed(p[2], p[4]))) && routeSlug.MatchString(p[0]) && p[1] == "manage" && (p[2] == "artist" || p[2] == "album" || p[2] == "track") {
 		switch p[0] {
-		case "apis", "image", "assets", "public", "web-assets", "preview-assets", "admin", "theme-helper", "artist", "album", "track", "chart", "listens", "rewind":
+		case "apis", "image", "assets", "public", "web-assets", "preview-assets", "admin", "account", "theme-helper", "artist", "album", "track", "chart", "listens", "rewind":
 			return false
 		}
 		return true

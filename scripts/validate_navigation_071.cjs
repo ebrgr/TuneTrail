@@ -88,7 +88,7 @@ const server=http.createServer((req,res)=>{
      assert.match(await actions.textContent(),/Preview: administration unavailable/);
     }else if(name==='admin/account'){
      assert.equal(await actions.locator('a').count(),3);
-     assert.equal(await actions.locator('[aria-current="page"]').getAttribute('href'),'/admin?section=account');
+     assert.equal(await actions.locator('[aria-current="page"]').getAttribute('href'),'/account');
     }else{
      assert.equal(await actions.locator('a').count(),1);
      assert.equal(await actions.locator('a').getAttribute('href'),'/admin');
