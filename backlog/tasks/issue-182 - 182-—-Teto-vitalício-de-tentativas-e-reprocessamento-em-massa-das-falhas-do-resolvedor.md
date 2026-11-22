@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T21:57:00Z'
-updated_date: '2026-11-22T01:16:00Z'
+updated_date: '2026-11-22T01:24:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -60,6 +60,15 @@ created: 2026-11-22T01:16:00Z
 ---
 
 Reviewer: sem BUG; 3 RISCOs de operação (reprocessar todos numa única transação sob o escritor; reprocessamento unitário sem releitura de versões; migração reinicia o orçamento dos recibos abertos). Testes sqlite -race, engine, adminui e webui OK. Ver backlog/evidencias/issue-182/PARECER-REVIEWER.md. Advisor (effort high) recomendado por lease e concorrência; pendente a pedido do usuário.
+
+---
+
+author: advisor
+created: 2026-11-22T01:24:00Z
+
+---
+
+Advisor (effort high): APROVADO sem falhas críticas. Melhorias: prazo por tentativa abaixo da lease (o teto só dispara se a tentativa voltar), orçamento menor ao reprocessar lease_exhausted, commit por lote no reprocessar todos, histórico de reprocessamentos. Ver backlog/evidencias/issue-182/PARECER-ADVISOR.md.
 
 ---
 <!-- COMMENTS:END -->
