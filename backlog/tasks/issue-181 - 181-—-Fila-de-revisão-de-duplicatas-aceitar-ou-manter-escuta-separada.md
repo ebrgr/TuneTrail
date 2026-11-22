@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T16:07:00Z'
-updated_date: '2026-11-22T01:03:00Z'
+updated_date: '2026-11-22T01:04:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -139,6 +139,15 @@ created: 2026-11-22T01:03:00Z
 ---
 
 Aceite do usuário em 21/11/2026: aceito com a reauditoria do Reviewer (sem nova revisão do Advisor) e autorizado a publicar (sem push). Pendente de decisão de produto: reenvio do mesmo ID externo confiável com Revisar ligado abre uma pendência; padrão da flag Revisar para o corte da ISSUE-172.
+
+---
+
+author: ebrgr
+created: 2026-11-22T01:04:00Z
+
+---
+
+Publicação: versão 0.57 (tag `v0.57`), branch `feat/issue-181-fila-de-revisao-de-duplicatas` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
