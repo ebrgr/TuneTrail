@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-19T19:58:00Z'
-updated_date: '2026-11-22T17:02:00Z'
+updated_date: '2026-11-22T19:34:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -50,6 +50,15 @@ created: 2026-11-22T17:02:00Z
 ---
 
 Decisões do usuário após o ensaio da fase 1 (22/11/2026): (1) escutas sem álbum são aceitas como Lançamento desconhecido (nova ISSUE-186, pré-requisito do corte); (2) o padrão da flag Revisar é LIGADO: a ativação da ingestão por perfil e a migração do corte passam a definir review=1 por padrão; (3) o timeout de 20 s da prova do MusicBrainz continua reagendando o recibo. Pendências da fase 2: ISSUE-186; reescrever as fixtures que gravam pelo escritor legado (291 falhas com ocorrência por padrão no ensaio) e as expectativas síncronas e de relay; remover escritor legado, interruptor, flags e índice legado; Advisor obrigatório antes do aceite.
+
+---
+
+author: claude
+created: 2026-11-22T19:34:00Z
+
+---
+
+Premissa registrada (22/11/2026): produção migra de v2 para a última versão em um salto; migrations intermediárias só importam ao desenvolvimento. Na fase 2: (a) não é preciso tratar recibos intermediários em produção; (b) o teste de aceite do corte deve ser o salto v2 -> última (TestBootstrapKoitoV2WithoutUpstreamIndexes cobre 200 escutas até currentSchemaVersion; ampliar para conferir contagens, ingestão ativa e Revisar) em vez de migrações incrementais; (c) avaliar se faz sentido consolidar as migrations 013+ depois do corte.
 
 ---
 <!-- COMMENTS:END -->
