@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-21T21:57:00Z'
-updated_date: '2026-11-22T14:44:00Z'
+updated_date: '2026-11-22T14:50:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -78,6 +78,15 @@ created: 2026-11-22T14:44:00Z
 ---
 
 Verificação das correções do Advisor: prazo de 100 s por tentativa e gravação de retry com prazo próprio; reprocessamento de lease_exhausted limitado a cinco claims; histórico em ingest_revisions e auditoria mais recente mantida. Lotes mantidos em uma transação. make check passou (13/13 E2E), testes direcionados com -race passaram e a referência UI coincide nos 176 arquivos. Mediana de 150,22 ms para reprocessar e auditar 10 mil recibos.
+
+---
+
+author: claude
+created: 2026-11-22T14:50:00Z
+
+---
+
+Reviewer (reauditoria do commit cea899b): sem BUG executado; RISCO que precisa de decisão: o timeout de 20 s da prova do MusicBrainz agora reagenda o recibo em vez de seguir com identidade degradada, enquanto erros rápidos do MusicBrainz continuam degradando (classificação inconsistente). Prazo por tentativa, 5 claims após lease_exhausted e histórico de reprocessamento em ingest_revisions OK. Item 3 do Advisor ignorado por decisão do usuário. Testes sqlite -race, engine, adminui e webui OK. Ver PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->
