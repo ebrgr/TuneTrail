@@ -206,6 +206,8 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 		// The active path validates and commits the entire batch before acknowledging.
 		if receiver, ok := store.(ingest.Receiver); ok && req.ListenType != ListenTypePlayingNow {
 			batch, invalid := listenIngestBatch(profile.ID, req, r.Header.Get("Idempotency-Key"), receivedAt)
+			// Carry only the ID resolved by ingestion authentication.
+			batch.APIKeyID = profile.IngestionKeyID
 			var active bool
 			policy := "legacy"
 			var err error

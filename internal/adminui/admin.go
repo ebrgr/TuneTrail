@@ -53,6 +53,7 @@ type SettingsStore interface {
 	Save(context.Context, string, map[string]string) (cfg.SettingsSnapshot, error)
 }
 type Options struct {
+	Now                    func() time.Time
 	Languages              *i18n.Catalog
 	Settings               SettingsStore
 	SubsonicTest           func(context.Context, string, string) error
@@ -85,6 +86,7 @@ type notice struct {
 
 // Handler serves administration in Go mode with session and form protection.
 type Handler struct {
+	now               func() time.Time
 	languages         *i18n.Catalog
 	settings          SettingsStore
 	subsonicTest      func(context.Context, string, string) error
@@ -111,6 +113,10 @@ type view struct {
 	Keys                                []models.ApiKey
 	RelayURL, CSRF, Next, Notice, Error string
 	Health                              *db.IngestHealth
+	Inbox                               []db.IngestInboxGroup
+	InboxKeys                           []db.IngestInboxGroup
+	InboxDays                           int
+	InboxKey                            string
 	RelayState                          *relay.ProfileView
 	Login, LogoutOnly, SignOut          bool
 	Section                             string
@@ -150,7 +156,11 @@ func New(store Store, opts Options) (*Handler, error) {
 	if opts.SubsonicTest == nil {
 		opts.SubsonicTest = images.TestSubsonic
 	}
-	h := &Handler{languages: opts.Languages, settings: opts.Settings, subsonicTest: opts.SubsonicTest, requireSubmission: opts.RequireSubmissionToken, submissions: map[uuid.UUID]submissionTicket{}, store: store, csrf: csrf, tempDir: opts.TempDir, relayClient: opts.RelayClient, musicBrainz: opts.MusicBrainz, tmpl: tmpl, notices: map[uuid.UUID]notice{}, catalogPlans: map[uuid.UUID]pendingCatalogPlan{}}
+	// Use the same clock for the Inbox bounds throughout a request.
+	if opts.Now == nil {
+		opts.Now = time.Now
+	}
+	h := &Handler{now: opts.Now, languages: opts.Languages, settings: opts.Settings, subsonicTest: opts.SubsonicTest, requireSubmission: opts.RequireSubmissionToken, submissions: map[uuid.UUID]submissionTicket{}, store: store, csrf: csrf, tempDir: opts.TempDir, relayClient: opts.RelayClient, musicBrainz: opts.MusicBrainz, tmpl: tmpl, notices: map[uuid.UUID]notice{}, catalogPlans: map[uuid.UUID]pendingCatalogPlan{}}
 	h.login = http.HandlerFunc(h.postLogin)
 	if opts.LoginMiddleware != nil {
 		h.login = opts.LoginMiddleware(h.login)

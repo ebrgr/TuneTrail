@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -707,9 +708,7 @@ func TestAuth(t *testing.T) {
 	resp, err = http.DefaultClient.Do(req)
 	require.NoError(t, err)
 	require.Equal(t, 201, resp.StatusCode)
-	var response struct {
-		Key string `json:"key"`
-	}
+	var response models.ApiKey
 	require.NoError(t, json.NewDecoder(resp.Body).Decode(&response))
 	require.NotEmpty(t, response.Key)
 
@@ -731,7 +730,7 @@ func TestAuth(t *testing.T) {
 	// changes api key label
 	loginOnce = sync.Once{}
 	login(t) // Keep an independent live session for subsequent tests.
-	resp, err = makeAuthRequest(t, s, "PATCH", "/apis/web/v1/user/apikeys/2", strings.NewReader(`{"label":"well tested"}`))
+	resp, err = makeAuthRequest(t, s, "PATCH", fmt.Sprintf("/apis/web/v1/user/apikeys/%d", response.ID), strings.NewReader(`{"label":"well tested"}`))
 	require.NoError(t, err)
 	assert.Equal(t, 204, resp.StatusCode)
 	resp, err = makeAuthRequest(t, s, "GET", "/apis/web/v1/user/apikeys", nil)
@@ -739,9 +738,9 @@ func TestAuth(t *testing.T) {
 	var keys []models.ApiKey
 	err = json.NewDecoder(resp.Body).Decode(&keys)
 	require.NoError(t, err)
-	require.GreaterOrEqual(t, len(keys), 2)
-	require.NotNil(t, keys[1].Label)
-	assert.Equal(t, "well tested", keys[1].Label)
+	require.True(t, slices.ContainsFunc(keys, func(key models.ApiKey) bool {
+		return key.ID == response.ID && key.Label == "well tested"
+	}))
 
 	// logs out
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/logout", nil)

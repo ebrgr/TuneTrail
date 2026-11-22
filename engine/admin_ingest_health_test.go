@@ -135,7 +135,9 @@ func TestIngestHealthReprocess(t *testing.T) {
 	require.Equal(t, http.StatusOK, ownerPage.Code)
 	require.Contains(t, ownerPage.Body.String(), second)
 	require.NotContains(t, ownerPage.Body.String(), first)
-	require.NotContains(t, ownerPage.Body.String(), "PRIVATE_")
+	require.Contains(t, ownerPage.Body.String(), payload)
+	require.NotContains(t, ownerPage.Body.String(), idempotencyKey)
+	require.NotContains(t, ownerPage.Body.String(), "second-key")
 	require.NotContains(t, ownerPage.Body.String(), keyDigest)
 	ownerToken := csrf.FindStringSubmatch(ownerPage.Body.String())
 	require.Len(t, ownerToken, 2)
@@ -143,7 +145,8 @@ func TestIngestHealthReprocess(t *testing.T) {
 	require.Equal(t, http.StatusOK, rootPage.Code)
 	require.Contains(t, rootPage.Body.String(), first)
 	require.NotContains(t, rootPage.Body.String(), second)
-	require.NotContains(t, rootPage.Body.String(), "PRIVATE_")
+	require.NotContains(t, rootPage.Body.String(), idempotencyKey)
+	require.NotContains(t, rootPage.Body.String(), "first-key")
 	require.NotContains(t, rootPage.Body.String(), keyDigest)
 	rootToken := csrf.FindStringSubmatch(rootPage.Body.String())
 	require.Len(t, rootToken, 2)
@@ -314,4 +317,31 @@ func TestIngestHealthReviewActions(t *testing.T) {
 	owner.router.ServeHTTP(out, localized)
 	require.Equal(t, http.StatusOK, out.Code)
 	require.Contains(t, out.Body.String(), "Pendências de revisão")
+}
+
+func TestIngestHealthInboxKeyFilter(t *testing.T) {
+	a := newProfileTestApp(t)
+	require.NoError(t, a.store.Exec(`INSERT INTO api_keys(id,key,profile_id,created_at,label)
+		VALUES(1841,'INBOX_SECRET_A',1,0,'Inbox player A'),(1842,'INBOX_SECRET_B',1,0,'Inbox player B')`))
+	for _, input := range []struct{ key, title string }{
+		{"INBOX_SECRET_A", "Track from A"}, {"INBOX_SECRET_B", "Track from B"},
+		{"second-key", "Track from a different profile"},
+	} {
+		result := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", input.title, 1714564800), input.key, false)
+		require.Equal(t, http.StatusOK, result.Code)
+	}
+	count, err := a.store.Count(`SELECT count(*) FROM ingest_events
+		WHERE profile_id=1 AND api_key_id IN (1841,1842) AND original_snapshot NOT LIKE '%INBOX_SECRET%'`)
+	require.NoError(t, err)
+	require.EqualValues(t, 2, count)
+	require.NoError(t, a.store.Exec(`DELETE FROM api_keys WHERE id=1842`))
+	page := a.request("GET", "/admin/health?profile=1&days=7&key=1841", "", "", true)
+	require.Equal(t, http.StatusOK, page.Code)
+	body := page.Body.String()
+	require.Contains(t, body, "Inbox player A")
+	require.Contains(t, body, "Removed key")
+	require.Contains(t, body, "Track from A")
+	for _, private := range []string{"INBOX_SECRET", "Track from B", "Track from a different profile", "second-key"} {
+		require.NotContains(t, body, private)
+	}
 }

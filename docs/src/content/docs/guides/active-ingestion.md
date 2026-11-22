@@ -316,3 +316,26 @@ budget. SQLite schema v18 starts a fresh claim budget for existing
 receipts while preserving their lifetime counts and retry state. To return to
 schema v17, restore the `.pre-ingest-reprocess-*.bak` backup made during the
 upgrade.
+
+### Inbox and Outbox
+
+Open **Ingestion health** for your profile. The **Inbox** groups stored receipts
+by API key and client. Use the source and time filters to see the last 24 hours,
+7 days, or 30 days. File imports have their own group. Receipts recorded before
+key attribution appear under **Unknown key**. If you delete a key, existing
+receipts show **Removed key** with its internal ID. The Inbox displays key
+labels and internal IDs.
+
+Expand a group to see the current outcomes for receipts in the selected window.
+The window uses the time TuneTrail received the record. A replay that reuses a
+receipt still counts as one receipt. Requests rejected before a receipt is
+created are outside these totals. Shadow receipts can remain pending because
+they do not record the legacy writer’s final outcome. Missing metadata means the title or artist
+is absent. Incomplete metadata means the title and artist are present but the
+album, duration, or a MusicBrainz recording, release, or artist ID is missing.
+Each category can show one example with its title, artist, receipt time, and
+client. Use the review and permanent failure sections to resolve pending reviews
+or reprocess parked receipts.
+
+The **Outbox** shows relay delivery status, including queued deliveries, pauses,
+and failures.

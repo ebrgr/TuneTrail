@@ -121,7 +121,7 @@ func TestUIReference(t *testing.T) {
 			t.Error(err)
 		}
 	})
-	admin, err := adminui.New(s, adminui.Options{DisableRateLimit: true, Settings: referenceSettings{}})
+	admin, err := adminui.New(s, adminui.Options{DisableRateLimit: true, Settings: referenceSettings{}, Now: func() time.Time { return now }})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,6 +225,18 @@ func TestUIReference(t *testing.T) {
 		FROM ingest_events WHERE receipt_id='reference-active'`); err != nil {
 		t.Fatal(err)
 	}
+	// Use two credentials with the same client and fixed receiving times within the window.
+	if err := s.Exec(`INSERT INTO api_keys(id,key,profile_id,created_at,label)
+		VALUES(1841,'fixture-living-room-token',1,0,'Living room'),(1842,'fixture-phone-token',1,0,'Phone');
+		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,api_key_id,state)
+		VALUES('inbox-missing',1,'reference-source',1,'listenbrainz','1','inbox-missing',0,'single',1717241400,
+			'second','start','{"title":"Morning radio","client":"Fictional player"}','reference','1',1841,'received'),
+		      ('inbox-incomplete',1,'reference-source',1,'listenbrainz','1','inbox-incomplete',0,'single',1717241700,
+			'second','start','{"title":"Evening song","artist":"Example artist","client":"Fictional player"}','reference','1',1842,'received')`); err != nil {
+		t.Fatal(err)
+	}
+
 	save("admin/ingest-health", "/admin/health?profile=1", admin, session)
 	save("admin/listen", "/alpha/manage/track/1/listen?listen_at=1714564800&tz=UTC", admin, session)
 	if err := fs.WalkDir(files, "static", func(p string, d fs.DirEntry, e error) error {

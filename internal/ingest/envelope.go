@@ -77,6 +77,7 @@ type Item struct {
 }
 
 type Batch struct {
+	APIKeyID               int64 // Internal credential ID, zero for unattributed receipts.
 	ProfileID              int32
 	Source, Operation      string
 	ReceivedAt             time.Time

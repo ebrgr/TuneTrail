@@ -20,9 +20,13 @@ import (
 const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, created_at, user_id, require_login"
 
 // scanProfile includes canonical ownership without exposing it in public serialization.
-func scanProfile(row interface{ Scan(...any) error }) (*models.ListeningProfile, error) {
+func scanProfile(row interface{ Scan(...any) error }, keyID ...*int64) (*models.ListeningProfile, error) {
 	p := new(models.ListeningProfile)
-	err := row.Scan(&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt, &p.UserID, &p.RequireLogin)
+	fields := []any{&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt, &p.UserID, &p.RequireLogin}
+	if len(keyID) != 0 {
+		fields = append(fields, keyID[0])
+	}
+	err := row.Scan(fields...)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, db.ErrNotFound
 	}
@@ -53,7 +57,12 @@ func (s *Sqlite) GetListeningProfileByID(ctx context.Context, id int32) (*models
 
 // GetProfileByAPIKey resolves the ingestion destination, never an authenticated actor.
 func (s *Sqlite) GetProfileByAPIKey(ctx context.Context, key string) (*models.ListeningProfile, error) {
-	return scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at,p.user_id,p.require_login FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key))
+	var keyID int64
+	p, err := scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at,p.user_id,p.require_login,k.id FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key), &keyID)
+	if err == nil {
+		p.IngestionKeyID = keyID
+	}
+	return p, err
 }
 
 var profileSlugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)

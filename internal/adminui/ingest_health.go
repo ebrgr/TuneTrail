@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
@@ -87,12 +88,49 @@ func (h *Handler) healthPage(w http.ResponseWriter, r *http.Request) {
 		h.fail(w, err)
 		return
 	}
+	// Apply the Inbox filters only after authorizing the selected profile.
+	days := 1
+	switch r.URL.Query().Get("days") {
+	case "", "1":
+	case "7":
+		days = 7
+	case "30":
+		days = 30
+	default:
+		h.fail(w, db.ErrInvalidInput)
+		return
+	}
+	key := r.URL.Query().Get("key")
+	var selected int64
+	if key != "" {
+		selected, err = strconv.ParseInt(key, 10, 64)
+		if err != nil || selected < -1 || strconv.FormatInt(selected, 10) != key {
+			h.fail(w, db.ErrInvalidInput)
+			return
+		}
+	}
+	now := h.now()
+	groups, err := h.store.IngestInbox(r.Context(), profile.ID, nil, now.Add(-time.Duration(days)*24*time.Hour), now)
+	if err != nil {
+		h.fail(w, err)
+		return
+	}
+	var inbox, keys []db.IngestInboxGroup
+	for _, group := range groups {
+		if len(keys) == 0 || keys[len(keys)-1].Key != group.Key {
+			keys = append(keys, group)
+		}
+		if key == "" || selected == group.Key {
+			inbox = append(inbox, group)
+		}
+	}
 	if admin.AuthorizeAction(identity.User, admin.ManageAccounts, nil) != nil {
 		profiles = nil
 	}
 	h.render(w, http.StatusOK, view{
 		Nav: h.navigation(r, identity, profile, "health"), Health: &health,
 		Profile: profile, Profiles: profiles, User: identity.User, CSRF: token,
+		Inbox: inbox, InboxKeys: keys, InboxDays: days, InboxKey: key,
 	})
 }
 

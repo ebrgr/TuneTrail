@@ -195,9 +195,9 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 			var result ingest.Result
 			var err error
 			if active {
-				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, variant, deliveryPolicy)
+				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, variant, deliveryPolicy, version >= 19)
 			} else {
-				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, hasMode)
+				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, hasMode, version >= 19)
 			}
 			if err != nil {
 				return err
@@ -330,7 +330,7 @@ func findKey(ctx context.Context, tx *sql.Conn, b ingest.Batch, i ingest.Item, s
 }
 
 // receiveItem records the decision without setting any of the future identity columns.
-func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict, hasMode bool) (ingest.Result, error) {
+func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict, hasMode, hasInbox bool) (ingest.Result, error) {
 	r := dedup.Receipt{Source: source, Namespace: i.ExternalNamespace, ExternalID: i.ExternalID, Digest: i.digest,
 		BatchDigest: batchDigest, Snapshot: i.Snapshot, Time: i.ListenedAt, Precision: "second"}
 	if r.Time.IsZero() {
@@ -386,14 +386,17 @@ func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedRe
 		}
 		return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: true}, err
 	} else {
-		_, err = tx.ExecContext(ctx, `INSERT INTO ingest_events
+		statement := `INSERT INTO ingest_events
 			(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
 			external_namespace,external_event_id,external_id_trusted,client_idempotency_key,batch_digest,file_digest,file_format,format_version,
-			listened_at,original_time,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,state,duplicate_decision,reason_codes,evidence,rule_version)
+			listened_at,original_time,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,state,duplicate_decision,reason_codes,evidence,rule_version%s)
 			VALUES(?,?,?,1,?,'1',?,?,?,?,nullif(?,''),nullif(?,''),?,nullif(?,''),nullif(?,''),nullif(?,''),nullif(?,''),CASE WHEN ?!='' THEN '1' END,
-			?,nullif(?,''),?,'unknown',?,?,?,?,?,?,?,?)`,
+			?,nullif(?,''),?,'unknown',?,?,?,?,?,?,?,?%s)`
+		args := []any{
 			id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
-			b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, r.Time.UTC().Format(receiptTime), i.OriginalTime(), r.Precision, i.snapshot, i.digest, ingest.DigestVersion, state, decision.Value, string(reasons), string(evidence), decision.RuleVersion)
+			b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, r.Time.UTC().Format(receiptTime), i.OriginalTime(), r.Precision, i.snapshot, i.digest, ingest.DigestVersion, state, decision.Value, string(reasons), string(evidence), decision.RuleVersion}
+		statement, args = inboxReceiptInsert(statement, args, hasInbox, b.APIKeyID)
+		_, err = tx.ExecContext(ctx, statement, args...)
 	}
 	return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: state == "pending_duplicate"}, err
 }
@@ -405,7 +408,7 @@ func replayIngest(r *dedup.Receipt) ingest.Result {
 }
 
 // receiveActiveItem replaces unlinked shadow receipts and replays linked or active owners.
-func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, variant, policy string) (ingest.Result, error) {
+func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, variant, policy string, hasInbox bool) (ingest.Result, error) {
 	previous, err := findKey(ctx, tx, b, i.Item, source, true)
 	if errors.Is(err, errReceiptKeyConflict) {
 		return ingest.Result{Decision: "review", Pending: true}, nil
@@ -451,7 +454,7 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 		// File replays keep their ordinal-based receipt semantics.
 		if variant == "occurrence" && policy != "" && b.FileDigest == "" &&
 			i.ExternalID != "" && previous.Digest == digest && (previous.State == "accepted" || previous.State == "duplicate") {
-			return reviewTrustedReplay(ctx, tx, b, i.Item, previous.ID, batchID, policy, result)
+			return reviewTrustedReplay(ctx, tx, b, i.Item, previous.ID, batchID, policy, result, hasInbox)
 		}
 		return result, nil
 	}
@@ -492,13 +495,24 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 		b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, at.UTC().Format(receiptTime), i.OriginalTime(), precision, semantics, offset,
 		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion, variant}
 	if policy == "" {
-		_, err = tx.ExecContext(ctx, fmt.Sprintf(statement, "", ""), args...)
+		statement, args = inboxReceiptInsert(statement, args, hasInbox, b.APIKeyID)
+		_, err = tx.ExecContext(ctx, statement, args...)
 		return ingest.Result{ReceiptID: id, Pending: true, DeliveryPolicy: "legacy"}, err
 	}
 	args = append(args, policy)
 	var confirmed string
-	err = tx.QueryRowContext(ctx, fmt.Sprintf(statement, ",delivery_policy", ",?")+" RETURNING delivery_policy", args...).Scan(&confirmed)
+	statement = fmt.Sprintf(statement, ",delivery_policy%s", ",?%s")
+	statement, args = inboxReceiptInsert(statement, args, hasInbox, b.APIKeyID)
+	err = tx.QueryRowContext(ctx, statement+" RETURNING delivery_policy", args...).Scan(&confirmed)
 	return ingest.Result{ReceiptID: id, Pending: true, DeliveryPolicy: confirmed}, err
+}
+
+// inboxReceiptInsert binds only an internal ID on schemas that support attribution.
+func inboxReceiptInsert(statement string, args []any, enabled bool, id int64) (string, []any) {
+	if enabled && id > 0 {
+		return fmt.Sprintf(statement, ",api_key_id", ",?"), append(args, id)
+	}
+	return fmt.Sprintf(statement, "", ""), args
 }
 
 // shadowModeClause selects only shadow rows once mode is present in the schema.

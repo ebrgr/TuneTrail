@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"os"
 	"slices"
 	"testing"
@@ -30,7 +31,7 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 			mode,state,duplicate_decision,resolved_at,closed_at,occurrence_id,recording_id,evidence)
 		SELECT printf('scale:%07d',n),CASE WHEN n%6=0 THEN 2 ELSE 1 END,
 			CASE WHEN n%6=0 THEN 'scale:3' WHEN n%3=0 THEN 'scale:2' ELSE 'scale:1' END,
-			1,CASE WHEN n%6=3 THEN 'file' ELSE 'listenbrainz' END,'1','scale',n,'single',1700000000+n*180,
+			1,CASE WHEN n%6=3 THEN 'file' ELSE 'listenbrainz' END,'1','scale',n,'single',1700000000+n*8,
 			'2024-05-01T12:00:00.000000000Z','second','start',
 			json_object('title','Example title','artist','Example artist','release','Example release','client','player-'||(n%12)),
 			'fixture','1',CASE WHEN n%997=0 THEN 'active' ELSE 'shadow' END,
@@ -71,7 +72,7 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 		slices.Sort(samples)
 		t.Logf("%s: warm median %s (range %s–%s)", name, samples[2], samples[0], samples[4])
 	}
-	for _, version := range []int{15, 17} {
+	for _, version := range []int{15, 17, 19} {
 		if version > 15 {
 			started := time.Now()
 			_, err := provider.UpTo(t.Context(), int64(version))
@@ -85,6 +86,19 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 		explain("pending list", reviewPageSQL, 1, reviewPageSize, 0)
 		explain("pending count", reviewCountSQL, 1)
 		explain("candidates", reviewCandidateRows, 1, "scale:0298103")
+		if version == 19 {
+			now := time.Unix(1700000000+300000*8, 0)
+			for _, days := range []int{1, 7, 30} {
+				since := now.Add(-time.Duration(days) * 24 * time.Hour)
+				name := fmt.Sprintf("Inbox %dd", days)
+				explain(name, inboxCountsSQL, inboxCountArgs(1, -1, int64(1<<63-1), since, now)...)
+				measure(name, func() error {
+					_, err := s.IngestInbox(t.Context(), 1, nil, since, now)
+					return err
+				})
+			}
+		}
+
 		measure("sources", func() error {
 			_, err := s.healthSources(t.Context(), 1, version, 0)
 			return err

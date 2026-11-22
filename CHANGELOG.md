@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Ingestion health separates incoming receipts from relay deliveries and shows receipt counts and missing metadata by API key, client, and time window (ISSUE-184).
+
 ## [0.58] - 2026-11-22
 
 - Ingestion Health lets profile owners and root reprocess all parked receipts for a profile and logs each reprocessing with the account ID and time. Resolution attempts have a 100-second deadline, and receipts parked after exhausting their claim budget get five more claims when reprocessed (ISSUE-182).

@@ -8,6 +8,7 @@ import (
 // IngestHealthStore provides profile diagnostics and manual recovery.
 type IngestHealthStore interface {
 	IngestHealth(context.Context, int32, ...int) (IngestHealth, error)
+	IngestInbox(context.Context, int32, *int64, time.Time, time.Time) ([]IngestInboxGroup, error)
 	ReprocessIngest(context.Context, int32, int32, string) error
 	ReprocessAllIngest(context.Context, int32, int32) error
 	SetIngestReview(context.Context, int32, bool) error
@@ -85,4 +86,20 @@ type IngestReviewDecision struct {
 type IngestReviewBatch struct {
 	Digest string
 	Count  int
+}
+
+// IngestInboxGroup describes receipts for one key and client in the selected window.
+type IngestInboxGroup struct {
+	Key                                          int64
+	Client, Label                                string
+	KeyPresent                                   bool
+	Total, Accepted, Duplicate, Invalid, Pending int64
+	Missing, Incomplete                          int64
+	Examples                                     [2]*IngestInboxExample
+}
+
+// IngestInboxExample is the safe display projection of a receipt snapshot.
+type IngestInboxExample struct {
+	Title, Artist, Client string
+	At                    time.Time
 }

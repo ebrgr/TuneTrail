@@ -2,7 +2,9 @@ package models
 
 // ListeningProfile is a public listening identity, independent of admin sessions.
 type ListeningProfile struct {
-	RequireLogin bool `json:"require_login"`
+	// IngestionKeyID is set only by player credential authentication.
+	IngestionKeyID int64 `json:"-"`
+	RequireLogin   bool  `json:"require_login"`
 	// UserID is canonical ownership for server authorization, never a directory field.
 	UserID        int32   `json:"-"`
 	ID            int32   `json:"id"`

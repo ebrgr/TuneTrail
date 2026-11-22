@@ -3,15 +3,19 @@ id: ISSUE-184
 title: >-
   184 — Central de saúde com Inbox (recebido por API key e importações) e Outbox
   (relay)
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-21T23:31:00Z'
+updated_date: '2026-11-22T15:17:00Z'
 labels:
   - ingestao
   - ui
 milestone: m-11
 dependencies:
   - ISSUE-181
+references:
+  - backlog/evidencias/issue-184/VERIFICACAO.md
 type: feature
 ordinal: 197000
 ---
@@ -24,9 +28,31 @@ Pedido do usuário em 21/11/2026. A central de saúde (/admin/health) passa a te
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Recibos novos guardam a referência da API key (sem a chave bruta); recibos antigos aparecem como chave desconhecida
-- [ ] #2 Central de saúde com duas tabelas lado a lado: Inbox à esquerda (por API key, cliente e importações) e Outbox à direita (relay), empilhadas no celular
-- [ ] #3 Inbox mostra total, aceitos, duplicados, inválidos e pendentes por chave e janela de tempo, sem expor segredos
-- [ ] #4 Metadados faltantes e incompletos listados por chave, com exemplo seguro por tipo
-- [ ] #5 Isolamento por perfil e acesso só do dono e do root, com testes; consultas medidas com volume realista
+- [x] #1 Recibos novos guardam a referência da API key (sem a chave bruta); recibos antigos aparecem como chave desconhecida
+- [x] #2 Central de saúde com duas tabelas lado a lado: Inbox à esquerda (por API key, cliente e importações) e Outbox à direita (relay), empilhadas no celular
+- [x] #3 Inbox mostra total, aceitos, duplicados, inválidos e pendentes por chave e janela de tempo, sem expor segredos
+- [x] #4 Metadados faltantes e incompletos listados por chave, com exemplo seguro por tipo
+- [x] #5 Isolamento por perfil e acesso só do dono e do root, com testes; consultas medidas com volume realista
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-22T15:06:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-184` na branch `feat/issue-184-central-de-saude-com-inbox` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-22T15:17:00Z
+
+---
+
+Verificação: Inbox por chave e cliente, importações e metadados; Outbox de relay com revisão e reprocessamento no Inbox. Contadores abaixo de 9 ms nas três janelas com 300 mil recibos. Migração medida em 7,00 s durante o startup. Make check, testes direcionados com detector de corridas e Orca em 390, 1100 e 1500 px passaram. Evidência em backlog/evidencias/issue-184/VERIFICACAO.md.
+
+---
+<!-- COMMENTS:END -->

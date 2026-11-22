@@ -26,15 +26,17 @@
   transition:background-color .1s,color .1s,border-color .1s;
 }
 .admin-main .ingestion-health button:hover { background:var(--color-bg-tertiary); }
-/* Independent health cards share columns as space becomes available. */
+/* Keep the Inbox first in the reading order at all viewport widths. */
 .admin-main .ingestion-health-grid {
   display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:var(--space-5);
 }
+.admin-main .ingestion-health-column { display:grid; min-width:0; gap:var(--space-5); }
+.admin-main .ingestion-health-column > h2 { margin:0; }
 .admin-main .ingestion-health .card { min-width:0; padding:var(--space-5); margin:0; overflow-wrap:anywhere; }
 .admin-main .ingestion-health .ingestion-reprocess { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .ingestion-review-setting { margin:0 0 var(--space-3); }
 .admin-main .ingestion-health .ingestion-review-unavailable { margin:0; padding:0 12px var(--space-3); }
-.admin-main .ingestion-health .card > h2 {
+.admin-main .ingestion-health .card > h3 {
   margin:0 0 var(--space-3); font-size:18px; font-weight:400; text-transform:uppercase; color:var(--color-fg-secondary);
 }
 .admin-main .ingestion-health .card > p { margin:var(--space-3) 0; }
@@ -61,8 +63,5 @@
 }
 @media(min-width:64rem) {
   .admin-main .ingestion-health-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-}
-@media(min-width:90rem) {
-  .admin-main .ingestion-health-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
 }
