@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T21:24:00Z'
+updated_date: '2026-11-22T21:28:00Z'
 labels:
   - ui
   - admin
@@ -89,6 +89,15 @@ created: 2026-11-22T21:24:00Z
 ---
 
 Ajustes pós-teste (22/11/2026): (1) resgate de token: regras da senha visíveis antes do envio (mín. 8 caracteres, máx. 72 bytes, como validAccountPassword), campo Confirmar senha, erros por campo, sucesso redireciona para /admin?redeemed=1 (login com 'Senha definida…'); CSRF/preauth inválido em resgate e login mostra 'Esta página expirou ou foi aberta em outra aba' com formulário novo (403, username preservado, nunca token/senha), sem afrouxar CSRF/SameOrigin. (2) estilos de /account e resgate reutilizam tokens e estados globais (foco global, hover/active/disabled, sem cor fixa); verificação em scripts/check_web_style.py com testes. make check verde. Sem capturas (decisão do usuário).
+
+---
+
+author: claude
+created: 2026-11-22T21:28:00Z
+
+---
+
+Reviewer (reauditoria): APROVADO, sem BUG. Riscos baixos: leitura prévia do corpo para preservar o username, hover do botão primário derivado por color-mix, anel de foco da administração (2px primário), texto de senha da /account diz caracteres e a regra é bytes, tabela de mensagens realinhada. Testes ok.
 
 ---
 <!-- COMMENTS:END -->
