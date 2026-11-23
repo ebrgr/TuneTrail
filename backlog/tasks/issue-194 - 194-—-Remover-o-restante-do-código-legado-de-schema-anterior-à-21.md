@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T00:10:00Z'
-updated_date: '2026-11-23T01:27:00Z'
+updated_date: '2026-11-23T01:29:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -87,6 +87,15 @@ created: 2026-11-23T01:27:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito a 194').
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:29:00Z
+
+---
+
+Publicação: versão 0.67 (tag `v0.67`), branch `chore/issue-194-remover-o-restante-do-codigo` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
