@@ -1,11 +1,11 @@
 ---
 id: ISSUE-164
 title: 164 — Validar o corte multiusuário e documentar a operação
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T17:33:00Z'
-updated_date: '2026-11-23T19:10:00Z'
+updated_date: '2026-11-23T19:18:00Z'
 labels:
   - validacao
   - docs
@@ -70,6 +70,15 @@ created: 2026-11-23T19:10:00Z
 ---
 
 Verificação da v0.72 e do schema 22. Matriz HTML, JSON e serviços conferida com sessões de visitante, dono, terceiro, root, rebaixada e expirada. A jornada Chrome passou com JavaScript ligado e desligado. A cópia real v2 e a restauração preservaram 72 escutas e o mesmo SHA-256. O backup real v4 preservou 80 escutas na migração e na restauração; v3 foi exercitado com fixture. Ingestão e relay passaram. make check verde com 13/13 jornadas e zero diferenças em 190 arquivos de referência; build dos docs verde. Guia e changelog atualizados. A ISSUE-197 já acompanha a configuração LOGIN_GATE. A tarefa segue em andamento para o parecer do Reviewer pelo agente que despachou.
+
+---
+
+author: claude
+created: 2026-11-23T19:18:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 23/11/2026. Parecer do Reviewer: APROVADO (backlog/evidencias/issue-164/PARECER-REVIEWER.md). Verificado: matriz de papéis e estados em HTML, JSON e serviços, com JavaScript ligado e desligado; migração do schema 2 ao 22 sem perda (72 escutas e mesmo digest antes, depois e após restaurar o backup); regressão de ingestão e relay; make check verde com 13/13 jornadas; guia operacional e CHANGELOG. Riscos conhecidos: as menções a schema 22 nos guias e no DEPLOYMENT.md precisam ser atualizadas ao integrar a ISSUE-190 (schema 23); o teste de navegador exige Playwright e Chromium e não está no make check; inspeção de teclado e leitor de tela fora desta execução. Publicada localmente, sem push.
 
 ---
 <!-- COMMENTS:END -->
