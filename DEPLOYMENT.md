@@ -2,9 +2,9 @@
 
 TuneTrail adds public listening profiles and administrator-only management to
 Koito. The current source version is
-**TuneTrail 0.71**, a prerelease intended for testing with a backup of your data.
+**TuneTrail 0.72**, a prerelease intended for testing with a backup of your data.
 
-The target image is `ghcr.io/ebrgr/tunetrail:0.71`, built for Linux amd64
+The target image is `ghcr.io/ebrgr/tunetrail:0.72`, built for Linux amd64
 and arm64. Publish the matching image before pulling this tag, or build it locally. The image serves both the API and compiled interface on port 4110;
 Node.js, Go, and Vite are not required on the deployment host.
 
@@ -41,7 +41,7 @@ interfaces, independently of this host setting.
 
 ## Upgrade from the `koito-sum` compose project
 
-Since 0.71 the compose project and service are named `tunetrail`, the data is
+Since 0.72 the compose project and service are named `tunetrail`, the data is
 mounted at `/etc/tunetrail` and variables use the `TUNETRAIL_` prefix. Keep your
 `deploy/.env`: its `KOITO_*` names are unchanged, so it still points at the same
 host data directory.
@@ -148,10 +148,10 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml stop
 The image includes a healthcheck. Compose gives the application up to 30 seconds
 to shut down gracefully. `stop` and `down` preserve the host data directory.
 
-## Upgrade to schema v11 (TuneTrail 0.71)
+## Upgrade to schema v11 (TuneTrail 0.72)
 
 Stop the service in a maintenance window before upgrading from a v9 database
-(TuneTrail 0.44 to 0.71). Keep free disk space of at least three times the
+(TuneTrail 0.44 to 0.72). Keep free disk space of at least three times the
 database size in the data directory and in the SQLite temporary directory
 (`TMPDIR`). On first start TuneTrail writes a verified
 `.pre-occurrence-ingest-*.bak` backup next to the database, then migrates it to
@@ -200,7 +200,7 @@ them, and import them again after upgrading.
    migration"; follow step 5 of the recovery procedure, or upgrade from a new
    directory restored from the backup.
 
-These paths were exercised with TuneTrail 0.5 and 0.71 on fictional data
+These paths were exercised with TuneTrail 0.5 and 0.72 on fictional data
 (`scripts/validate_rollback.py`).
 
 ## Container registry access
@@ -228,7 +228,7 @@ timezone data and curl for the healthcheck.
 
 For local development and validation, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
-Current source: **TuneTrail 0.71**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.71 becomes 0.71); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
+Current source: **TuneTrail 0.72**. A matching image must be published before pulling this tag. For an unpublished version, use the local build instructions above. Version numbers advance once per accepted task published with `make issue.publish` (0.72 becomes 0.72); pushing its `v0.x` tag builds and publishes the matching image; 1.0 is reserved for a later decision. Historical SUM tags remain unchanged.
 
 ## External web assets (ISSUE-066)
 

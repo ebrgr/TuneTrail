@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T17:40:00Z'
-updated_date: '2026-11-23T18:54:00Z'
+updated_date: '2026-11-23T18:57:00Z'
 labels:
   - ui
   - admin
@@ -69,6 +69,15 @@ created: 2026-11-23T18:54:00Z
 ---
 
 Aceite: aprovada pelo usuário em 23/11/2026, após teste próprio no servidor local com o banco dele (schema 21 → 22, backup tunetrail.db.pre-ingest-4222905004.bak criado antes). Verificado: dropdown de 12 cores mais Padrão do tema, cor salva por perfil em listening_profiles.avatar_color, só a paleta fixa aceita, texto e ícone com contraste automático (mínimo 4,92:1), Usar iniciais mantém a cor; make check verde com 13/13 jornadas; Reviewer: APROVADO. Riscos para o usuário: a migração roda uma vez no banco existente e só volta restaurando o backup; a ISSUE-195 (consolidação das migrações) deve incluir a 022. Publicada localmente, sem push.
+
+---
+
+author: ebrgr
+created: 2026-11-23T18:57:00Z
+
+---
+
+Publicação: versão 0.72 (tag `v0.72`), branch `feat/issue-202-cor-de-fundo-do-avatar` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
