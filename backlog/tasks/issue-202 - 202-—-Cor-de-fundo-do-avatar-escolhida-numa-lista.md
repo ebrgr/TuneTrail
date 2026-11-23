@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T17:40:00Z'
-updated_date: '2026-11-23T17:42:00Z'
+updated_date: '2026-11-23T18:39:00Z'
 labels:
   - ui
   - admin
@@ -26,11 +26,11 @@ Origem: pedido do usuário em 23/11/2026, durante o teste do avatar. No cartão 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Lista suspensa de cores no cartão Avatar; a cor escolhida é gravada em listening_profiles.avatar_color e continua escolhida depois de salvar
-- [ ] #2 Migração 022 aditiva (coluna nula com CHECK de formato), com backup automático, e as jornadas de migração e o DB_ALTERATIONS.md atualizados
-- [ ] #3 O servidor só aceita uma cor da paleta fixa; qualquer outro valor é recusado sem chegar ao CSS
-- [ ] #4 A cor aparece onde o avatar aparece, com iniciais e ícone legíveis nos temas Yuu e Pearl; sem cor escolhida, o visual atual não muda
-- [ ] #5 Funciona sem JavaScript; textos em pt-BR e en; teste de regressão e make check verde
+- [x] #1 Lista suspensa de cores no cartão Avatar; a cor escolhida é gravada em listening_profiles.avatar_color e continua escolhida depois de salvar
+- [x] #2 Migração 022 aditiva (coluna nula com CHECK de formato), com backup automático, e as jornadas de migração e o DB_ALTERATIONS.md atualizados
+- [x] #3 O servidor só aceita uma cor da paleta fixa; qualquer outro valor é recusado sem chegar ao CSS
+- [x] #4 A cor aparece onde o avatar aparece, com iniciais e ícone legíveis nos temas Yuu e Pearl; sem cor escolhida, o visual atual não muda
+- [x] #5 Funciona sem JavaScript; textos em pt-BR e en; teste de regressão e make check verde
 <!-- AC:END -->
 
 ## Comments
