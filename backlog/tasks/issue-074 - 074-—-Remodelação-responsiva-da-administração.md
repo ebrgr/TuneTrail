@@ -1,11 +1,11 @@
 ---
 id: ISSUE-074
 title: 074 — Remodelação responsiva da administração
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-23T17:26:00Z'
+updated_date: '2026-11-23T17:41:00Z'
 labels:
   - admin
   - ui
@@ -40,7 +40,7 @@ Relacionadas, no mesmo padrão: ISSUE-124 e ISSUE-108 (gestão de faixas, álbun
 <!-- AC:BEGIN -->
 - [x] #1 ISSUE-125 a ISSUE-128 concluídas no padrão visual comum
 - [x] #2 Todas as páginas da administração funcionam sem JavaScript e em 390, 768 e 1440 px
-- [ ] #3 Capturas finais lado a lado nos temas Yuu e Pearl com aceite visual do conjunto
+- [x] #3 Capturas finais lado a lado nos temas Yuu e Pearl com aceite visual do conjunto
 <!-- AC:END -->
 
 ## Comments
@@ -128,6 +128,15 @@ created: 2026-11-23T17:26:00Z
 ---
 
 Revisão após retorno do usuário. Removi o teto de .admin-shell e preservei o recuo da navegação. A 1440 px, a área útil mede 1302 px. Chaves e Relay passaram de 542 para 1302 px, e os pares de Conta, Perfil, Histórico e Configuração medem 643 px por cartão. A chave recém-criada quebra no próprio bloco monoespaçado. O botão Copiar fica abaixo e funciona após a atualização do cartão, com seleção manual se a área de transferência estiver indisponível. A regra compartilhada de hover e active passou em 1920 controles visíveis em 294 verificações, incluindo exceções por destino do relay, a confirmação da exceção e as revisões. Regeneradas 42 capturas das sete páginas solicitadas, com o valor da chave substituído na imagem. Removi o PARECER.md local. make check passou nas 13 jornadas E2E e a referência da interface coincidiu nos 190 arquivos. AC 3 aguarda o aceite visual do usuário.
+
+---
+
+author: claude
+created: 2026-11-23T17:41:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 23/11/2026, do jeito que está, após teste próprio da interface no servidor local com o banco dele. AC 3 (aceite visual do conjunto) dado pelo usuário. Parecer do Reviewer: APROVADO COM RESSALVAS (backlog/evidencias/issue-074/PARECER-REVIEWER.md). Riscos aceitos pelo usuário sem alteração: links de texto da administração ganham fundo no hover pela regra compartilhada; cartões sem teto de largura em telas muito largas (medido só até 1440 px); evidências com 7,7 MB no Git. Conflito conhecido com a branch da ISSUE-201 (enhance.js, CHANGELOG e referência da interface): resolver ao publicar, publicando a 201 primeiro e rebaseando esta sobre a main. Não publicada.
 
 ---
 <!-- COMMENTS:END -->
