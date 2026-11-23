@@ -3,11 +3,11 @@ id: ISSUE-196
 title: >-
   196 — Auditar e classificar todas as rotas do servidor: em uso, sem uso e
   candidatas à remoção
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T00:58:00Z'
-updated_date: '2026-11-23T01:09:00Z'
+updated_date: '2026-11-23T01:13:00Z'
 labels:
   - api
 milestone: m-12
@@ -63,6 +63,24 @@ created: 2026-11-23T01:09:00Z
 ---
 
 Reviewer: APROVADO, sem BUG; extrator reproduz 225 padrões; diff de produção vazio; 9 candidatas a restringir e 32 a decidir; insumo para a 104 em OPENAPI.md.
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:13:00Z
+
+---
+
+Verificação: Reviewer APROVADO; auditoria somente leitura, diff de produção vazio; extrator reproduz 225 padrões
+
+---
+
+author: evertonberger
+created: 2026-11-23T01:13:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito a 196 após publique').
 
 ---
 <!-- COMMENTS:END -->
