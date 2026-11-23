@@ -148,7 +148,7 @@ If the environment variable is defined without **and** with the suffix at the sa
 ##### TUNETRAIL_LOGIN_GATE
 
 - Default: `false`
-- Description: When `true`, Koito will not show any statistics unless the user is logged in.
+- This legacy setting has no effect. Use the profile’s **Require login to view listens** option to protect its listening history. See [Multiuser operations](/guides/multiuser-operations).
 
 ##### TUNETRAIL_BIND_ADDR
 

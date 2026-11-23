@@ -1,6 +1,6 @@
 ---
 title: Listening profiles
-description: Share one Koito instance using public profiles and profile-specific API keys.
+description: Share one TuneTrail instance using separate accounts and profile-specific API keys.
 ---
 
 ## Browse without an account
@@ -11,9 +11,9 @@ The URL determines the profile, so two browser tabs can show different people.
 Switching profiles keeps the screen and period where possible and drops filters
 that refer to the previous person's media.
 
-Profiles and listening data are public to anyone who can reach the instance.
-Selecting a profile does not grant permission to change data. Private profiles
-and separate listener passwords are not provided.
+Profiles start public. When the owner or an administrator protects listening
+history, only they can read it. The directory still shows the profile name,
+URL, avatar and protection indicator.
 
 ## Manage profiles
 
@@ -55,32 +55,12 @@ submissions. Keys cannot be transferred between people. A player's key selects
 its profile; it does not authorize profile management or other administration.
 See [Setting up the Scrobbler](/guides/scrobbler).
 
-Administrators can import/export a selected profile's history and configure its
-ListenBrainz forwarding.
+The owner or an administrator can import or export history and configure relay.
+The **Health** page shows recent submissions, relay failures and deduplication
+decisions. See [Listening history ingestion](/guides/active-ingestion#ingestion-health).
 
-The **Health** page of a profile shows recent submissions, relay failures and
-deduplication decisions. See [Listening history ingestion](/guides/active-ingestion#ingestion-health).
-
-Deleting a profile requires confirmation of its name
-and listen count and removes that profile's listens, keys and relay. Other
-profiles and shared catalog entries remain intact. Deleting a profile does not
-delete the administrator account.
-
-## Upgrade an existing SQLite installation
-
-1. Stop the existing Koito process and back up its complete configuration/data
-   directory, including the SQLite database. Keep the backup for rollback.
-2. Install a build containing listening-profile support and reuse that directory.
-3. Start Koito. Migration `003_listening_profiles.sql` upgrades schema 2 to 3 in
-   one transaction. Do not edit the schema version manually.
-4. Sign in to Administration and verify existing history and keys before adding
-   more people. A single existing user's history becomes `/default`; multiple
-   existing users receive `user-<id>` slugs. Existing credentials and keys are
-   preserved.
-
-Existing installations must already use SQLite. The schema migration cannot be
-downgraded in place: stop Koito, restore the pre-upgrade directory backup and run
-the previous version to roll back.
+For account activation, recovery, deletion and SQLite upgrades, see
+[Multiuser operations](/guides/multiuser-operations).
 
 ## Track rankings
 
@@ -102,8 +82,8 @@ key rather than from a profile supplied in the payload.
 
 Web reads use `/apis/web/v1/profiles/<slug>/...`. Legacy unscoped read routes
 resolve only when exactly one profile exists; otherwise they return `409` asking
-for explicit profile selection. Administrative actions require an administrator
-session, not a player API key.
+for explicit profile selection. Management requires a signed-in owner or administrator, depending on the
+action.
 
 In the Go interface, profile selection and personal search also work without
 JavaScript. Appearance settings require JavaScript.

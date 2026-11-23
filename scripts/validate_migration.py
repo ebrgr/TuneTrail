@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Verify independent v2-to-v5 legacy migrations and the Go/API journeys after them.
+"""Verify independent v2-to-current legacy migrations and the Go/API journeys after them.
 
 Formerly validate_migration_030.py; the migrate() and route_matrix() helpers come
 from the historical validate_migration_025.py, reduced to the Go interface.
 """
 import argparse
 import contextlib
+import hashlib
 import json
 import sqlite3
 import tempfile
@@ -14,7 +15,9 @@ import urllib.request
 from pathlib import Path
 
 from roadmap06_fixture import FIXTURE_PASSWORD_HASH
+from validate_accounts_migration import accounts
 from validate_admin_webui import validate as validate_admin
+from validate_ingest_migration import check, copy_components
 from validate_multiuser import LATEST_SCHEMA_VERSION, Server, WEB, LBZ, create_legacy, snapshot, validate_journey
 
 
@@ -59,22 +62,75 @@ def migrate(binary, root, name, stack, wal=False):
     assert all(after[table] == digest for table, digest in before.items()), 'legacy columns changed during migration'
     backups = list(directory.glob('koito.db.pre-tunetrail-*.bak'))
     assert len(backups) == 1 and snapshot(backups[0]) == before, 'missing or incorrect v2 backup'
-    # Restore the retained backup into an isolated copy and compare it with the source.
-    restored = directory / 'restored-test.db'
-    with contextlib.closing(sqlite3.connect(f'{backups[0].resolve().as_uri()}?mode=ro',uri=True)) as src, contextlib.closing(sqlite3.connect(restored)) as dst:
-        src.backup(dst)
-    assert snapshot(restored) == before
-    with contextlib.closing(sqlite3.connect(restored)) as conn:
-        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (2,)
-        assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
-    with contextlib.closing(sqlite3.connect(directory / 'tunetrail.db')) as conn:
-        assert conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone() == (LATEST_SCHEMA_VERSION,)
-        assert conn.execute('PRAGMA integrity_check').fetchall() == [('ok',)]
-        assert not conn.execute('PRAGMA foreign_key_check').fetchall()
+    restore_backup(binary, root / (name + '-restore'), backups[0], before)
+    check(directory / 'tunetrail.db', LATEST_SCHEMA_VERSION)
     assert server.request('GET', WEB + '/profiles/default/stats?period=all_time')['listen_count'] == (2 if wal else 1)
     assert server.request('GET', LBZ + '/validate-token', token='legacy-validation-token')['valid'] is True
     server.legacy_hashes = before
     return server
+
+
+def restore_backup(binary, directory, backup, before):
+    """Restore an independent v2 database and verify its history after startup."""
+    check(backup, 2)
+    assert backup.stat().st_mode & 0o777 == 0o600
+    directory.mkdir(mode=0o700)
+    legacy = directory / 'koito.db'
+    copy_components(backup, legacy)
+    assert snapshot(legacy) == before
+    server = Server(binary, directory)
+    try:
+        server.start()
+        target = directory / 'tunetrail.db'
+        check(target, LATEST_SCHEMA_VERSION)
+        after = snapshot(target)
+        restored = {table: after[table] for table in before}
+        assert restored == before
+        return restored
+    finally:
+        server.stop()
+
+
+def validate_copy(binary, source, root):
+    """Copy the sample before opening SQLite and report only aggregate results."""
+    work = root / 'sample'
+    work.mkdir(mode=0o700)
+    legacy = work / 'koito.db'
+    copy_components(source, legacy)
+    check(legacy, 2)
+    before = snapshot(legacy)
+    with contextlib.closing(sqlite3.connect(legacy)) as conn:
+        # Count rows independently of the per-table digest comparisons.
+        counts = {table: conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+                  for table in before}
+    with contextlib.ExitStack() as stack:
+        server = Server(binary, work)
+        stack.callback(server.stop)
+        server.start()
+        target = work / 'tunetrail.db'
+        accounts(target)
+        with contextlib.closing(sqlite3.connect(target)) as conn:
+            for table in ('listens', 'api_keys'):
+                assert conn.execute(
+                    f'SELECT COUNT(*) FROM "{table}" WHERE profile_id IS NOT user_id'
+                ).fetchone() == (0,), f'legacy profile association changed in {table}'
+        snapshot_after = snapshot(target)
+        after = {table: snapshot_after[table] for table in before}
+        assert after == before
+        backup, = work.glob('koito.db.pre-tunetrail-*.bak')
+        restored = restore_backup(binary, root / 'sample-restore', backup, before)
+        server.stop()
+        stable = snapshot(target)
+        server.start()
+        server.stop()
+        check(target, LATEST_SCHEMA_VERSION)
+        assert snapshot(target) == stable
+    # Fold the independently measured table digests into one digest per database.
+    digests = [hashlib.sha256(json.dumps(rows, sort_keys=True).encode()).hexdigest()
+               for rows in (before, after, restored)]
+    return {'from': 2, 'to': LATEST_SCHEMA_VERSION, 'preserved_counts': counts,
+            'source_digest_sha256': digests[0], 'migrated_digest_sha256': digests[1],
+            'restored_digest_sha256': digests[2]}
 
 
 def route_matrix(server):
@@ -107,9 +163,12 @@ def main():
     """Use independent v2 databases, including a committed WAL snapshot."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--binary', type=Path, required=True)
+    parser.add_argument('--source-v2', type=Path, help='Copy and verify an additional v2 database')
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='tunetrail-migration-') as tmp, contextlib.ExitStack() as stack:
         root, binary = Path(tmp), args.binary.resolve(strict=True)
+        if args.source_v2:
+            print(json.dumps(validate_copy(binary, args.source_v2, root), sort_keys=True))
         web = migrate(binary, root, 'web', stack)
         matrix = route_matrix(web)
         admin = migrate(binary, root, 'admin', stack)

@@ -53,8 +53,9 @@ Then, navigate your browser to `localhost:4110` to enter your Koito instance.
 
 ## Listening profiles and upgrades
 
-For builds with multiuser support, `/` opens public profile selection and
-**Settings → Administration** manages profiles and their API keys. Before upgrading
-an existing SQLite installation, stop Koito and back up the data directory.
-Schema 2 migrates transactionally to schema 3; rollback requires restoring the
-backup. See [Listening profiles](/guides/profiles) for the full upgrade procedure.
+The directory at `/` lists profiles. Sign in at `/login` to manage your
+account and profile. Administrators can manage all accounts and profiles.
+
+For profile settings and player keys, see [Listening profiles](/guides/profiles).
+For upgrading an existing Koito SQLite installation or restoring from backup,
+follow [Multiuser operations](/guides/multiuser-operations).

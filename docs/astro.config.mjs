@@ -37,6 +37,7 @@ export default defineConfig({
             // Each item here is one entry in the navigation menu.
             { label: "Installation", slug: "guides/installation" },
             { label: "Listening profiles", slug: "guides/profiles" },
+            { label: "Multiuser operations", slug: "guides/multiuser-operations" },
             { label: "Importing Data", slug: "guides/importing" },
             { label: "Listening history ingestion", slug: "guides/active-ingestion" },
             { label: "Setting up the Scrobbler", slug: "guides/scrobbler" },

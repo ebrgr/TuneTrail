@@ -12,7 +12,7 @@ import tempfile
 
 from validate_ingest_migration import (check, component_hashes, connect,
                                        copy_components, profile_counts)
-from validate_multiuser import Server
+from validate_multiuser import LATEST_SCHEMA_VERSION, Server
 
 
 def inventory(path):
@@ -40,9 +40,10 @@ def preserved(path, before):
 
 def accounts(path):
     """Check required ownership, uniqueness, public defaults and retired bridge."""
-    check(path, 7)
+    check(path, LATEST_SCHEMA_VERSION)
     with connect(path) as conn:
         assert conn.execute('SELECT COUNT(*) FROM listening_profiles WHERE user_id IS NULL OR require_login<>0').fetchone() == (0,)
+        assert conn.execute("SELECT COUNT(*) FROM users WHERE role='admin' AND status='active'").fetchone()[0] > 0
         assert conn.execute('SELECT COUNT(*) FROM users u WHERE NOT EXISTS(SELECT 1 FROM listening_profiles p WHERE p.user_id=u.id)').fetchone() == (0,)
         assert conn.execute('SELECT COUNT(*) FROM listening_profiles').fetchone() == conn.execute('SELECT COUNT(DISTINCT user_id) FROM listening_profiles').fetchone()
         assert conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE name IN ('legacy_user_profiles','trg_legacy_user_profile')").fetchone() == (0,)
@@ -60,7 +61,7 @@ def validate(binary, source, root, index, stage_v4=False):
         version = conn.execute('SELECT MAX(version_id) FROM goose_db_version WHERE is_applied=1').fetchone()[0]
     assert version in (3, 4), 'provide a pre-account v3/v4 source'
     if stage_v4 and version == 3:
-        # Stage the published 004 only on the private copy, then exercise v4-to-v5.
+        # Stage the published 004 only on the private copy, then exercise v4-to-current.
         with connect(database) as conn:
             ddl = (Path(__file__).resolve().parents[1] / 'db/migrations_sqlite/004_ingest_infrastructure.sql').read_text().split('-- +goose Down')[0]
             conn.executescript(ddl)
@@ -77,6 +78,7 @@ def validate(binary, source, root, index, stage_v4=False):
         server.stop()
         backup, = work.glob('tunetrail.db.pre-' + ('accounts' if version == 4 else 'ingest') + '-*.bak')
         check(backup, version)
+        assert backup.stat().st_mode & 0o777 == 0o600
         assert inventory(backup) == before
         restored = root / f'restored-{index}'
         restored.mkdir(mode=0o700)
@@ -98,7 +100,7 @@ def validate(binary, source, root, index, stage_v4=False):
     finally:
         server.stop()
     assert component_hashes(source) == original, 'source components changed independently'
-    return dict(case=index, source_version=version, target_version=7, counts_before=counts,
+    return dict(case=index, source_version=version, target_version=LATEST_SCHEMA_VERSION, counts_before=counts,
                 counts_after=profile_counts(database), account_states=status,
                 preserved=True, backup_restore=True, restart=True, source_unchanged=True)
 

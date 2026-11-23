@@ -78,8 +78,8 @@ On first startup, the application:
 
 1. Creates a consistent SQLite backup, including committed WAL, named
    `koito.db.pre-tunetrail-*.bak` in the data directory (permissions 0600).
-2. Creates `tunetrail.db` from that backup and, for v2, applies the single
-   `003_listening_profiles.sql` migration to reach v3.
+2. Migrates a copy of the backup from schema 2 through schema 22 before
+   publishing it as `tunetrail.db`.
 3. Preserves administrator credentials, existing tokens, listens, and catalog.
 4. Assigns a single legacy user's history/keys to `/default`; multiple legacy
    users receive separate profiles.
@@ -98,9 +98,10 @@ migration. Do not relabel their entries in `goose_db_version`.
 
 Automatic directory import is disabled in the supplied Compose file. Import
 history through the Administration tab with an explicit destination profile.
-Profiles are public; only administrative operations require a password. The
-volume contains credentials and listening data and must be retained across
-container upgrades.
+Profiles start public and the owner or an administrator can protect their
+listening history. Keep the volume across container upgrades. See
+[Multiuser operations](docs/src/content/docs/guides/multiuser-operations.md)
+for account activation, local visibility, and backup restoration.
 
 ## Recover an interrupted or refused migration
 
@@ -148,19 +149,19 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml stop
 The image includes a healthcheck. Compose gives the application up to 30 seconds
 to shut down gracefully. `stop` and `down` preserve the host data directory.
 
-## Upgrade to schema v11 (TuneTrail 0.72)
+## Historical schema v11 migration (ISSUE-134)
 
 Stop the service in a maintenance window before upgrading from a v9 database
-(TuneTrail 0.44 to 0.72). Keep free disk space of at least three times the
+(TuneTrail 0.44). Keep free disk space of at least three times the
 database size in the data directory and in the SQLite temporary directory
 (`TMPDIR`). On first start TuneTrail writes a verified
 `.pre-occurrence-ingest-*.bak` backup next to the database, then migrates it to
 v11. On the test hardware a database with 300,000 receipts needed about 21
 seconds before the health endpoint answered and a backup of about 260 MB.
 
-The migration runs on every installation, even though the occurrence mode stays
-off until a profile is converted. Versions 0.46 and earlier refuse a v11
-database. To go back, stop the service and restore the backup; writes made
+Current releases apply this migration on the way to schema 22. Occurrence
+ingestion is active for every profile since TuneTrail 0.65. Versions 0.46 and
+earlier refuse a v11 database. To go back, stop the service and restore the backup; writes made
 after the upgrade are lost, and relay deliveries already made stay at the
 destination (ISSUE-134).
 
