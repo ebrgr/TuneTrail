@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T00:58:00Z'
-updated_date: '2026-11-23T01:08:00Z'
+updated_date: '2026-11-23T01:09:00Z'
 labels:
   - api
 milestone: m-12
@@ -54,6 +54,15 @@ created: 2026-11-23T01:08:00Z
 ---
 
 Auditoria concluída nesta worktree: 225 padrões da produção (145 em uso, 39 de compatibilidade, 9 combinações inválidas sem uso e 32 a decidir), mais cinco da prévia. A extração reproduz o inventário. Três percursos E2E passaram em 4130 com SQLite descartável e log sanitizado. TestRouteManifest, TestAssetHTTPContracts e TestExternalAssetExposure passaram. As propostas de restrição e o recorte para a ISSUE-104 estão nas evidências. A tarefa permanece Em andamento para revisão e aceite.
+
+---
+
+author: claude
+created: 2026-11-23T01:09:00Z
+
+---
+
+Reviewer: APROVADO, sem BUG; extrator reproduz 225 padrões; diff de produção vazio; 9 candidatas a restringir e 32 a decidir; insumo para a 104 em OPENAPI.md.
 
 ---
 <!-- COMMENTS:END -->
