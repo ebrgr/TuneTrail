@@ -4,7 +4,7 @@ title: 055 — Aproveitar tags e datas de lançamento das músicas
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-23T00:31:00Z'
+updated_date: '2026-11-23T00:38:00Z'
 labels:
   - catalogo
   - ingestao
@@ -83,6 +83,15 @@ created: 2026-11-23T00:31:00Z
 ---
 
 Atualização (22/11/2026): a descrição acima está defasada. Ela fala em 'SQLite consolidado v3' e no bootstrap limitado à versão 3; hoje o schema está na versão 21 (v0.65) com o modelo de gravações (recordings), ocorrências (occurrences) e lançamentos (releases), recibos de ingestão (ingest_events) e escutas com event_id e origin. Antes de implementar, refazer o plano sobre esse modelo: onde ficam tags (gravação, lançamento, artista?), gênero separado de tag livre, ano original x data do lançamento x data da gravação com precisão parcial, procedência por campo, política de dados conflitantes no catálogo compartilhado entre perfis, e o que entra no Snapshot do recibo (additional_info.tags, ano e data, MBIDs do grupo de lançamento) e na exportação e reimportação (ISSUE-183). Ordem: por decisão do usuário, esta issue vem ANTES da consolidação das migrações (ISSUE-195), que só roda depois dela e da limpeza do código legado (ISSUE-194), para que o schema final já inclua estes metadados. Como produção nunca viu as migrações 003 a 021, a migração desta issue pode ser aditiva e depois dobrada no arquivo único da 195. Relacionadas que também mexem em metadados ou procedência: 174, 175 (MBID declarado com fonte e data), 190 e 097 (duração) e 193 (normalização).
+
+---
+
+author: claude
+created: 2026-11-23T00:38:00Z
+
+---
+
+Decisão do usuário (22/11/2026): esta issue está no mínimo que altera o banco antes do primeiro upgrade de produção e antecede a consolidação das migrações (ISSUE-195). Migração aditiva agora; depois dobrada no arquivo único da 195.
 
 ---
 <!-- COMMENTS:END -->
