@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T17:04:00Z'
-updated_date: '2026-11-23T17:41:00Z'
+updated_date: '2026-11-23T18:21:00Z'
 labels:
   - ui
   - admin
@@ -60,6 +60,15 @@ created: 2026-11-23T17:41:00Z
 ---
 
 Aceite: aprovada pelo usuário em 23/11/2026, após teste próprio no servidor local com o banco dele (branch da ISSUE-074, que carrega a mesma correção). Verificado por mim em instância isolada: avatar (ícone), nome do perfil, criação de chave, relay (pelo formaction do botão) e usuário da conta gravam, com POST na action certa e valor no banco; teste de regressão em internal/webui/enhance.test.mjs; make check verde. AC 1 deixado sem marca: troca de senha da conta e formulários da gestão de mídia não foram exercitados no navegador (mesmo caminho de código). Não publicada. Conflito conhecido com a branch da ISSUE-074 (enhance.js, CHANGELOG e referência da interface), a resolver ao publicar.
+
+---
+
+author: ebrgr
+created: 2026-11-23T18:21:00Z
+
+---
+
+Publicação: versão 0.70 (tag `v0.70`), branch `fix/issue-201-formularios-de-cartao-nao-gravam` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
