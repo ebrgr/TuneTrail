@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.73] - 2026-11-23
+
 - Added an operations guide for sharing a TuneTrail server, recovering account access, protecting listens, and upgrading or restoring a Koito SQLite database (ISSUE-164).
 
 ## [0.72] - 2026-11-23
