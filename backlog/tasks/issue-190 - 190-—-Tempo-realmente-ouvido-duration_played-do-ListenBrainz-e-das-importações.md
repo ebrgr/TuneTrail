@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T20:05:00Z'
-updated_date: '2026-11-23T21:24:00Z'
+updated_date: '2026-11-23T21:26:00Z'
 labels:
   - ingestao
   - catalogo
@@ -89,6 +89,15 @@ created: 2026-11-23T21:24:00Z
 ---
 
 Aceite: aprovada pelo usuário em 23/11/2026, com a decisão de tratar zero como ausente. Parecer do Reviewer: APROVADO (backlog/evidencias/issue-190/PARECER-REVIEWER.md). Verificado: coluna listens.duration_played (migração 023, aditiva, 85 ms em 300 mil escutas), leitura tolerante de número e texto numérico, truncamento em segundos, limite pela duração da faixa, zero e valores inválidos como desconhecido, estatísticas e Rewind com COALESCE, exportação, reimportação, relay e importação do Spotify; make check verde com 13/13 jornadas. Riscos conhecidos: a migração 023 roda uma vez no banco existente (backup antes, sem volta pelas migrações); os recortes por item ficaram 0,3 a 1,8 ms mais lentos em 300 mil escutas; a ISSUE-195 deve incluir a 022 e a 023. Publicada localmente.
+
+---
+
+author: ebrgr
+created: 2026-11-23T21:26:00Z
+
+---
+
+Publicação: versão 0.74 (tag `v0.74`), branch `feat/issue-190-tempo-realmente-ouvido-duration-played` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

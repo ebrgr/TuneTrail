@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.74] - 2026-11-23
+
 - Listening statistics and Rewind now use the playback time reported by ListenBrainz and Spotify when available, and TuneTrail exports preserve it. A playback time of zero is treated as unknown and counts the whole track (ISSUE-190).
 
 ## [0.73] - 2026-11-23
