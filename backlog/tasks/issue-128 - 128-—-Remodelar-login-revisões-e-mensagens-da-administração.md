@@ -4,7 +4,7 @@ title: 128 — Remodelar login, revisões e mensagens da administração
 status: Aberta
 assignee: []
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-22T20:45:00Z'
+updated_date: '2026-11-23T00:45:00Z'
 labels:
   - ui
   - admin
@@ -61,6 +61,15 @@ created: 2026-11-22T20:45:00Z
 ---
 
 Suspensa pelo usuário em 22/11/2026 antes de qualquer código: fazer a ISSUE-125 (conta) primeiro, porque ela cria /account, destino pós-login do usuário comum que a 128 usa. Worktree preservada (feat/issue-128-remodelar-login-revisoes-e-mensagens, sem mudanças). Retomar depois da 125, trocando o fallback provisório para /account.
+
+---
+
+author: claude
+created: 2026-11-23T00:45:00Z
+
+---
+
+Reinício (22/11/2026): a worktree antiga estava 49 commits atrás da main e foi recriada do zero a partir da v0.65 (sem perda: não tinha trabalho). REESCOPO depois das 125 e 126: já entregue pela 125 o resgate de token (regras da senha, confirmação, caixa de orientação com Sair… e Todos os perfis, mensagem de página expirada, Referrer-Policy same-origin) e o destino pós-login de qualquer papel em /account; já entregue pela 126 a conta única com abas e a Administração (lista de contas). Resta: (1) login em cartão central e rota neutra GET /login para todos os papéis, mantendo /admin/login e os contratos de formulário, com retorno seguro e sessão expirada com mensagem neutra; (2) telas 401/403/404 no mesmo shell neutro, com as mensagens do estudo da 163 e sem revelar se o 404 foi permissão ou ausência; (3) um único componente de mensagem de erro, aviso e sucesso usado em todos os cartões (login, resgate, conta, abas, revisões); (4) catalog-review, profile-review e profile-delete em cartões: resumo do impacto, lista do que será alterado e confirmação em zona de perigo, escopo dono ou root; (5) padrão de cores e estados do app (sem cor fixa). Sem capturas de tela; o usuário testa no servidor.
 
 ---
 <!-- COMMENTS:END -->
