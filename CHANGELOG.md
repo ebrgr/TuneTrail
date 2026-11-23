@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.71] - 2026-11-23
+
 - API key details and ingestion health shortcuts have larger touch targets, key revocation is visually separated, and account and ingestion health controls show a distinct pressed state (ISSUE-074).
 
 - Administration uses more of the available screen, unpaired cards fill their row, and expanded API keys wrap independently of their Copy button (ISSUE-074).

@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-23T17:41:00Z'
+updated_date: '2026-11-23T18:27:00Z'
 labels:
   - admin
   - ui
@@ -137,6 +137,15 @@ created: 2026-11-23T17:41:00Z
 ---
 
 Aceite: aprovada pelo usuário em 23/11/2026, do jeito que está, após teste próprio da interface no servidor local com o banco dele. AC 3 (aceite visual do conjunto) dado pelo usuário. Parecer do Reviewer: APROVADO COM RESSALVAS (backlog/evidencias/issue-074/PARECER-REVIEWER.md). Riscos aceitos pelo usuário sem alteração: links de texto da administração ganham fundo no hover pela regra compartilhada; cartões sem teto de largura em telas muito largas (medido só até 1440 px); evidências com 7,7 MB no Git. Conflito conhecido com a branch da ISSUE-201 (enhance.js, CHANGELOG e referência da interface): resolver ao publicar, publicando a 201 primeiro e rebaseando esta sobre a main. Não publicada.
+
+---
+
+author: ebrgr
+created: 2026-11-23T18:27:00Z
+
+---
+
+Publicação: versão 0.71 (tag `v0.71`), branch `feat/issue-074-remodelacao-responsiva-da-administracao` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
