@@ -22,8 +22,6 @@
 .admin-main .account-action:hover { background:color-mix(in srgb,var(--color-primary) 80%,var(--color-fg)); }
 .admin-main .account-action:active { background:color-mix(in srgb,var(--color-primary) 60%,var(--color-fg)); }
 .admin-main .account-action:disabled { opacity:.6; cursor:not-allowed; }
-.admin-main .account-message { margin:var(--space-3) 0 0; color:var(--color-fg); }
-.admin-main .account-error { color:var(--color-error); }
 .admin-main .account-warning {
   margin:var(--space-3) 0 0; padding:var(--space-3);
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);

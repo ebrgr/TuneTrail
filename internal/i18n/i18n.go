@@ -240,7 +240,7 @@ func (c *Catalog) Resolve(r *http.Request) *View {
 	if parsed, _, err := language.ParseAcceptLanguage(request); err == nil && len(parsed) > 0 {
 		_, index, _ = c.matcher.Match(parsed...)
 	}
-	v := &View{Tag: tags[index].String(), Return: adminweb.SafeReturn(r.URL.RequestURI()), Choice: choice}
+	v := &View{Tag: tags[index].String(), Return: adminweb.SafeLanguageReturn(r.URL.RequestURI()), Choice: choice}
 	if v.Return == "" {
 		v.Return = "/"
 	}
@@ -289,7 +289,7 @@ func (c *Catalog) SetLanguage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid language", http.StatusBadRequest)
 		return
 	}
-	next := adminweb.SafeReturn(r.PostForm.Get("return_to"))
+	next := adminweb.SafeLanguageReturn(r.PostForm.Get("return_to"))
 	if next == "" {
 		http.Error(w, "invalid return", http.StatusBadRequest)
 		return

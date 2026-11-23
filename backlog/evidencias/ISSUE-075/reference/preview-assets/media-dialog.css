@@ -87,6 +87,30 @@ html[data-theme="pearl"] .media-task-dialog { color-scheme:light; }
 }
 .media-task-dialog .section-error { color:color-mix(in srgb,var(--color-error) 45%,var(--color-fg)); }
 .media-task-dialog .section-notice { color:color-mix(in srgb,var(--color-success) 45%,var(--color-fg)); }
+/* ISSUE-128: the review cards and the message component inside the dialog, which loads no admin stylesheet. */
+.media-task-dialog .message {
+  --message-tone:var(--color-bg-tertiary);
+  margin:12px 0; padding:10px 12px; border-left:3px solid var(--message-tone); border-radius:6px;
+  background:var(--color-bg); color:var(--color-fg);
+}
+.media-task-dialog .message-error { --message-tone:var(--color-error); }
+.media-task-dialog .message-warning { --message-tone:var(--color-warning); }
+.media-task-dialog .message-success { --message-tone:var(--color-success); }
+.media-task-dialog .review-card,
+.media-task-dialog .review-danger {
+  margin:12px 0; padding:12px; border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
+  background:var(--color-bg-secondary);
+}
+.media-task-dialog .review-danger { border-style:dashed; }
+.media-task-dialog .review-card :is(h3,h4),
+.media-task-dialog .review-danger h3 { margin:0 0 8px; font-size:16px; color:var(--color-fg); }
+.media-task-dialog .review-facts { display:grid; gap:6px; margin:8px 0 0; }
+.media-task-dialog .review-facts > div { display:flex; flex-direction:column; }
+.media-task-dialog .review-facts dt { color:var(--color-fg-secondary); font-size:14px; }
+.media-task-dialog .review-facts dd { margin:0; overflow-wrap:anywhere; }
+.media-task-dialog .review-list { list-style:disc; padding-left:20px; }
+.media-task-dialog .review-danger form { flex-direction:column; align-items:stretch; }
+.media-task-dialog .review-danger a { align-self:flex-start; padding:12px 0; }
 .media-task-dialog .manage-search-results { margin:12px 0; }
 
 /* Apply shared spacing and surface tokens at this size. */

@@ -138,10 +138,11 @@ func (h *Handler) accountAction(w http.ResponseWriter, r *http.Request, identity
 		return
 	}
 	if changed {
-		// The store revoked every session: the redirect lands on the sign-in form.
+		// The store revoked every session. ISSUE-128: the sign-in form says why, instead of an
+		// unexplained login screen at /account.
 		adminweb.ClearSessionCookie(w, r)
 		adminweb.ClearPreauth(w, r)
-		http.Redirect(w, r, webassets.AccountDestination, http.StatusSeeOther)
+		http.Redirect(w, r, webassets.LoginDestination+"?changed=1", http.StatusSeeOther)
 		return
 	}
 	if fragment != "" {

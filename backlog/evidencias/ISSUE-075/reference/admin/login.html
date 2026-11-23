@@ -5,16 +5,18 @@
       
       
       
+      
+      
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-      <title>Account — TuneTrail</title>
+      <title>Sign in — TuneTrail</title>
       <link rel="icon" type="image/png" href="/web-assets/public/favicon-96x96.png?v=335a635bf556278f18614175f0090e71487e5ff3ef26be1d68c57e0e30449285">
       
       <link rel="stylesheet" href="/web-assets/themes.css?v=e7720dfde7612d2e0000f10b7373a517702a409aee8a2b1774b89ce7698947f4">
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=f979731e9ead85405767079971bf4f3d9ec960eaa64d027daa476a4842618e32">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=7aa78fa03a0737cd3a508648ef0f0cc199335ebf9deeffab070648306d1ecef8">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=999768334e620ec372a644ab64c3c8474b270e1430da5846e1a47e2403ecafbd"></script>
       
@@ -84,7 +86,7 @@
           
     
       
-  <a class="nav-button" href="/admin" aria-current="page">
+  <a class="nav-button" href="/login" aria-current="page">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></svg><span class="nav-action-label">Sign in</span>
   </a>
 
@@ -333,21 +335,40 @@
   
 
       <div class="admin-shell">
-        <main id="admin-main" class="admin-main">
-          <h1>Sign in</h1>
+        <main id="admin-main" class="admin-main admin-main-auth">
+          <h1 id="page-title">Sign in</h1>
           
+  
+
           
+  
+    <p id="form-warning" class="message message-warning" role="status">Sign in to continue.</p>
+  
+
           
-            <form method="post" action="/admin/login">
-              <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-              
-              <input type="hidden" name="next" value="/admin">
-              <label>Username <input name="username" autocomplete="username" required></label>
-              <label>Password <input type="password" name="password" autocomplete="current-password" required></label>
-              <label><input type="checkbox" name="remember" value="1"> Remember me</label>
-              <button>Sign in</button>
-            </form>
-            <p><a href="/admin/redeem">Redeem account token</a></p>
+  
+
+          
+            <section class="account-card auth-card" aria-labelledby="page-title">
+              <form class="account-form" method="post" action="/admin/login">
+                <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+                
+                <input type="hidden" name="next" value="/admin">
+                <label>Username
+                  <input name="username" autocomplete="username" required autofocus
+                    >
+                </label>
+                <label>Password
+                  <input type="password" name="password" autocomplete="current-password" required
+                    >
+                </label>
+                <label><input type="checkbox" name="remember" value="1"> Remember me</label>
+                <button class="account-action">Sign in</button>
+              </form>
+              <p class="account-notice-links">
+                <a class="account-secondary" href="/admin/redeem">Redeem account token</a>
+              </p>
+            </section>
           
         </main>
         <footer class="admin-footer">

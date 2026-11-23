@@ -11,6 +11,9 @@ import (
 // AccountDestination is the account document open to every authenticated session (ISSUE-125).
 const AccountDestination = "/account"
 
+// LoginDestination is the neutral sign-in document for every role (ISSUE-128).
+const LoginDestination = "/login"
+
 // NavLink describes a translated destination already authorized by the server.
 type NavLink struct {
 	URL, Label, Fallback, Icon string
@@ -30,7 +33,7 @@ type NavAccess struct {
 func AccessNavigation(actor *models.User, own, visited *models.ListeningProfile, section string) NavAccess {
 	var nav NavAccess
 	if admin.AuthorizeAction(actor, admin.ManageAccount, nil) != nil {
-		nav.Login = &NavLink{"/admin", "ui.sign_in", "Sign in", "KeyRound", section == "login"}
+		nav.Login = &NavLink{LoginDestination, "ui.sign_in", "Sign in", "KeyRound", section == "login"}
 		return nav
 	}
 	nav.Account = &NavLink{AccountDestination, "nav.my_account", "My account", "LockKeyhole", section == "account"}

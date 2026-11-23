@@ -68,7 +68,8 @@ func TestCatalogReviewStaleAndOneUse(t *testing.T) {
 	require.Equal(t, 409, wrongRoute.Code)
 	inverse := call("GET", base+"/review?action=merge&to=13&reverse=1", nil, true)
 	require.Equal(t, 200, inverse.Code)
-	require.Contains(t, inverse.Body.String(), "Source: Destination (ID 13)")
+	// ISSUE-128: the review lists the source and the destination as facts of the impact summary.
+	require.Contains(t, inverse.Body.String(), "<dt>Source</dt><dd>Destination (ID 13)</dd>")
 	require.Contains(t, inverse.Body.String(), "Source (ID 12)")
 	visitor := call("GET", base+"/review?action=delete", nil, false)
 	require.Equal(t, 303, visitor.Code)

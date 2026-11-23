@@ -1,5 +1,34 @@
 package adminui
 
+import "net/http"
+
+// msgSignIn is the neutral instruction for an absent or expired session (ISSUE-128).
+const msgSignIn = "Sign in to continue."
+
+// requestWriter lets the document renderer see the request that produced a refusal, through the
+// same Unwrap chain the language writer uses, so error documents need no extra call-site argument.
+type requestWriter struct {
+	http.ResponseWriter
+	req *http.Request
+}
+
+func (w requestWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
+
+// requestOf returns the request attached by ServeHTTP, or nil outside a handler.
+func requestOf(w http.ResponseWriter) *http.Request {
+	for w != nil {
+		if rw, ok := w.(requestWriter); ok {
+			return rw.req
+		}
+		next, ok := w.(interface{ Unwrap() http.ResponseWriter })
+		if !ok {
+			break
+		}
+		w = next.Unwrap()
+	}
+	return nil
+}
+
 // adminMessages contains only fixed diagnostics owned by the server.
 var adminMessages = map[string]string{
 	"Sign in to continue.": "admin.message.sign_in_to_continue",

@@ -26,12 +26,8 @@
             "Name"
             .Name
           }}</h1>
-          {{if .Notice}}
-            <p role="status">{{.Notice}}</p>
-          {{end}}
-          {{if .Error}}
-            <p role="alert">{{.Error}}</p>
-          {{end}}
+          {{template "admin/message" (msg "success" "manage-notice" .Notice)}}
+          {{template "admin/message" (msg "error" "manage-error" .Error)}}
           {{- if ne .Task "listen"}}
           <p>{{trn
             "admin.manage.context"

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+- Changing the language on the sign-in card keeps you there with your destination, error text uses a higher-contrast tone in the Pearl theme, and checkbox rows in confirmations are 44 px touch targets (ISSUE-128).
+- Catalog reviews, account deletion reviews and the "delete listens" confirmation are now cards: an impact summary, the list of what will change, and the confirmation alone in a Danger zone, in the page and in the dialog; who can open each one is unchanged (ISSUE-128).
+- Errors, warnings and success messages share one component across sign-in, redemption, account tabs, server settings and the manage pages: same look in the Yuu and Pearl themes, alerts for errors, status for the rest, and fields point to their error (ISSUE-128).
+- Sign-in has one address for every role, `/login`, shown as a centred card; "Sign in" links point to it, `/admin` keeps working, and `login` is now a reserved profile URL name (ISSUE-128).
+- Sign in required, access denied and page unavailable use one neutral card with fixed messages and the links of your own session; a hidden profile and a missing one look the same (ISSUE-128).
+- After changing your password the sign-in form now says "Password changed. Sign in with your new password.", and a protected page opened without a session says "Sign in to continue." (ISSUE-128).
+
 ## [0.67] - 2026-11-22
 
 - No user-visible changes (ISSUE-194).

@@ -26,7 +26,7 @@ func TestAdminActionsItemsByRole(t *testing.T) {
 	visitor := adminActions(t, body)
 	require.Contains(t, body, `href="https://github.com/ebrgr/TuneTrail"`)
 	require.Contains(t, body, `rel="noopener"`)
-	require.Contains(t, visitor, `href="/admin?next=%2Fdefault"`)
+	require.Contains(t, visitor, `href="/login?next=%2Fdefault"`)
 	require.NotContains(t, visitor, "/admin/settings")
 	require.NotContains(t, visitor, "section=account")
 
@@ -69,7 +69,7 @@ func TestAdminActionsPreAuthErrorShowsVisitorItems(t *testing.T) {
 	}
 	require.Equal(t, http.StatusTooManyRequests, last.Code)
 	bar := adminActions(t, last.Body.String())
-	require.Contains(t, bar, `href="/admin"`)
+	require.Contains(t, bar, `href="/login"`)
 	require.NotContains(t, bar, "/admin/settings")
 	require.NotContains(t, bar, "section=profiles")
 }

@@ -1,0 +1,38 @@
+/* ISSUE-128: the single message component, the narrow centred column of the sign-in, redemption,
+   sign-out and refusal documents, and the review cards. Only theme tokens and the shared states
+   (global a:hover, the global :focus-visible ring) are used; account.css owns card, form and button looks. */
+@layer pages {
+/* One message look for error (role=alert), warning and success (role=status). The tone is the
+   border; error text also takes the error token, as the previous alert style did. */
+.admin-main .message {
+  --message-tone:var(--color-bg-tertiary);
+  margin:var(--space-3) 0; padding:var(--space-3) var(--space-4);
+  border-left:3px solid var(--message-tone); border-radius:var(--radius-md);
+  background:var(--color-bg-secondary); color:var(--color-fg);
+}
+/* Error text mixes in the body colour: the bare error token is under 4.5:1 on the Pearl card. */
+.admin-main .message-error { --message-tone:var(--color-error); color:color-mix(in srgb,var(--color-error) 65%,var(--color-fg)); }
+.admin-main .message-warning { --message-tone:var(--color-warning); }
+.admin-main .message-success { --message-tone:var(--color-success); }
+/* Sign in, redeem, sign out and refusals read as one centred card, one column at every width. */
+.admin-main-auth { max-width:30rem; margin-inline:auto; }
+.admin-main .auth-card .account-action { align-self:stretch; }
+.admin-main .auth-card .account-form .account-secondary { justify-content:center; }
+.admin-main .state-card .account-notice-links { margin-top:0; }
+/* A checkbox row is a 44px touch target, not only the 18px box. */
+.admin-main .account-form label:has(input[type=checkbox]) { min-height:44px; }
+/* Reviews: summary, list of changes and a separate danger zone, one column, stacked with a gap. */
+.admin-main .review-card,
+.admin-main .review-danger { max-width:48rem; margin:0 0 var(--space-4); }
+.admin-main .review-card h3 { font-size:1.05rem; margin:var(--space-4) 0 var(--space-2); padding:0; border:0; }
+.admin-main .review-facts { display:grid; gap:var(--space-2); margin:var(--space-3) 0 0; }
+.admin-main .review-facts > div { display:flex; flex-direction:column; min-width:0; }
+.admin-main .review-facts dt { color:var(--color-fg-secondary); font-size:.875rem; }
+.admin-main .review-facts dd { margin:0; overflow-wrap:anywhere; }
+.admin-main .review-list { margin:var(--space-2) 0 0; }
+.admin-main .review-danger .account-secondary { align-self:flex-start; }
+@media (min-width:40rem) {
+  .admin-main .review-facts > div { flex-direction:row; gap:var(--space-3); }
+  .admin-main .review-facts dt { flex:0 0 14rem; font-size:inherit; }
+}
+}

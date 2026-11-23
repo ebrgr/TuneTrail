@@ -58,7 +58,7 @@ func SafeReturn(raw string) string {
 			return ""
 		}
 		switch p[0] {
-		case "admin", "account", "apis", "image", "assets", "public", "web-assets", "preview-assets", "theme-helper", "artist", "album", "track", "chart", "listens", "rewind":
+		case "admin", "account", "login", "apis", "image", "assets", "public", "web-assets", "preview-assets", "theme-helper", "artist", "album", "track", "chart", "listens", "rewind":
 			return ""
 		}
 		valid := len(p) == 1 || len(p) == 2 && (p[1] == "listens" || p[1] == "rewind" || p[1] == "search") || len(p) == 4 && p[1] == "chart" && p[2] == "top" && (p[3] == "artists" || p[3] == "albums" || p[3] == "tracks")
@@ -213,4 +213,36 @@ func SafeHistoryReturn(raw, slug string) string {
 		return ""
 	}
 	return SafeReturn(raw)
+}
+
+// SafeLanguageReturn extends SafeReturn with the sign-in document, so changing the language on
+// /login stays there instead of dropping the user at the directory (ISSUE-128). /login is still never a
+// post-login destination: SafeReturn refuses it. Only a safe "next" and the "redeemed"/"changed"
+// notices survive in its query.
+func SafeLanguageReturn(raw string) string {
+	if next := SafeReturn(raw); next != "" {
+		return next
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Path != webassets.LoginDestination || u.IsAbs() || u.Host != "" || u.Fragment != "" {
+		return ""
+	}
+	query, err := url.ParseQuery(u.RawQuery)
+	if err != nil {
+		return ""
+	}
+	kept := url.Values{}
+	for key, values := range query {
+		switch {
+		case len(values) != 1:
+			return ""
+		case key == "next" && SafeReturn(values[0]) != "":
+			kept.Set(key, values[0])
+		case (key == "redeemed" || key == "changed") && values[0] == "1":
+			kept.Set(key, "1")
+		default:
+			return ""
+		}
+	}
+	return (&url.URL{Path: webassets.LoginDestination, RawQuery: kept.Encode()}).RequestURI()
 }

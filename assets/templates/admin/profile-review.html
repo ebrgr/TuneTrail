@@ -17,28 +17,53 @@
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>{{trn "admin.profile.delete_title" "Delete account and profile {{.Name}}" "Name" .Profile.DisplayName}}</h1>
-          <p>{{trnp
-            "admin.profile.delete_warning"
-            "Profile {{.Slug}} (ID {{.ID}}) currently has {{.Count}} listens. This permanently deletes the account, its sessions and tokens, the profile, its API keys, relay and listening history."
-            .Count
-            "Slug"
-            .Profile.Slug
-            "ID"
-            .Profile.ID
-          }}</p>
-          <form method="post" action="/admin/profile/{{.Profile.ID}}/delete">
-            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-            {{if .Submission}}
-              <input type="hidden" name="submission_token" value="{{.Submission}}">
-            {{end}}
-            <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-            <input type="hidden" name="listen_count" value="{{.Count}}">
-            <label>{{tr "admin.text.type_the_profile_name" "Type the profile name"}} <input name="display_name" required></label>
-            <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_permanent_deletion" "Confirm permanent deletion"}}</label>
-            <button>{{tr "admin.text.delete_profile" "Delete account and profile"}}</button>
-          </form>
-          <p><a href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.cancel" "Cancel"}}</a></p>
+          <h1 id="page-title">{{trn "admin.profile.delete_title" "Delete account and profile {{.Name}}" "Name" .Profile.DisplayName}}</h1>
+          <section class="account-card review-card" aria-labelledby="profile-review-summary-title">
+            {{template "admin/heading" (heading false 0 "profile-review-summary-title" (tr "admin.review.summary" "Impact summary"))}}
+            {{template "admin/message" (msg "warning" "" (trnp
+              "admin.profile.delete_warning"
+              (print "Profile {{.Slug}} (ID {{.ID}}) currently has {{.Count}} listens. This permanently deletes the account, "
+                "its sessions and tokens, the profile, its API keys, relay and listening history.")
+              .Count
+              "Slug"
+              .Profile.Slug
+              "ID"
+              .Profile.ID
+            ))}}
+            <dl class="review-facts">
+              <div><dt>{{tr "admin.text.name" "Name"}}</dt><dd>{{.Profile.DisplayName}}</dd></div>
+              <div><dt>{{tr "admin.text.slug" "Slug"}}</dt><dd>{{.Profile.Slug}}</dd></div>
+              <div><dt>{{tr "admin.profile.fact_listens" "Listens"}}</dt><dd data-listen-count="{{.Count}}">{{.Count}}</dd></div>
+            </dl>
+          </section>
+          <section class="account-card review-card" aria-labelledby="profile-review-changes-title">
+            {{template "admin/heading" (heading false 0 "profile-review-changes-title" (tr "admin.review.changes" "What will change"))}}
+            <ul class="review-list">
+              <li>{{tr "admin.profile.delete_item_account" "The account, with its sessions and tokens"}}</li>
+              <li>{{tr "admin.profile.delete_item_profile" "The profile"}}</li>
+              <li>{{tr "admin.profile.delete_item_keys" "Its API keys"}}</li>
+              <li>{{tr "admin.profile.delete_item_relay" "Its relay configuration"}}</li>
+              <li>{{tr "admin.profile.delete_item_history" "Its listening history"}}</li>
+              <li>{{tr "admin.profile.delete_item_catalog" "The shared catalog stays intact"}}</li>
+            </ul>
+          </section>
+          <section class="account-card account-danger review-danger" aria-labelledby="profile-review-danger-title">
+            {{template "admin/heading" (heading false 0 "profile-review-danger-title" (tr "admin.account.danger" "Danger zone"))}}
+            <form method="post" class="account-form" action="/admin/profile/{{.Profile.ID}}/delete">
+              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+              {{if .Submission}}
+                <input type="hidden" name="submission_token" value="{{.Submission}}">
+              {{end}}
+              <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+              <input type="hidden" name="listen_count" value="{{.Count}}">
+              <label>{{tr "admin.text.type_the_profile_name" "Type the profile name"}}
+                <input name="display_name" required></label>
+              <label><input type="checkbox" name="confirm" value="1" required>
+                {{tr "admin.text.confirm_permanent_deletion" "Confirm permanent deletion"}}</label>
+              <button class="account-action">{{tr "admin.text.delete_profile" "Delete account and profile"}}</button>
+              <a class="account-secondary" href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.cancel" "Cancel"}}</a>
+            </form>
+          </section>
         </main>
         <footer class="admin-footer">
           TuneTrail ·

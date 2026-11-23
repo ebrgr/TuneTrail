@@ -5,6 +5,8 @@
       {{$title := tr "ui.account" "Account"}}
       {{- if .Health}}{{$title = tr "admin.health.title" "Ingestion health"}}{{end}}
       {{if .SignOut}}{{$title = tr "admin.sign_out.title" "End this session in this browser"}}{{end}}
+      {{if .Login}}{{$title = tr "ui.sign_in" "Sign in"}}{{end}}
+      {{if .Problem}}{{$title = statusTitle .Status}}{{end}}
       {{template "partial/head" (head "admin" (printf "%s — TuneTrail" $title))}}
     </head>
     <body
@@ -19,23 +21,20 @@
       {{template "partial/theme-panel" .Locale}}
       {{template "partial/profile-header" $nav}}
       <div class="admin-shell">
-        <main id="admin-main" class="admin-main">
-          <h1>{{- if .SignOut}}{{tr "admin.sign_out.title" "End this session in this browser"}}
+        <main id="admin-main" class="admin-main{{if or .Login .Redeem .SignOut .Problem}} admin-main-auth{{end}}">
+          <h1 id="page-title">{{- if .SignOut}}{{tr "admin.sign_out.title" "End this session in this browser"}}
             {{- else if .Health}}{{tr "admin.health.title" "Ingestion health"}}
             {{- else if .Login}}{{tr "ui.sign_in" "Sign in"}}
-            {{- else if .Error}}{{tr "ui.request_status" "Request status"}}
+            {{- else if .Problem}}{{statusTitle .Status}}
             {{- else if and .Tab .Context}}{{.Profile.DisplayName}}
             {{- else if .Tab}}{{tr "nav.my_account" "My account"}}
             {{- else if .User}}{{tr "admin.text.administration" "Administration"}}
             {{- else}}{{tr "admin.account.redeem" "Redeem account token"}}
             {{- end -}}
           </h1>
-          {{if .Error}}
-            <p id="form-error" role="alert">{{.Error}}</p>
-          {{end}}
-          {{if and .Notice (not .AccountPage)}}
-            <p role="status">{{.Notice}}</p>
-          {{end}}
+          {{template "admin/message" (msg "error" "form-error" .Error)}}
+          {{template "admin/message" (msg "warning" "form-warning" .Warning)}}
+          {{if not .AccountPage}}{{template "admin/message" (msg "success" "form-notice" .Notice)}}{{end}}
           {{if .Health}}
             {{template "admin/ingest-health" .}}
           {{else if .IssuedToken}}
@@ -45,6 +44,7 @@
             <p><a href="/admin?profile={{.Profile.ID}}">{{tr "admin.text.profile" "Profile"}}</a></p>
           {{else if .Redeem}}
             {{template "admin/redeem-notice" .}}
+            <section class="account-card auth-card" aria-labelledby="page-title">
             <p>
               {{- tr "admin.redeem.steps" "Enter your username, the token you received from the administrator and choose a password. Then sign in as usual." -}}
             </p>
@@ -73,40 +73,52 @@
               </label>
               <button class="account-action">{{tr "admin.account.redeem" "Redeem account token"}}</button>
             </form>
+            </section>
           {{else if .Login}}
-            <form method="post" action="/admin/login">
-              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              {{if .Submission}}
-                <input type="hidden" name="submission_token" value="{{.Submission}}">
-              {{end}}
-              <input type="hidden" name="next" value="{{.Next}}">
-              <label>{{tr "admin.text.username" "Username"}} <input name="username" autocomplete="username" required></label>
-              <label>{{tr "admin.text.password" "Password"}} <input type="password" name="password" autocomplete="current-password" required></label>
-              <label><input type="checkbox" name="remember" value="1"> {{tr "admin.text.remember_me" "Remember me"}}</label>
-              <button>{{tr "admin.text.sign_in" "Sign in"}}</button>
-            </form>
-            <p><a href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a></p>
+            <section class="account-card auth-card" aria-labelledby="page-title">
+              <form class="account-form" method="post" action="/admin/login">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                {{if .Submission}}
+                  <input type="hidden" name="submission_token" value="{{.Submission}}">
+                {{end}}
+                <input type="hidden" name="next" value="{{.Next}}">
+                <label>{{tr "admin.text.username" "Username"}}
+                  <input name="username" autocomplete="username" required autofocus
+                    {{if .Error}}aria-invalid="true" aria-describedby="form-error"{{end}}>
+                </label>
+                <label>{{tr "admin.text.password" "Password"}}
+                  <input type="password" name="password" autocomplete="current-password" required
+                    {{if .Error}}aria-invalid="true" aria-describedby="form-error"{{end}}>
+                </label>
+                <label><input type="checkbox" name="remember" value="1"> {{tr "admin.text.remember_me" "Remember me"}}</label>
+                <button class="account-action">{{tr "admin.text.sign_in" "Sign in"}}</button>
+              </form>
+              <p class="account-notice-links">
+                <a class="account-secondary" href="/admin/redeem">{{tr "admin.account.redeem" "Redeem account token"}}</a>
+              </p>
+            </section>
           {{else if .SignOut}}
-            <p id="sign-out-description">{{tr "admin.sign_out.description" "You can sign in again from the directory."}}</p>
-            <form method="post" action="/admin/logout">
-              <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-              <input type="hidden" name="submission_token" value="{{.Submission}}">
-              <a href="{{.Next}}" autofocus aria-describedby="sign-out-description">{{tr "admin.sign_out.cancel" "Cancel"}}</a>
-              <button type="submit" aria-describedby="sign-out-description">{{tr "admin.sign_out.confirm" "Sign out"}}</button>
-            </form>
-          {{else if .LogoutOnly}}
-            {{with $nav.Account}}<p>{{template "partial/nav-link" .}}</p>{{end}}
-            <p><a href="/">{{tr "nav.directory" "Directory"}}</a></p>
-            {{with $nav.SignOut}}{{template "partial/nav-link" .}}{{end}}
+            <section class="account-card auth-card" aria-labelledby="page-title">
+              <p id="sign-out-description">{{tr "admin.sign_out.description" "You can sign in again from the directory."}}</p>
+              <form class="account-form" method="post" action="/admin/logout">
+                <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+                <input type="hidden" name="submission_token" value="{{.Submission}}">
+                <button class="account-action" type="submit" aria-describedby="sign-out-description">
+                  {{- tr "admin.sign_out.confirm" "Sign out" -}}
+                </button>
+                <a class="account-secondary" href="{{.Next}}" autofocus aria-describedby="sign-out-description">
+                  {{- tr "admin.sign_out.cancel" "Cancel" -}}
+                </a>
+              </form>
+            </section>
+          {{else if .Problem}}
+            {{template "admin/state" .}}
           {{else if .User}}
             {{if .Tab}}
               {{template "admin/account-shell" .}}
             {{else}}
               {{template "admin/accounts-list" .}}
             {{end}}
-          {{else if .Error}}
-            <p><a href="/">{{tr "nav.directory" "Directory"}}</a></p>
-            {{with $nav.Login}}<p>{{template "partial/nav-link" .}}</p>{{end}}
           {{end}}
         </main>
         <footer class="admin-footer">

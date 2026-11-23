@@ -129,7 +129,7 @@ func (h *Handler) media(w http.ResponseWriter, r *http.Request, parts []string) 
 			h.fail(w, db.ErrInvalidInput)
 			return
 		}
-		http.Redirect(w, r, "/admin?next="+url.QueryEscape(next), http.StatusSeeOther)
+		http.Redirect(w, r, webassets.LoginDestination+"?next="+url.QueryEscape(next), http.StatusSeeOther)
 		return
 	}
 	if err != nil {

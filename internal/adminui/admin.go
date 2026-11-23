@@ -112,6 +112,11 @@ type view struct {
 	Profile                             *models.ListeningProfile
 	Keys                                []models.ApiKey
 	RelayURL, CSRF, Next, Notice, Error string
+	// ISSUE-128: Warning is a neutral instruction ("Sign in to continue."); Status is the HTTP status
+	// of the document; Problem selects the neutral 401/403/404 state card and is derived by render.
+	Warning                             string
+	Status                              int
+	Problem                             bool
 	Health                              *db.IngestHealth
 	Discard                             db.IngestDiscardPreview
 	DiscardTarget                       string
@@ -121,7 +126,7 @@ type view struct {
 	InboxDays                           int
 	InboxKey                            string
 	RelayState                          *relay.ProfileView
-	Login, LogoutOnly, SignOut          bool
+	Login, SignOut                      bool
 	Section                             string
 	Submission                          string
 	AccountsRoot, CanIssueToken, Redeem bool
@@ -158,7 +163,7 @@ func New(store Store, opts Options) (*Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "strval": func(p *string) string {
+	tmpl, err := template.New("admin").Funcs(adminFuncs(nil)).Funcs(template.FuncMap{"msg": newMessage, "heading": newHeading, "asset": asset, "head": webassets.HeadFunc, "defaultTheme": func() string { return opts.DefaultTheme }, "initials": webassets.Initials, "strval": func(p *string) string {
 		if p == nil {
 			return ""
 		}
@@ -230,7 +235,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Referrer-Policy", "same-origin")
 	}
 	w.Header().Add("Vary", "Cookie")
-	w = h.languages.Wrap(w, r)
+	w = requestWriter{h.languages.Wrap(w, r), r}
 	if r.Method == http.MethodHead {
 		// Confirmation HEAD requests must not allocate a submission ticket.
 		if r.URL.Path == "/admin/sign-out" {
@@ -258,6 +263,10 @@ func (h *Handler) dispatch(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.URL.Path == "/admin/sign-out" {
 		h.signOutPage(w, r)
+		return
+	}
+	if r.URL.Path == webassets.LoginDestination {
+		h.loginRoute(w, r)
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
@@ -403,7 +412,7 @@ func (h *Handler) failForSession(w http.ResponseWriter, r *http.Request, identit
 		return
 	}
 	nav := h.navigation(r, identity, nil, "")
-	h.render(w, http.StatusForbidden, view{Nav: nav, LogoutOnly: true, Error: "Your account does not have permission to access this page."})
+	h.render(w, http.StatusForbidden, view{Nav: nav, Error: "Your account does not have permission to access this page."})
 }
 
 // render buffers the complete template so errors do not leak secrets or partial HTML.
@@ -412,16 +421,31 @@ func (h *Handler) render(w http.ResponseWriter, status int, data view) {
 	if data.Locale != nil && (status == http.StatusForbidden || status == http.StatusNotFound) {
 		data.Locale.Return = "/"
 	}
+	data.Status = status
 	if data.Nav.Kind == "" {
 		section := ""
 		if data.Login {
 			section = "login"
 		}
 		data.Nav = webassets.Nav{Kind: "admin", Version: version.Current, NavAccess: webassets.AccessNavigation(nil, nil, nil, section)}
+		// ISSUE-128: an error document offers the entries of the session that asked, so a signed-in
+		// user is not told to sign in. The links never depend on why the request was refused.
+		if req := requestOf(w); req != nil && data.Error != "" && !data.Login {
+			if identity, err := adminweb.SessionIdentity(req, h.store); err == nil && identity.User != nil {
+				data.Nav = h.navigation(req, identity, nil, "")
+			}
+		}
 	}
+	// The state card replaces the page body for refusals; forms and tabs keep their own content.
+	data.Problem = data.Error != "" && !data.Login && !data.Redeem && !data.SignOut && data.Health == nil && data.User == nil
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// "Sign in to continue." is an instruction, not a failure: same role as the sign-in form's warning.
+	if data.Problem && status == http.StatusUnauthorized && data.Warning == "" {
+		data.Warning, data.Error = data.Error, ""
+	}
 	var out strings.Builder
 	data.Error = localMessage(data.Locale, data.Error)
+	data.Warning = localMessage(data.Locale, data.Warning)
 	tmpl, err := h.adminTemplate(data.Locale)
 	if err == nil {
 		err = tmpl.ExecuteTemplate(&out, "admin/home", data)
@@ -463,12 +487,38 @@ func (h *Handler) fail(w http.ResponseWriter, err error) {
 	h.render(w, status, view{Error: message})
 }
 
-// loginPage binds a new or existing preauthentication nonce without revealing its cookie.
+// loginPage answers a protected document requested without a session with the neutral sign-in form
+// and the "Sign in to continue." instruction (ISSUE-128). The status stays 200 as before; only the
+// sign-out and logout paths answer 401. The nonce is bound without revealing its cookie.
 func (h *Handler) loginPage(w http.ResponseWriter, r *http.Request, message string) {
+	if message == "" {
+		message = msgSignIn
+	}
 	h.renderLogin(w, r, http.StatusOK, message)
 }
 
-// renderLogin gives an absent or expired session a usable sign-in form.
+// loginRoute serves GET /login for every role (ISSUE-128). A session that is already open goes to
+// the validated return or to its role's home instead of seeing the form; an expired session cookie
+// gets the neutral instruction, a plain visit does not.
+func (h *Handler) loginRoute(w http.ResponseWriter, r *http.Request) {
+	identity, err := adminweb.SessionIdentity(r, h.store)
+	switch {
+	case err == nil && identity.User != nil:
+		http.Redirect(w, r, h.loginDestination(r, identity.User, r.URL.Query().Get("next")), http.StatusSeeOther)
+	case errors.Is(err, admin.ErrUnauthorized):
+		message := ""
+		if _, err := r.Cookie(adminweb.SessionCookie); err == nil {
+			// A cookie that no longer resolves is an expired or revoked session.
+			message = msgSignIn
+		}
+		h.renderLogin(w, r, http.StatusOK, message)
+	default:
+		h.fail(w, err)
+	}
+}
+
+// renderLogin gives an absent or expired session a usable sign-in form. A non-empty message is a
+// neutral warning, never an account-specific diagnostic.
 func (h *Handler) renderLogin(w http.ResponseWriter, r *http.Request, status int, message string) {
 	token, err := h.csrf.LoginToken(w, r)
 	if err != nil {
@@ -480,10 +530,18 @@ func (h *Handler) renderLogin(w http.ResponseWriter, r *http.Request, status int
 	if next == "" && query.Get("next") == "" {
 		next = adminweb.SafeReturn(r.URL.RequestURI())
 	}
-	v := view{Login: true, CSRF: token, Next: next, Error: message}
+	v := view{Login: true, CSRF: token, Next: next, Warning: message}
 	// ISSUE-125: the redirect after a successful token redemption asks for a normal sign-in.
-	if query.Get("redeemed") == "1" {
+	// ISSUE-128: a password change ends every session and lands here with its own confirmation.
+	switch {
+	case query.Get("redeemed") == "1":
 		v.Notice = adminText(i18n.ViewOf(w), "admin.account.redeemed", "Password set. Sign in with your username and the new password.")
+	case query.Get("changed") == "1":
+		v.Notice = adminText(i18n.ViewOf(w), "admin.account.password_changed", "Password changed. Sign in with your new password.")
+	}
+	// A confirmation already tells the user to sign in; the generic instruction would repeat it.
+	if v.Notice != "" {
+		v.Warning = ""
 	}
 	h.render(w, status, v)
 }

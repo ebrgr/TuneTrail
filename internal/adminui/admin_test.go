@@ -66,6 +66,7 @@ func TestAdministrationJourney(t *testing.T) {
 	}
 	login := call("GET", "/admin?profile=123", nil, nil)
 	require.Equal(t, 200, login.Code)
+	require.Contains(t, login.Body.String(), "Sign in to continue.") // ISSUE-128: neutral instruction
 	require.Contains(t, login.Body.String(), `name="next" value="/admin?profile=123"`)
 	require.NotEmpty(t, login.Result().Cookies())
 	pre := login.Result().Cookies()[0]

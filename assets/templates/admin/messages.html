@@ -1,0 +1,32 @@
+{{/* ISSUE-128: the single message component of the administration. Callers pass (msg kind id text):
+     kind "error" renders role=alert; "warning" and "success" render role=status. The optional id lets a
+     field name the message in aria-describedby. A fourth argument "section" marks a message that an
+     enhanced card update announces (data-section-message). Nothing renders when the text is empty. */}}
+{{define "admin/message"}}
+  {{if .Text}}
+    <p {{if .ID}}id="{{.ID}}" {{end}}class="message message-{{.Kind}}" role="{{if eq .Kind "error"}}alert{{else}}status{{end}}"
+      {{- if .Section}} data-section-message{{end}}>{{.Text}}</p>
+  {{end}}
+{{end}}
+
+{{/* The neutral state of a refused request (401, 403, 404, others): one title, the fixed message above
+     it, and the entries of the asking session. Which entries show depends only on the session, never on
+     why the request was refused, so a 404 for a hidden profile and for a missing one look identical. */}}
+{{define "admin/state"}}
+  <section class="account-card state-card" aria-labelledby="page-title">
+    <p class="account-notice-links">
+      {{with .Nav.Login}}<a class="account-secondary" href="{{.URL}}">{{tr .Label .Fallback}}</a>{{end}}
+      {{with .Nav.Account}}<a class="account-secondary" href="{{.URL}}">{{tr .Label .Fallback}}</a>{{end}}
+      <a class="account-secondary" href="/">{{tr "nav.directory" "Directory"}}</a>
+      {{with .Nav.SignOut}}<a class="account-secondary" href="{{.URL}}">{{tr "admin.account.sign_out" "Sign out…"}}</a>{{end}}
+    </p>
+  </section>
+{{end}}
+
+{{/* ISSUE-128: a card heading whose level follows the context: the review cards are h2 on a page and h3
+     inside a dialog, which already has its own h2 title; sub-sections go one level further down. */}}
+{{define "admin/heading"}}
+  {{if eq .Level 2}}<h2{{if .ID}} id="{{.ID}}"{{end}}>{{.Text}}</h2>
+  {{else if eq .Level 3}}<h3{{if .ID}} id="{{.ID}}"{{end}}>{{.Text}}</h3>
+  {{else}}<h4{{if .ID}} id="{{.ID}}"{{end}}>{{.Text}}</h4>{{end}}
+{{end}}

@@ -22,17 +22,12 @@
             "admin.text.these_settings_apply_to_the_whole_server_effective_changes_require_a_restart_environment_overrides_retain_priority"
             "These settings apply to the whole server. Effective changes require a restart; environment overrides retain priority."
           }}</p>
-          {{if .Notice}}
-            <p role="status">{{.Notice}}</p>
-          {{end}}
-          {{if .Error}}
-            <p role="alert">{{.Error}}</p>
-          {{end}}
+          {{template "admin/message" (msg "success" "settings-notice" .Notice)}}
+          {{template "admin/message" (msg "error" "settings-error" .Error)}}
           {{if .RestartRequired}}
-            <p role="status">{{tr
+            {{template "admin/message" (msg "warning" "settings-restart" (tr
               "admin.text.the_effective_configuration_differs_from_the_running_server_restart_to_apply_it"
-              "The effective configuration differs from the running server. Restart to apply it."
-            }}</p>
+              "The effective configuration differs from the running server. Restart to apply it."))}}
           {{end}}
           <p>{{trn
             "admin.process_zone"

@@ -12,7 +12,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=f979731e9ead85405767079971bf4f3d9ec960eaa64d027daa476a4842618e32">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=7aa78fa03a0737cd3a508648ef0f0cc199335ebf9deeffab070648306d1ecef8">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=999768334e620ec372a644ab64c3c8474b270e1430da5846e1a47e2403ecafbd"></script>
       
@@ -421,20 +421,57 @@
 
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>Delete account and profile Fictional Alpha</h1>
-          <p>Profile alpha (ID 1) currently has 2 listens. This permanently deletes the account, its sessions and tokens, the profile, its API keys, relay and listening history.</p>
-          <form method="post" action="/admin/profile/1/delete">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+          <h1 id="page-title">Delete account and profile Fictional Alpha</h1>
+          <section class="account-card review-card" aria-labelledby="profile-review-summary-title">
             
-              <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+  <h2 id="profile-review-summary-title">Impact summary</h2>
+  
+
             
-            <input type="hidden" name="profile_slug" value="alpha">
-            <input type="hidden" name="listen_count" value="2">
-            <label>Type the profile name <input name="display_name" required></label>
-            <label><input type="checkbox" name="confirm" value="1" required> Confirm permanent deletion</label>
-            <button>Delete account and profile</button>
-          </form>
-          <p><a href="/admin?profile=1">Cancel</a></p>
+  
+    <p class="message message-warning" role="status">Profile alpha (ID 1) currently has 2 listens. This permanently deletes the account, its sessions and tokens, the profile, its API keys, relay and listening history.</p>
+  
+
+            <dl class="review-facts">
+              <div><dt>Name</dt><dd>Fictional Alpha</dd></div>
+              <div><dt>Slug</dt><dd>alpha</dd></div>
+              <div><dt>Listens</dt><dd data-listen-count="2">2</dd></div>
+            </dl>
+          </section>
+          <section class="account-card review-card" aria-labelledby="profile-review-changes-title">
+            
+  <h2 id="profile-review-changes-title">What will change</h2>
+  
+
+            <ul class="review-list">
+              <li>The account, with its sessions and tokens</li>
+              <li>The profile</li>
+              <li>Its API keys</li>
+              <li>Its relay configuration</li>
+              <li>Its listening history</li>
+              <li>The shared catalog stays intact</li>
+            </ul>
+          </section>
+          <section class="account-card account-danger review-danger" aria-labelledby="profile-review-danger-title">
+            
+  <h2 id="profile-review-danger-title">Danger zone</h2>
+  
+
+            <form method="post" class="account-form" action="/admin/profile/1/delete">
+              <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+              
+                <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
+              
+              <input type="hidden" name="profile_slug" value="alpha">
+              <input type="hidden" name="listen_count" value="2">
+              <label>Type the profile name
+                <input name="display_name" required></label>
+              <label><input type="checkbox" name="confirm" value="1" required>
+                Confirm permanent deletion</label>
+              <button class="account-action">Delete account and profile</button>
+              <a class="account-secondary" href="/admin?profile=1">Cancel</a>
+            </form>
+          </section>
         </main>
         <footer class="admin-footer">
           TuneTrail ·

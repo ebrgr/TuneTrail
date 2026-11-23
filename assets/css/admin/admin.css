@@ -142,17 +142,7 @@
   overflow-wrap:anywhere;
   user-select:all
 }
-.admin-main [role=alert] {
-  border-left:3px solid var(--color-error);
-  padding:12px 18px;
-  background:var(--color-bg-secondary);
-  color:var(--color-error)
-}
-.admin-main [role=status] {
-  border-left:3px solid var(--color-success);
-  padding:12px 18px;
-  background:var(--color-bg-secondary)
-}
+/* Messages (error, warning, success) have one component: .message in cards.css (ISSUE-128). */
 
 /* Constrain this region without requiring a fixed layout width. */
 .admin-sidebar {

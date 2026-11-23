@@ -162,7 +162,7 @@ func TestAccountTokenWeb162(t *testing.T) {
 	rec = redeem("pending", activation, csrf)
 	require.Equal(t, 303, rec.Code)
 	// ISSUE-125: success lands on the sign-in form, which explains the next step.
-	require.Equal(t, "/admin?redeemed=1", rec.Header().Get("Location"))
+	require.Equal(t, "/login?redeemed=1", rec.Header().Get("Location"))
 	require.Equal(t, neutral(wrong, "pending"), neutral(redeem("pending", activation, csrf), "pending"))
 	one, err := admin.Login(ctx, s, "pending", newPassword, false)
 	require.NoError(t, err)

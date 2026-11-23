@@ -12,7 +12,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=f979731e9ead85405767079971bf4f3d9ec960eaa64d027daa476a4842618e32">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=7aa78fa03a0737cd3a508648ef0f0cc199335ebf9deeffab070648306d1ecef8">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=999768334e620ec372a644ab64c3c8474b270e1430da5846e1a47e2403ecafbd"></script>
       
@@ -421,39 +421,88 @@
 
       <div class="admin-shell">
         <main id="admin-main" class="admin-main">
-          <h1>Review merge: track</h1>
-            <p>This merges only the recording identity. Both tracks keep their releases and listens. Administrators can undo it within 30 days.</p>
-          <p>Source: Alpha Track (ID 1). Destination occurrence: Other Alpha Track (ID 2).</p>
-          <p>Source-linked tracks: 1; albums: 1; listens: 2.</p>
-          <h2>Source metadata and relations</h2>
-          <p>MusicBrainz ID: none.</p>
-          <p>Source aliases: <span>Alpha Track; </span>.</p>
-            <p>Source artists: <span>Shared Artist (ID 1, primary); </span></p>
-            <h2>Destination metadata and relations</h2>
-            <p>MusicBrainz ID: none.</p>
-            <p>Destination aliases: <span>Other Alpha Track; </span>.</p>
-              <p>Destination artists: <span>Shared Artist (ID 1, primary); </span></p>
-          <p>Source image ID: none. Destination image ID: none. Keep destination image.</p>
-          <h2>Affected profiles</h2>
-          <ul>
-            
-              <li>Fictional Alpha (ID 1): 1 source-linked listens</li>
-              <li>Beta (ID 2): 1 source-linked listens</li>
-          </ul>
-            <h2>Profiles with destination-linked listens</h2>
-            <ul>
-              
-                <li>Fictional Alpha (ID 1): 1 destination-linked listens</li>
-            </ul>
-          <form method="post" action="/alpha/manage/track/1/confirm">
-            <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-            <input type="hidden" name="profile_id" value="1">
-            <input type="hidden" name="profile_slug" value="alpha">
-            <input type="hidden" name="plan" value="REFERENCE_TOKEN">
-            <label><input type="checkbox" name="confirm" value="1" required> Confirm this global catalog change</label>
-            <button>Confirm merge</button>
-          </form>
-          <p><a href="/alpha/manage/track/1/merge">Cancel</a></p></main>
+          <h1 id="page-title">Review merge: track</h1>
+  <section class="account-card review-card" aria-labelledby="review-summary-title">
+    
+  <h2 id="review-summary-title">Impact summary</h2>
+  
+
+      
+  
+    <p class="message message-warning" role="status">This merges only the recording identity. Both tracks keep their releases and listens. Administrators can undo it within 30 days.</p>
+  
+
+    <dl class="review-facts">
+      <div><dt>Source</dt><dd>Alpha Track (ID 1)</dd></div>
+        <div>
+          <dt>Destination occurrence</dt>
+          <dd>Other Alpha Track (ID 2)</dd>
+        </div>
+      <div><dt>Source-linked tracks</dt><dd>1</dd></div>
+      <div><dt>Source-linked albums</dt><dd>1</dd></div>
+      <div><dt>Source-linked listens</dt><dd>2</dd></div>
+      <div><dt>Affected profiles</dt><dd>2</dd></div>
+    </dl>
+  </section>
+  <section class="account-card review-card" aria-labelledby="review-changes-title">
+    
+  <h2 id="review-changes-title">What will change</h2>
+  
+
+    <ul class="review-list">
+      <li>Source image ID: none. Destination image ID: none. Keep destination image.</li>
+    </ul>
+    
+  <h3>Source metadata and relations</h3>
+  
+
+    <ul class="review-list">
+      <li>MusicBrainz ID: none</li>
+      <li>Source aliases: <span>Alpha Track; </span></li>
+        <li>Source artists: <span>Shared Artist (ID 1, primary); </span></li>
+    </ul>
+      
+  <h3>Destination metadata and relations</h3>
+  
+
+      <ul class="review-list">
+        <li>MusicBrainz ID: none</li>
+        <li>Destination aliases: <span>Other Alpha Track; </span></li>
+          <li>Destination artists: <span>Shared Artist (ID 1, primary); </span></li>
+      </ul>
+    
+  <h3>Affected profiles</h3>
+  
+
+    <ul class="review-list">
+      
+        <li>Fictional Alpha (ID 1): 1 source-linked listens</li>
+        <li>Beta (ID 2): 1 source-linked listens</li>
+    </ul>
+      
+  <h3>Profiles with destination-linked listens</h3>
+  
+
+      <ul class="review-list">
+        
+          <li>Fictional Alpha (ID 1): 1 destination-linked listens</li>
+      </ul>
+  </section>
+  <section class="account-card account-danger review-danger" aria-labelledby="review-danger-title">
+    
+  <h2 id="review-danger-title">Danger zone</h2>
+  
+
+    <form method="post" class="account-form" action="/alpha/manage/track/1/confirm">
+      <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
+      <input type="hidden" name="profile_id" value="1">
+      <input type="hidden" name="profile_slug" value="alpha">
+      <input type="hidden" name="plan" value="REFERENCE_TOKEN">
+      <label><input type="checkbox" name="confirm" value="1" required> Confirm this global catalog change</label>
+      <button class="account-action">Confirm merge</button>
+      <a class="account-secondary" href="/alpha/manage/track/1/merge">Cancel</a>
+    </form>
+  </section></main>
         <footer class="admin-footer">
           TuneTrail ·
           <a href="/">Listening profiles</a>

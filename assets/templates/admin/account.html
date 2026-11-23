@@ -52,8 +52,8 @@
     <p>
       {{- tr "admin.account.identity_hint" "Your username is how you sign in. It is separate from your profile address and display name." -}}
     </p>
-    {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
-    {{if and $mine $a.Error}}<p id="account-identity-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if $mine}}{{template "admin/message" (msg "success" "account-identity-notice" $a.Notice "section")}}{{end}}
+    {{if $mine}}{{template "admin/message" (msg "error" "account-identity-error" $a.Error "section")}}{{end}}
     <form method="post" class="account-form" action="/admin/account/username" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}
@@ -76,7 +76,7 @@
     <p id="account-password-warning" class="account-warning">
       {{- tr "admin.account.password_warning" "Changing your password ends every session, including this one. You will need to sign in again." -}}
     </p>
-    {{if and $mine $a.Error}}<p id="account-password-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if $mine}}{{template "admin/message" (msg "error" "account-password-error" $a.Error "section")}}{{end}}
     <form method="post" class="account-form" action="/admin/account/password" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       {{if .Submission}}<input type="hidden" name="submission_token" value="{{.Submission}}">{{end}}

@@ -7,7 +7,7 @@
     {{range .Tabs}}<a href="{{.URL}}" {{if .Current}}aria-current="page"{{end}}>{{tr .Label .Fallback}}</a>{{end}}
   </nav>
   {{with .AccountPage}}
-    {{if and .Notice (not .Card)}}<p class="account-message" role="status">{{.Notice}}</p>{{end}}
+    {{if not .Card}}{{template "admin/message" (msg "success" "account-notice" .Notice)}}{{end}}
   {{end}}
   <div class="account-grid">
     {{if eq .Tab "account"}}
@@ -73,8 +73,8 @@
   {{$a := .AccountPage}}
   <section id="account-role" class="account-card" data-section aria-labelledby="account-role-title">
     <h2 id="account-role-title">{{tr "account.role.title" "Role"}}</h2>
-    {{if and $a.Notice (eq $a.Card "account-role")}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
-    {{if and $a.Error (eq $a.Card "account-role")}}<p class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if eq $a.Card "account-role"}}{{template "admin/message" (msg "success" "account-role-notice" $a.Notice "section")}}{{end}}
+    {{if eq $a.Card "account-role"}}{{template "admin/message" (msg "error" "account-role-error" $a.Error "section")}}{{end}}
     <form method="post" class="account-form" action="/admin/profile/{{.Profile.ID}}/account-role" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       <input type="hidden" name="submission_token" value="{{.Submission}}">
@@ -102,17 +102,19 @@
   {{$mine := eq $a.Card "profile-identity"}}
   <section id="profile-identity" class="account-card" data-section data-slug="{{.Profile.Slug}}" aria-labelledby="profile-identity-title">
     <h2 id="profile-identity-title">{{tr "account.profile.identity" "Profile"}}</h2>
-    {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
-    {{if and $mine $a.Error}}<p id="profile-identity-error" class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if $mine}}{{template "admin/message" (msg "success" "profile-identity-notice" $a.Notice "section")}}{{end}}
+    {{if $mine}}{{template "admin/message" (msg "error" "profile-identity-error" $a.Error "section")}}{{end}}
     <form method="post" class="account-form" action="/admin/profile/{{.Profile.ID}}/save" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       <input type="hidden" name="submission_token" value="{{.Submission}}">
       <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
       <label>{{tr "admin.text.name" "Name"}}
-        <input name="display_name" value="{{.Profile.DisplayName}}" required>
+        <input name="display_name" value="{{.Profile.DisplayName}}" required
+          {{if and $mine $a.Error}}aria-describedby="profile-identity-error"{{end}}>
       </label>
       <label>{{tr "admin.text.slug" "Slug"}}
-        <input name="slug" value="{{.Profile.Slug}}" required>
+        <input name="slug" value="{{.Profile.Slug}}" required
+          {{if and $mine $a.Error}}aria-describedby="profile-identity-error"{{end}}>
       </label>
       <input type="hidden" name="require_login_present" value="1">
       <label>
@@ -137,14 +139,17 @@
   {{$mine := eq $a.Card "profile-avatar"}}
   <section id="profile-avatar" class="account-card" data-section aria-labelledby="profile-avatar-title">
     <h2 id="profile-avatar-title">{{tr "admin.text.avatar" "Avatar"}}</h2>
-    {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
-    {{if and $mine $a.Error}}<p class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if $mine}}{{template "admin/message" (msg "success" "profile-avatar-notice" $a.Notice "section")}}{{end}}
+    {{if $mine}}{{template "admin/message" (msg "error" "profile-avatar-error" $a.Error "section")}}{{end}}
     <form method="post" class="account-form" action="/admin/profile/{{.Profile.ID}}/avatar" enctype="multipart/form-data" data-enhance>
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       <input type="hidden" name="submission_token" value="{{.Submission}}">
       <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
       {{template "admin/icon-select" (strval .Profile.AvatarIcon)}}
-      <label>{{tr "admin.text.photo" "Photo"}} <input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+      <label>{{tr "admin.text.photo" "Photo"}}
+        <input type="file" name="image" accept="image/jpeg,image/png,image/webp"
+          {{if and $mine $a.Error}}aria-describedby="profile-avatar-error"{{end}}>
+      </label>
       <small class="form-help">{{tr "admin.text.jpeg_png_or_static_webp" "JPEG, PNG or static WebP."}}</small>
       <button class="account-action">{{tr "admin.text.save_avatar" "Save avatar"}}</button>
     </form>
@@ -162,8 +167,8 @@
   {{$mine := eq $a.Card "profile-keys"}}
   <section id="profile-keys" class="account-card" data-section aria-labelledby="profile-keys-title">
     <h2 id="profile-keys-title">{{tr "admin.text.api_keys" "API keys"}}</h2>
-    {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
-    {{if and $mine $a.Error}}<p class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if $mine}}{{template "admin/message" (msg "success" "profile-keys-notice" $a.Notice "section")}}{{end}}
+    {{if $mine}}{{template "admin/message" (msg "error" "profile-keys-error" $a.Error "section")}}{{end}}
     {{range .Keys}}
       <details class="account-key">
         <summary>{{.Label}}</summary>
@@ -240,8 +245,8 @@
     <h2 id="profile-relay-title">{{tr "admin.text.listenbrainz_relay" "ListenBrainz relay"}}</h2>
     <p>{{tr "admin.text.enter_both_the_server_url_and_token_use_remove_relay_to_disable_it"
       "Enter both the server URL and token. Use Remove relay to disable it."}}</p>
-    {{if and $mine $a.Notice}}<p class="account-message" role="status" data-section-message>{{$a.Notice}}</p>{{end}}
-    {{if and $mine $a.Error}}<p class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
+    {{if $mine}}{{template "admin/message" (msg "success" "profile-relay-notice" $a.Notice "section")}}{{end}}
+    {{if $mine}}{{template "admin/message" (msg "error" "profile-relay-error" $a.Error "section")}}{{end}}
     {{with .RelayState}}
       {{template "admin/relay-state" .}}
       {{if or (and .Draft (ne .Diagnostic.Code "forbidden_range") (ne .Diagnostic.Code "metadata_endpoint")) .Grant.Available}}
@@ -257,7 +262,9 @@
       <input type="hidden" name="csrf_token" value="{{.CSRF}}">
       <input type="hidden" name="submission_token" value="{{.Submission}}">
       <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-      <label>{{tr "admin.text.server_url" "Server URL"}} <input name="url" value="{{.RelayURL}}" required></label>
+      <label>{{tr "admin.text.server_url" "Server URL"}}
+        <input name="url" value="{{.RelayURL}}" required {{if and $mine $a.Error}}aria-describedby="profile-relay-error"{{end}}>
+      </label>
       <label>{{tr "admin.text.token" "Token"}} <input type="password" name="token" autocomplete="new-password"></label>
       <button class="account-action" formaction="/admin/profile/{{.Profile.ID}}/relay/save">{{tr "admin.text.save_relay" "Save relay"}}</button>
       <button class="account-secondary" formaction="/admin/profile/{{.Profile.ID}}/relay/test">

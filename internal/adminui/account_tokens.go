@@ -12,6 +12,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/i18n"
+	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
 // redeemAccount accepts credentials only in a CSRF-protected POST body.
@@ -51,7 +52,7 @@ func (h *Handler) redeemAccount(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case err == nil:
 			// The sign-in form explains the next step; no session is created here.
-			http.Redirect(w, r, "/admin?redeemed=1", http.StatusSeeOther)
+			http.Redirect(w, r, webassets.LoginDestination+"?redeemed=1", http.StatusSeeOther)
 			return
 		case errors.Is(err, db.ErrAccountToken):
 			status = http.StatusBadRequest

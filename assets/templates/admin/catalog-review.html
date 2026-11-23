@@ -34,111 +34,137 @@
   </div>
 {{- end}}
 
+{{/* ISSUE-128: a review is three cards: the impact summary, the list of what will change, and the
+     confirmation in a separate danger zone. One markup serves the page and the dialog fragment; only the
+     heading levels differ, because the dialog already has its own title. */}}
 {{- define "manage/review-content"}}
 {{- if .Personal}}{{template "manage/profile-delete-content" .}}{{else}}
-          {{- if .Dialog}}<h2>{{else}}<h1>{{end}}{{trn
-            "admin.review.title"
-            "Review {{.Action}}: {{.Kind}}"
-            "Action"
-            (tr (printf "admin.action.%s" .Plan.Action) .Plan.Action)
-            "Kind"
-            (tr (printf "admin.kind.%s" .Kind) .Kind)
-          }}{{if .Dialog}}</h2>{{else}}</h1>{{end}}
-          {{- if and (eq .Kind "track") (eq .Plan.Action "merge")}}
-            <p>{{tr
-              "admin.review.recording_reconciliation"
-              "This merges only the recording identity. Both tracks keep their releases and listens. Administrators can undo it within 30 days."
-            }}</p>
-          {{- else}}
-          <p>{{tr
-            "admin.text.this_changes_the_shared_catalog_for_all_profiles_this_action_cannot_be_undone"
-            "This changes the shared catalog for all profiles. This action cannot be undone."
-          }}</p>
-          {{- end}}
-          <p>
-            {{- tr "admin.review.source" "Source:"}} {{.Plan.SourceName}} (ID {{.Plan.From}}).
-            {{- if eq .Plan.Action "merge"}} {{if eq .Kind "track"}}
-              {{- tr "admin.review.recording_destination" "Destination occurrence:"}}
-            {{- else}}{{tr "admin.review.destination" "Destination and surviving ID:"}}{{end}} {{.Plan.DestinationName}} (ID {{.Plan.To}}).{{end}}</p>
-          <p>{{tr "admin.review.source_tracks" "Source-linked tracks:"}} {{.Plan.SourceTracks}}{{tr "admin.review.albums" "; albums:"}} {{.Plan.SourceAlbums}}
-            {{- tr "admin.review.listens" "; listens:"}} {{.Plan.SourceListens}}.</p>
-          {{- if and (eq .Plan.Action "merge") (ne .Kind "track")}}
-            <p>{{tr
-              "admin.review.alias_policy"
-              "The destination retains its aliases, MusicBrainz ID and other metadata; aliases from the source are removed."
-            }}{{if eq .Kind "artist"}} {{tr
-              "admin.review.artist_policy"
-              "Source artist relations move to the destination; existing destination relations take precedence."
-            }}{{else}} {{tr
-              "admin.review.album_policy"
-              "Tracks move to the destination and source album artists are added as secondary artists."
-            }}{{end}}</p>
-          {{- end}}
-          <h2>{{tr "admin.text.source_metadata_and_relations" "Source metadata and relations"}}</h2>
-          <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.SourceMBID}}{{.Plan.SourceMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}.</p>
-          <p>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}
-            {{- end}}.</p>
-          {{- if .Plan.SourceArtists}}
-            <p>{{tr "admin.review.source_artists" "Source artists:"}} {{range .Plan.SourceArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
-              {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
-          {{- end}}
-          {{- if eq .Plan.Action "merge"}}
-            <h2>{{tr "admin.text.destination_metadata_and_relations" "Destination metadata and relations"}}</h2>
-            <p>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.DestinationMBID}}{{.Plan.DestinationMBID}}{{else}}{{tr "admin.review.none" "none"}}
-              {{- end}}.</p>
-            <p>{{tr "admin.review.destination_aliases" "Destination aliases:"}} {{range .Plan.DestinationAliases}}<span>{{.}}; </span>{{else}}
-              {{- tr "admin.review.none" "none"}}{{end}}.</p>
-            {{- if .Plan.DestinationArtists}}
-              <p>{{tr "admin.review.destination_artists" "Destination artists:"}} {{range .Plan.DestinationArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
-                {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</p>
-            {{- end}}
-          {{- end}}
-          <p>{{tr "admin.review.source_image" "Source image ID:"}} {{if .Plan.SourceImage}}{{.Plan.SourceImage}}{{else}}{{tr "admin.review.none" "none"}}{{end}}
-            {{- tr "admin.review.destination_image" ". Destination image ID:"}} {{if .Plan.DestinationImage}}{{.Plan.DestinationImage}}{{else}}
-            {{- tr "admin.review.none" "none"}}{{end}}. {{if eq .Plan.Action "merge"}}{{if .Plan.ReplaceImage}}
-            {{- tr "admin.review.use_source" "Use source image when present."}}{{else}}{{tr "admin.review.keep_destination" "Keep destination image."}}{{end}}
-            {{- end}}</p>
-          <h2>{{tr "admin.text.affected_profiles" "Affected profiles"}}</h2>
-          <ul>
-            {{range .Plan.Profiles}}
-              <li>{{.Name}} (ID {{.ID}}): {{.Listens}} {{tr "admin.review.source_listens" "source-linked listens"}}</li>
-            {{- else}}
-              <li>{{tr
-                "admin.text.no_stored_listens_are_currently_linked_to_the_source"
-                "No stored listens are currently linked to the source."
-              }}</li>
-            {{- end}}
-          </ul>
-          {{- if eq .Plan.Action "merge"}}
-            <h2>{{tr
-              "admin.text.profiles_with_destination_linked_listens"
-              "Profiles with destination-linked listens"
-            }}</h2>
-            <ul>
-              {{range .Plan.DestinationProfiles}}
-                <li>{{.Name}} (ID {{.ID}}): {{.Listens}} {{tr "admin.review.destination_listens" "destination-linked listens"}}</li>
-              {{- else}}
-                <li>{{tr
-                  "admin.text.no_stored_listens_currently_linked_to_the_destination"
-                  "No stored listens currently linked to the destination."
-                }}</li>
-              {{- end}}
-            </ul>
-          {{- end}}
-          <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.RouteID}}/confirm">
-            <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-            <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
-            <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-            <input type="hidden" name="plan" value="{{.Token}}">
-            <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_this_global_catalog_change"
-              "Confirm this global catalog change"}}</label>
-            <button>{{trn
-              "admin.review.confirm"
-              "Confirm {{.Action}}"
-              "Action"
-              (tr (printf "admin.action.%s" .Plan.Action) .Plan.Action)
-            }}</button>
-          </form>
-          <p><a href="{{.ReturnPath}}">{{tr "admin.text.cancel" "Cancel"}}</a></p>
+  {{- if .Dialog}}<h2>{{else}}<h1 id="page-title">{{end}}{{trn
+    "admin.review.title"
+    "Review {{.Action}}: {{.Kind}}"
+    "Action"
+    (tr (printf "admin.action.%s" .Plan.Action) .Plan.Action)
+    "Kind"
+    (tr (printf "admin.kind.%s" .Kind) .Kind)
+  }}{{if .Dialog}}</h2>{{else}}</h1>{{end}}
+  <section class="account-card review-card" aria-labelledby="review-summary-title">
+    {{template "admin/heading" (heading .Dialog 0 "review-summary-title" (tr "admin.review.summary" "Impact summary"))}}
+    {{- if and (eq .Kind "track") (eq .Plan.Action "merge")}}
+      {{template "admin/message" (msg "warning" "" (tr
+        "admin.review.recording_reconciliation"
+        "This merges only the recording identity. Both tracks keep their releases and listens. Administrators can undo it within 30 days."
+      ))}}
+    {{- else}}
+      {{template "admin/message" (msg "warning" "" (tr
+        "admin.text.this_changes_the_shared_catalog_for_all_profiles_this_action_cannot_be_undone"
+        "This changes the shared catalog for all profiles. This action cannot be undone."
+      ))}}
+    {{- end}}
+    <dl class="review-facts">
+      <div><dt>{{tr "admin.review.fact_source" "Source"}}</dt><dd>{{.Plan.SourceName}} (ID {{.Plan.From}})</dd></div>
+      {{- if eq .Plan.Action "merge"}}
+        <div>
+          <dt>{{if eq .Kind "track"}}{{tr "admin.review.fact_recording_destination" "Destination occurrence"}}
+            {{- else}}{{tr "admin.review.fact_destination" "Destination and surviving ID"}}{{end}}</dt>
+          <dd>{{.Plan.DestinationName}} (ID {{.Plan.To}})</dd>
+        </div>
+      {{- end}}
+      <div><dt>{{tr "admin.review.fact_tracks" "Source-linked tracks"}}</dt><dd>{{.Plan.SourceTracks}}</dd></div>
+      <div><dt>{{tr "admin.review.fact_albums" "Source-linked albums"}}</dt><dd>{{.Plan.SourceAlbums}}</dd></div>
+      <div><dt>{{tr "admin.review.fact_listens" "Source-linked listens"}}</dt><dd>{{.Plan.SourceListens}}</dd></div>
+      <div><dt>{{tr "admin.text.affected_profiles" "Affected profiles"}}</dt><dd>{{len .Plan.Profiles}}</dd></div>
+    </dl>
+  </section>
+  <section class="account-card review-card" aria-labelledby="review-changes-title">
+    {{template "admin/heading" (heading .Dialog 0 "review-changes-title" (tr "admin.review.changes" "What will change"))}}
+    <ul class="review-list">
+      {{- if and (eq .Plan.Action "merge") (ne .Kind "track")}}
+        <li>{{tr
+          "admin.review.alias_policy"
+          "The destination retains its aliases, MusicBrainz ID and other metadata; aliases from the source are removed."
+        }}</li>
+        <li>{{if eq .Kind "artist"}}{{tr
+          "admin.review.artist_policy"
+          "Source artist relations move to the destination; existing destination relations take precedence."
+        }}{{else}}{{tr
+          "admin.review.album_policy"
+          "Tracks move to the destination and source album artists are added as secondary artists."
+        }}{{end}}</li>
+      {{- end}}
+      <li>{{tr "admin.review.source_image" "Source image ID:"}} {{if .Plan.SourceImage}}{{.Plan.SourceImage}}{{else}}{{tr "admin.review.none" "none"}}{{end}}
+        {{- tr "admin.review.destination_image" ". Destination image ID:"}} {{if .Plan.DestinationImage}}{{.Plan.DestinationImage}}{{else}}
+        {{- tr "admin.review.none" "none"}}{{end}}. {{if eq .Plan.Action "merge"}}{{if .Plan.ReplaceImage}}
+        {{- tr "admin.review.use_source" "Use source image when present."}}{{else}}{{tr "admin.review.keep_destination" "Keep destination image."}}{{end}}
+        {{- end}}</li>
+    </ul>
+    {{template "admin/heading" (heading .Dialog 1 "" (tr "admin.text.source_metadata_and_relations" "Source metadata and relations"))}}
+    <ul class="review-list">
+      <li>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.SourceMBID}}{{.Plan.SourceMBID}}{{else}}{{tr "admin.review.none" "none"}}{{end}}</li>
+      <li>{{tr "admin.review.source_aliases" "Source aliases:"}} {{range .Plan.SourceAliases}}<span>{{.}}; </span>{{else}}{{tr "admin.review.none" "none"}}
+        {{- end}}</li>
+      {{- if .Plan.SourceArtists}}
+        <li>{{tr "admin.review.source_artists" "Source artists:"}} {{range .Plan.SourceArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
+          {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</li>
+      {{- end}}
+    </ul>
+    {{- if eq .Plan.Action "merge"}}
+      {{template "admin/heading" (heading .Dialog 1 "" (tr "admin.text.destination_metadata_and_relations" "Destination metadata and relations"))}}
+      <ul class="review-list">
+        <li>{{tr "admin.review.mbid" "MusicBrainz ID:"}} {{if .Plan.DestinationMBID}}{{.Plan.DestinationMBID}}{{else}}{{tr "admin.review.none" "none"}}
+          {{- end}}</li>
+        <li>{{tr "admin.review.destination_aliases" "Destination aliases:"}} {{range .Plan.DestinationAliases}}<span>{{.}}; </span>{{else}}
+          {{- tr "admin.review.none" "none"}}{{end}}</li>
+        {{- if .Plan.DestinationArtists}}
+          <li>{{tr "admin.review.destination_artists" "Destination artists:"}} {{range .Plan.DestinationArtists}}<span>{{.Name}} (ID {{.ID}}{{if .Primary}}
+            {{- tr "admin.review.primary" ", primary"}}{{end}}); </span>{{end}}</li>
+        {{- end}}
+      </ul>
+    {{- end}}
+    {{template "admin/heading" (heading .Dialog 1 "" (tr "admin.text.affected_profiles" "Affected profiles"))}}
+    <ul class="review-list">
+      {{range .Plan.Profiles}}
+        <li>{{.Name}} (ID {{.ID}}): {{.Listens}} {{tr "admin.review.source_listens" "source-linked listens"}}</li>
+      {{- else}}
+        <li>{{tr
+          "admin.text.no_stored_listens_are_currently_linked_to_the_source"
+          "No stored listens are currently linked to the source."
+        }}</li>
+      {{- end}}
+    </ul>
+    {{- if eq .Plan.Action "merge"}}
+      {{template "admin/heading" (heading .Dialog 1 "" (tr
+        "admin.text.profiles_with_destination_linked_listens"
+        "Profiles with destination-linked listens"
+      ))}}
+      <ul class="review-list">
+        {{range .Plan.DestinationProfiles}}
+          <li>{{.Name}} (ID {{.ID}}): {{.Listens}} {{tr "admin.review.destination_listens" "destination-linked listens"}}</li>
+        {{- else}}
+          <li>{{tr
+            "admin.text.no_stored_listens_currently_linked_to_the_destination"
+            "No stored listens currently linked to the destination."
+          }}</li>
+        {{- end}}
+      </ul>
+    {{- end}}
+  </section>
+  <section class="account-card account-danger review-danger" aria-labelledby="review-danger-title">
+    {{template "admin/heading" (heading .Dialog 0 "review-danger-title" (tr "admin.account.danger" "Danger zone"))}}
+    <form method="post" class="account-form" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.RouteID}}/confirm">
+      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+      <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+      <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+      <input type="hidden" name="plan" value="{{.Token}}">
+      <label><input type="checkbox" name="confirm" value="1" required> {{tr "admin.text.confirm_this_global_catalog_change"
+        "Confirm this global catalog change"}}</label>
+      <button class="account-action">{{trn
+        "admin.review.confirm"
+        "Confirm {{.Action}}"
+        "Action"
+        (tr (printf "admin.action.%s" .Plan.Action) .Plan.Action)
+      }}</button>
+      <a class="account-secondary" href="{{.ReturnPath}}">{{tr "admin.text.cancel" "Cancel"}}</a>
+    </form>
+  </section>
 {{- end}}
 {{- end}}

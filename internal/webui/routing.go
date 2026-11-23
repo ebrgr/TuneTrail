@@ -10,7 +10,7 @@ import (
 )
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-var reserved = map[string]bool{"admin": true, "account": true, "apis": true, "image": true, "public": true, "assets": true, "web-assets": true, "preview-assets": true, "theme-helper": true, "artist": true, "album": true, "track": true, "chart": true, "listens": true, "rewind": true}
+var reserved = map[string]bool{"admin": true, "account": true, "login": true, "apis": true, "image": true, "public": true, "assets": true, "web-assets": true, "preview-assets": true, "theme-helper": true, "artist": true, "album": true, "track": true, "chart": true, "listens": true, "rewind": true}
 
 // IsPage defines the Go document dispatcher boundary.
 func IsPage(path string) bool {

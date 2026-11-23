@@ -4,34 +4,47 @@
   </div>
 {{end}}
 
+{{/* ISSUE-128: deleting a profile's listens of one item is two cards, the impact summary and the
+     confirmation in a danger zone. The button, the cancel link and data-delete-count are hooks that
+     the dialog script and the tests rely on. */}}
 {{define "manage/profile-delete-content"}}
-  <section class="profile-delete">
-    {{if .Dialog}}<h2>{{else}}<h1>{{end}}{{trn
+  <div class="profile-delete">
+    {{if .Dialog}}<h2>{{else}}<h1 id="page-title">{{end}}{{trn
       "admin.delete.question"
       "Do you really want to delete the item \"{{.Name}}\"?"
       "Name" .Personal.Name
     }}{{if .Dialog}}</h2>{{else}}</h1>{{end}}
-    <p>{{tr
-      "admin.delete.irreversible"
-      "This cannot be undone. Only listens in this profile will be removed; the shared catalog and other profiles stay intact."
-    }}</p>
-    <p data-delete-count="{{.Personal.Count}}">{{trn
-      "admin.delete.count"
-      "Listens to delete in {{.Profile}}: {{.Count}}."
-      "Profile" .Profile.DisplayName "Count" .Personal.Count
-    }}</p>
-    {{if eq .Kind "artist"}}
-      <p>{{tr "admin.delete.collaborations" "Tracks in collaboration with other artists are not removed."}}</p>
-    {{end}}
-    <form method="post" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.RouteID}}/confirm">
-      <input type="hidden" name="csrf_token" value="{{.CSRF}}">
-      <input type="hidden" name="submission_token" value="{{.Submission}}">
-      <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
-      <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
-      <input type="hidden" name="plan" value="{{.Token}}">
-      <input type="hidden" name="confirm" value="1">
-      <button type="submit">{{tr "admin.delete.confirm" "Delete listens"}}</button>
-      <a href="{{.ReturnPath}}" data-task-cancel>{{tr "admin.text.cancel" "Cancel"}}</a>
-    </form>
-  </section>
+    <section class="account-card review-card" aria-labelledby="delete-summary-title">
+      {{template "admin/heading" (heading .Dialog 0 "delete-summary-title" (tr "admin.review.summary" "Impact summary"))}}
+      {{template "admin/message" (msg "warning" "" (tr
+        "admin.delete.irreversible"
+        "This cannot be undone. Only listens in this profile will be removed; the shared catalog and other profiles stay intact."
+      ))}}
+      <dl class="review-facts">
+        <div><dt>{{tr "admin.text.profile" "Profile"}}</dt><dd>{{.Profile.DisplayName}}</dd></div>
+        <div>
+          <dt>{{tr "admin.delete.fact_count" "Listens to delete"}}</dt>
+          <dd data-delete-count="{{.Personal.Count}}">{{.Personal.Count}}</dd>
+        </div>
+      </dl>
+      {{if eq .Kind "artist"}}
+        <ul class="review-list">
+          <li>{{tr "admin.delete.collaborations" "Tracks in collaboration with other artists are not removed."}}</li>
+        </ul>
+      {{end}}
+    </section>
+    <section class="account-card account-danger review-danger" aria-labelledby="delete-danger-title">
+      {{template "admin/heading" (heading .Dialog 0 "delete-danger-title" (tr "admin.account.danger" "Danger zone"))}}
+      <form method="post" class="account-form" action="/{{.Profile.Slug}}/manage/{{.Kind}}/{{.RouteID}}/confirm">
+        <input type="hidden" name="csrf_token" value="{{.CSRF}}">
+        <input type="hidden" name="submission_token" value="{{.Submission}}">
+        <input type="hidden" name="profile_id" value="{{.Profile.ID}}">
+        <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
+        <input type="hidden" name="plan" value="{{.Token}}">
+        <input type="hidden" name="confirm" value="1">
+        <button class="account-action" type="submit">{{tr "admin.delete.confirm" "Delete listens"}}</button>
+        <a class="account-secondary" href="{{.ReturnPath}}" data-task-cancel>{{tr "admin.text.cancel" "Cancel"}}</a>
+      </form>
+    </section>
+  </div>
 {{end}}
