@@ -339,11 +339,6 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 	return nil
 }
 
-// migrateDatabase applies historical Goose migrations and the atomic relay upgrade.
-func migrateDatabase(db *sql.DB) error {
-	return migrateDatabaseToVersion(db, currentSchemaVersion)
-}
-
 // migrateDatabaseToVersion retains the relay seed transaction for historical fixtures.
 func migrateDatabaseToVersion(db *sql.DB, targetVersion int) error {
 	// Preserve the custom relay seed transaction before applying later SQL migrations.

@@ -13,8 +13,6 @@ type ingestQueryer interface {
 	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
 }
 
-const shadowPurgeScope = `profile_id=? AND mode='shadow' AND event_id IS NULL`
-
 // checkIngestRoot validates a live root session inside the caller's SQLite transaction.
 func checkIngestRoot(ctx context.Context, tx ingestQueryer, session uuid.UUID) error {
 	var root bool

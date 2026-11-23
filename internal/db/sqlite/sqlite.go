@@ -264,16 +264,6 @@ func queryEntityAliases(ctx context.Context, q catalogQuerier, table, idCol stri
 	return aliases, rows.Err()
 }
 
-// tzOffset returns the UTC offset in seconds for a time.Location.
-// Used to convert UTC Unix timestamps to local calendar dates in SQL.
-func tzOffset(loc *time.Location) int {
-	if loc == nil {
-		return 0
-	}
-	_, offset := time.Now().In(loc).Zone()
-	return offset
-}
-
 // nullableUUID converts a *uuid.UUID to a sql.NullString for storage.
 func nullableUUID(u *uuid.UUID) sql.NullString {
 	if u == nil || *u == uuid.Nil {

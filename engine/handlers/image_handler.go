@@ -158,8 +158,3 @@ func serveDefaultImage(w http.ResponseWriter, size imagecache.ImageSize) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(defaultSVG(size))
 }
-
-// finds the item associated with the image id, downloads it, and saves it in the source path, returning the path to the image
-func downloadMissingImage(ctx context.Context, store db.ImageStore, id uuid.UUID) error {
-	return nil
-}

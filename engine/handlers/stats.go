@@ -21,4 +21,3 @@ func StatsHandler(store statsStore) http.HandlerFunc {
 		utils.WriteJSON(w, 200, v)
 	}
 }
-func safeRatio(a, b int64) float32 { return listening.Ratio(a, b) }
