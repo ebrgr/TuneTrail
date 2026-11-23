@@ -78,7 +78,7 @@ On first startup, the application:
 
 1. Creates a consistent SQLite backup, including committed WAL, named
    `koito.db.pre-tunetrail-*.bak` in the data directory (permissions 0600).
-2. Migrates a copy of the backup from schema 2 through schema 22 before
+2. Migrates a copy of the backup from schema 2 through the current schema (23) before
    publishing it as `tunetrail.db`.
 3. Preserves administrator credentials, existing tokens, listens, and catalog.
 4. Assigns a single legacy user's history/keys to `/default`; multiple legacy
@@ -159,7 +159,7 @@ database size in the data directory and in the SQLite temporary directory
 v11. On the test hardware a database with 300,000 receipts needed about 21
 seconds before the health endpoint answered and a backup of about 260 MB.
 
-Current releases apply this migration on the way to schema 22. Occurrence
+Current releases apply this migration on the way to the current schema. Occurrence
 ingestion is active for every profile since TuneTrail 0.65. Versions 0.46 and
 earlier refuse a v11 database. To go back, stop the service and restore the backup; writes made
 after the upgrade are lost, and relay deliveries already made stay at the

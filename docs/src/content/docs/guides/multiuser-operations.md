@@ -62,7 +62,7 @@ separately, or remove the relay from the profile to stop forwarding. Changing
 local visibility or deleting a local listen leaves previous deliveries at the
 destination.
 
-## Upgrade Koito SQLite schema 2 to TuneTrail 0.72
+## Upgrade Koito SQLite schema 2 to the current TuneTrail
 
 1. Schedule downtime and stop all processes that can write to the data
    directory. Copy the entire directory, including configuration, images and
@@ -70,7 +70,7 @@ destination.
    or image. Allow disk space for the old database, the backup, the new database
    and SQLite working files.
 2. Rehearse the upgrade with a second copy in its own data directory. Use
-   TuneTrail 0.72 (schema 22), or the release you intend to deploy. For a
+   the release you intend to deploy (the current one is schema 23). For a
    standalone binary, point `TUNETRAIL_CONFIG_DIR` at the copy. For Compose,
    point `KOITO_DATA_DIR` in your deployment environment at the copy and select
    the image tag with `KOITO_IMAGE_TAG`. Use a separate port and isolate the
