@@ -12,7 +12,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=7aa78fa03a0737cd3a508648ef0f0cc199335ebf9deeffab070648306d1ecef8">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=79f5877c8a2c65ec46ae6d433e724a7fdd4d4bda6ad3511a457fc8a2c174b2a8">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=999768334e620ec372a644ab64c3c8474b270e1430da5846e1a47e2403ecafbd"></script>
       
@@ -405,6 +405,7 @@
                 <p id="hint-RELAY_ALLOW_HTTP">Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.</p>
                 
                 
+                
                   <dl class="server-setting-state">
                     <div>
                       <dt>Saved</dt>
@@ -447,6 +448,7 @@
                   </select>
                 
                 <p id="hint-RELAY_ALLOW_PRIVATE_NETWORK">Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.</p>
+                
                 
                 
                   <dl class="server-setting-state">
@@ -499,6 +501,7 @@
                 <p id="hint-KOITO_LOG_LEVEL">Controls the detail written to the application log.</p>
                 
                 
+                
                   <dl class="server-setting-state">
                     <div>
                       <dt>Saved</dt>
@@ -535,6 +538,7 @@
                   >
                 
                 <p id="hint-KOITO_MUSICBRAINZ_URL">Base URL of the MusicBrainz server.</p>
+                
                 
                 
                   <dl class="server-setting-state">
@@ -574,6 +578,7 @@
                   >
                 
                 <p id="hint-KOITO_MUSICBRAINZ_RATE_LIMIT">Requests per second; the official server requires 1.</p>
+                
                 
                 
                   <dl class="server-setting-state">
@@ -620,6 +625,7 @@
                 <p id="hint-KOITO_DISABLE_MUSICBRAINZ">Disables MusicBrainz metadata lookups.</p>
                 
                 
+                
                   <dl class="server-setting-state">
                     <div>
                       <dt>Saved</dt>
@@ -662,6 +668,7 @@
                   </select>
                 
                 <p id="hint-KOITO_DISABLE_DEEZER">Disables the Deezer artwork provider.</p>
+                
                 
                 
                   <dl class="server-setting-state">
@@ -708,6 +715,7 @@
                 <p id="hint-KOITO_DISABLE_COVER_ART_ARCHIVE">Disables the Cover Art Archive provider.</p>
                 
                 
+                
                   <dl class="server-setting-state">
                     <div>
                       <dt>Saved</dt>
@@ -744,6 +752,7 @@
                   >
                 
                 <p id="hint-KOITO_LASTFM_API_KEY">Enables Last.fm artwork lookup when set.</p>
+                
                 
                 
                   <dl class="server-setting-state">
@@ -784,6 +793,7 @@
                 <p id="hint-KOITO_SUBSONIC_URL">Server used to find artists, albums and artwork.</p>
                 
                 
+                
                   <dl class="server-setting-state">
                     <div>
                       <dt>Saved</dt>
@@ -820,6 +830,17 @@
                   >
                 
                 <p id="hint-KOITO_SUBSONIC_PARAMS">Query parameters used to access the server, such as u, t and s.</p>
+                
+                  
+                  <p><button type="button" hidden data-subsonic-open>Generate Navidrome credentials…</button></p>
+                  <div hidden data-subsonic-filled>
+                    
+  
+    <p id="subsonic-filled" class="message message-success" role="status">Parameters generated. Save the configuration to keep them.</p>
+  
+
+                  </div>
+                
                 
                 
                   <dl class="server-setting-state">
@@ -860,6 +881,7 @@
                 <p id="hint-KOITO_FORCE_TZ">IANA time zone, for example America/Sao_Paulo. Leave empty for automatic selection.</p>
                 
                 
+                
                   <dl class="server-setting-state">
                     <div>
                       <dt>Saved</dt>
@@ -889,6 +911,38 @@
               <button type="submit" formaction="/admin/settings/subsonic/test">Test Subsonic without saving</button>
             </div>
           </form>
+          
+          <dialog
+            id="subsonic-credentials"
+            class="subsonic-dialog"
+            aria-labelledby="subsonic-title"
+            aria-describedby="subsonic-warning"
+            data-error-empty="Enter the username and the password."
+            data-error-failed="The test could not be completed. Reload the page and try again."
+            data-testing="Testing the connection…"
+          >
+            <button type="button" class="close-dialog" data-subsonic-cancel
+              aria-label="Close dialog">×</button>
+            <h2 id="subsonic-title">Navidrome credentials</h2>
+            
+  
+    <p id="subsonic-warning" class="message message-warning" role="status">The password is used only in this browser to calculate the token. It is never saved or sent to TuneTrail. What you save is the token (t) and the salt (s): anyone who has them can use Navidrome as this user until the password changes. Use a dedicated user, preferably without administrator rights.</p>
+  
+
+            <div class="subsonic-fields">
+              <label for="subsonic-user">Navidrome username</label>
+              <input id="subsonic-user" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" data-subsonic-user>
+              <label for="subsonic-password">Navidrome password</label>
+              <input id="subsonic-password" type="password" autocomplete="new-password" data-subsonic-password>
+            </div>
+            <p hidden data-subsonic-result></p>
+            <div class="server-settings-actions">
+              <button type="button" data-subsonic-generate>Generate parameters</button>
+              <button type="button" data-subsonic-test>Test connection</button>
+              <button type="button" data-subsonic-cancel>Cancel</button>
+            </div>
+          </dialog>
+          <script defer src="/web-assets/subsonic-credentials.js?v=e1a08002533fcf72a9ef53aaa3ef27828d303fcaf969bf3af4dca524d8487158"></script>
           
   
     <section aria-labelledby="relay-exceptions">

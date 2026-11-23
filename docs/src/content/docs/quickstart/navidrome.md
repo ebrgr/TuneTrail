@@ -29,10 +29,18 @@ Koito uses SQLite for all new installations as of `v0.2.1`. If you are running a
 
 ### How do I get the Subsonic params?
 
-The easiest way to get your Subsonic parameters to open your browser and sign into Navidrome, then press F12 to get to
-the developer options and navigate to the **Network** tab. Find a `getCoverArt` request (there should be a lot on the home
-page) and look for the part of the URL that looks like `u=<username>&t=<random_string>&s=<small_random_string>`. This
-is what you need to copy and provide to Koito.
+The easiest way is the generator in TuneTrail. Sign in as the administrator, open **Server configuration** (`/admin/settings`),
+enter your Navidrome address in **Subsonic URL** and press **Generate Navidrome credentials…** next to **Subsonic parameters**.
+Enter the Navidrome username and password and press **Generate parameters**, or **Test connection** to check them first.
+
+The password is used only in your browser to calculate the token (`md5(password + salt)`). It is never saved and is never sent
+to TuneTrail. What you save is the token (`t`) and the salt (`s`): anyone who has them can use Navidrome as that user until the
+password changes, so prefer a dedicated user without administrator rights. The generator needs JavaScript and is not offered
+when `TUNETRAIL_SUBSONIC_PARAMS` is set by an environment variable.
+
+You can also get the parameters by hand: sign into Navidrome, press F12 to get to the developer options and navigate to the
+**Network** tab. Find a `getCoverArt` request (there should be a lot on the home page) and look for the part of the URL that
+looks like `u=<username>&t=<random_string>&s=<small_random_string>`. This is what you need to copy and provide to Koito.
 :::note
 If you don't want to use Navidrome to provide images to Koito, you can skip the `TUNETRAIL_SUBSONIC_URL` and `TUNETRAIL_SUBSONIC_PARAMS`
 variables entirely.

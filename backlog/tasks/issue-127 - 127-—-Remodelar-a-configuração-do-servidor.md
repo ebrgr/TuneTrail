@@ -1,10 +1,11 @@
 ---
 id: ISSUE-127
 title: 127 — Remodelar a configuração do servidor
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-20T18:33:00Z'
+updated_date: '2026-11-23T14:23:00Z'
 labels:
   - ui
   - admin
@@ -13,6 +14,7 @@ dependencies:
   - ISSUE-124
 references:
   - backlog/evidencias/issue-163/ESTUDO.md
+  - backlog/evidencias/issue-127/ESTUDO.md
 priority: medium
 type: feature
 ordinal: 140000
@@ -30,6 +32,7 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 - [ ] #2 Origem do valor e necessidade de reinício visíveis sem poluir o campo
 - [ ] #3 Ações Salvar e Testar sempre alcançáveis; sem JavaScript o formulário funciona como hoje
 - [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
+- [ ] #5 Popup gera u/t/s do Navidrome no navegador sem enviar nem gravar a senha, com teste de conexão no próprio popup
 <!-- AC:END -->
 
 ## Comments
@@ -41,6 +44,24 @@ created: 2026-11-20T18:33:00Z
 ---
 
 Estudo da 163 (decisão do usuário em 20/11/2026): continua exclusivamente root; a 163 só retira o link indevido para o comum. Cartões, origem de valores e Salvar/Testar permanecem aqui.
+
+---
+
+author: ebrgr
+created: 2026-11-23T14:17:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-127` na branch `feat/issue-127-remodelar-a-configuracao-do-servidor` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-23T14:23:00Z
+
+---
+
+Estudo 23/11/2026: popup <dialog> com cálculo md5(senha+sal) no navegador, aviso fixo (senha nunca gravada nem enviada; t+s equivalem a credencial), teste de conexão no popup, exibição de estado sem máscara. Auditoria de variáveis de ambiente em backlog/evidencias/issue-127/ESTUDO.md §7. Cartões, origem de valores e barra Salvar/Testar seguem pendentes (ACs 1–4).
 
 ---
 <!-- COMMENTS:END -->

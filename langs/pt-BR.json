@@ -834,5 +834,17 @@
   "admin.profile.delete_item_keys": "Suas chaves de API",
   "admin.profile.delete_item_relay": "Sua configuração de relay",
   "admin.profile.delete_item_history": "Seu histórico de reproduções",
-  "admin.profile.delete_item_catalog": "O catálogo compartilhado permanece intacto"
+  "admin.profile.delete_item_catalog": "O catálogo compartilhado permanece intacto",
+  "admin.subsonic.open": "Gerar credenciais do Navidrome…",
+  "admin.subsonic.filled": "Parâmetros gerados. Salve a configuração para mantê-los.",
+  "admin.subsonic.error_empty": "Informe o usuário e a senha.",
+  "admin.subsonic.error_failed": "Não foi possível concluir o teste. Recarregue a página e tente de novo.",
+  "admin.subsonic.testing": "Testando a conexão…",
+  "admin.subsonic.title": "Credenciais do Navidrome",
+  "admin.subsonic.warning": "A senha é usada apenas neste navegador para calcular o token. Ela nunca é gravada nem enviada ao TuneTrail. O que você salva é o token (t) e o sal (s): quem os tiver pode usar o Navidrome como este usuário até a senha mudar. Use um usuário dedicado, de preferência sem privilégios de administrador.",
+  "admin.subsonic.user": "Usuário do Navidrome",
+  "admin.subsonic.password": "Senha do Navidrome",
+  "admin.subsonic.generate": "Gerar parâmetros",
+  "admin.subsonic.test": "Testar conexão",
+  "admin.subsonic.cancel": "Cancelar"
 }

@@ -71,7 +71,7 @@ artwork and metadata, while ListenBrainz relay remains configured per profile
 in SQLite. Sign in as administrator and open **Server configuration** at
 `/admin/settings` to edit these ten global settings. The page shows saved,
 effective and running values. Fields controlled by environment variables are disabled and identify the controlling variable, including the `_FILE` suffix where applicable. Remove the override and restart to edit the field. Restart TuneTrail to
-apply effective changes. The Subsonic test uses the entered draft without saving;
+apply effective changes. The **Generate Navidrome credentials…** button next to the Subsonic parameters builds `u`, `t` and `s` from a Navidrome username and password in the browser; the password is never saved or sent. The Subsonic test uses the entered draft without saving;
 relay settings remain on each profile's administration page.
 
 ### Deployment, upgrades and offline recovery

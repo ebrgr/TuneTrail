@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Server configuration can generate the Navidrome (Subsonic) parameters: a dialog takes the Navidrome username and password, calculates the token in the browser and fills the parameters field, with a connection test in the same dialog. The password is never saved or sent to TuneTrail (ISSUE-127).
+
 ## [0.68] - 2026-11-22
 
 - Changing the language on the sign-in card keeps you there with your destination, error text uses a higher-contrast tone in the Pearl theme, and checkbox rows in confirmations are 44 px touch targets (ISSUE-128).

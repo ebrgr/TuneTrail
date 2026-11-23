@@ -17,7 +17,8 @@
     "css/admin/admin.css",
     "css/admin/account.css",
     "css/admin/cards.css",
-    "css/admin/health.css"
+    "css/admin/health.css",
+    "css/admin/subsonic.css"
   ],
   "public/static/admin.js": "js/admin.js",
   "public/static/avatar.webp": "preview/avatar.webp",
@@ -65,6 +66,7 @@
   "public/static/public/web-app-manifest-512x512.png": "public/web-app-manifest-512x512.png",
   "public/static/public/yuu.jpg": "public/yuu.jpg",
   "public/static/search.js": "js/search.js",
+  "public/static/subsonic-credentials.js": "js/subsonic-credentials.js",
   "public/static/theme-picker.js": "js/theme-picker.js",
   "public/static/theme.js": "js/theme.js",
   "public/static/ui.css": [

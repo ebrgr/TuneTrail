@@ -80,6 +80,17 @@
                   >
                 {{end}}
                 <p id="hint-{{.Name}}">{{.Description}}</p>
+                {{if and (eq .Name "KOITO_SUBSONIC_PARAMS") (not .Overridden)}}
+                  {{/* ISSUE-127: shown by subsonic-credentials.js only; without it the field is edited by hand. */}}
+                  <p><button type="button" hidden data-subsonic-open>
+                    {{- tr "admin.subsonic.open" "Generate Navidrome credentials…"}}</button></p>
+                  <div hidden data-subsonic-filled>
+                    {{template "admin/message" (msg "success" "subsonic-filled" (tr
+                      "admin.subsonic.filled"
+                      "Parameters generated. Save the configuration to keep them."
+                    ))}}
+                  </div>
+                {{end}}
                 {{if .Overridden}}
                   <p
                     id="override-{{.Name}}"
@@ -125,6 +136,40 @@
                 {{- tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button>
             </div>
           </form>
+          {{/* ISSUE-127: outside the form, so the password can never be part of a submission. No field has a name. */}}
+          <dialog
+            id="subsonic-credentials"
+            class="subsonic-dialog"
+            aria-labelledby="subsonic-title"
+            aria-describedby="subsonic-warning"
+            data-error-empty="{{tr "admin.subsonic.error_empty" "Enter the username and the password."}}"
+            data-error-failed="{{tr
+              "admin.subsonic.error_failed"
+              "The test could not be completed. Reload the page and try again."
+            }}"
+            data-testing="{{tr "admin.subsonic.testing" "Testing the connection…"}}"
+          >
+            <button type="button" class="close-dialog" data-subsonic-cancel
+              aria-label="{{tr "ui.close_dialog" "Close dialog"}}">×</button>
+            <h2 id="subsonic-title">{{tr "admin.subsonic.title" "Navidrome credentials"}}</h2>
+            {{template "admin/message" (msg "warning" "subsonic-warning" (tr
+              "admin.subsonic.warning"
+              "The password is used only in this browser to calculate the token. It is never saved or sent to TuneTrail. What you save is the token (t) and the salt (s): anyone who has them can use Navidrome as this user until the password changes. Use a dedicated user, preferably without administrator rights."
+            ))}}
+            <div class="subsonic-fields">
+              <label for="subsonic-user">{{tr "admin.subsonic.user" "Navidrome username"}}</label>
+              <input id="subsonic-user" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" data-subsonic-user>
+              <label for="subsonic-password">{{tr "admin.subsonic.password" "Navidrome password"}}</label>
+              <input id="subsonic-password" type="password" autocomplete="new-password" data-subsonic-password>
+            </div>
+            <p hidden data-subsonic-result></p>
+            <div class="server-settings-actions">
+              <button type="button" data-subsonic-generate>{{tr "admin.subsonic.generate" "Generate parameters"}}</button>
+              <button type="button" data-subsonic-test>{{tr "admin.subsonic.test" "Test connection"}}</button>
+              <button type="button" data-subsonic-cancel>{{tr "admin.subsonic.cancel" "Cancel"}}</button>
+            </div>
+          </dialog>
+          <script defer src="{{asset "subsonic-credentials.js"}}"></script>
           {{template "admin/relay-exceptions" .}}
           <p><a href="/admin/settings">{{tr "admin.text.reload_saved_configuration" "Reload saved configuration"}}</a> · <a href="/admin">
             {{- tr "admin.text.back_to_administration" "Back to administration"}}</a></p>
