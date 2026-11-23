@@ -1,15 +1,19 @@
 ---
 id: ISSUE-194
 title: 194 — Remover o restante do código legado de schema anterior à 21
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-23T00:10:00Z'
-updated_date: '2026-11-23T00:40:00Z'
+updated_date: '2026-11-23T01:00:00Z'
 labels:
   - ingestao
 milestone: m-11
 dependencies:
   - ISSUE-172
+references:
+  - backlog/evidencias/issue-194/LIMPEZA.md
+  - backlog/evidencias/issue-194/COLUNAS.md
 type: chore
 ordinal: 207000
 ---
@@ -38,6 +42,24 @@ created: 2026-11-23T00:40:00Z
 ---
 
 Início (22/11/2026): despachada ao Codex em worktree própria. Primeira da fila do banco (194 → 055 → 190 → 193 → 195).
+
+---
+
+author: ebrgr
+created: 2026-11-23T00:40:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-194` na branch `chore/issue-194-remover-o-restante-do-codigo` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-23T01:00:00Z
+
+---
+
+Verificação concluída. Removi os caminhos pré-21 e portei as fixtures de recibos para o resolvedor por ocorrência. As expectativas retiradas dependiam do escritor v9 ou das regras antigas de ativação e rotação de token, descritas em LIMPEZA.md. As migrações e o backup passaram, make check passou com 13/13 E2E e go test e race passaram. O binário final confirmou playing_now e single na porta 4127, com servidor encerrado. Ensaio isolado com 109 escutas aceitas, paridade de digest e ACK p95 de 5,83 ms. Inventário de colunas registrado para a ISSUE-195. Tarefa segue Em andamento.
 
 ---
 <!-- COMMENTS:END -->
