@@ -1,11 +1,11 @@
 ---
 id: ISSUE-202
 title: 202 — Cor de fundo do avatar escolhida numa lista
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T17:40:00Z'
-updated_date: '2026-11-23T18:39:00Z'
+updated_date: '2026-11-23T18:54:00Z'
 labels:
   - ui
   - admin
@@ -51,6 +51,24 @@ created: 2026-11-23T17:42:00Z
 ---
 
 Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-202` na branch `feat/issue-202-cor-de-fundo-do-avatar` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-23T18:42:00Z
+
+---
+
+Verificação: dropdown de 12 cores (preto primeiro) mais Padrão do tema no cartão Avatar; cor salva por perfil em listening_profiles.avatar_color (schema 22, coluna nula com CHECK, backup automático; conf.toml não participa). Só a paleta fixa é aceita, validada antes de gravar imagem; texto e ícone trocam sozinhos (contraste mínimo 4,92:1). Testes: paleta e CSS em sincronia, migração 21→22 com backup, loja, formulário e API (campo ausente mantém, vazio limpa, Usar iniciais mantém). No navegador (instância isolada): persiste após recarregar, banco guarda disc|#000000, cor aplicada no diretório, navegação, cabeçalho e lista de contas, legível em Yuu e Pearl. make check verde, 13/13 jornadas, referência da interface regenerada. Parecer do Reviewer: APROVADO (backlog/evidencias/issue-202/PARECER-REVIEWER.md). DB_ALTERATIONS.md (fora do Git) recebeu a seção do schema 22. Aguarda o aceite do usuário.
+
+---
+
+author: claude
+created: 2026-11-23T18:54:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 23/11/2026, após teste próprio no servidor local com o banco dele (schema 21 → 22, backup tunetrail.db.pre-ingest-4222905004.bak criado antes). Verificado: dropdown de 12 cores mais Padrão do tema, cor salva por perfil em listening_profiles.avatar_color, só a paleta fixa aceita, texto e ícone com contraste automático (mínimo 4,92:1), Usar iniciais mantém a cor; make check verde com 13/13 jornadas; Reviewer: APROVADO. Riscos para o usuário: a migração roda uma vez no banco existente e só volta restaurando o backup; a ISSUE-195 (consolidação das migrações) deve incluir a 022. Publicada localmente, sem push.
 
 ---
 <!-- COMMENTS:END -->
