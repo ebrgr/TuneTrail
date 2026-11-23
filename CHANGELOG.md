@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.68] - 2026-11-22
+
 - Changing the language on the sign-in card keeps you there with your destination, error text uses a higher-contrast tone in the Pearl theme, and checkbox rows in confirmations are 44 px touch targets (ISSUE-128).
 - Catalog reviews, account deletion reviews and the "delete listens" confirmation are now cards: an impact summary, the list of what will change, and the confirmation alone in a Danger zone, in the page and in the dialog; who can open each one is unchanged (ISSUE-128).
 - Errors, warnings and success messages share one component across sign-in, redemption, account tabs, server settings and the manage pages: same look in the Yuu and Pearl themes, alerts for errors, status for the rest, and fields point to their error (ISSUE-128).

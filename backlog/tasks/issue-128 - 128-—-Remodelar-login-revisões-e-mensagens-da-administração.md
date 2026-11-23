@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-23T01:42:00Z'
+updated_date: '2026-11-23T01:45:00Z'
 labels:
   - ui
   - admin
@@ -116,6 +116,15 @@ created: 2026-11-23T01:42:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito a 128 e publique depois faça o push').
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:45:00Z
+
+---
+
+Publicação: versão 0.68 (tag `v0.68`), branch `feat/issue-128-remodelar-login-revisoes-e-mensagens` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
