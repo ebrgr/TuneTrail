@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T00:58:00Z'
-updated_date: '2026-11-23T01:13:00Z'
+updated_date: '2026-11-23T01:16:00Z'
 labels:
   - api
 milestone: m-12
@@ -81,6 +81,15 @@ created: 2026-11-23T01:13:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito a 196 após publique').
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:16:00Z
+
+---
+
+Publicação: versão 0.66 (tag `v0.66`), branch `chore/issue-196-auditar-e-classificar-todas-as` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

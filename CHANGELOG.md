@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.66] - 2026-11-22
+
+- No user-visible changes (ISSUE-196).
+
 ## [0.65] - 2026-11-22
 
 - Occurrence ingestion now handles listening history for every profile. Duplicate review is enabled by default, and schema 21 removes the old activation flags (ISSUE-172).
