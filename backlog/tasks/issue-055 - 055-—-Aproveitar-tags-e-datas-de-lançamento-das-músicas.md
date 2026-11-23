@@ -4,7 +4,7 @@ title: 055 — Aproveitar tags e datas de lançamento das músicas
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-23T00:38:00Z'
+updated_date: '2026-11-23T01:19:00Z'
 labels:
   - catalogo
   - ingestao
@@ -92,6 +92,15 @@ created: 2026-11-23T00:38:00Z
 ---
 
 Decisão do usuário (22/11/2026): esta issue está no mínimo que altera o banco antes do primeiro upgrade de produção e antecede a consolidação das migrações (ISSUE-195). Migração aditiva agora; depois dobrada no arquivo único da 195.
+
+---
+
+author: claude
+created: 2026-11-23T01:19:00Z
+
+---
+
+Novo estudo em backlog/evidencias/issue-055/ESTUDO.md (22/11/2026): cadeia de fontes (escuta, Navidrome, ListenBrainz, MusicBrainz, opcionais Last.fm/Apple/Deezer), enriquecimento assíncrono com cache negativo e disjuntor, modelo aditivo sobre o schema 21, seis cortes e seis decisões do usuário. Não encontrei anúncio de privatização da API do Last.fm; pedida a fonte. Scraping de HTML não recomendado.
 
 ---
 <!-- COMMENTS:END -->
