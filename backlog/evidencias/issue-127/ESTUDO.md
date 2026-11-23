@@ -127,21 +127,21 @@ Isto corrige a tabela anterior do estudo, que as classificava como «inicializa�
 | `LOGIN_GATE` | Lida em `cfg.go:293`, mas `LoginGate()` não tem nenhum chamador. A referência promete «não mostra estatísticas sem login», o que o código não faz hoje (a proteção é por perfil). | Corrigir a documentação ou remover; decisão do usuário. |
 | `ENABLE_LBZ_RELAY`, `LBZ_RELAY_URL`, `LBZ_RELAY_TOKEN` | Legado: associação única a um perfil; o relay é por perfil. | Manter até a 164; não vão para a página. |
 
-Proposta: uma issue própria de limpeza (código e referência). Não pertence à 127.
+Registrado na **ISSUE-197** (limpeza de código e referência). Não pertence à 127.
 
 ### 7.4 O que acrescentar à página
 
 | Variável | Proposta | Por quê |
 | --- | --- | --- |
-| `ENABLE_STRUCTURED_LOGGING` | **Acrescentar** ao cartão Geral e log, como `logging.structured` (bool). | Segura, sem segredo, nada de inicialização crítica; segue o padrão dos 12 (reinício para valer). Exige nova chave em `toml.go` e em `settings_edit.go`. |
-| `ARTIST_SEPARATORS_REGEX` | **Depois**, com validação da expressão e um cartão «Catálogo». | Altera como novos artistas são associados; uma regex inválida hoje impede a subida, então precisa ser validada ao salvar. |
+| `ENABLE_STRUCTURED_LOGGING` (**ISSUE-198**) | **Acrescentar** ao cartão Geral e log, como `logging.structured` (bool). | Segura, sem segredo, nada de inicialização crítica; segue o padrão dos 12 (reinício para valer). Exige nova chave em `toml.go` e em `settings_edit.go`. |
+| `ARTIST_SEPARATORS_REGEX` (**ISSUE-199**, estudo) | **Depois**, com validação da expressão e um cartão «Catálogo». | Altera como novos artistas são associados; uma regex inválida hoje impede a subida, então precisa ser validada ao salvar. |
 | `DEFAULT_THEME` | Não aqui. | Pertence à ISSUE-153, que persiste as opções do painel de tema. |
 | `FETCH_IMAGES_DURING_IMPORT`, `THROTTLE_IMPORTS_MS`, `IMPORT_BEFORE_UNIX`, `IMPORT_AFTER_UNIX`, `SKIP_IMPORT` | Não. | Valem na carga de importação na subida, não são configuração do servidor em funcionamento. |
 | `DISABLE_RATE_LIMIT`, `CORS_ALLOWED_ORIGINS`, `LOGIN_GATE` | Não. | Mudam a proteção do próprio acesso; um erro se paga com a perda de controle. Ficam em variável de ambiente. |
 | `BIND_ADDR`, `LISTEN_PORT`, `CONFIG_DIR`, `WEB_UI`, `SQLITE_ENABLED`, `DATABASE_URL`, `TUNETRAIL_WEB_DIR`, `TUNETRAIL_LANGS_DIR` | Não. | Definem como o processo sobe ou onde estão os arquivos. |
 | `DEFAULT_USERNAME`, `DEFAULT_PASSWORD`, `LBZ_RELAY_TOKEN` | Não, e jamais exibir. | Segredos. A página mostra o valor salvo em texto. |
 
-Sugestão adicional, sem implementar: mostrar a chave do `conf.toml` (por exemplo `logging.level`) dentro dos «detalhes» de cada campo, já que `cfg.TOMLKey` existe.
+Sugestão adicional, registrada na **ISSUE-200**: mostrar a chave do `conf.toml` (por exemplo `logging.level`) dentro dos «detalhes» de cada campo, já que `cfg.TOMLKey` existe.
 
 ## 8. Verificação feita (23/11/2026)
 

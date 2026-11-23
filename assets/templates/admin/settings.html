@@ -52,10 +52,6 @@
                       "Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions."
                     }}</p>
                     <p>{{tr
-                      "admin.relay.legacy_warning"
-                      "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions."
-                    }}</p>
-                    <p>{{tr
                       "admin.text.listenbrainz_relay_is_configured_for_each_listening_profile"
                       "ListenBrainz relay is configured for each listening profile."
                     }} <a href="/admin">{{tr "admin.text.manage_profiles_and_relay" "Manage profiles and relay"}}</a>.</p>
@@ -94,7 +90,7 @@
                       <p id="hint-{{.Name}}">{{.Description}}</p>
                       {{if and (eq .Name "KOITO_SUBSONIC_PARAMS") (not .Overridden)}}
                         {{/* ISSUE-127: shown by subsonic-credentials.js only; without it the field is edited by hand. */}}
-                        <p><button type="button" hidden data-subsonic-open>
+                        <p><button type="button" class="account-secondary" hidden data-subsonic-open>
                           {{- tr "admin.subsonic.open" "Generate Navidrome credentials"}}</button></p>
                         <div hidden data-subsonic-filled>
                           {{template "admin/message" (msg "success" "subsonic-filled" (tr
@@ -162,8 +158,8 @@
               {{end}}
             </div>
             <div class="settings-actions server-settings-actions">
-              <button type="submit">{{tr "admin.text.save_configuration" "Save configuration"}}</button>
-              <button type="submit" formaction="/admin/settings/subsonic/test">
+              <button type="submit" class="account-action">{{tr "admin.text.save_configuration" "Save configuration"}}</button>
+              <button type="submit" class="account-secondary" formaction="/admin/settings/subsonic/test">
                 {{- tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button>
             </div>
           </form>
@@ -195,9 +191,9 @@
             </div>
             <p hidden data-subsonic-result></p>
             <div class="server-settings-actions">
-              <button type="button" data-subsonic-generate>{{tr "admin.subsonic.generate" "Generate parameters"}}</button>
-              <button type="button" data-subsonic-test>{{tr "admin.subsonic.test" "Test connection"}}</button>
-              <button type="button" data-subsonic-cancel>{{tr "admin.subsonic.cancel" "Cancel"}}</button>
+              <button type="button" class="account-action" data-subsonic-generate>{{tr "admin.subsonic.generate" "Generate parameters"}}</button>
+              <button type="button" class="account-secondary" data-subsonic-test>{{tr "admin.subsonic.test" "Test connection"}}</button>
+              <button type="button" class="account-secondary" data-subsonic-cancel>{{tr "admin.subsonic.cancel" "Cancel"}}</button>
             </div>
           </dialog>
           <script defer src="{{asset "subsonic-credentials.js"}}"></script>
@@ -256,9 +252,9 @@
               <input type="hidden" name="submission_token" value="{{$.Submission}}">
               <input type="hidden" name="profile" value="{{.ID}}">
               {{if or (and .Draft (ne .Diagnostic.Code "forbidden_range") (ne .Diagnostic.Code "metadata_endpoint")) .Grant.Available}}
-                <button name="operation" value="preview">{{tr "admin.relay.allow" "Allow this relay"}}</button>
+                <button class="account-action" name="operation" value="preview">{{tr "admin.relay.allow" "Allow this relay"}}</button>
               {{else}}
-                <button name="operation" value="resume">{{tr "admin.relay.resume" "Revalidate and resume"}}</button>
+                <button class="account-action" name="operation" value="resume">{{tr "admin.relay.resume" "Revalidate and resume"}}</button>
               {{end}}
             </form>
           {{else}}<p>{{tr "admin.relay.not_configured" "No relay configured"}}</p>{{end}}
@@ -274,7 +270,7 @@
               <p>{{if eq .Origin "seeded"}}{{tr "admin.relay.seeded" "Seeded during setup"}}{{else}}{{tr "admin.relay.manual" "Added manually"}}{{end}}</p>
               <p><code>{{.HostPort}}{{if .CIDR}} · {{.CIDR}}{{end}}</code> · {{template "admin/relay-grant-kind" .}}</p>
               <div class="danger-zone">
-                <button name="operation" value="remove" formnovalidate>{{tr "admin.relay.remove" "Remove exception"}}</button>
+                <button class="account-secondary" name="operation" value="remove" formnovalidate>{{tr "admin.relay.remove" "Remove exception"}}</button>
               </div>
             </form>
           {{end}}

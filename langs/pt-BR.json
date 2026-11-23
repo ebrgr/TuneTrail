@@ -753,7 +753,6 @@
   "admin.relay.reason_policy_blocked": "Confira a configuração do relay e tente novamente.",
   "admin.relay.class_policy": "Relay bloqueado pela política.",
   "admin.relay.class_network": "A validação de rede do relay falhou.",
-  "admin.relay.legacy_warning": "O encaminhamento legado, o modo sombra e Tocando agora usam o transporte padrão da v0.48, fora destas opções e exceções.",
   "admin.relay.allow": "Permitir este relay",
   "admin.relay.confirm": "Confirmar permissão do relay",
   "admin.relay.grant_required": "Permissão necessária:",

@@ -247,3 +247,21 @@ func TestSettingsPageMatchesManagedSettings(t *testing.T) {
 		}
 	}
 }
+
+// TestSettingsButtonsUseCommonStates checks that every button of the page uses the shared hover and pressed
+// states, and that the removed legacy and shadow notice is gone (ISSUE-127).
+func TestSettingsButtonsUseCommonStates(t *testing.T) {
+	body := subsonicPage(t, map[string]cfg.Origin{})
+	for _, want := range []string{
+		`class="account-action">Save configuration`, `class="account-secondary" formaction="/admin/settings/subsonic/test"`,
+		`class="account-secondary" hidden data-subsonic-open`, `class="account-action" data-subsonic-generate`,
+		`class="account-secondary" data-subsonic-test`, `class="account-secondary" data-subsonic-cancel`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("button markup %q is missing", want)
+		}
+	}
+	if strings.Contains(body, "Legacy and shadow") || strings.Contains(body, "legacy_warning") {
+		t.Fatal("the legacy and shadow forwarding notice must not be shown")
+	}
+}

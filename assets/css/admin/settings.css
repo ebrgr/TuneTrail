@@ -45,4 +45,10 @@
 @media (min-width:64rem) {
   .admin-main .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
 }
+/* ISSUE-127: .account-action and .account-secondary (account.css) give every button its hover and pressed
+   tones. account-secondary was made for links, so as a button it needs the text colour and no top margin
+   inside the action bar, the dialog and the exception forms. */
+.admin-main button.account-secondary { color:var(--color-fg); margin-top:0; cursor:pointer; }
+.admin-main button.account-action { cursor:pointer; }
+.admin-main .settings-actions, .subsonic-dialog .server-settings-actions { align-items:center; }
 }

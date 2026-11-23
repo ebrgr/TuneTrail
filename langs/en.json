@@ -753,7 +753,6 @@
   "admin.relay.reason_policy_blocked": "Check the relay configuration and try again.",
   "admin.relay.class_policy": "Relay blocked by policy.",
   "admin.relay.class_network": "Relay network validation failed.",
-  "admin.relay.legacy_warning": "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions.",
   "admin.relay.allow": "Allow this relay",
   "admin.relay.confirm": "Confirm relay permission",
   "admin.relay.grant_required": "Permission required:",
