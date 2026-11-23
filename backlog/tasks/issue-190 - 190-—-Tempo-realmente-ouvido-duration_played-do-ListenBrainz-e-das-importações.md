@@ -3,11 +3,11 @@ id: ISSUE-190
 title: >-
   190 — Tempo realmente ouvido: duration_played do ListenBrainz e das
   importações
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T20:05:00Z'
-updated_date: '2026-11-23T21:20:00Z'
+updated_date: '2026-11-23T21:24:00Z'
 labels:
   - ingestao
   - catalogo
@@ -80,6 +80,15 @@ created: 2026-11-23T21:20:00Z
 ---
 
 Decisão do usuário (23/11/2026): zero conta como ausente. duration_played 0, menos de 1 s, negativo ou não numérico viram NULL e a escuta usa a duração inteira da faixa; com segundos zerados e milissegundos válidos, vale o milissegundo. Aplicado em PlayedSeconds e na gravação SQL (NULLIF), cobrindo ingestão, importações, arquivos antigos e relay. Guia de ingestão e testes atualizados (faixa soma 810 com o zero contando 200).
+
+---
+
+author: claude
+created: 2026-11-23T21:24:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 23/11/2026, com a decisão de tratar zero como ausente. Parecer do Reviewer: APROVADO (backlog/evidencias/issue-190/PARECER-REVIEWER.md). Verificado: coluna listens.duration_played (migração 023, aditiva, 85 ms em 300 mil escutas), leitura tolerante de número e texto numérico, truncamento em segundos, limite pela duração da faixa, zero e valores inválidos como desconhecido, estatísticas e Rewind com COALESCE, exportação, reimportação, relay e importação do Spotify; make check verde com 13/13 jornadas. Riscos conhecidos: a migração 023 roda uma vez no banco existente (backup antes, sem volta pelas migrações); os recortes por item ficaram 0,3 a 1,8 ms mais lentos em 300 mil escutas; a ISSUE-195 deve incluir a 022 e a 023. Publicada localmente.
 
 ---
 <!-- COMMENTS:END -->
