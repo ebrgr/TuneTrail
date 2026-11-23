@@ -13,21 +13,19 @@ import (
 func TestIngestReviewDecisions(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
-	require.ErrorIs(t, s.SetIngestReview(ctx, 2, true), db.ErrConflict)
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`)
 	health, err := s.IngestHealth(ctx, 1)
 	require.NoError(t, err)
 	require.True(t, health.ReviewAvailable)
 	require.False(t, health.ReviewEnabled)
 
 	now := time.Unix(42, 0).UTC()
-	relayReceipt(t, s, 1, "default-off", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "default-off", now)
+	resolveOccurrenceFixture(t, s, nil)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='default-off' AND state='duplicate'`))
 	require.NoError(t, s.SetIngestReview(ctx, 1, true))
 	for _, id := range []string{"same", "different", "foreign"} {
-		relayReceipt(t, s, 1, id, "v9", 1, now)
-		resolveRelayV9(t, s)
+		relayReceipt(t, s, 1, id, now)
+		resolveOccurrenceFixture(t, s, nil)
 	}
 	var event, foreign string
 	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM listens WHERE rowid=10`).Scan(&event))
@@ -84,9 +82,9 @@ func TestIngestReviewDecisions(t *testing.T) {
 func TestIngestReviewRace(t *testing.T) {
 	s, path := relayStoreFixture(t)
 	execSQL(t, s, `PRAGMA busy_timeout=5000`)
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,1)`)
-	relayReceipt(t, s, 1, "race", "v9", 1, time.Unix(42, 0))
-	resolveRelayV9(t, s)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, true))
+	relayReceipt(t, s, 1, "race", time.Unix(42, 0))
+	resolveOccurrenceFixture(t, s, nil)
 	var candidate string
 	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM listens WHERE rowid=10`).Scan(&candidate))
 	conn, err := openExisting(path)

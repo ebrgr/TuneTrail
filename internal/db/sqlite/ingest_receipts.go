@@ -23,17 +23,6 @@ type preparedReceipt struct {
 	snapshot, digest, legacyDigest string
 }
 
-type ingestModeReader interface {
-	QueryRowContext(context.Context, string, ...any) *sql.Row
-}
-
-// ingestSchemaVersion checks whether the mode column exists before choosing receipt SQL.
-func ingestSchemaVersion(ctx context.Context, tx ingestModeReader) (int, error) {
-	var version int
-	err := tx.QueryRowContext(ctx, `SELECT max(version_id) FROM goose_db_version WHERE is_applied=1`).Scan(&version)
-	return version, err
-}
-
 // AdmitOccurrence stores the entire occurrence batch before returning its acknowledgement.
 func (s *Sqlite) AdmitOccurrence(ctx context.Context, batch ingest.Batch) ([]ingest.Result, error) {
 	source := receiptSourcePrefix(batch.Source) + fmt.Sprint(batch.ProfileID)

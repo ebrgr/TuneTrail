@@ -1,115 +1,67 @@
 package sqlite
 
 import (
-	"context"
-	"database/sql"
-	"encoding/json"
-	"errors"
+	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
 )
 
-var errIngestTrackMissing = errors.New("ingest track no longer exists")
-
-// finishIngest rechecks the claim and legacy identity under the same writer reservation as the decision.
-func (s *Sqlite) finishIngest(ctx context.Context, r claimedReceipt, track int32) error {
-	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		var recording sql.NullInt64
-		var review bool
-		var precision, admissionReason string
-		err := tx.QueryRowContext(ctx, `SELECT o.recording_id,coalesce(f.review,0),e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),'')
-			FROM ingest_events e LEFT JOIN occurrences o ON o.id=? AND o.legacy_track_id=o.id
-			LEFT JOIN profile_ingest_flags f ON f.profile_id=e.profile_id
-			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.closed_at IS NULL
-			AND e.resolution_version=? AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
-			track, r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&recording, &review, &precision, &admissionReason)
-		if err != nil {
-			return err
-		}
-		if !recording.Valid {
-			return errIngestTrackMissing
-		}
-		// Multiple explicitly separate listens can share a track and second.
-		var existing, candidate string
-		err = tx.QueryRowContext(ctx, `SELECT event_id FROM listens WHERE profile_id=? AND track_id=? AND listened_at=? ORDER BY (origin='legacy') DESC,event_id LIMIT 1`,
-			r.profile, track, r.unix).Scan(&existing)
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return err
-		}
-		candidate = existing
-		if candidate == "" {
-			err = tx.QueryRowContext(ctx, `SELECT l.event_id FROM listens l JOIN occurrences o ON o.id=l.track_id
-				WHERE l.profile_id=? AND l.listened_at BETWEEN ? AND ?
-				AND (l.track_id=? OR o.recording_id=?)
-				AND NOT EXISTS (
-					SELECT 1 FROM ingest_events prior JOIN ingest_events incoming ON incoming.receipt_id=?
-					WHERE prior.profile_id=l.profile_id AND prior.event_id=l.event_id AND prior.mode='active'
-					AND prior.state='accepted' AND prior.source_instance_id=incoming.source_instance_id
-					AND (
-						(prior.external_id_trusted=1 AND incoming.external_id_trusted=1
-						AND prior.external_namespace=incoming.external_namespace AND prior.external_event_id<>incoming.external_event_id)
-						OR (prior.file_digest=incoming.file_digest AND prior.file_format=incoming.file_format
-						AND prior.format_version=incoming.format_version AND prior.item_ordinal<>incoming.item_ordinal)
-					)
-				) ORDER BY l.listened_at,l.event_id LIMIT 1`,
-				r.profile, r.unix-2, r.unix+2, track, recording.Int64, r.id).Scan(&candidate)
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
-				return err
-			}
-		}
-		return finalizeActiveReceipt(ctx, tx, r, track, recording.Int64, precision, review, existing, candidate, admissionReason)
-	})
+// relayReceipt seeds a resolver input without calling a historical writer.
+func relayReceipt(t *testing.T, s *Sqlite, profile int32, id string, instant time.Time) {
+	t.Helper()
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('origin:'||?,?,'listenbrainz',0) ON CONFLICT DO NOTHING`, profile, profile)
+	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
+		received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,resolver_variant,delivery_policy)
+		VALUES(?,?,'origin:'||?,1,'listenbrainz','1',?,0,'single',? ,?,'second','start',
+		json_object('artist','Artist & Co','title','Relay Track','release','Fixture','client','fixture'),'fixture','1','active','occurrence','durable')`,
+		id, profile, profile, id, instant.Unix(), instant.UTC().Format(receiptTime))
 }
 
-// finalizeActiveReceipt writes the decision, revision, listen and eligible relay intent atomically.
-func finalizeActiveReceipt(ctx context.Context, tx *sql.Conn, r claimedReceipt, track int32, recording int64, precision string, review bool, existing, candidate, admissionReason string) error {
-	now := time.Now().Unix()
-	state, decision, reason := "accepted", "different", "no_candidate"
-	var event, closed any
-	switch {
-	case candidate != "" && review:
-		state, decision, reason = "pending_duplicate", "review", "ambiguous_time_candidate"
-		if existing != "" {
-			reason = "legacy_identity_collision"
-		}
-	case existing != "":
-		state, decision, reason = "duplicate", "same", "review_deferred"
-		event, closed = existing, now
-	default:
-		if candidate != "" || admissionReason == "review_deferred" {
-			reason = "review_deferred"
-		}
-		event, closed = uuid.NewString(), now
-		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id) VALUES(?,?,?,?,?)`,
-			r.profile, track, r.unix, r.client, event); err != nil {
-			return err
-		}
+// relayStoreFixture supplies catalog rows and profiles for the two independent writers.
+func relayStoreFixture(t *testing.T) (*Sqlite, string) {
+	t.Helper()
+	s, provider, path := migrationDB(t, 20)
+	seedIdentityHistory(t, s)
+	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow';
+		UPDATE relay_delivery_gate SET policy='durable';
+		UPDATE artist_aliases SET alias='Artist & Co' WHERE artist_id=1;
+		UPDATE track_aliases SET alias='Relay Track' WHERE track_id=1;
+		UPDATE occurrences SET presented_title='Relay Track' WHERE id=1;
+		INSERT INTO release_aliases VALUES(1,'Fixture','Canonical',1)`)
+	require.NoError(t, s.SetProfileRelay(t.Context(), 1, "https://RELAY.test:443/prefix", "relay-fixture"))
+	require.NoError(t, s.SetProfileRelay(t.Context(), 2, "https://else.test", "relay-fixture-two"))
+	// Pre-existing relays stay approved on upgrade. New configurations start as drafts.
+	_, err := provider.UpTo(t.Context(), currentSchemaVersion)
+	require.NoError(t, err)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, false))
+	require.NoError(t, s.SetIngestReview(t.Context(), 2, false))
+	return s, path
+}
+
+// TestResolveIngestLegacyCollision checks current decisions against a pre-upgrade listen.
+func TestResolveIngestLegacyCollision(t *testing.T) {
+	for _, tc := range []struct {
+		name, state, reason string
+		review              bool
+	}{
+		{"disabled", "duplicate", "review_deferred", false},
+		{"enabled", "pending_duplicate", "legacy_identity_collision", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, _ := relayStoreFixture(t)
+			require.NoError(t, s.SetIngestReview(t.Context(), 1, tc.review))
+			relayReceipt(t, s, 1, "collision", time.Unix(42, 0))
+			claim, snapshot, instant, err := s.claimNextIngest(t.Context())
+			require.NoError(t, err)
+			require.Equal(t, "collision", claim.id)
+			for range 2 {
+				require.NoError(t, s.resolveIngestClaim(t.Context(), claim, snapshot, instant, nil))
+				require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens`))
+				require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id='collision'`))
+				require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='collision'
+					AND state=? AND json_extract(reason_codes,'$[0]')=?`, tc.state, tc.reason))
+			}
+		})
 	}
-	reasons, _ := json.Marshal([]string{reason})
-	evidence, _ := json.Marshal(map[string]string{"candidate_event_id": candidate, "precision": precision})
-	result, err := tx.ExecContext(ctx, `UPDATE ingest_events SET state=?,identity_status='resolved',duplicate_decision=?,reason_codes=?,evidence=?,
-		rule_version=?,resolution_version=resolution_version+1,resolved_at=?,event_id=?,occurrence_id=?,recording_id=?,
-		closed_at=?,next_attempt_at=NULL,lease_owner=NULL,lease_until=NULL
-		WHERE receipt_id=? AND profile_id=? AND mode='active' AND resolution_version=? AND work_version=? AND lease_owner=?`,
-		state, decision, string(reasons), string(evidence), activeRuleVersion, now, event, track, recording, closed,
-		r.id, r.profile, r.version, r.work, r.lease)
-	if err != nil {
-		return err
-	}
-	changed, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if changed != 1 {
-		return errors.New("ingest claim changed")
-	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO ingest_revisions VALUES(?,?,?,'automatic',?,?,?,?,?)`,
-		r.profile, r.id, r.version+1, decision, string(reasons), string(evidence), activeRuleVersion, now); err != nil {
-		return err
-	}
-	if state != "accepted" {
-		return nil
-	}
-	return insertRelayIntent(ctx, tx, r, event.(string), now)
 }

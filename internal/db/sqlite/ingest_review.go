@@ -23,18 +23,14 @@ const reviewPageSQL = `SELECT e.receipt_id,coalesce(e.file_format,e.source_type)
 	WHERE e.profile_id=? AND ` + reviewQueueScope + `
 	ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT ? OFFSET ?`
 
-// ingestReviewEnabled reads the post-cut default and explicit overrides.
-func ingestReviewEnabled(ctx context.Context, tx ingestModeReader, profile int32) (bool, error) {
-	version, err := ingestSchemaVersion(ctx, tx)
-	if err != nil {
-		return false, err
-	}
-	query := `SELECT coalesce((SELECT review FROM profile_ingest_review WHERE profile_id=?),1)`
-	if version < 21 {
-		query = `SELECT coalesce((SELECT review FROM profile_ingest_flags WHERE profile_id=?),0)`
-	}
+type ingestReviewReader interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+// ingestReviewEnabled reads the default and explicit overrides.
+func ingestReviewEnabled(ctx context.Context, tx ingestReviewReader, profile int32) (bool, error) {
 	var review bool
-	err = tx.QueryRowContext(ctx, query, profile).Scan(&review)
+	err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT review FROM profile_ingest_review WHERE profile_id=?),1)`, profile).Scan(&review)
 	return review, err
 }
 
@@ -45,26 +41,11 @@ func (s *Sqlite) healthReviews(ctx context.Context, profile int32, page int, hea
 		return err
 	}
 	defer tx.Rollback()
-	version, err := ingestSchemaVersion(ctx, tx)
+	// Every profile can review, with missing settings defaulting to enabled.
+	health.ReviewAvailable = true
+	health.ReviewEnabled, err = ingestReviewEnabled(ctx, tx, profile)
 	if err != nil {
 		return err
-	}
-	if version < 21 {
-		err := tx.QueryRowContext(ctx, `SELECT coalesce(f.active,0),coalesce(f.review,0)
-			FROM listening_profiles p LEFT JOIN profile_ingest_flags f ON f.profile_id=p.id WHERE p.id=?`,
-			profile).Scan(&health.ReviewAvailable, &health.ReviewEnabled)
-		if errors.Is(err, sql.ErrNoRows) {
-			return db.ErrNotFound
-		}
-		if err != nil {
-			return err
-		}
-	} else {
-		health.ReviewAvailable = true
-		health.ReviewEnabled, err = ingestReviewEnabled(ctx, tx, profile)
-		if err != nil {
-			return err
-		}
 	}
 	err = tx.QueryRowContext(ctx, reviewCountSQL, profile).Scan(&health.ReviewCount)
 	if err != nil {
@@ -155,25 +136,10 @@ const reviewCandidateRows = `SELECT DISTINCT l.event_id,l.listened_at,o.id AS oc
 	JOIN occurrences o ON o.id=l.track_id
 	WHERE e.profile_id=? AND e.receipt_id=? AND candidate.type='text' AND substr(candidate.value,1,6)='event:'`
 
-// SetIngestReview changes future candidate handling without affecting activation or existing pendencies.
+// SetIngestReview changes future candidate handling while preserving existing pending decisions.
 func (s *Sqlite) SetIngestReview(ctx context.Context, profile int32, enabled bool) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		version, err := ingestSchemaVersion(ctx, tx)
-		if err != nil {
-			return err
-		}
-		if version < 21 {
-			result, err := tx.ExecContext(ctx, `UPDATE profile_ingest_flags SET review=? WHERE profile_id=? AND active=1`, enabled, profile)
-			if err != nil {
-				return err
-			}
-			n, err := result.RowsAffected()
-			if err == nil && n == 0 {
-				return db.ErrConflict
-			}
-			return err
-		}
-		_, err = tx.ExecContext(ctx, `INSERT INTO profile_ingest_review(profile_id,review) VALUES(?,?)
+		_, err := tx.ExecContext(ctx, `INSERT INTO profile_ingest_review(profile_id,review) VALUES(?,?)
 			ON CONFLICT(profile_id) DO UPDATE SET review=excluded.review`, profile, enabled)
 		return err
 	})
@@ -198,10 +164,10 @@ func (s *Sqlite) resolveIngestReview(ctx context.Context, tx *sql.Conn, profile,
 	var instant sql.NullString
 	err := tx.QueryRowContext(ctx, `SELECT state,mode,closed_at,resolution_version,work_version,
 		occurrence_id,recording_id,listened_at,coalesce(CASE WHEN json_type(original_snapshot,'$.client')='text' THEN json_extract(original_snapshot,'$.client') END,''),
-		source_type,coalesce(file_format,''),resolver_variant,delivery_policy,coalesce(nullif(rule_version,''),'manual-review-v1'),evidence
+		source_type,coalesce(file_format,''),delivery_policy,coalesce(nullif(rule_version,''),'manual-review-v1'),evidence
 		FROM ingest_events WHERE profile_id=? AND receipt_id=?`, profile, r.id).Scan(
 		&state, &mode, &closed, &r.version, &r.work, &occurrence, &recording, &instant, &r.client,
-		&r.source, &r.format, &r.variant, &r.deliveryPolicy, &rule, &evidence)
+		&r.source, &r.format, &r.deliveryPolicy, &rule, &evidence)
 	if errors.Is(err, sql.ErrNoRows) || err == nil && mode != "active" {
 		return db.ErrNotFound
 	}
@@ -237,15 +203,9 @@ func (s *Sqlite) resolveIngestReview(ctx context.Context, tx *sql.Conn, profile,
 			return err
 		}
 		event, finalState, reason = uuid.NewString(), "accepted", "distinct_occurrence_event"
-		origin, legacy := occurrenceOrigin(r), r.variant == "v9"
-		if legacy {
-			origin, reason = "legacy", "user_kept_separate"
-		}
-		// Exempt only an explicit repetition of an existing legacy tuple from the legacy unique index.
-		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin,review_distinct)
-			VALUES(?,?,?,?,?,?,? AND EXISTS(SELECT 1 FROM listens WHERE profile_id=? AND track_id=? AND listened_at=?
-				AND origin='legacy' AND review_distinct=0))`,
-			profile, occurrence, at.Unix(), r.client, event, origin, legacy, profile, occurrence, at.Unix()); err != nil {
+		// The upgrade guard excludes open v9 receipts from manual review.
+		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin)
+			VALUES(?,?,?,?,?,?)`, profile, occurrence, at.Unix(), r.client, event, occurrenceOrigin(r)); err != nil {
 			return err
 		}
 	}

@@ -172,40 +172,6 @@ func TestRelayD4KeepsTheLegacyCut(t *testing.T) {
 	require.ErrorContains(t, err, "cannot be reversed")
 }
 
-// TestRelayOccurrenceConversion requires a healthy permitted relay or no relay.
-func relayReceipt(t *testing.T, s *Sqlite, profile int32, id, variant string, track int, instant time.Time) {
-	t.Helper()
-	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('origin:'||?,?,'listenbrainz',0) ON CONFLICT DO NOTHING`, profile, profile)
-	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
-		received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,resolver_variant,delivery_policy)
-		VALUES(?,?,'origin:'||?,1,'listenbrainz','1',?,0,'single',? ,?,'second','start',
-		json_object('artist','Artist & Co','title','Relay Track','release','Fixture','catalog_track_id',?),'fixture','1','active',?,'durable')`,
-		id, profile, profile, id, instant.Unix(), instant.UTC().Format(receiptTime), track, variant)
-}
-
-// relayStoreFixture supplies catalog rows and profiles for the two independent writers.
-func relayStoreFixture(t *testing.T) (*Sqlite, string) {
-	t.Helper()
-	s, _, path := migrationDB(t, 20)
-	seedIdentityHistory(t, s)
-	execSQL(t, s, "UPDATE relay_delivery_gate SET policy='durable'")
-	require.NoError(t, s.SetProfileRelay(t.Context(), 1, "https://RELAY.test:443/prefix", "relay-fixture"))
-	require.NoError(t, s.SetProfileRelay(t.Context(), 2, "https://else.test", "relay-fixture-two"))
-	return s, path
-}
-
-// resolveRelayV9 uses the real finalizer with an already associated synthetic track.
-func resolveRelayV9(t *testing.T, s *Sqlite) {
-	t.Helper()
-	r, _, instant, err := s.claimNextIngest(t.Context())
-	require.NoError(t, err)
-	require.NotEmpty(t, r.id)
-	at, err := time.Parse(receiptTime, instant)
-	require.NoError(t, err)
-	r.unix = at.Unix()
-	require.NoError(t, s.finishIngest(t.Context(), r, 1))
-}
-
 // TestRelayOutboxClaims exercises accepted/duplicate decisions, fencing, ordering and both formats.
 func TestRelayOutboxClaims(t *testing.T) {
 	s, path := relayStoreFixture(t)
@@ -216,10 +182,10 @@ func TestRelayOutboxClaims(t *testing.T) {
 		if i == 2 {
 			stamp = stamp.Add(time.Hour)
 		}
-		relayReceipt(t, s, 1, id, "v9", 1, stamp)
+		relayReceipt(t, s, 1, id, stamp)
 	}
 	for range 3 {
-		resolveRelayV9(t, s)
+		resolveOccurrenceFixture(t, s, nil)
 	}
 	require.Equal(t, 2, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM ingest_events WHERE mode='active' AND state='duplicate'"))
@@ -279,13 +245,13 @@ func TestRelayOutboxClaims(t *testing.T) {
 func TestRelayBatchWritesUseIDs(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().Add(time.Minute).UTC()
-	relayReceipt(t, s, 1, "first", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "first", now)
+	resolveOccurrenceFixture(t, s, nil)
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
 	require.NoError(t, err)
 	require.Len(t, batch.Items, 1)
-	relayReceipt(t, s, 1, "other", "v9", 1, now.Add(time.Hour))
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "other", now.Add(time.Hour))
+	resolveOccurrenceFixture(t, s, nil)
 	execSQL(t, s, `UPDATE outbox SET lease_owner=?,lease_until=1 WHERE id<>?`, batch.Owner, batch.Items[0].ID)
 	renewed, err := s.RenewRelayBatch(t.Context(), batch, now)
 	require.NoError(t, err)
@@ -334,10 +300,10 @@ func TestRelayLeaseQueryPlans(t *testing.T) {
 func TestRelayPauseAndCancellation(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
-	relayReceipt(t, s, 1, "one", "v9", 1, now)
-	relayReceipt(t, s, 2, "two", "v9", 1, now)
-	resolveRelayV9(t, s)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "one", now)
+	relayReceipt(t, s, 2, "two", now)
+	resolveOccurrenceFixture(t, s, nil)
+	resolveOccurrenceFixture(t, s, nil)
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
 	require.NoError(t, err)
 	require.EqualValues(t, 1, batch.Profile)
@@ -369,10 +335,9 @@ func TestRelayPauseAndCancellation(t *testing.T) {
 // TestRelayOccurrenceIntent verifies the occurrence path and pending decision suppression.
 func TestRelayOccurrenceIntent(t *testing.T) {
 	s, _ := relayStoreFixture(t)
-	execSQL(t, s, "DELETE FROM ingest_events WHERE mode='shadow'; INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)")
 	now := time.Now().UTC().Truncate(time.Second)
-	relayReceipt(t, s, 1, "accepted", "occurrence", 0, now)
-	relayReceipt(t, s, 1, "ambiguous", "occurrence", 0, now.Add(time.Hour))
+	relayReceipt(t, s, 1, "accepted", now)
+	relayReceipt(t, s, 1, "ambiguous", now.Add(time.Hour))
 	// An accepted release-less snapshot has the same delivery intent.
 	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
 		received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,resolver_variant,delivery_policy)
@@ -383,7 +348,7 @@ func TestRelayOccurrenceIntent(t *testing.T) {
 		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	}
 	// A repeat may close as a duplicate after the original intent has been written.
-	relayReceipt(t, s, 1, "accepted-repeat", "occurrence", 0, now)
+	relayReceipt(t, s, 1, "accepted-repeat", now)
 	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN ingest_events original USING(profile_id,event_id)
 		WHERE e.receipt_id='accepted-repeat' AND original.receipt_id='accepted' AND e.state='duplicate'`))
@@ -398,8 +363,8 @@ func TestRelayOccurrenceIntent(t *testing.T) {
 func TestRelaySourceRevisionAndMerge(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
-	relayReceipt(t, s, 1, "source-revised", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "source-revised", now)
+	resolveOccurrenceFixture(t, s, nil)
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
 	require.NoError(t, err)
 	require.Len(t, batch.Items, 1)
@@ -422,12 +387,11 @@ func TestRelayHistoryDeletion(t *testing.T) {
 		t.Run(operation, func(t *testing.T) {
 			s, _ := relayStoreFixture(t)
 			ctx := db.WithProfile(t.Context(), 1)
-			execSQL(t, s, `INSERT INTO release_aliases VALUES(1,'Album','Fixture',1)`)
 			now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
-			relayReceipt(t, s, 1, "sent-source", "v9", 1, now)
-			relayReceipt(t, s, 1, "open-source", "v9", 1, now.Add(time.Hour))
-			resolveRelayV9(t, s)
-			resolveRelayV9(t, s)
+			relayReceipt(t, s, 1, "sent-source", now)
+			relayReceipt(t, s, 1, "open-source", now.Add(time.Hour))
+			resolveOccurrenceFixture(t, s, nil)
+			resolveOccurrenceFixture(t, s, nil)
 			batch, err := s.ClaimRelayBatch(ctx, now)
 			require.NoError(t, err)
 			require.Len(t, batch.Items, 2)
@@ -478,20 +442,20 @@ func TestRelayHistoryDeletion(t *testing.T) {
 	}
 }
 
-// TestRelayConfigurationTransitions checks that only a real URL change loses eligibility.
+// TestRelayConfigurationTransitions checks canonical URL equivalence and draft fencing.
 func TestRelayConfigurationTransitions(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
-	relayReceipt(t, s, 1, "receipt", "v9", 1, time.Now())
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "receipt", time.Now())
+	resolveOccurrenceFixture(t, s, nil)
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "HTTPS://relay.TEST.:443/prefix/", "relay-fixture"))
 	require.Equal(t, 1, scalar(t, s, "SELECT config_version FROM relay_destinations WHERE profile_id=1"))
 
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://relay.test/prefix", "rotated"))
-	require.Equal(t, 1, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
-	require.Equal(t, 1, scalar(t, s, "SELECT generation FROM relay_destinations WHERE profile_id=1"))
+	require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
+	require.Equal(t, 2, scalar(t, s, "SELECT generation FROM relay_destinations WHERE profile_id=1 AND awaiting_approval=1"))
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://relay.test/changed", "rotated"))
-	require.Equal(t, 2, scalar(t, s, "SELECT generation FROM relay_destinations WHERE profile_id=1"))
+	require.Equal(t, 3, scalar(t, s, "SELECT generation FROM relay_destinations WHERE profile_id=1"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE state='pending' AND relay_generation=1"))
 	require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	empty, err := s.ClaimRelayBatch(ctx, time.Now().Add(time.Minute))
@@ -517,14 +481,16 @@ func TestRelayGenerationFencesClaim(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
 	now := time.Now().Add(time.Minute).UTC()
-	relayReceipt(t, s, 1, "old", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "old", now)
+	resolveOccurrenceFixture(t, s, nil)
 	old, err := s.ClaimRelayBatch(ctx, now)
 	require.NoError(t, err)
 	require.Len(t, old.Items, 1)
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "https://new.test/prefix", "fixture"))
-	relayReceipt(t, s, 1, "new", "v9", 1, now.Add(time.Hour))
-	resolveRelayV9(t, s)
+	// Model the destination after approval, without introducing DNS into the claim test.
+	execSQL(t, s, `UPDATE relay_destinations SET awaiting_approval=0 WHERE profile_id=1`)
+	relayReceipt(t, s, 1, "new", now.Add(time.Hour))
+	resolveOccurrenceFixture(t, s, nil)
 	page, err := s.RelayDeliveries(ctx, 1, "")
 	require.NoError(t, err)
 	require.Len(t, page, 2)
@@ -591,8 +557,8 @@ func TestRelayCounterCrash(t *testing.T) {
 		os.Exit(81)
 	}
 	s, path := relayStoreFixture(t)
-	relayReceipt(t, s, 1, "receipt", "v9", 1, time.Now())
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "receipt", time.Now())
+	resolveOccurrenceFixture(t, s, nil)
 	err := s.withIngestWriter(t.Context(), func(tx *sql.Conn) error {
 		_, err := tx.ExecContext(t.Context(), "UPDATE outbox SET state='failed'")
 		if err != nil {
@@ -615,13 +581,13 @@ func TestRelayCounterCrash(t *testing.T) {
 func fillRelayCapacity(t *testing.T, s *Sqlite, now time.Time) {
 	t.Helper()
 	execSQL(t, s, `WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<100000)
-		INSERT INTO listens(profile_id,track_id,listened_at,event_id)
-		SELECT 1,1,x+1000000,printf('capacity-%06d',x) FROM n`)
+		INSERT INTO listens(profile_id,track_id,listened_at,event_id,origin)
+		SELECT 1,1,x+1000000,printf('capacity-%06d',x),'listenbrainz_api' FROM n`)
 	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
 		received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,state,identity_status,event_id,occurrence_id,recording_id,
-		mode,delivery_policy,closed_at)
+		mode,delivery_policy,closed_at,resolver_variant)
 		SELECT l.event_id,1,'source',1,'listenbrainz','1',l.event_id,0,'single',?,?,'second','start',
-		'{"artist":"Fixture","title":"Queue"}','fixture','1','accepted','resolved',l.event_id,1,o.recording_id,'active','durable',?
+		'{"artist":"Fixture","title":"Queue"}','fixture','1','accepted','resolved',l.event_id,1,o.recording_id,'active','durable',?,'occurrence'
 		FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=1 AND l.event_id LIKE 'capacity-%'`, now.Unix(), now.Format(receiptTime), now.Unix())
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('relay:1',1,'listenbrainz-relay',0)`)
 	execSQL(t, s, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,created_at,next_attempt_at,format_version)
@@ -667,9 +633,9 @@ func TestRelayCapacity(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().UTC().Truncate(time.Second)
 	fillRelayCapacity(t, s, now)
-	relayReceipt(t, s, 1, "overflow", "v9", 1, now.Add(time.Hour))
+	relayReceipt(t, s, 1, "overflow", now.Add(time.Hour))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='overflow' AND delivery_policy='durable'`))
-	resolveRelayV9(t, s)
+	resolveOccurrenceFixture(t, s, nil)
 	require.Equal(t, 100000, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE json_extract(result,'$.reason')='queue_capacity'"))
 	batch, err := s.ClaimRelayBatch(t.Context(), now.Add(time.Minute))
@@ -818,8 +784,8 @@ func TestRelayMarkerMeasurements(t *testing.T) {
 func TestRelayFullCompletionKeepsClaim(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().Add(time.Minute).UTC()
-	relayReceipt(t, s, 1, "full", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "full", now)
+	resolveOccurrenceFixture(t, s, nil)
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
 	require.NoError(t, err)
 	require.Len(t, batch.Items, 1)
@@ -859,8 +825,8 @@ func TestRelayTransientPauses(t *testing.T) {
 			s, _ := relayStoreFixture(t)
 			s.relayJitter = func(limit int64) int64 { return limit / 2 }
 			now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
-			relayReceipt(t, s, 1, "fixture", "v9", 1, now)
-			resolveRelayV9(t, s)
+			relayReceipt(t, s, 1, "fixture", now)
+			resolveOccurrenceFixture(t, s, nil)
 			batch, err := s.ClaimRelayBatch(t.Context(), now)
 			require.NoError(t, err)
 			_, err = s.FinishRelayBatch(t.Context(), batch, batch.Items, relay.Result{Class: caseData.class, ServerWait: caseData.server}, now, false)
@@ -885,8 +851,8 @@ func TestRelaySuccessWithoutRateLimitDeadline(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	s.relayJitter = func(limit int64) int64 { return limit / 2 }
 	now := time.Now().UTC().Truncate(time.Second).Add(time.Minute)
-	relayReceipt(t, s, 1, "hintless", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "hintless", now)
+	resolveOccurrenceFixture(t, s, nil)
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
 	require.NoError(t, err)
 	require.Len(t, batch.Items, 1)
@@ -901,8 +867,8 @@ func TestRelaySuccessWithoutRateLimitDeadline(t *testing.T) {
 func TestRelayInvalidSourceRetiresItem(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().UTC().Add(time.Minute)
-	relayReceipt(t, s, 1, "invalid-source", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "invalid-source", now)
+	resolveOccurrenceFixture(t, s, nil)
 	execSQL(t, s, `DROP TRIGGER trg_ingest_snapshot_immutable;
 		UPDATE ingest_events SET original_snapshot='{"artist":12}' WHERE receipt_id='invalid-source'`)
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
@@ -923,8 +889,8 @@ func TestRelayInvalidSourceRetiresItem(t *testing.T) {
 func TestRelayInvalidStoredPermissionsPausesDestination(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().UTC().Add(time.Minute)
-	relayReceipt(t, s, 1, "invalid-config", "v9", 1, now)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "invalid-config", now)
+	resolveOccurrenceFixture(t, s, nil)
 	execSQL(t, s, "INSERT INTO relay_allowlist VALUES(1,'relay.test:443','invalid-prefix',0,1,'manual')")
 	batch, err := s.ClaimRelayBatch(t.Context(), now)
 	require.NoError(t, err)

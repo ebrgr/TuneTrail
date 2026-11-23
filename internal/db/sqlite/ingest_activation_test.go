@@ -2,14 +2,12 @@ package sqlite
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/ingest"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -100,34 +98,6 @@ func TestIngestActivationUpgrade(t *testing.T) {
 	require.NoError(t, checkIntegrity(conn))
 }
 
-// TestResolveIngestLegacyCollision covers both review and the legacy fallback.
-func TestResolveIngestLegacyCollision(t *testing.T) {
-	for _, review := range []bool{false, true} {
-		t.Run(fmt.Sprint(review), func(t *testing.T) {
-			s, _, _ := migrationDB(t, 20)
-			seedIdentityHistory(t, s)
-			execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,review) VALUES(1,?)`, review)
-			execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
-				item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,lease_owner,lease_until)
-				VALUES('active',1,'source',1,'test','1','batch',0,'submit',0,'second','start','{}','digest','1','active','worker',?)`, time.Now().Add(time.Minute).Unix())
-			receipt := claimedReceipt{id: "active", lease: "worker", profile: 1, unix: 42}
-			require.NoError(t, s.finishIngest(context.Background(), receipt, 1))
-			require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listens`))
-			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id='active'`))
-			var state, reason string
-			require.NoError(t, s.db.QueryRow(`SELECT state,json_extract(reason_codes,'$[0]') FROM ingest_events WHERE receipt_id='active'`).Scan(&state, &reason))
-			if review {
-				require.Equal(t, "pending_duplicate", state)
-				require.Equal(t, "legacy_identity_collision", reason)
-			} else {
-				require.Equal(t, "duplicate", state)
-				require.Equal(t, "review_deferred", reason)
-			}
-			require.ErrorIs(t, s.finishIngest(context.Background(), receipt, 1), sql.ErrNoRows)
-		})
-	}
-}
-
 // TestIngestDigestUpgrade preserves v1 keyed retries while detecting changes to v1 fields.
 func TestIngestDigestUpgrade(t *testing.T) {
 	ctx := context.Background()
@@ -160,76 +130,6 @@ func TestIngestDigestUpgrade(t *testing.T) {
 	require.Equal(t, "v1", retry[0].ReceiptID)
 	require.Equal(t, "same", retry[0].Decision)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_observations WHERE receipt_id='v1' AND digest_version=?`, ingest.DigestVersion))
-}
-
-// TestProfileDeleteClosesV9Ingest closes only work matching the deleted tracks.
-func TestProfileDeleteClosesV9Ingest(t *testing.T) {
-	ctx := context.Background()
-	s, _, _ := migrationDB(t, 20)
-	seedIdentityHistory(t, s)
-	execSQL(t, s, `INSERT INTO tracks(id,release_id,duration) VALUES(71,1,100);
-		INSERT INTO track_aliases VALUES(71,'U','Canonical',1)`)
-	at := time.Unix(100, 0)
-	var related, unrelated string
-	fileDigest := ingest.Digest([]byte("delete-fixture"))
-	for _, profile := range []int32{1, 2} {
-		batch := ingest.Batch{ProfileID: profile, Source: "file", Operation: "import", ReceivedAt: time.Now(),
-			FileDigest: fileDigest, FileFormat: "koito",
-			Items: []ingest.Item{
-				{Ordinal: 0, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "different", Title: "different", CatalogTrackID: 70}},
-				{Ordinal: 1, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: " ARTIST ", Title: "opening"}},
-				{Ordinal: 2, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "B", Title: "U", CatalogTrackID: 71}},
-				{Ordinal: 3, ListenedAt: at, Snapshot: ingest.Snapshot{Artist: "other artist", Title: "Intro"}},
-			}}
-		source := fmt.Sprintf("file:%d", profile)
-		execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES(?,?,'file',0)`, source, profile)
-		for _, item := range batch.Items {
-			id := uuid.NewString()
-			snapshot, digest := item.Encode()
-			execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
-				item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,
-				resolver_variant,listened_at,file_format,file_digest,format_version)
-				VALUES(?,?,?,1,'file','1',?,?,'import',0,'second','start',?,?,?,'active','v9',?,'koito',?,'1')`,
-				id, profile, source, id, item.Ordinal, snapshot, digest, ingest.DigestVersion, at.UTC().Format(receiptTime), fileDigest)
-			if profile == 1 && item.Ordinal == 0 {
-				related = id
-			}
-			if profile == 1 && item.Ordinal == 2 {
-				unrelated = id
-			}
-		}
-	}
-	execSQL(t, s, `UPDATE ingest_events SET state='retryable',lease_owner='old',lease_until=unixepoch()+60
-		WHERE receipt_id=?`, related)
-	plan, err := s.PreviewProfileDelete(ctx, 1, "track", 1)
-	require.NoError(t, err)
-	require.EqualValues(t, 2, plan.Count)
-	deleted, err := s.ApplyProfileDelete(ctx, plan)
-	require.NoError(t, err)
-	require.Equal(t, plan.Count, deleted)
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND resolver_variant='v9'
-		AND state='invalid' AND closed_at IS NOT NULL AND lease_owner IS NULL AND resolution_version=1`))
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE profile_id=1 AND decision='invalid'
-		AND reason_codes='["profile_history_deleted"]'`))
-	replay, err := s.ReadFileReceipts(ctx, 1, "koito", fileDigest, -1)
-	require.NoError(t, err)
-	require.Len(t, replay, 4)
-	require.Equal(t, related, replay[0].ReceiptID)
-	require.False(t, replay[0].Pending)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=100`))
-	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=2 AND closed_at IS NULL`))
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE profile_id=1 AND closed_at IS NULL`))
-	require.ErrorIs(t, s.finishIngest(ctx, claimedReceipt{id: related, profile: 1, lease: "old", unix: 100}, 70), sql.ErrNoRows)
-	// Leave only the unrelated native receipt eligible for this resolver pass.
-	execSQL(t, s, `UPDATE ingest_events SET next_attempt_at=unixepoch()+60
-		WHERE closed_at IS NULL AND receipt_id<>?`, unrelated)
-	claimed, _, _, err := s.claimNextIngest(ctx)
-	require.NoError(t, err)
-	require.Equal(t, unrelated, claimed.id)
-	claimed.unix = 100
-	require.NoError(t, s.finishIngest(ctx, claimed, 71))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN listens l ON l.event_id=e.event_id
-		WHERE e.receipt_id=? AND e.state='accepted' AND l.track_id=71`, unrelated))
 }
 
 // TestExpiredIngestLeaseCanBeReclaimed checks CAS while the new claim is still open.

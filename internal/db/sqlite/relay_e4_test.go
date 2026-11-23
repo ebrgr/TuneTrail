@@ -18,11 +18,11 @@ func TestRelayE4Store(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now()
 	fillRelayCapacity(t, s, now)
-	execSQL(t, s, `WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<199999)
+	execSQL(t, s, `WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<200000)
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,
-		received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version)
+		received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,resolver_variant,delivery_policy,state,closed_at,rule_version,reason_codes)
 		SELECT printf('archive-%06d',x),1,'source',1,'listenbrainz','1','archive',x,'import',1,'second','start',
-		'{"artist":"Fixture","title":"Archive"}','fixture','1' FROM n`)
+		'{"artist":"Fixture","title":"Archive"}','fixture','1','active','occurrence','durable','invalid',1,'fixture','["fixture"]' FROM n`)
 	require.Equal(t, 300000, scalar(t, s, "SELECT count(*) FROM ingest_events"))
 	require.Equal(t, 100000, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 

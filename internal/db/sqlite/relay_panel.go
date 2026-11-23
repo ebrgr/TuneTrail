@@ -19,15 +19,7 @@ func (s *Sqlite) RelayPolicyProfiles(ctx context.Context, session uuid.UUID, pro
 	if err := checkIngestRoot(ctx, s.db, session); err != nil {
 		return nil, err
 	}
-	version, err := ingestSchemaVersion(ctx, s.db)
-	if err != nil {
-		return nil, err
-	}
-	draftColumn := "0"
-	if version >= 21 {
-		draftColumn = "coalesce(d.awaiting_approval,0)"
-	}
-	rows, err := s.db.QueryContext(ctx, `SELECT p.id,p.display_name,coalesce(r.url,''),coalesce(d.pause_class,''),`+draftColumn+`,
+	rows, err := s.db.QueryContext(ctx, `SELECT p.id,p.display_name,coalesce(r.url,''),coalesce(d.pause_class,''),coalesce(d.awaiting_approval,0),
 		d.pause_class IS NOT NULL AND (d.paused_until IS NULL OR d.paused_until>unixepoch()),
 		coalesce(a.host_port,''),coalesce(a.cidr,''),coalesce(a.origin,''),coalesce(a.allow_http,0),coalesce(a.allow_private,0)
 		FROM listening_profiles p LEFT JOIN profile_relays r ON r.profile_id=p.id

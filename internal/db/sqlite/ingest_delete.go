@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/dedup"
@@ -74,100 +73,9 @@ func deleteListenReceipts(ctx context.Context, tx *sql.Tx, profile, track int32,
 func deleteSelectedActiveReceipts(ctx context.Context, tx *sql.Tx, profile int32, selection string, args []any) error {
 	// Occurrence receipts need an explicit resolved occurrence, never a title resemblance.
 	parameters := append(append([]any(nil), args...), profile)
-	if _, err := tx.ExecContext(ctx, `WITH selected AS (`+selection+`)
+	_, err := tx.ExecContext(ctx, `WITH selected AS (`+selection+`)
 		DELETE FROM ingest_events WHERE profile_id=? AND mode='active' AND resolver_variant='occurrence'
-		AND event_id IS NULL AND closed_at IS NULL AND occurrence_id IN (SELECT track_id FROM selected)`, parameters...); err != nil {
-		return err
-	}
-	rows, err := tx.QueryContext(ctx, `WITH selected AS (SELECT DISTINCT track_id FROM (`+selection+`))
-		SELECT s.track_id, 'title', a.alias FROM selected s JOIN track_aliases a ON a.track_id=s.track_id
-		UNION ALL SELECT s.track_id, 'artist', a.alias FROM selected s JOIN artist_tracks c ON c.track_id=s.track_id
-			JOIN artist_aliases a ON a.artist_id=c.artist_id
-		UNION ALL SELECT track_id, '', '' FROM selected`, args...)
-	if err != nil {
-		return err
-	}
-	type aliases struct{ titles, artists []string }
-	tracks := make(map[int32]*aliases)
-	for rows.Next() {
-		var track int32
-		var kind, alias string
-		if err := rows.Scan(&track, &kind, &alias); err != nil {
-			rows.Close()
-			return err
-		}
-		music := tracks[track]
-		if music == nil {
-			music = &aliases{}
-			tracks[track] = music
-		}
-		switch kind {
-		case "artist":
-			music.artists = append(music.artists, dedup.NormalizeName(alias))
-		case "title":
-			music.titles = append(music.titles, dedup.NormalizeName(alias))
-		}
-	}
-	if err := rows.Close(); err != nil {
-		return err
-	}
-	if err := rows.Err(); err != nil {
-		return err
-	}
-	// Pair title and artist aliases from the same selected track.
-	type credit struct{ artist, title string }
-	credits := make(map[credit]struct{})
-	for _, track := range tracks {
-		for _, title := range track.titles {
-			for _, artist := range track.artists {
-				credits[credit{artist, title}] = struct{}{}
-			}
-		}
-	}
-	rows, err = tx.QueryContext(ctx, `SELECT receipt_id,coalesce(json_extract(original_snapshot,'$.catalog_track_id'),0),
-		json_extract(original_snapshot,'$.artist'),json_extract(original_snapshot,'$.title')
-		FROM ingest_events WHERE profile_id=? AND mode='active' AND resolver_variant='v9' AND closed_at IS NULL AND state IN ('received','retryable')`, profile)
-	if err != nil {
-		return err
-	}
-	var ids []string
-	for rows.Next() {
-		var id string
-		var track int32
-		var artist, title sql.NullString
-		if err := rows.Scan(&id, &track, &artist, &title); err != nil {
-			rows.Close()
-			return err
-		}
-		_, matched := credits[credit{dedup.NormalizeName(artist.String), dedup.NormalizeName(title.String)}]
-		if (track != 0 && tracks[track] != nil) || (track == 0 && artist.Valid && title.Valid && matched) {
-			ids = append(ids, id)
-		}
-	}
-	if err := rows.Close(); err != nil {
-		return err
-	}
-	if err := rows.Err(); err != nil {
-		return err
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	selected, err := json.Marshal(ids)
-	if err != nil {
-		return err
-	}
-	// Keep the v9 alias match closed with its original replay key.
-	const scope = `profile_id=? AND mode='active' AND resolver_variant='v9' AND receipt_id IN (SELECT value FROM json_each(?))`
-	if _, err := tx.ExecContext(ctx, `INSERT INTO ingest_revisions
-		SELECT profile_id,receipt_id,resolution_version+1,'automatic','invalid','["profile_history_deleted"]','{}',?,unixepoch()
-		FROM ingest_events WHERE `+scope, activeRuleVersion, profile, string(selected)); err != nil {
-		return err
-	}
-	_, err = tx.ExecContext(ctx, `UPDATE ingest_events SET state='invalid',identity_status='invalid',duplicate_decision=NULL,
-		reason_codes='["profile_history_deleted"]',evidence='{}',rule_version=?,resolution_version=resolution_version+1,
-		resolved_at=unixepoch(),closed_at=unixepoch(),lease_owner=NULL,lease_until=NULL,next_attempt_at=NULL
-		WHERE `+scope, activeRuleVersion, profile, string(selected))
+		AND event_id IS NULL AND closed_at IS NULL AND occurrence_id IN (SELECT track_id FROM selected)`, parameters...)
 	return err
 }
 

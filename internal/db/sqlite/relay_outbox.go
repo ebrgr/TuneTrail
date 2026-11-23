@@ -29,26 +29,19 @@ const relayCapacity = `format_version>0 AND state='failed' AND json_extract(resu
 
 // insertRelayIntent runs after acceptance, under the same writer reservation.
 func insertRelayIntent(ctx context.Context, tx *sql.Conn, r claimedReceipt, event string, now int64) error {
-	if r.source != ingest.ShadowSourceListenBrainz || (r.deliveryPolicy != "durable" && r.variant == "occurrence") {
+	if r.source != ingest.ShadowSourceListenBrainz || r.deliveryPolicy != "durable" {
 		return nil
 	}
-	var admissionGeneration any
-	version, err := ingestSchemaVersion(ctx, tx)
+	// Only the approved generation captured at admission may receive this listen.
+	var admissionGeneration int64
+	err := tx.QueryRowContext(ctx, `SELECT d.generation FROM ingest_events e
+		JOIN relay_destinations d ON d.profile_id=e.profile_id AND d.generation=e.relay_admission_generation
+		WHERE e.receipt_id=? AND d.awaiting_approval=0`, r.id).Scan(&admissionGeneration)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
 	if err != nil {
 		return err
-	}
-	if version >= 21 {
-		var eligible int64
-		err := tx.QueryRowContext(ctx, `SELECT d.generation FROM ingest_events e
-			JOIN relay_destinations d ON d.profile_id=e.profile_id AND d.generation=e.relay_admission_generation
-			WHERE e.receipt_id=? AND d.awaiting_approval=0`, r.id).Scan(&eligible)
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		admissionGeneration = eligible
 	}
 	destination := "relay:" + strconv.FormatInt(int64(r.profile), 10)
 	if _, err := tx.ExecContext(ctx, `INSERT INTO integrations(id,profile_id,source_type,created_at)
@@ -56,20 +49,13 @@ func insertRelayIntent(ctx context.Context, tx *sql.Conn, r claimedReceipt, even
 		ON CONFLICT(id) DO NOTHING`, destination, now, r.profile); err != nil {
 		return err
 	}
-	if r.deliveryPolicy != "durable" {
-		_, err := tx.ExecContext(ctx, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,closed_at,result)
-			SELECT ?,profile_id,?,?,'listen',?,'discarded',?,?,'{"reason":"pre_082_best_effort"}'
-			FROM profile_relays WHERE profile_id=? AND url<>'' AND token<>''`,
-			uuid.NewString(), destination, event, event, now, now, r.profile)
-		return err
-	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,next_attempt_at,result,format_version,relay_generation)
 		SELECT ?,d.profile_id,?,?,'listen',?,CASE WHEN d.open_count<100000 THEN 'pending' ELSE 'failed' END,?,
 			CASE WHEN d.open_count<100000 THEN ? END,
 			CASE WHEN d.open_count<100000 THEN '{}' ELSE '{"reason":"queue_capacity"}' END,1,d.generation
 		FROM relay_destinations d JOIN profile_relays p USING(profile_id)
-		WHERE d.profile_id=? AND p.url<>'' AND p.token<>'' AND (? IS NULL OR d.generation=?)`,
-		uuid.NewString(), destination, event, event, now, now, r.profile, admissionGeneration, admissionGeneration)
+		WHERE d.profile_id=? AND p.url<>'' AND p.token<>'' AND d.generation=?`,
+		uuid.NewString(), destination, event, event, now, now, r.profile, admissionGeneration)
 	return err
 }
 

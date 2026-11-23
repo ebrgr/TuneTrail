@@ -11,14 +11,14 @@ import (
 
 // TestIngestDiscardStates covers every eligible state, the audit, and both delete projections.
 func TestIngestDiscardStates(t *testing.T) {
-	s, _ := discardStoreFixture(t)
+	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
 	now := time.Unix(1714564800, 0)
 	s.ingestClock = func() time.Time { return now }
-	relayReceipt(t, s, 2, "other", "v9", 1, now)
+	relayReceipt(t, s, 2, "other", now)
 	for i, state := range []string{"received", "pending_identity", "pending_duplicate", "retryable", "invalid", "parked"} {
 		t.Run(state, func(t *testing.T) {
-			relayReceipt(t, s, 1, state, "v9", 1, now.Add(time.Duration(i+1)*time.Second))
+			relayReceipt(t, s, 1, state, now.Add(time.Duration(i+1)*time.Second))
 			if state == "parked" {
 				execSQL(t, s, `UPDATE ingest_events SET state='retryable',parked_at=?,park_reason='retry_exhausted',
 					reason_codes='["fixture_reason"]' WHERE receipt_id=?`, now.Unix(), state)
@@ -58,18 +58,18 @@ func TestIngestDiscardStates(t *testing.T) {
 
 // TestIngestDiscardProtectsListens covers duplicate links and accepted receipts with open relay work.
 func TestIngestDiscardProtectsListens(t *testing.T) {
-	s, _ := discardStoreFixture(t)
+	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
 	instant := time.Unix(101, 0)
-	relayReceipt(t, s, 1, "accepted", "v9", 1, instant)
+	relayReceipt(t, s, 1, "accepted", instant)
 	preview, err := s.IngestDiscardPreview(ctx, 1, "accepted", 1)
 	require.NoError(t, err)
 	stale := preview.Receipts[0].Digest
-	resolveRelayV9(t, s)
+	resolveOccurrenceFixture(t, s, nil)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM outbox JOIN ingest_events USING(profile_id,event_id)
 		WHERE receipt_id='accepted' AND outbox.closed_at IS NULL`))
-	relayReceipt(t, s, 1, "linked", "v9", 1, instant)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 1, "linked", instant)
+	resolveOccurrenceFixture(t, s, nil)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='linked' AND state='duplicate' AND event_id IS NOT NULL`))
 	for _, receipt := range []string{"accepted", "linked"} {
 		_, err := s.IngestDiscardPreview(ctx, 1, receipt, 1)
@@ -90,11 +90,11 @@ func TestIngestDiscardWriterRace(t *testing.T) {
 			s, path := relayStoreFixture(t)
 			ctx := t.Context()
 			execSQL(t, s, `PRAGMA busy_timeout=5000`)
-			execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,1)`)
-			relayReceipt(t, s, 1, "race", "v9", 1, time.Unix(42, 0))
+			require.NoError(t, s.SetIngestReview(t.Context(), 1, true))
+			relayReceipt(t, s, 1, "race", time.Unix(42, 0))
 			switch kind {
 			case "review":
-				resolveRelayV9(t, s)
+				resolveOccurrenceFixture(t, s, nil)
 			case "reprocess":
 				execSQL(t, s, `UPDATE ingest_events SET state='retryable',parked_at=1,park_reason='retry_exhausted' WHERE receipt_id='race'`)
 			}
@@ -157,9 +157,9 @@ func TestIngestDiscardWriterRace(t *testing.T) {
 
 // TestIngestDiscardBatch checks full preview, batch rollback, and retry safety.
 func TestIngestDiscardBatch(t *testing.T) {
-	s, _ := discardStoreFixture(t)
+	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
-	seedDiscardQueue(t, s, ingestDiscardBatchSize+2)
+	seedDiscardQueue(t, s, ingestDiscardBatchSize+2, "occurrence")
 	latest, err := s.IngestDiscardPreview(ctx, 1, "bulk-00502", 1)
 	require.NoError(t, err)
 	require.NoError(t, s.DiscardIngestPending(ctx, 1, 7, "bulk-00502", latest.Receipts[0].Digest))
@@ -189,9 +189,9 @@ func TestIngestDiscardBatch(t *testing.T) {
 
 // TestIngestDiscardSetDrift makes an unconfirmed receipt eligible at the first batch boundary.
 func TestIngestDiscardSetDrift(t *testing.T) {
-	s, _ := discardStoreFixture(t)
+	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
-	seedDiscardQueue(t, s, ingestDiscardBatchSize+2)
+	seedDiscardQueue(t, s, ingestDiscardBatchSize+2, "occurrence")
 	now := time.Now()
 	s.ingestClock = func() time.Time { return now }
 	execSQL(t, s, `UPDATE ingest_events SET lease_owner='fixture',lease_until=? WHERE receipt_id='bulk-00502'`, now.Add(time.Second).Unix())
@@ -250,7 +250,7 @@ func TestIngestDiscardTrustedReplay(t *testing.T) {
 
 // TestIngestDiscardRetention preserves the boundary and scopes cleanup to the acting profile.
 func TestIngestDiscardRetention(t *testing.T) {
-	s, _ := discardStoreFixture(t)
+	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
 	now := time.Unix(1734564800, 0)
 	s.ingestClock = func() time.Time { return now }
@@ -258,7 +258,7 @@ func TestIngestDiscardRetention(t *testing.T) {
 	execSQL(t, s, `INSERT INTO ingest_discards(profile_id,receipt_id,actor_id,discarded_at,origin_state,reason_codes)
 		VALUES(1,'expired',7,?,'received','[]'),(1,'boundary',7,?,'received','[]'),(2,'other',7,?,'received','[]')`,
 		boundary-1, boundary, boundary-1)
-	seedDiscardQueue(t, s, 1)
+	seedDiscardQueue(t, s, 1, "occurrence")
 	p, err := s.IngestDiscardPreview(ctx, 1, "", 1)
 	require.NoError(t, err)
 	require.NoError(t, s.DiscardIngestPending(ctx, 1, 7, "", p.Batch.Digest))
@@ -266,23 +266,15 @@ func TestIngestDiscardRetention(t *testing.T) {
 	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM ingest_discards WHERE receipt_id IN ('boundary','other','bulk-00001')`))
 }
 
-// discardStoreFixture drops the unrelated bootstrap receipt from the relay fixture.
-func discardStoreFixture(t *testing.T) (*Sqlite, string) {
-	t.Helper()
-	s, path := relayStoreFixture(t)
-	execSQL(t, s, `DELETE FROM ingest_events WHERE receipt_id='shadow'`)
-	return s, path
-}
-
 // seedDiscardQueue creates one source with monotonically ordered synthetic receipts.
-func seedDiscardQueue(t *testing.T, s *Sqlite, count int) {
+func seedDiscardQueue(t *testing.T, s *Sqlite, count int, variant string) {
 	t.Helper()
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('bulk',1,'listenbrainz',0)`)
 	execSQL(t, s, `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<?)
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,
-			operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,delivery_policy)
+			operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,delivery_policy,resolver_variant)
 		SELECT printf('bulk-%05d',i),1,'bulk',1,'listenbrainz','1','bulk',i,'single',1714564800+i,'second','start',
-			'{"title":"Discard fixture"}','fixture','1','active',(SELECT policy FROM relay_delivery_gate WHERE id=1) FROM n`, count)
+			'{"title":"Discard fixture"}','fixture','1','active',(SELECT policy FROM relay_delivery_gate WHERE id=1),? FROM n`, count, variant)
 }
 
 // TestIngestDiscardScale measures the confirmed writer calls for 10,000 receipts.
@@ -290,10 +282,10 @@ func TestIngestDiscardScale(t *testing.T) {
 	if testing.Short() {
 		t.Skip("scale fixture")
 	}
-	s, _ := discardStoreFixture(t)
+	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
 	const size = 10_000
-	seedDiscardQueue(t, s, size)
+	seedDiscardQueue(t, s, size, "occurrence")
 	execSQL(t, s, `UPDATE ingest_events SET state='retryable',attempt_count=5,work_version=5,parked_at=received_at,park_reason='retry_exhausted'
 		WHERE profile_id=1`)
 	previewStart := time.Now()
@@ -316,7 +308,7 @@ func TestIngestDiscardMigration(t *testing.T) {
 	ctx := t.Context()
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `DELETE FROM ingest_events WHERE receipt_id='shadow'`)
-	seedDiscardQueue(t, s, 1)
+	seedDiscardQueue(t, s, 1, "v9")
 	_, err := provider.UpTo(ctx, 20)
 	require.NoError(t, err)
 	preview, err := s.IngestDiscardPreview(ctx, 1, "", 1)

@@ -13,11 +13,12 @@ import (
 func TestIngestReviewBatch(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	ctx := t.Context()
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,1),(2,1,1)`)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, true))
+	require.NoError(t, s.SetIngestReview(t.Context(), 2, true))
 	stamp := time.Unix(42, 0)
 	for _, id := range []string{"ambiguous", "foreign", "invalid-time", "missing-occurrence", "truncated"} {
-		relayReceipt(t, s, 1, id, "v9", 1, stamp)
-		resolveRelayV9(t, s)
+		relayReceipt(t, s, 1, id, stamp)
+		resolveOccurrenceFixture(t, s, nil)
 	}
 	execSQL(t, s, `UPDATE ingest_events SET evidence=json_object('candidates',json_array(
 		'event:'||(SELECT event_id FROM listens WHERE rowid=10),'event:'||(SELECT event_id FROM listens WHERE rowid=20)))
@@ -29,11 +30,11 @@ func TestIngestReviewBatch(t *testing.T) {
 		UPDATE ingest_events SET evidence=json_object('truncated',json('true'),'candidates',
 			json_array('event:'||(SELECT event_id FROM listens WHERE rowid=10))) WHERE receipt_id='truncated'`)
 	for i := range ingestReviewBatchSize + 1 {
-		relayReceipt(t, s, 1, fmt.Sprintf("single-%02d", i), "v9", 1, stamp)
-		resolveRelayV9(t, s)
+		relayReceipt(t, s, 1, fmt.Sprintf("single-%02d", i), stamp)
+		resolveOccurrenceFixture(t, s, nil)
 	}
-	relayReceipt(t, s, 2, "other-profile", "v9", 1, stamp)
-	resolveRelayV9(t, s)
+	relayReceipt(t, s, 2, "other-profile", stamp)
+	resolveOccurrenceFixture(t, s, nil)
 	health, err := s.IngestHealth(ctx, 1)
 	require.NoError(t, err)
 	require.Equal(t, ingestReviewBatchSize, health.ReviewSame.Count)
@@ -71,9 +72,9 @@ func TestIngestReviewBatch(t *testing.T) {
 func TestIngestReviewBatchRace(t *testing.T) {
 	s, path := relayStoreFixture(t)
 	execSQL(t, s, `PRAGMA busy_timeout=5000`)
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,1)`)
-	relayReceipt(t, s, 1, "race", "v9", 1, time.Unix(42, 0))
-	resolveRelayV9(t, s)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, true))
+	relayReceipt(t, s, 1, "race", time.Unix(42, 0))
+	resolveOccurrenceFixture(t, s, nil)
 	health, err := s.IngestHealth(t.Context(), 1)
 	require.NoError(t, err)
 	conn, err := openExisting(path)
