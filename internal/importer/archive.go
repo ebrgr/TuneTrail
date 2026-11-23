@@ -29,9 +29,11 @@ func importArchive(ctx context.Context, store importStore, profileID int32, data
 		if id != nil && id.ReleaseID != nil {
 			releaseID = *id.ReleaseID
 		}
+		// Validate the optional playback measurement before restoring the archive.
 		if id == nil || id.EventID == "" || id.EventNamespace == "" || id.CatalogNamespace == "" ||
 			id.OccurrenceID <= 0 || id.RecordingID <= 0 || releaseID < 0 || id.Origin == "" ||
 			len(id.Provenance) == 0 || id.Provenance[0] != '[' || !json.Valid(id.Provenance) || l.ListenedAt.IsZero() ||
+			(l.DurationPlayed != nil && (*l.DurationPlayed < 0 || *l.DurationPlayed > math.MaxInt32)) ||
 			l.Track.Duration < 0 || l.Track.Duration > math.MaxInt32 || l.Track.DiscNumber < 0 || l.Track.TrackNumber < 0 ||
 			getPrimaryAliasFromAliasSlice(l.Track.Aliases) == "" ||
 			(releaseID > 0 && getPrimaryAliasFromAliasSlice(l.Album.Aliases) == "") {
@@ -43,7 +45,7 @@ func importArchive(ctx context.Context, store importStore, profileID int32, data
 			Origin: id.Origin, Provenance: id.Provenance, ListenedAt: l.ListenedAt, Client: &l.Client,
 			TrackMbid: l.Track.MBID, TrackReference: l.Track.TrackMBID, DiscNumber: l.Track.DiscNumber,
 			TrackNumber: l.Track.TrackNumber, MBIDSource: l.Track.MBIDSource,
-			TrackDuration: int32(l.Track.Duration), TrackAliases: l.Track.Aliases,
+			DurationPlayed: l.DurationPlayed, TrackDuration: int32(l.Track.Duration), TrackAliases: l.Track.Aliases,
 			ReleaseMbid: l.Album.MBID, VariousArtists: l.Album.VariousArtists, ReleaseAliases: l.Album.Aliases,
 			ReleaseImageSource: imagefetch.PublicSource(l.Album.ImageUrl),
 		}

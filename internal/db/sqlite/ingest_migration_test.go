@@ -360,15 +360,18 @@ func TestSchema021DevelopmentUpgrade(t *testing.T) {
 
 	// This development fixture owns the unlinked shadow rows and can discard them explicitly.
 	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow' AND event_id IS NULL`)
-	_, err = provider.Up(ctx)
+	_, err = provider.UpTo(ctx, 21)
 	require.NoError(t, err)
 	require.Equal(t, baseline, digestTable(t, s.db, "listens", baseline.columns))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM sqlite_master WHERE name IN ('profile_ingest_flags','idx_listens_legacy_identity')`))
+	// Exercise the v21 downgrade guard before running the current writer.
+	_, err = provider.Down(ctx)
+	require.ErrorContains(t, err, "restore_verified_backup")
+	_, err = provider.UpTo(ctx, currentSchemaVersion)
+	require.NoError(t, err)
 	verifyOccurrenceUpgrade(t, s, 2)
 	testfixtures.Profile(t, s, 3, "new-profile", "New profile", 0)
 	enabled, err := ingestReviewEnabled(ctx, s.db, 3)
 	require.NoError(t, err)
 	require.True(t, enabled)
-	_, err = provider.Down(ctx)
-	require.ErrorContains(t, err, "restore_verified_backup")
 }

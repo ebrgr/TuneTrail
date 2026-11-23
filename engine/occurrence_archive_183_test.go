@@ -22,8 +22,8 @@ func TestOccurrenceHTTPCompatibility183(t *testing.T) {
 		  INSERT INTO tracks(id,release_id,duration) VALUES(1,1,180),(2,2,180);
 		  INSERT INTO artist_tracks VALUES(1,1,1),(1,2,1);
 		  INSERT INTO track_aliases VALUES(1,'Intro','Canonical',1),(2,'Intro','Canonical',1)`,
-		`INSERT INTO listens(profile_id,track_id,listened_at,event_id,client)
-		  VALUES(1,1,1700000000,'first','A'),(2,1,1700000000,'other','B'),(1,2,1700000000,'single','A')`,
+		`INSERT INTO listens(profile_id,track_id,listened_at,event_id,client,duration_played)
+		  VALUES(1,1,1700000000,'first','A',120),(2,1,1700000000,'other','B',0),(1,2,1700000000,'single','A',NULL)`,
 	} {
 		require.NoError(t, a.store.Exec(statement))
 	}
@@ -67,6 +67,9 @@ func TestOccurrenceHTTPCompatibility183(t *testing.T) {
 	require.NoError(t, json.Unmarshal(backup.Body.Bytes(), &doc))
 	require.Equal(t, export.ArchiveVersion, doc.Version)
 	require.Len(t, doc.Listens, 2)
+	require.NotNil(t, doc.Listens[0].DurationPlayed)
+	require.EqualValues(t, 120, *doc.Listens[0].DurationPlayed)
+	require.Nil(t, doc.Listens[1].DurationPlayed)
 	legacy := a.request("GET", prefix+"default/export?version=1", "", "", true)
 	var old export.KoitoExport
 	require.NoError(t, json.Unmarshal(legacy.Body.Bytes(), &old))

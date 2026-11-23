@@ -315,8 +315,10 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			}
 		}
 		event := uuid.NewString()
-		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin) VALUES(?,?,?,?,?,?)`,
-			r.profile, match.id, r.unix, r.client, event, origin); err != nil {
+		// Bound the measured time using the resolved catalog track.
+		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin,duration_played)
+			VALUES(?,?,?,?,?,?,`+boundedPlayedSeconds+`)`,
+			r.profile, match.id, r.unix, r.client, event, origin, r.snapshot.DurationPlayed, match.id); err != nil {
 			return fmt.Errorf("write occurrence listen: %w", err)
 		}
 		// Persist the acceptance before creating its relay intent.

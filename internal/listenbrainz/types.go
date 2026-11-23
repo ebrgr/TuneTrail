@@ -62,6 +62,8 @@ type LbzAdditionalInfo struct {
 	ArtistMBIDs             []string        `json:"artist_mbids,omitempty"`
 	ArtistNames             []string        `json:"artist_names,omitempty"`
 	RecordingMBID           string          `json:"recording_mbid,omitempty"`
+	DurationPlayed          *float64        `json:"duration_played,omitempty"`
+	DurationPlayedMs        *float64        `json:"duration_played_ms,omitempty"`
 	DurationMs              int32           `json:"duration_ms,omitempty"`
 	Duration                int32           `json:"duration,omitempty"`
 	Tags                    []string        `json:"tags,omitempty"`

@@ -59,6 +59,10 @@ func encodeRelayItem(version int, s ingest.Snapshot, at int64) ([]byte, error) {
 	if s.DurationMS > 0 {
 		info["duration_ms"] = s.DurationMS
 	}
+	// Relay the observed time so the destination can apply its own catalog limit.
+	if s.DurationPlayed != nil {
+		info["duration_played"] = *s.DurationPlayed
+	}
 	if s.Client != "" {
 		info["submission_client"] = s.Client
 	}

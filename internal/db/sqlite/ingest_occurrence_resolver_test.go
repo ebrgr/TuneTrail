@@ -37,7 +37,7 @@ func convertedOccurrenceFixture(t *testing.T) *Sqlite {
 	s, provider, _ := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow' AND event_id IS NULL`)
-	_, err := provider.UpTo(t.Context(), 21)
+	_, err := provider.UpTo(t.Context(), currentSchemaVersion)
 	require.NoError(t, err)
 	require.NoError(t, s.SetIngestReview(t.Context(), 1, false))
 	return s

@@ -75,6 +75,9 @@ func TestImportSpotify(t *testing.T) {
 	// spotify includes duration data, but we only import when reason_end = trackdone
 	// this is the only track with valid duration data
 	assert.EqualValues(t, 181, track.Duration)
+	var played int64
+	require.NoError(t, store.QueryRow(`SELECT duration_played FROM listens WHERE track_id=?`, track.ID).Scan(&played))
+	assert.EqualValues(t, 181, played)
 }
 
 func TestImportLastFM(t *testing.T) {

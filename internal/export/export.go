@@ -39,6 +39,7 @@ type KoitoListen struct {
 	Identity           *ArchiveIdentity `json:"identity,omitempty"`
 	OriginalListenedAt string           `json:"-"`
 	ListenedAt         time.Time        `json:"listened_at"`
+	DurationPlayed     *int64           `json:"duration_played,omitempty"`
 	Client             string           `json:"client"`
 	Track              KoitoTrack       `json:"track"`
 	Album              KoitoAlbum       `json:"album"`
@@ -237,7 +238,8 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 			OccurrenceID: item.TrackID, RecordingID: item.RecordingID, Origin: item.Origin,
 			Provenance: item.Provenance,
 		},
-		ListenedAt: item.ListenedAt.UTC(),
+		// A missing value stays absent in archives for compatibility with older exports.
+		ListenedAt: item.ListenedAt.UTC(), DurationPlayed: item.DurationPlayed,
 		Track: KoitoTrack{
 			MBID:      item.TrackMbid,
 			TrackMBID: item.TrackReference, DiscNumber: item.DiscNumber, TrackNumber: item.TrackNumber, MBIDSource: item.MBIDSource,

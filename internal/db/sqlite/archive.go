@@ -43,13 +43,13 @@ func (s *Sqlite) RestoreArchive(ctx context.Context, profile int32, items []*db.
 		if err != nil {
 			return 0, err
 		}
-		// Reuse an available local ID when restoring to the original installation.
+		// Reuse a local event ID when available and apply the destination catalog limit.
 		var eventID string
-		if err := tx.QueryRowContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,origin,event_id)
+		if err := tx.QueryRowContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,origin,event_id,duration_played)
 			VALUES(?,?,?,coalesce(?,''),'archive_restore',CASE
 				WHEN ?=? AND NOT EXISTS (SELECT 1 FROM listens WHERE event_id=?) THEN ?
-				ELSE lower(hex(randomblob(16))) END) RETURNING event_id`,
-			profile, occurrence, item.ListenedAt.Unix(), item.Client, item.EventNamespace, namespace, item.EventID, item.EventID).Scan(&eventID); err != nil {
+				ELSE lower(hex(randomblob(16))) END,`+boundedPlayedSeconds+`) RETURNING event_id`,
+			profile, occurrence, item.ListenedAt.Unix(), item.Client, item.EventNamespace, namespace, item.EventID, item.EventID, item.DurationPlayed, occurrence).Scan(&eventID); err != nil {
 			return 0, err
 		}
 		if _, err := tx.ExecContext(ctx, `INSERT INTO archive_events VALUES(?,?,?,?,?,?)`, profile,

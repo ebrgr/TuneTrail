@@ -146,7 +146,9 @@ func TestOccurrenceReviewSetting(t *testing.T) {
 	requireReceiptState(t, s, other[0].ReceiptID, "accepted")
 
 	require.NoError(t, s.SetIngestReview(ctx, 1, true))
-	id := admitOccurrenceFixture(t, s, snapshot, 1000, "")
+	reported := snapshot
+	reported.DurationPlayed = ingest.PlayedSeconds(12)
+	id := admitOccurrenceFixture(t, s, reported, 1000, "")
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, id, "pending_duplicate")
 	nearReview := admitOccurrenceFixture(t, s, snapshot, 1004, "near-review")
@@ -165,6 +167,7 @@ func TestOccurrenceReviewSetting(t *testing.T) {
 	}
 	require.NoError(t, s.ResolveIngestReview(ctx, 1, 1, db.IngestReviewDecision{Receipt: id, Version: 1, Value: "different"}))
 	requireReceiptState(t, s, id, "accepted")
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE listened_at=1000 AND duration_played=12`))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND origin='listenbrainz_api' AND listened_at=1000`))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM outbox`))
 }

@@ -138,7 +138,7 @@ func TestExpiredIngestLeaseCanBeReclaimed(t *testing.T) {
 	s, provider, path := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow'`)
-	_, err := provider.UpTo(ctx, 21)
+	_, err := provider.UpTo(ctx, currentSchemaVersion)
 	require.NoError(t, err)
 	item := ingest.Snapshot{Artist: "Artist", Title: "Lease Track", Release: "Lease Album"}
 	id := admitOccurrenceFixture(t, s, item, 100, "lease")

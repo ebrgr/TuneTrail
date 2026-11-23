@@ -61,7 +61,8 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		if item.Track.Duration < 0 || item.Track.Duration > math.MaxInt32 {
+		if item.Track.Duration < 0 || item.Track.Duration > math.MaxInt32 ||
+			(item.DurationPlayed != nil && (*item.DurationPlayed < 0 || *item.DurationPlayed > math.MaxInt32)) {
 			return invalidFile(fmt.Errorf("invalid track duration"))
 		}
 		if len(item.Artists) == 0 || getPrimaryAliasFromAliasSlice(item.Track.Aliases) == "" {
@@ -87,12 +88,14 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		}
 		item := data.Listens[i]
 		snapshot := ingest.Snapshot{
-			Artist:       getPrimaryAliasFromAliasSlice(item.Artists[0].Aliases),
-			Title:        getPrimaryAliasFromAliasSlice(item.Track.Aliases),
-			Release:      getPrimaryAliasFromAliasSlice(item.Album.Aliases),
-			DurationMS:   int64(item.Track.Duration) * 1000,
-			Client:       item.Client,
-			OriginalTime: item.ListenedAt.Format(time.RFC3339Nano),
+			Artist:  getPrimaryAliasFromAliasSlice(item.Artists[0].Aliases),
+			Title:   getPrimaryAliasFromAliasSlice(item.Track.Aliases),
+			Release: getPrimaryAliasFromAliasSlice(item.Album.Aliases),
+			// Preserve optional playback time in legacy-format imports too.
+			DurationPlayed: item.DurationPlayed,
+			DurationMS:     int64(item.Track.Duration) * 1000,
+			Client:         item.Client,
+			OriginalTime:   item.ListenedAt.Format(time.RFC3339Nano),
 		}
 		// Admit the observed native item before resolving or mutating catalog metadata.
 		snapshot.OriginalTime = item.OriginalListenedAt

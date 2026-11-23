@@ -87,7 +87,7 @@ func TestRelayGrantRootFence(t *testing.T) {
 
 // TestRelayDraftApproval fences both queued and unresolved pre-approval listens.
 func TestRelayDraftApproval(t *testing.T) {
-	s, _, _ := migrationDB(t, 21)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	ctx := t.Context()
 	testfixtures.Profile(t, s, 1, "draft", "Draft", 0)
 	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")

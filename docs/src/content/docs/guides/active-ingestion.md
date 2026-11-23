@@ -43,6 +43,20 @@ Turning review off changes how new decisions are made. Receipts already in
 the queue remain available. A submission conflict without a resolved track or
 an existing candidate remains visible without decision buttons.
 
+## Playback time
+
+ListenBrainz submissions and imports can report playback time in
+`track_metadata.additional_info`. TuneTrail uses `duration_played` (seconds)
+if valid and otherwise converts `duration_played_ms` (milliseconds) to
+seconds. Spotify imports read `ms_played` for completed tracks.
+TuneTrail rounds down to whole seconds, keeps an explicit zero, and caps the
+stored value at the catalog track length when known. If playback time is missing, listening statistics and Rewind
+use the catalog track length.
+
+TuneTrail exports preserve the stored value for reimport. ListenBrainz relay
+forwards the reported time in whole seconds so the destination can apply its
+own catalog limit.
+
 ## Upgrade to schema 21
 
 Set aside a 10-minute maintenance window. Pause submitting clients, finish import

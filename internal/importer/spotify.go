@@ -22,7 +22,7 @@ type SpotifyExportItem struct {
 	ArtistName   string    `json:"master_metadata_album_artist_name"`
 	AlbumName    string    `json:"master_metadata_album_album_name"`
 	ReasonEnd    string    `json:"reason_end"`
-	MsPlayed     int32     `json:"ms_played"`
+	MsPlayed     *int32    `json:"ms_played"`
 }
 
 // UnmarshalJSON captures the source timestamp before time.Time normalizes its spelling.
@@ -85,7 +85,6 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			ignored(ctx)
 			continue
 		}
-		dur := item.MsPlayed
 		if item.TrackName == "" || item.ArtistName == "" {
 			l.Debug().Msg("Skipping non-track item")
 			ignored(ctx)
@@ -96,7 +95,6 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			Artist:         item.ArtistName,
 			TrackTitle:     item.TrackName,
 			ReleaseTitle:   item.AlbumName,
-			Duration:       dur / 1000,
 			Time:           item.Timestamp,
 			Client:         "spotify",
 			ProfileID:      db.ProfileID(ctx),
@@ -105,7 +103,11 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 		err = submitFileListen(ctx, opts, item.Timestamp.Format(time.RFC3339Nano), func(snapshot *ingest.Snapshot) {
 			snapshot.ArtistNames = []string{item.ArtistName}
 			snapshot.OriginalTime = item.rawTimestamp
-			snapshot.DurationMS = int64(item.MsPlayed)
+			// Keep the completed-play duration as the legacy catalog estimate.
+			if item.MsPlayed != nil {
+				snapshot.DurationMS = int64(*item.MsPlayed)
+				snapshot.DurationPlayed = ingest.PlayedSeconds(float64(*item.MsPlayed) / 1000)
+			}
 			snapshot.TimeSemantics = "end"
 		})
 		if err != nil {

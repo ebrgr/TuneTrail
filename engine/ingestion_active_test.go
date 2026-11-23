@@ -55,7 +55,7 @@ func TestActiveIngestImports(t *testing.T) {
 	zw := zip.NewWriter(&archive)
 	entry, err := zw.Create("listens/2023.jsonl")
 	require.NoError(t, err)
-	_, err = entry.Write([]byte(`{"listened_at":1700000050,"track_metadata":{"artist_name":"Credit","track_name":"LB Track","mbid_mapping":{"artists":[{"artist_credit_name":"Credit","artist_mbid":"` + artistMBID + `"}]}}}` + "\n"))
+	_, err = entry.Write([]byte(`{"listened_at":1700000050,"track_metadata":{"artist_name":"Credit","track_name":"LB Track","additional_info":{"duration_played_ms":90500},"mbid_mapping":{"artists":[{"artist_credit_name":"Credit","artist_mbid":"` + artistMBID + `"}]}}}` + "\n"))
 	require.NoError(t, err)
 	require.NoError(t, zw.Close())
 	f = filepath.Join(t.TempDir(), "input.zip")
@@ -71,7 +71,7 @@ func TestActiveIngestImports(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	n, err := a.store.Count(`SELECT count(*) FROM listens l JOIN occurrence_credits c ON c.occurrence_id=l.track_id
-		JOIN artists a ON a.id=c.artist_id WHERE l.profile_id=2 AND l.listened_at=1700000050 AND a.musicbrainz_id=?`, artistMBID)
+		JOIN artists a ON a.id=c.artist_id WHERE l.profile_id=2 AND l.listened_at=1700000050 AND l.duration_played=90 AND a.musicbrainz_id=?`, artistMBID)
 	require.NoError(t, err)
 	require.Equal(t, 1, n)
 

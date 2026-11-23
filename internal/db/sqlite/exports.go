@@ -24,7 +24,7 @@ const exportPageQuery = `
 	       )),
 	       l.listened_at, l.client, o.id, o.recording_id, o.presented_title, o.legacy_track_id,
 	       COALESCE(o.track_mbid,''), COALESCE(o.disc_number,0), COALESCE(o.track_number,0),
-	       rec.musicbrainz_id, rec.mbid_source, COALESCE(t.duration,0),
+	       rec.musicbrainz_id, rec.mbid_source, COALESCE(t.duration,0), l.duration_played,
 	       COALESCE(o.release_id,0), r.musicbrainz_id, r.image_source, COALESCE(r.various_artists,0)
 	FROM listens l
 	JOIN listen_export_order x ON x.event_id=l.event_id
@@ -71,10 +71,11 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 		var listenedAt int64
 		var client, provenance string
 		var trackMBID, releaseMBID, releaseImageSrc sql.NullString
+		// Preserve NULL separately from an explicit zero in the export.
 		if err := rows.Scan(&item.Cursor, &item.EventID, &item.EventNamespace, &item.CatalogNamespace, &item.Origin, &provenance,
 			&listenedAt, &client, &item.TrackID, &item.RecordingID, &p.title, &p.legacy,
 			&item.TrackReference, &item.DiscNumber, &item.TrackNumber,
-			&trackMBID, &item.MBIDSource, &item.TrackDuration,
+			&trackMBID, &item.MBIDSource, &item.TrackDuration, &item.DurationPlayed,
 			&item.ReleaseID, &releaseMBID, &releaseImageSrc, &item.VariousArtists); err != nil {
 			rows.Close()
 			return nil, fmt.Errorf("GetExportPage: scan: %w", err)

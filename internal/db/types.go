@@ -52,6 +52,7 @@ type ExportItem struct {
 	Client             *string
 	TrackID            int32
 	TrackMbid          *uuid.UUID
+	DurationPlayed     *int64
 	TrackDuration      int32
 	TrackAliases       []models.Alias
 	ReleaseID          int32

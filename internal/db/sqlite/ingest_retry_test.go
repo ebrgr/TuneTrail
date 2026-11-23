@@ -51,7 +51,7 @@ func TestIngestRetryBudgetAndRecovery(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			ctx := t.Context()
-			s, _, path := migrationDB(t, 21)
+			s, _, path := migrationDB(t, currentSchemaVersion)
 			testfixtures.Profile(t, s, 1, "retry", "Retry", 0)
 			now := time.Now().Truncate(time.Second)
 			s.ingestClock = func() time.Time { return now }
@@ -252,7 +252,7 @@ func TestIngestLeaseClaimCap(t *testing.T) {
 // TestIngestReprocessAllWithResolver lets two connections contend for the active writer.
 func TestIngestReprocessAllWithResolver(t *testing.T) {
 	ctx := t.Context()
-	s, _, path := migrationDB(t, 21)
+	s, _, path := migrationDB(t, currentSchemaVersion)
 	testfixtures.Profile(t, s, 1, "retry", "Retry", 0)
 	now := time.Now().Truncate(time.Second)
 	s.ingestClock = func() time.Time { return now }

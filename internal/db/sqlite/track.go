@@ -83,9 +83,10 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 	}
 	track.ListenCount = listenCount
 
+	// Standalone occurrences can have measured time without a catalog track.
 	var timeListened int64
 	if err := s.queryRowContext(ctx, `
-		SELECT COALESCE(SUM(t.duration), 0) FROM listens l JOIN tracks t ON l.track_id = t.id WHERE t.id = ?`,
+		SELECT COALESCE(SUM(COALESCE(l.duration_played, t.duration)), 0) FROM listens l LEFT JOIN tracks t ON l.track_id = t.id WHERE l.track_id = ?`,
 		id).Scan(&timeListened); err != nil {
 		return nil, fmt.Errorf("getTrackByID: time listened: %w", err)
 	}

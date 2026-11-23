@@ -1,6 +1,7 @@
 package ingest
 
 import (
+	"math"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,13 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 	s := Snapshot{Artist: meta.ArtistName, Title: meta.TrackName, Release: meta.ReleaseName,
 		ArtistNames: info.ArtistNames, DurationMS: int64(info.DurationMs), Client: info.SubmissionClient,
 		ClientVersion: info.SubmissionClientVersion}
+	// Prefer seconds when both units provide a usable playback time.
+	if info.DurationPlayed != nil {
+		s.DurationPlayed = PlayedSeconds(*info.DurationPlayed)
+	}
+	if s.DurationPlayed == nil && info.DurationPlayedMs != nil {
+		s.DurationPlayed = PlayedSeconds(*info.DurationPlayedMs / 1000)
+	}
 	s.DiscNumber = listenBrainzPosition(info.DiscNumber)
 	s.TrackNumber = listenBrainzPosition(info.TrackNumber)
 	if id, err := uuid.Parse(info.TrackMBID); err == nil && id != uuid.Nil {
@@ -49,6 +57,15 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 		s.MappedReleaseMBID = id.String()
 	}
 	return s
+}
+
+// PlayedSeconds truncates a measurement to whole seconds and preserves an explicit zero.
+func PlayedSeconds(seconds float64) *int64 {
+	if !(seconds >= 0 && seconds <= math.MaxInt32) {
+		return nil
+	}
+	value := int64(seconds)
+	return &value
 }
 
 // validMBIDs retains typed identifiers while dropping arbitrary strings.

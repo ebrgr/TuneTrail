@@ -41,7 +41,7 @@ func TestMediaReadsPropagateCountFailures(t *testing.T) {
 func TestArtistAndAlbumPropagateDurationAggregateFailures(t *testing.T) {
 	for _, kind := range []string{"artist", "album"} {
 		t.Run(kind, func(t *testing.T) {
-			s, _, _ := migrationDB(t, 3)
+			s, _, _ := migrationDB(t, currentSchemaVersion)
 			seedMediaRead(t, s)
 			execSQL(t, s, `ALTER TABLE tracks DROP COLUMN duration`)
 			var err error
@@ -57,7 +57,7 @@ func TestArtistAndAlbumPropagateDurationAggregateFailures(t *testing.T) {
 	}
 }
 func TestUnplayedCatalogMetadataRetainsZeroRank(t *testing.T) {
-	s, _, _ := migrationDB(t, 13)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedMediaRead(t, s)
 	a, err := s.GetArtist(context.Background(), db.GetArtistOpts{ID: 1})
 	if err != nil || a.AllTimeRank != 0 {

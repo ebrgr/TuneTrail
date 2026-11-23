@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Listening statistics and Rewind now use the playback time reported by ListenBrainz and Spotify when available, and TuneTrail exports preserve it (ISSUE-190).
+
 ## [0.73] - 2026-11-23
 
 - Added an operations guide for sharing a TuneTrail server, recovering account access, protecting listens, and upgrading or restoring a Koito SQLite database (ISSUE-164).

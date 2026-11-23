@@ -50,6 +50,7 @@ type Snapshot struct {
 	Title                string            `json:"title"`
 	Release              string            `json:"release,omitempty"`
 	Recording            string            `json:"recording_mbid,omitempty"`
+	DurationPlayed       *int64            `json:"duration_played,omitempty"`
 	DurationMS           int64             `json:"duration_ms,omitempty"`
 	TimeSemantics        string            `json:"time_semantics,omitempty"`
 	OriginalTime         string            `json:"original_time,omitempty"`

@@ -92,9 +92,10 @@ func (s *Sqlite) getAlbumByID(ctx context.Context, id int32) (*models.Album, err
 	}
 	ret.ListenCount = listenCount
 
+	// Sum measured playback with a catalog fallback for older listens.
 	var timeListened int64
 	if err := s.queryRowContext(ctx, `
-		SELECT COALESCE(SUM(t.duration), 0)
+		SELECT COALESCE(SUM(COALESCE(l.duration_played, t.duration)), 0)
 		FROM listens l JOIN tracks t ON l.track_id = t.id WHERE t.release_id = ?`,
 		id).Scan(&timeListened); err != nil {
 		return nil, fmt.Errorf("getAlbumByID: time listened: %w", err)

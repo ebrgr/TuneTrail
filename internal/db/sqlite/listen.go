@@ -13,6 +13,10 @@ import (
 	"github.com/google/uuid"
 )
 
+// boundedPlayedSeconds takes the optional measurement and the resolved occurrence ID.
+// A missing catalog duration leaves the measurement intact, including for standalone occurrences.
+const boundedPlayedSeconds = `min(?, coalesce((SELECT duration FROM tracks WHERE id=? AND duration>0), 2147483647))`
+
 // SaveManualListen inserts an explicitly selected occurrence unless that exact second already exists.
 func (s *Sqlite) SaveManualListen(ctx context.Context, opts db.SaveListenOpts) (bool, error) {
 	if opts.ProfileID <= 0 || opts.TrackID <= 0 || opts.Time.IsZero() {

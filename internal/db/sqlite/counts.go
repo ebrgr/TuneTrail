@@ -50,10 +50,11 @@ func (s *Sqlite) CountListensToItem(ctx context.Context, opts db.TimeListenedOpt
 
 func (s *Sqlite) CountTimeListened(ctx context.Context, timeframe db.Timeframe) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(timeframe)
+	// Include measured time from standalone occurrences.
 	var seconds int64
 	err := s.queryRowContext(ctx, `
-		SELECT COALESCE(SUM(t.duration), 0)
-		FROM listens l JOIN tracks t ON l.track_id = t.id
+		SELECT COALESCE(SUM(COALESCE(l.duration_played, t.duration)), 0)
+		FROM listens l LEFT JOIN tracks t ON l.track_id = t.id
 		WHERE l.listened_at BETWEEN ? AND ?`,
 		t1.Unix(), t2.Unix()).Scan(&seconds)
 	return seconds, err
@@ -61,27 +62,28 @@ func (s *Sqlite) CountTimeListened(ctx context.Context, timeframe db.Timeframe) 
 
 func (s *Sqlite) CountTimeListenedToItem(ctx context.Context, opts db.TimeListenedOpts) (int64, error) {
 	t1, t2 := db.TimeframeToTimeRange(opts.Timeframe)
+	// Keep catalog fallback and playback measurements within the same period.
 	var seconds int64
 	var err error
 	switch {
 	case opts.ArtistID > 0:
 		err = s.queryRowContext(ctx, `
-			SELECT COALESCE(SUM(t.duration), 0)
+			SELECT COALESCE(SUM(COALESCE(l.duration_played, t.duration)), 0)
 			FROM listens l JOIN tracks t ON l.track_id = t.id
 			JOIN artist_tracks at2 ON t.id = at2.track_id
 			WHERE l.listened_at BETWEEN ? AND ? AND at2.artist_id = ?`,
 			t1.Unix(), t2.Unix(), opts.ArtistID).Scan(&seconds)
 	case opts.AlbumID > 0:
 		err = s.queryRowContext(ctx, `
-			SELECT COALESCE(SUM(t.duration), 0)
+			SELECT COALESCE(SUM(COALESCE(l.duration_played, t.duration)), 0)
 			FROM listens l JOIN tracks t ON l.track_id = t.id
 			WHERE l.listened_at BETWEEN ? AND ? AND t.release_id = ?`,
 			t1.Unix(), t2.Unix(), opts.AlbumID).Scan(&seconds)
 	case opts.TrackID > 0:
 		err = s.queryRowContext(ctx, `
-			SELECT COALESCE(SUM(t.duration), 0)
-			FROM listens l JOIN tracks t ON l.track_id = t.id
-			WHERE l.listened_at BETWEEN ? AND ? AND t.id = ?`,
+			SELECT COALESCE(SUM(COALESCE(l.duration_played, t.duration)), 0)
+			FROM listens l LEFT JOIN tracks t ON l.track_id = t.id
+			WHERE l.listened_at BETWEEN ? AND ? AND l.track_id = ?`,
 			t1.Unix(), t2.Unix(), opts.TrackID).Scan(&seconds)
 	default:
 		return 0, errors.New("CountTimeListenedToItem: an id must be provided")

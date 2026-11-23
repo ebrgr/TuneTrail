@@ -162,11 +162,14 @@ func (s *Sqlite) resolveIngestReview(ctx context.Context, tx *sql.Conn, profile,
 	var state, mode, rule, evidence string
 	var closed, occurrence, recording sql.NullInt64
 	var instant sql.NullString
+	var played sql.NullInt64
 	err := tx.QueryRowContext(ctx, `SELECT state,mode,closed_at,resolution_version,work_version,
 		occurrence_id,recording_id,listened_at,coalesce(CASE WHEN json_type(original_snapshot,'$.client')='text' THEN json_extract(original_snapshot,'$.client') END,''),
+		CASE WHEN json_type(original_snapshot,'$.duration_played')='integer' AND json_extract(original_snapshot,'$.duration_played') BETWEEN 0 AND 2147483647
+		     THEN json_extract(original_snapshot,'$.duration_played') END,
 		source_type,coalesce(file_format,''),delivery_policy,coalesce(nullif(rule_version,''),'manual-review-v1'),evidence
 		FROM ingest_events WHERE profile_id=? AND receipt_id=?`, profile, r.id).Scan(
-		&state, &mode, &closed, &r.version, &r.work, &occurrence, &recording, &instant, &r.client,
+		&state, &mode, &closed, &r.version, &r.work, &occurrence, &recording, &instant, &r.client, &played,
 		&r.source, &r.format, &r.deliveryPolicy, &rule, &evidence)
 	if errors.Is(err, sql.ErrNoRows) || err == nil && mode != "active" {
 		return db.ErrNotFound
@@ -203,9 +206,9 @@ func (s *Sqlite) resolveIngestReview(ctx context.Context, tx *sql.Conn, profile,
 			return err
 		}
 		event, finalState, reason = uuid.NewString(), "accepted", "distinct_occurrence_event"
-		// The upgrade guard excludes open v9 receipts from manual review.
-		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin)
-			VALUES(?,?,?,?,?,?)`, profile, occurrence, at.Unix(), r.client, event, occurrenceOrigin(r)); err != nil {
+		// Apply the current catalog limit when review accepts the original measurement.
+		if _, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,event_id,origin,duration_played)
+			VALUES(?,?,?,?,?,?,`+boundedPlayedSeconds+`)`, profile, occurrence, at.Unix(), r.client, event, occurrenceOrigin(r), played, occurrence); err != nil {
 			return err
 		}
 	}
