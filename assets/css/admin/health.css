@@ -17,7 +17,7 @@
 .admin-main .ingestion-health-badges { display:flex; flex-wrap:wrap; gap:var(--space-2); }
 .admin-main .ingestion-health-badges a {
   --badge-tone:var(--color-fg-secondary);
-  display:inline-flex; align-items:center; gap:var(--space-2); min-height:36px;
+  display:inline-flex; align-items:center; gap:var(--space-2); min-height:44px;
   padding:4px 12px; border:1px solid var(--badge-tone); border-radius:var(--radius-md);
   background:color-mix(in srgb,var(--badge-tone) 12%,var(--color-bg));
   color:var(--color-fg); font-size:.875rem; text-decoration:none;
@@ -39,13 +39,18 @@
   transition:background-color .1s,color .1s,border-color .1s;
 }
 .admin-main .ingestion-health button:hover { background:var(--color-bg-tertiary); }
+/* Match the pressed tone of the account controls. */
+.admin-main .ingestion-health :is(button, .admin-sections a, summary):active {
+  background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg));
+}
 /* Keep the Inbox first in the reading order at all viewport widths. */
 .admin-main .ingestion-health-grid {
   display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:var(--space-5);
 }
 .admin-main .ingestion-health-column { display:grid; min-width:0; gap:var(--space-5); }
 .admin-main .ingestion-health-column > h2 { display:flex; align-items:center; gap:var(--space-2); margin:0; }
-.admin-main .ingestion-health .card { min-width:0; padding:var(--space-5); margin:0; overflow-wrap:anywhere; }
+.admin-main .ingestion-health .card { min-width:0; padding:var(--space-5); margin:0; overflow-wrap:anywhere;
+  border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md); }
 .admin-main .ingestion-health .ingestion-reprocess { margin:0; padding:0 12px var(--space-3); }
 .admin-main .ingestion-health .ingestion-discard-link { padding-inline:12px; }
 .admin-main .ingestion-health .ingestion-discard-warning { flex-basis:100%; margin:0; }

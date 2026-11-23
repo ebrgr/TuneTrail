@@ -180,7 +180,7 @@
           <label>{{tr "admin.text.label" "Label"}} <input name="label" value="{{.Label}}"></label>
           <button class="account-action">{{tr "admin.text.rename_key" "Rename key"}}</button>
         </form>
-        <form method="post" class="account-form" action="/admin/profile/{{$.Profile.ID}}/keys/{{.ID}}/revoke" data-enhance>
+        <form method="post" class="account-card account-form account-danger" action="/admin/profile/{{$.Profile.ID}}/keys/{{.ID}}/revoke" data-enhance>
           <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
           <input type="hidden" name="submission_token" value="{{$.Submission}}">
           <input type="hidden" name="profile_slug" value="{{$.Profile.Slug}}">
