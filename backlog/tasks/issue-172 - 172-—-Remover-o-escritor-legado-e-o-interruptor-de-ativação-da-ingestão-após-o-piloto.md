@@ -3,11 +3,11 @@ id: ISSUE-172
 title: >-
   172 — Remover o escritor legado e o interruptor de ativação da ingestão após o
   piloto
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T19:58:00Z'
-updated_date: '2026-11-22T23:39:00Z'
+updated_date: '2026-11-23T00:23:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -362,6 +362,24 @@ created: 2026-11-22T23:39:00Z
 ---
 
 Reviewer (limpeza do código legado): APROVADO, sem BUG; limpeza parcial por escolha explícita (resto em LIMPEZA.md). make check 13/13 e -race ok em sqlite, importer, ingest, catalog, relay, admin e webui; escuta ao vivo preservada; carga com ACK p95 7,5 ms e 45,8 ms. Débito: ramos schema<21 em revisão/saúde/relay e fixtures históricas do resolvedor v9.
+
+---
+
+author: ebrgr
+created: 2026-11-23T00:23:00Z
+
+---
+
+Verificação: Reviewer e Advisor (effort high) APROVADOS; limpeza do legado aprovada pelo Reviewer; branch comprimida e rebaseada sobre a main com a 125 e a 126; -race adminui/webui/admin/engine ok; make check 13/13 E2E
+
+---
+
+author: evertonberger
+created: 2026-11-23T00:23:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito a 172 e já faça uma issue de acompanhamento'). Follow-up: ISSUE-194.
 
 ---
 <!-- COMMENTS:END -->
