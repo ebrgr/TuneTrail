@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-23T16:45:00Z'
+updated_date: '2026-11-23T16:48:00Z'
 labels:
   - ui
   - admin
@@ -71,6 +71,15 @@ created: 2026-11-23T16:45:00Z
 ---
 
 Aceite: aprovada pelo usuário em 23/11/2026, após teste próprio da interface no servidor local com o banco dele. Verificado: cartões por área (6) e ordem; origem do valor e aviso de reinício por cartão; barra Salvar/Testar fixa e formulário sem JavaScript preservado (testes de integração de cmd/api); popup do Navidrome com cálculo no navegador, teste de conexão no popup contra Navidrome 0.64.2; correspondência de 12 campos × 12 chaves do conf.toml provada por teste; make check verde. AC 4 deixado sem marca: o aceite visual foi do próprio usuário, mas não há capturas arquivadas em 390/768/1440 nos dois temas (só as do popup em backlog/evidencias/issue-127/). Derivadas abertas: ISSUE-197, 198, 199 e 200. O Reviewer não foi executado: o usuário aceitou direto de Em andamento. Não publicada.
+
+---
+
+author: ebrgr
+created: 2026-11-23T16:48:00Z
+
+---
+
+Publicação: versão 0.69 (tag `v0.69`), branch `feat/issue-127-remodelar-a-configuracao-do-servidor` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
