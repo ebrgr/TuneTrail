@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-19T19:58:00Z'
-updated_date: '2026-11-23T00:23:00Z'
+updated_date: '2026-11-23T00:26:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -380,6 +380,15 @@ created: 2026-11-23T00:23:00Z
 ---
 
 Aceite do usuário em 22/11/2026 ('aceito a 172 e já faça uma issue de acompanhamento'). Follow-up: ISSUE-194.
+
+---
+
+author: ebrgr
+created: 2026-11-23T00:26:00Z
+
+---
+
+Publicação: versão 0.65 (tag `v0.65`), branch `chore/issue-172-remover-o-escritor-legado-e` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

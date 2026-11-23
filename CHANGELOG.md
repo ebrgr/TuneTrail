@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.65] - 2026-11-22
+
 - Occurrence ingestion now handles listening history for every profile. Duplicate review is enabled by default, and schema 21 removes the old activation flags (ISSUE-172).
 
 - Saving a relay creates a draft. Only listens received after network approval are eligible for delivery (ISSUE-172).
