@@ -1,10 +1,11 @@
 ---
 id: ISSUE-128
 title: 128 — Remodelar login, revisões e mensagens da administração
-status: Aberta
-assignee: []
+status: Done
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-23T00:45:00Z'
+updated_date: '2026-11-23T01:42:00Z'
 labels:
   - ui
   - admin
@@ -70,6 +71,51 @@ created: 2026-11-23T00:45:00Z
 ---
 
 Reinício (22/11/2026): a worktree antiga estava 49 commits atrás da main e foi recriada do zero a partir da v0.65 (sem perda: não tinha trabalho). REESCOPO depois das 125 e 126: já entregue pela 125 o resgate de token (regras da senha, confirmação, caixa de orientação com Sair… e Todos os perfis, mensagem de página expirada, Referrer-Policy same-origin) e o destino pós-login de qualquer papel em /account; já entregue pela 126 a conta única com abas e a Administração (lista de contas). Resta: (1) login em cartão central e rota neutra GET /login para todos os papéis, mantendo /admin/login e os contratos de formulário, com retorno seguro e sessão expirada com mensagem neutra; (2) telas 401/403/404 no mesmo shell neutro, com as mensagens do estudo da 163 e sem revelar se o 404 foi permissão ou ausência; (3) um único componente de mensagem de erro, aviso e sucesso usado em todos os cartões (login, resgate, conta, abas, revisões); (4) catalog-review, profile-review e profile-delete em cartões: resumo do impacto, lista do que será alterado e confirmação em zona de perigo, escopo dono ou root; (5) padrão de cores e estados do app (sem cor fixa). Sem capturas de tela; o usuário testa no servidor.
+
+---
+
+author: ebrgr
+created: 2026-11-23T00:46:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-128` na branch `feat/issue-128-remodelar-login-revisoes-e-mensagens` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-23T01:12:00Z
+
+---
+
+Verificação (23/11/2026, agente claude, worktree issue-128, base v0.65): cortes A–D implementados em 3 commits; make check verde (go vet, go test ./..., ui.reference.check com a referência regenerada, e2e 13/13). A) GET /login para todos os papéis (/admin/login e contratos POST mantidos; sessão aberta vai ao destino validado; cookie expirado e páginas protegidas sem sessão mostram 'Entre para continuar.'; retorno seguro com fallback /account e /admin), cartão central, estado neutro 401/403/404 com as mensagens do estudo e os links da própria sessão (404 idêntico para perfil protegido e ausente), 'Senha alterada' após a troca de senha, slug login reservado. B) componente admin/message (role=alert erro, role=status aviso/sucesso, ids para aria-describedby) em login, resgate, conta, abas, configurações e gestão. C) catalog-review, profile-review e profile-delete em cartões (resumo, lista, zona de perigo), na página e no diálogo; escopo: catálogo e exclusão de conta = root, apagar escutas = dono ou root. D) i18n en/pt-BR, troca de idioma permanece em /login, contraste do erro no Pearl, alvos de 44px. Testes novos: engine/{login,messages,reviews}_issue128_test.go e internal/adminweb/language_return_128_test.go. Sem capturas (o usuário testa no servidor). Registro: backlog/evidencias/issue-128/RECONCILIACAO.md. Pendente: aceite visual do usuário; Reviewer pelo despachante.
+
+---
+
+author: claude
+created: 2026-11-23T01:40:00Z
+
+---
+
+Reviewer: APROVADO, sem BUG. Sonda HTTP no binário real e testes -race ok; sem redirecionamento aberto; login com erro uniforme. Riscos baixos: vazamento de existência de IDs (403 x 404) preexistente, slug login reservado, contraste Pearl.
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:42:00Z
+
+---
+
+Verificação: Reviewer APROVADO; sonda HTTP nos papéis; make check 13/13
+
+---
+
+author: evertonberger
+created: 2026-11-23T01:42:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito a 128 e publique depois faça o push').
 
 ---
 <!-- COMMENTS:END -->
