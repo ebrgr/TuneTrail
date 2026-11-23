@@ -4,12 +4,10 @@
 @layer pages {
 /* Administration shares the public shell's typography, theme variables and spacing. */
 
-/* Constrain this region without requiring a fixed layout width. */
+/* Use the available viewport, with the navigation offset added at the desktop breakpoint. */
 .admin-shell {
-  max-width: min(100%,73.75rem);
-  margin:0 auto;
-  padding:48px 44px 24px 116px;
-  min-height:100vh
+  min-height:100vh;
+  padding:var(--space-6) var(--space-4);
 }
 .admin-main {
   width:100%;
@@ -100,6 +98,22 @@
   padding:12px 18px;
   min-height:44px
 }
+/* Share the primary and outlined action tones across native controls and links. */
+.admin-main :where(button, summary, a) {
+  --admin-hover:var(--color-bg-tertiary);
+  --admin-pressed:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg));
+  transition:background-color .1s;
+}
+.admin-main :where(button:not(.account-secondary,.close-dialog,.ingestion-health button), .admin-button) {
+  --admin-hover:color-mix(in srgb,var(--color-primary) 80%,var(--color-fg));
+  --admin-pressed:color-mix(in srgb,var(--color-primary) 60%,var(--color-fg));
+}
+.admin-main :where(a[aria-current=page]) {
+  --admin-hover:color-mix(in srgb,var(--color-bg-tertiary) 94%,var(--color-fg));
+}
+.admin-main :is(button,summary,a):not(:disabled):hover { background-color:var(--admin-hover); }
+.admin-main :is(button,summary,a):not(:disabled):active { background-color:var(--admin-pressed); }
+
 .admin-main button:disabled {
   opacity:.6
 }
@@ -203,11 +217,10 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 /* ISSUE-071: keep administration and its footer clear of the mobile navigation dock. */
 body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 
-/* Constrain this region without requiring a fixed layout width. */
-.admin-shell{max-width: min(100%,73.75rem);margin:0 auto;padding:48px 44px 24px;min-height:100vh}
-@media(min-width:40rem){
- body[data-admin-ui] { padding-bottom:0; }
- .admin-shell{margin-left:var(--nav-width);padding-left:44px} }
+@media (min-width:40rem) {
+  body[data-admin-ui] { padding-bottom:0; }
+  .admin-shell { margin-inline-start:var(--nav-width); padding:var(--space-8) var(--space-7); }
+}
 /* ISSUE-156: the profile header shares the single navigation offset. */
 @media(min-width:40rem) {
   body > .profile-header { width: auto; margin-left: var(--nav-width); }
@@ -302,9 +315,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 /* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
 
 /* Apply shared spacing and surface tokens at this size. */
- .admin-shell { padding:var(--space-6) var(--space-4); }
-
-/* Apply shared spacing and surface tokens at this size. */
 .admin-main form { flex-direction:column; align-items:stretch; }
 
 /* Constrain this region without requiring a fixed layout width. */
@@ -322,9 +332,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 /* Apply shared spacing and surface tokens at this size. */
 .admin-main section { padding:var(--space-4); border-radius:var(--radius-lg); }
 @media(min-width:40rem) {
-
-/* Apply shared spacing and surface tokens at this size. */
-  .admin-shell { padding:var(--space-8) var(--space-7); }
 
 /* Apply shared spacing and surface tokens at this size. */
   .admin-main form { flex-direction:row; align-items:end; }

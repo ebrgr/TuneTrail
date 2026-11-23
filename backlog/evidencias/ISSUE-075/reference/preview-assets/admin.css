@@ -4,12 +4,10 @@
 @layer pages {
 /* Administration shares the public shell's typography, theme variables and spacing. */
 
-/* Constrain this region without requiring a fixed layout width. */
+/* Use the available viewport, with the navigation offset added at the desktop breakpoint. */
 .admin-shell {
-  max-width: min(100%,73.75rem);
-  margin:0 auto;
-  padding:48px 44px 24px 116px;
-  min-height:100vh
+  min-height:100vh;
+  padding:var(--space-6) var(--space-4);
 }
 .admin-main {
   width:100%;
@@ -100,6 +98,22 @@
   padding:12px 18px;
   min-height:44px
 }
+/* Share the primary and outlined action tones across native controls and links. */
+.admin-main :where(button, summary, a) {
+  --admin-hover:var(--color-bg-tertiary);
+  --admin-pressed:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg));
+  transition:background-color .1s;
+}
+.admin-main :where(button:not(.account-secondary,.close-dialog,.ingestion-health button), .admin-button) {
+  --admin-hover:color-mix(in srgb,var(--color-primary) 80%,var(--color-fg));
+  --admin-pressed:color-mix(in srgb,var(--color-primary) 60%,var(--color-fg));
+}
+.admin-main :where(a[aria-current=page]) {
+  --admin-hover:color-mix(in srgb,var(--color-bg-tertiary) 94%,var(--color-fg));
+}
+.admin-main :is(button,summary,a):not(:disabled):hover { background-color:var(--admin-hover); }
+.admin-main :is(button,summary,a):not(:disabled):active { background-color:var(--admin-pressed); }
+
 .admin-main button:disabled {
   opacity:.6
 }
@@ -203,11 +217,10 @@ html[data-theme="pearl"] :focus-visible{outline-color:#00538a}
 /* ISSUE-071: keep administration and its footer clear of the mobile navigation dock. */
 body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 
-/* Constrain this region without requiring a fixed layout width. */
-.admin-shell{max-width: min(100%,73.75rem);margin:0 auto;padding:48px 44px 24px;min-height:100vh}
-@media(min-width:40rem){
- body[data-admin-ui] { padding-bottom:0; }
- .admin-shell{margin-left:var(--nav-width);padding-left:44px} }
+@media (min-width:40rem) {
+  body[data-admin-ui] { padding-bottom:0; }
+  .admin-shell { margin-inline-start:var(--nav-width); padding:var(--space-8) var(--space-7); }
+}
 /* ISSUE-156: the profile header shares the single navigation offset. */
 @media(min-width:40rem) {
   body > .profile-header { width: auto; margin-left: var(--nav-width); }
@@ -302,9 +315,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 /* ISSUE-069: adapt to available space before expanding at the shared breakpoints. */
 
 /* Apply shared spacing and surface tokens at this size. */
- .admin-shell { padding:var(--space-6) var(--space-4); }
-
-/* Apply shared spacing and surface tokens at this size. */
 .admin-main form { flex-direction:column; align-items:stretch; }
 
 /* Constrain this region without requiring a fixed layout width. */
@@ -322,9 +332,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 /* Apply shared spacing and surface tokens at this size. */
 .admin-main section { padding:var(--space-4); border-radius:var(--radius-lg); }
 @media(min-width:40rem) {
-
-/* Apply shared spacing and surface tokens at this size. */
-  .admin-shell { padding:var(--space-8) var(--space-7); }
 
 /* Apply shared spacing and surface tokens at this size. */
   .admin-main form { flex-direction:row; align-items:end; }
@@ -354,9 +361,7 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 .admin-main .account-form input[aria-invalid=true] { border-color:var(--color-error); }
 /* Primary action: the standard administration button, with hover and pressed tones derived
    from its own token mixed with the text colour (no new colour). */
-.admin-main .account-action { align-self:flex-start; transition:background-color .1s; }
-.admin-main .account-action:hover { background:color-mix(in srgb,var(--color-primary) 80%,var(--color-fg)); }
-.admin-main .account-action:active { background:color-mix(in srgb,var(--color-primary) 60%,var(--color-fg)); }
+.admin-main .account-action { align-self:flex-start; }
 .admin-main .account-action:disabled { opacity:.6; cursor:not-allowed; }
 .admin-main .account-warning {
   margin:var(--space-3) 0 0; padding:var(--space-3);
@@ -369,8 +374,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
   background:var(--color-bg); text-decoration:none; transition:background-color .1s;
 }
-.admin-main .account-secondary:hover { background:var(--color-bg-tertiary); }
-.admin-main .account-secondary:active { background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg)); }
 .admin-main .account-notice-links { display:flex; flex-wrap:wrap; gap:var(--space-2); margin:var(--space-2) 0 0; }
 .admin-main .account-notice-links .account-secondary { margin-top:0; }
 .admin-main .account-danger { border-style:dashed; }
@@ -380,7 +383,11 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 }
 @media (min-width:64rem) {
   .admin-main .account-grid { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
-  .admin-main .account-danger { grid-column:1 / -1; }
+  /* Give unpaired cards the whole row, including the card before a full-width danger zone. */
+  .admin-main :is(.account-grid,.account-rows,.settings-grid) > :last-child:nth-child(odd),
+  .admin-main .account-grid > :is(.account-danger, :nth-child(odd):has(+ .account-danger)) {
+    grid-column:1 / -1;
+  }
 }
 /* ISSUE-126: the tab strip scrolls sideways on narrow screens; each tab keeps a 44px target. */
 .admin-main .account-tabs { display:flex; gap:var(--space-2); overflow-x:auto; padding:var(--space-2) 0 var(--space-4); }
@@ -389,9 +396,7 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
   background:var(--color-bg); text-decoration:none; transition:background-color .1s;
 }
-.admin-main .account-tabs a:hover,
-.admin-main .account-tabs a[aria-current=page] { background:var(--color-bg-tertiary); }
-.admin-main .account-tabs a:active { background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg)); }
+.admin-main .account-tabs a:where([aria-current=page]) { background:var(--color-bg-tertiary); }
 .admin-main .account-who { color:var(--color-fg-secondary); margin:0; }
 /* The context banner names both people; text and a solid border carry the meaning, not colour. */
 .admin-main .account-context {
@@ -402,6 +407,8 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
 .admin-main .account-key { margin:var(--space-3) 0 0; }
 /* Keep the native disclosure marker and centre it in a full-height tap target. */
 .admin-main .account-key > summary { min-height:44px; padding-block:10px; }
+.admin-main .account-key-value { display:block; margin-bottom:var(--space-2); overflow-wrap:anywhere; white-space:normal; font-family:monospace; }
+body:not([data-key-copy]) .admin-main button.account-key-copy { display:none; }
 .admin-main .account-key .account-danger { padding:var(--space-3); }
 /* Root accounts list: one card per account. */
 .admin-main .account-rows { list-style:none; margin:0 0 var(--space-4); padding:0; display:grid; gap:var(--space-3); }
@@ -458,14 +465,13 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   outline:2px solid var(--color-fg); outline-offset:2px;
 }
 .admin-main .ingestion-health .admin-sections { gap:var(--space-2); padding:var(--space-2) 0 var(--space-4); }
-.admin-main .ingestion-health .admin-sections a {
+.admin-main :where(.ingestion-health) .admin-sections a {
   display:inline-flex; align-items:center; gap:var(--space-2); min-height:44px; padding:10px 16px;
   border:1px solid var(--task-border); border-radius:var(--radius-md);
   background:var(--color-bg); color:var(--color-fg); text-decoration:none;
   transition:background-color .1s,color .1s,border-color .1s;
 }
-.admin-main .ingestion-health .admin-sections a:hover,
-.admin-main .ingestion-health .admin-sections a[aria-current=page] { background:var(--color-bg-tertiary); }
+.admin-main :where(.ingestion-health) .admin-sections a:where([aria-current=page]) { background:var(--color-bg-tertiary); }
 .admin-main .ingestion-health-badges { display:flex; flex-wrap:wrap; gap:var(--space-2); }
 .admin-main .ingestion-health-badges a {
   --badge-tone:var(--color-fg-secondary);
@@ -489,11 +495,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   min-height:44px; padding:10px 16px; border:1px solid var(--task-border); border-radius:var(--radius-md);
   background:var(--color-bg); color:var(--color-fg); font-weight:400; white-space:normal;
   transition:background-color .1s,color .1s,border-color .1s;
-}
-.admin-main .ingestion-health button:hover { background:var(--color-bg-tertiary); }
-/* Match the pressed tone of the account controls. */
-.admin-main .ingestion-health :is(button, .admin-sections a, summary):active {
-  background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg));
 }
 /* Keep the Inbox first in the reading order at all viewport widths. */
 .admin-main .ingestion-health-grid {
@@ -522,7 +523,6 @@ body[data-admin-ui] { padding-bottom: var(--nav-bottom); }
   display:list-item; list-style-position:inside; min-height:44px; padding:10px 12px; line-height:24px;
   font-weight:400; overflow-wrap:anywhere; transition:background-color .1s;
 }
-.admin-main .ingestion-health summary:hover { background:var(--color-bg-tertiary); }
 .admin-main .ingestion-health details dl,.admin-main details.ingestion-diagnostics dl {
   display:grid; grid-template-columns:minmax(0,1fr); gap:2px; margin:0; padding:var(--space-2) 12px var(--space-3);
 }

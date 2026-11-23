@@ -4,6 +4,8 @@
 
 - API key details and ingestion health shortcuts have larger touch targets, key revocation is visually separated, and account and ingestion health controls show a distinct pressed state (ISSUE-074).
 
+- Administration uses more of the available screen, unpaired cards fill their row, and expanded API keys wrap independently of their Copy button (ISSUE-074).
+
 ## [0.70] - 2026-11-23
 
 - Fixed: with JavaScript on, the card forms of the account pages (avatar, profile name, API keys, relay, username and password) and the media management forms sent their changes to the page URL, got a 405 and reloaded without saving. They now save again, and the relay Save, Test and Remove buttons keep their own destinations (ISSUE-201).

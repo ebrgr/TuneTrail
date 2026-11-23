@@ -6,14 +6,13 @@
   outline:2px solid var(--color-fg); outline-offset:2px;
 }
 .admin-main .ingestion-health .admin-sections { gap:var(--space-2); padding:var(--space-2) 0 var(--space-4); }
-.admin-main .ingestion-health .admin-sections a {
+.admin-main :where(.ingestion-health) .admin-sections a {
   display:inline-flex; align-items:center; gap:var(--space-2); min-height:44px; padding:10px 16px;
   border:1px solid var(--task-border); border-radius:var(--radius-md);
   background:var(--color-bg); color:var(--color-fg); text-decoration:none;
   transition:background-color .1s,color .1s,border-color .1s;
 }
-.admin-main .ingestion-health .admin-sections a:hover,
-.admin-main .ingestion-health .admin-sections a[aria-current=page] { background:var(--color-bg-tertiary); }
+.admin-main :where(.ingestion-health) .admin-sections a:where([aria-current=page]) { background:var(--color-bg-tertiary); }
 .admin-main .ingestion-health-badges { display:flex; flex-wrap:wrap; gap:var(--space-2); }
 .admin-main .ingestion-health-badges a {
   --badge-tone:var(--color-fg-secondary);
@@ -37,11 +36,6 @@
   min-height:44px; padding:10px 16px; border:1px solid var(--task-border); border-radius:var(--radius-md);
   background:var(--color-bg); color:var(--color-fg); font-weight:400; white-space:normal;
   transition:background-color .1s,color .1s,border-color .1s;
-}
-.admin-main .ingestion-health button:hover { background:var(--color-bg-tertiary); }
-/* Match the pressed tone of the account controls. */
-.admin-main .ingestion-health :is(button, .admin-sections a, summary):active {
-  background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg));
 }
 /* Keep the Inbox first in the reading order at all viewport widths. */
 .admin-main .ingestion-health-grid {
@@ -70,7 +64,6 @@
   display:list-item; list-style-position:inside; min-height:44px; padding:10px 12px; line-height:24px;
   font-weight:400; overflow-wrap:anywhere; transition:background-color .1s;
 }
-.admin-main .ingestion-health summary:hover { background:var(--color-bg-tertiary); }
 .admin-main .ingestion-health details dl,.admin-main details.ingestion-diagnostics dl {
   display:grid; grid-template-columns:minmax(0,1fr); gap:2px; margin:0; padding:var(--space-2) 12px var(--space-3);
 }

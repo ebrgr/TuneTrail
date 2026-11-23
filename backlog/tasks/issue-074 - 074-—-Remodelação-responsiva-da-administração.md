@@ -5,7 +5,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-14T00:38:00Z'
-updated_date: '2026-11-23T17:09:00Z'
+updated_date: '2026-11-23T17:26:00Z'
 labels:
   - admin
   - ui
@@ -119,6 +119,15 @@ Verificação: 216 aberturas de página ou downloads em 390/768/1440 px, Yuu e P
 O ajuste de formaction corrigiu o POST 405 com JavaScript e a edição de chave voltou a substituir só o cartão. As 102 capturas estão na auditoria, pendentes de aceite visual do conjunto (AC 3).
 
 Proposta histórica: revisar a cadeia 163 → 160/161/162 → 158/159 → 100 → 074 e retirar a 074 como predecessora da 100. A 074 passaria a agregar a 163 e as filhas 125–128 depois da entrega delas. O grafo de dependências do Backlog permanece como está.
+
+---
+
+author: codex
+created: 2026-11-23T17:26:00Z
+
+---
+
+Revisão após retorno do usuário. Removi o teto de .admin-shell e preservei o recuo da navegação. A 1440 px, a área útil mede 1302 px. Chaves e Relay passaram de 542 para 1302 px, e os pares de Conta, Perfil, Histórico e Configuração medem 643 px por cartão. A chave recém-criada quebra no próprio bloco monoespaçado. O botão Copiar fica abaixo e funciona após a atualização do cartão, com seleção manual se a área de transferência estiver indisponível. A regra compartilhada de hover e active passou em 1920 controles visíveis em 294 verificações, incluindo exceções por destino do relay, a confirmação da exceção e as revisões. Regeneradas 42 capturas das sete páginas solicitadas, com o valor da chave substituído na imagem. Removi o PARECER.md local. make check passou nas 13 jornadas E2E e a referência da interface coincidiu nos 190 arquivos. AC 3 aguarda o aceite visual do usuário.
 
 ---
 <!-- COMMENTS:END -->

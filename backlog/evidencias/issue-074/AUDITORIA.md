@@ -1,8 +1,8 @@
 # ISSUE-074 — Auditoria responsiva da administração
 
-Chromium em loopback, com servidores isolados e bancos SQLite fictícios em diretório temporário fora da worktree. Cada servidor definiu seu tema padrão para que Yuu e Pearl funcionassem também com JavaScript desligado. A matriz cobriu 17 páginas ou estados e o download de exportação, em 390, 768 e 1440 px, nos dois temas e com JavaScript ligado e desligado. Foram 216 verificações de página ou download. Os tamanhos de viewport e os temas efetivos foram medidos no navegador.
+Chromium em loopback, com servidores isolados e bancos SQLite fictícios em diretório temporário fora da worktree. Cada servidor definiu seu tema padrão para que Yuu e Pearl funcionassem também com JavaScript desligado. A matriz inicial cobriu 17 páginas ou estados e o download de exportação, em 390, 768 e 1440 px, nos dois temas e com JavaScript ligado e desligado. Foram 216 verificações de página ou download. Os tamanhos de viewport e os temas efetivos foram medidos no navegador.
 
-Na matriz final, os controles principais medidos tiveram altura mínima de 44 px e o documento ficou dentro da largura do viewport. As capturas de página inteira foram feitas com JavaScript ligado. Os nomes exibidos são fictícios, os detalhes das chaves estão recolhidos e senhas, chaves e tokens não aparecem. A exportação é um download e está representada pelo cartão no Histórico.
+A matriz inicial mediu pelo menos 44 px de altura nos controles principais e verificou a largura do documento. As capturas de página inteira foram feitas com JavaScript ligado. A exportação é um download e está representada pelo cartão no Histórico.
 
 ## Resultado por página
 
@@ -28,7 +28,34 @@ Na matriz final, os controles principais medidos tiveram altura mínima de 44 px
 
 O teste de edição de chave encontrou um POST incorreto para a URL da página quando o botão não declarava formaction. O aprimoramento agora lê o atributo do botão e usa a action do formulário quando ele está ausente. O teste confirmou o destino, o cabeçalho do fragmento e a persistência do rótulo após recarregar.
 
+## Revisão após o retorno do usuário
+
+Removi o teto de 73,75 rem de `.admin-shell`. Uma única regra de estrutura vale para a administração. A área usa a largura do viewport descontando as margens internas e, a partir de 40 rem, a barra lateral. Login, resgate, saída e erros mantêm o cartão de leitura centralizado. A partir de 64 rem, um cartão sem par ocupa a linha inteira. Conta, Perfil, Configuração do servidor e Histórico mantêm duas colunas onde há pares. No Histórico, Importar e Exportar dividem a linha.
+
+A chave recém-criada foi aberta, lida, copiada e revogada em um banco fictício. O valor usa bloco monoespaçado com quebra segura e o botão Copiar fica abaixo. Com JavaScript desligado, é possível selecionar a chave no próprio bloco. No teste de Clipboard indisponível, o botão selecionou o valor para cópia manual. As capturas de Chaves mostram o detalhe aberto com caracteres fictícios do mesmo comprimento. Senhas, chaves reais e tokens não aparecem.
+
+O script de estados aplica `:hover` e `:active` pelo Chrome DevTools Protocol e compara a cor de fundo computada entre os três estados de cada botão, detalhe expansível e link visível da área administrativa. O escopo inclui as exceções do relay por destino, a confirmação da exceção e as revisões de catálogo e exclusão. A checagem estática do repositório agora exige os estados no seletor compartilhado.
+
+As larguras abaixo são medidas no Chromium e arredondadas ao pixel. Yuu e Pearl deram as mesmas medidas. Em 1440 px, Chaves e Relay passaram de 542 px para 1302 px.
+
+| Área ou cartão | 390 px | 768 px | 1440 px |
+| --- | ---: | ---: | ---: |
+| Área útil (.admin-main) | 358 | 630 | 1302 |
+| Conta | 358 / 358 / 358 / 358 | 630 / 630 / 630 / 630 | 643 / 643 / 1302 / 1302 |
+| Perfil | 358 / 358 | 630 / 630 | 643 / 643 |
+| Chaves de API | 358 | 630 | 1302 |
+| Relay | 358 | 630 | 1302 |
+| Histórico | 358 / 358 | 630 / 630 | 643 / 643 |
+| Configuração do servidor | 6 × 358 | 6 × 630 | 6 × 643 |
+| Saúde da ingestão | 358 / 358 | 630 / 630 | 639 / 639 |
+
+Cada valor representa um cartão ou, na Saúde, uma coluna de cartões. Em Conta, Sessão e Zona de perigo ocupam a linha inteira. Em Perfis e contas, o último cartão sem par ocupou 1270 px, a largura útil da lista interna.
+
+A matriz passou nas 12 combinações de tema, largura e JavaScript. Foram 294 verificações de páginas ou estados e 1920 instâncias de controles visíveis verificadas nos três estados. O documento coube em todas as larguras. O diálogo Subsonic foi testado nas seis combinações com JavaScript.
+
 ## Capturas finais
+
+Foram regenerados os seis cenários de cada uma das sete páginas solicitadas, num total de 42 capturas. As demais imagens são da primeira rodada.
 
 | Página | 390 Yuu | 390 Pearl | 768 Yuu | 768 Pearl | 1440 Yuu | 1440 Pearl |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -54,4 +81,5 @@ O teste de edição de chave encontrou um POST incorreto para a URL da página q
 
 - `make check` passou com 13 de 13 jornadas E2E.
 - A referência anterior coincidiu com o HEAD antes da alteração. A regeneração alterou quatro arquivos CSS/JS da referência e os identificadores de cache em 24 páginas. Após atualizar a referência versionada, `scripts/compare_ui_reference.py` confirmou igualdade nos 190 arquivos.
+- Nesta revisão, a referência foi regenerada para incorporar o CSS administrativo e o JavaScript de cópia. A comparação final coincidiu nos 190 arquivos.
 - O aceite visual do conjunto cabe ao usuário.

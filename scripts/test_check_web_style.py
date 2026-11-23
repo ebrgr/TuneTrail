@@ -96,6 +96,8 @@ class WebStyleTests(unittest.TestCase):
     def test_repository_account_css_follows_the_shared_states(self):
         self.assertEqual(list(check.fixed_color_offenders()), [])
         self.assertEqual(list(check.state_gaps()), [])
+        self.assertEqual(list(check.state_gaps(
+            name=check.ADMIN_CSS, required=check.SHARED_STATES, check_focus=False)), [])
 
 
 if __name__ == '__main__':

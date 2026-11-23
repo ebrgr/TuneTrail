@@ -18,9 +18,7 @@
 .admin-main .account-form input[aria-invalid=true] { border-color:var(--color-error); }
 /* Primary action: the standard administration button, with hover and pressed tones derived
    from its own token mixed with the text colour (no new colour). */
-.admin-main .account-action { align-self:flex-start; transition:background-color .1s; }
-.admin-main .account-action:hover { background:color-mix(in srgb,var(--color-primary) 80%,var(--color-fg)); }
-.admin-main .account-action:active { background:color-mix(in srgb,var(--color-primary) 60%,var(--color-fg)); }
+.admin-main .account-action { align-self:flex-start; }
 .admin-main .account-action:disabled { opacity:.6; cursor:not-allowed; }
 .admin-main .account-warning {
   margin:var(--space-3) 0 0; padding:var(--space-3);
@@ -33,8 +31,6 @@
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
   background:var(--color-bg); text-decoration:none; transition:background-color .1s;
 }
-.admin-main .account-secondary:hover { background:var(--color-bg-tertiary); }
-.admin-main .account-secondary:active { background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg)); }
 .admin-main .account-notice-links { display:flex; flex-wrap:wrap; gap:var(--space-2); margin:var(--space-2) 0 0; }
 .admin-main .account-notice-links .account-secondary { margin-top:0; }
 .admin-main .account-danger { border-style:dashed; }
@@ -44,7 +40,11 @@
 }
 @media (min-width:64rem) {
   .admin-main .account-grid { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
-  .admin-main .account-danger { grid-column:1 / -1; }
+  /* Give unpaired cards the whole row, including the card before a full-width danger zone. */
+  .admin-main :is(.account-grid,.account-rows,.settings-grid) > :last-child:nth-child(odd),
+  .admin-main .account-grid > :is(.account-danger, :nth-child(odd):has(+ .account-danger)) {
+    grid-column:1 / -1;
+  }
 }
 /* ISSUE-126: the tab strip scrolls sideways on narrow screens; each tab keeps a 44px target. */
 .admin-main .account-tabs { display:flex; gap:var(--space-2); overflow-x:auto; padding:var(--space-2) 0 var(--space-4); }
@@ -53,9 +53,7 @@
   border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
   background:var(--color-bg); text-decoration:none; transition:background-color .1s;
 }
-.admin-main .account-tabs a:hover,
-.admin-main .account-tabs a[aria-current=page] { background:var(--color-bg-tertiary); }
-.admin-main .account-tabs a:active { background:color-mix(in srgb,var(--color-bg-tertiary) 85%,var(--color-fg)); }
+.admin-main .account-tabs a:where([aria-current=page]) { background:var(--color-bg-tertiary); }
 .admin-main .account-who { color:var(--color-fg-secondary); margin:0; }
 /* The context banner names both people; text and a solid border carry the meaning, not colour. */
 .admin-main .account-context {
@@ -66,6 +64,8 @@
 .admin-main .account-key { margin:var(--space-3) 0 0; }
 /* Keep the native disclosure marker and centre it in a full-height tap target. */
 .admin-main .account-key > summary { min-height:44px; padding-block:10px; }
+.admin-main .account-key-value { display:block; margin-bottom:var(--space-2); overflow-wrap:anywhere; white-space:normal; font-family:monospace; }
+body:not([data-key-copy]) .admin-main button.account-key-copy { display:none; }
 .admin-main .account-key .account-danger { padding:var(--space-3); }
 /* Root accounts list: one card per account. */
 .admin-main .account-rows { list-style:none; margin:0 0 var(--space-4); padding:0; display:grid; gap:var(--space-3); }

@@ -172,7 +172,9 @@
     {{range .Keys}}
       <details class="account-key">
         <summary>{{.Label}}</summary>
-        <p>{{tr "admin.text.select_and_copy_this_key" "Select and copy this key:"}} <code>{{.Key}}</code></p>
+        <p>{{tr "admin.text.select_and_copy_this_key" "Select and copy this key:"}}</p>
+        <code class="account-key-value">{{.Key}}</code>
+        <button type="button" class="account-secondary account-key-copy">{{tr "admin.js.copy" "Copy"}}</button>
         <form method="post" class="account-form" action="/admin/profile/{{$.Profile.ID}}/keys/{{.ID}}/label" data-enhance>
           <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
           <input type="hidden" name="submission_token" value="{{$.Submission}}">

@@ -80,8 +80,10 @@ def width_media_offenders(root=ROOT):
 TOKEN_ONLY = ['assets/css/admin/account.css']
 FIXED_COLOR = re.compile(r'#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(|'
                          r'(?<![-\w])(?:red|white|black|gray|grey|blue|green|orange|yellow)(?![-\w])')
-# Interactive controls added by ISSUE-125 and the states each one must define.
-REQUIRED_STATES = {'.account-action': [':hover', ':active', ':disabled'], '.account-secondary': [':hover', ':active']}
+ACCOUNT_CSS = 'assets/css/admin/account.css'
+ADMIN_CSS = 'assets/css/admin/admin.css'
+REQUIRED_STATES = {'.account-action': [':disabled']}
+SHARED_STATES = {'.admin-main :is(button,summary,a):not(:disabled)': [':hover', ':active']}
 
 
 def _strip_comments(text):
@@ -100,18 +102,18 @@ def fixed_color_offenders(root=ROOT, files=None):
                 yield path.relative_to(root), number, match[0]
 
 
-def state_gaps(root=ROOT, name='assets/css/admin/account.css', required=None):
+def state_gaps(root=ROOT, name=ACCOUNT_CSS, required=None, *, check_focus=True):
     """Yield (selector, state) for a missing interaction state; also reject a focus ring redefinition."""
     path = root / name
     if not path.exists():
         return
     text = _strip_comments(path.read_text())
-    for selector, states in (required or REQUIRED_STATES).items():
+    for selector, states in (REQUIRED_STATES if required is None else required).items():
         for state in states:
             if not re.search(re.escape(selector) + re.escape(state) + r'\b', text):
                 yield selector, state
     # The global :focus-visible ring is the single focus style; do not override it here.
-    if re.search(r'outline\s*:|:focus-visible', text):
+    if check_focus and re.search(r'outline\s*:|:focus-visible', text):
         yield 'outline', 'focus-visible (use the global ring)'
 
 
@@ -132,10 +134,12 @@ def main():
     colors = list(fixed_color_offenders())
     for path, number, color in colors:
         print(f'{path}:{number}: fixed colour {color}; use a theme token')
-    gaps = list(state_gaps())
-    for selector, state in gaps:
-        print(f'assets/css/admin/account.css: {selector} lacks {state}')
-    return 1 if found or long or heavy or media or colors or gaps else 0
+    account_gaps = list(state_gaps())
+    shared_gaps = list(state_gaps(name=ADMIN_CSS, required=SHARED_STATES, check_focus=False))
+    for name, gaps in ((ACCOUNT_CSS, account_gaps), (ADMIN_CSS, shared_gaps)):
+        for selector, state in gaps:
+            print(f'{name}: {selector} lacks {state}')
+    return 1 if found or long or heavy or media or colors or account_gaps or shared_gaps else 0
 
 
 if __name__ == '__main__':
