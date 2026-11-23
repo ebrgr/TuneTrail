@@ -6,6 +6,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/admin"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 	"path/filepath"
 	"sync"
@@ -132,9 +133,9 @@ func TestActiveGuardUpgrade160(t *testing.T) {
 	s, p, _ := migrationDB(t, 5)
 	root, err := s.SaveUser(ctx, db.SaveUserOpts{Username: "root", Password: "test-password", Role: models.UserRoleAdmin})
 	require.NoError(t, err)
-	pending, err := s.CreateListeningProfile(ctx, "Pending", "pending", "", "key")
-	require.NoError(t, err)
-	require.NoError(t, s.Exec(`UPDATE users SET role='admin' WHERE id=?`, pending.UserID))
+	// At schema 5 the store would query columns added later, so the pending account and profile are written directly.
+	testfixtures.Profile(t, s, 50, "pending", "Pending", 0)
+	require.NoError(t, s.Exec(`UPDATE users SET role='admin' WHERE id=?`, 50))
 	_, err = p.Up(ctx)
 	require.NoError(t, err)
 	require.Error(t, s.Exec(`UPDATE users SET role='user' WHERE id=?`, root.ID))

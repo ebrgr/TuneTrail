@@ -17,12 +17,12 @@ import (
 	sqlite3 "modernc.org/sqlite"
 )
 
-const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, created_at, user_id, require_login"
+const profileColumns = "id, slug, display_name, avatar_image_id, avatar_icon, avatar_color, created_at, user_id, require_login"
 
 // scanProfile includes canonical ownership without exposing it in public serialization.
 func scanProfile(row interface{ Scan(...any) error }, keyID ...*int64) (*models.ListeningProfile, error) {
 	p := new(models.ListeningProfile)
-	fields := []any{&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.CreatedAt, &p.UserID, &p.RequireLogin}
+	fields := []any{&p.ID, &p.Slug, &p.DisplayName, &p.AvatarImageID, &p.AvatarIcon, &p.AvatarColor, &p.CreatedAt, &p.UserID, &p.RequireLogin}
 	if len(keyID) != 0 {
 		fields = append(fields, keyID[0])
 	}
@@ -58,7 +58,7 @@ func (s *Sqlite) GetListeningProfileByID(ctx context.Context, id int32) (*models
 // GetProfileByAPIKey resolves the ingestion destination, never an authenticated actor.
 func (s *Sqlite) GetProfileByAPIKey(ctx context.Context, key string) (*models.ListeningProfile, error) {
 	var keyID int64
-	p, err := scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.created_at,p.user_id,p.require_login,k.id FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key), &keyID)
+	p, err := scanProfile(s.db.QueryRowContext(ctx, `SELECT p.id,p.slug,p.display_name,p.avatar_image_id,p.avatar_icon,p.avatar_color,p.created_at,p.user_id,p.require_login,k.id FROM listening_profiles p JOIN api_keys k ON k.profile_id=p.id WHERE k.key=?`, key), &keyID)
 	if err == nil {
 		p.IngestionKeyID = keyID
 	}
@@ -273,8 +273,10 @@ func (s *Sqlite) createListeningProfile(ctx context.Context, session uuid.UUID, 
 	}
 	return profile, nil
 }
-func (s *Sqlite) SetProfileAvatar(ctx context.Context, id int32, image, icon *string) error {
-	result, err := s.db.ExecContext(ctx, `UPDATE listening_profiles SET avatar_image_id=?,avatar_icon=? WHERE id=?`, image, icon, id)
+
+// SetProfileAvatar stores the photo, the icon and the palette colour together (ISSUE-202); a nil colour clears it.
+func (s *Sqlite) SetProfileAvatar(ctx context.Context, id int32, image, icon, color *string) error {
+	result, err := s.db.ExecContext(ctx, `UPDATE listening_profiles SET avatar_image_id=?,avatar_icon=?,avatar_color=? WHERE id=?`, image, icon, color, id)
 	return affectedProfileRow(result, err)
 }
 func (s *Sqlite) ProfileListenCount(ctx context.Context, id int32) (int64, error) {

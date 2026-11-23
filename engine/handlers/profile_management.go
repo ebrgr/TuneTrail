@@ -89,6 +89,8 @@ func ProfileAvatarHandler(store admin.AvatarStore) http.HandlerFunc {
 		r = r.WithContext(ctx)
 		var image io.ReadSeeker
 		icon := ""
+		// An absent colour field keeps the current background; an empty one returns to the theme colour (ISSUE-202).
+		var color *string
 		if r.Method != "DELETE" {
 			r.Body = http.MaxBytesReader(w, r.Body, 5<<20)
 			if err := r.ParseMultipartForm(1 << 20); err != nil {
@@ -103,6 +105,9 @@ func ProfileAvatarHandler(store admin.AvatarStore) http.HandlerFunc {
 			}
 			defer r.MultipartForm.RemoveAll()
 			icon = r.FormValue("icon")
+			if values, sent := r.MultipartForm.Value["color"]; sent && len(values) == 1 {
+				color = &values[0]
+			}
 			f, _, err := r.FormFile("image")
 			if err == nil {
 				defer f.Close()
@@ -112,7 +117,7 @@ func ProfileAvatarHandler(store admin.AvatarStore) http.HandlerFunc {
 				return
 			}
 		}
-		updated, err := admin.SetAvatar(r.Context(), store, middleware.GetUserFromContext(r.Context()), p.ID, p.Slug, icon, image)
+		updated, err := admin.SetAvatar(r.Context(), store, middleware.GetUserFromContext(r.Context()), p.ID, p.Slug, icon, image, color)
 		if err != nil {
 			utils.WriteError(w, adminweb.PublicError(err), adminweb.ErrorStatus(err))
 			return

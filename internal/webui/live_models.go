@@ -88,6 +88,9 @@ func publicProfile(p models.ListeningProfile) Profile {
 	if p.AvatarIcon != nil {
 		v.Icon = *p.AvatarIcon
 	}
+	if p.AvatarColor != nil {
+		v.Color = *p.AvatarColor
+	}
 	if p.AvatarImageID != nil {
 		v.Image = *p.AvatarImageID
 	}

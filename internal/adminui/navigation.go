@@ -21,6 +21,9 @@ func (h *Handler) navigation(r *http.Request, identity admin.Identity, profile *
 		if profile.AvatarIcon != nil {
 			nav.Profile.Icon = *profile.AvatarIcon
 		}
+		if profile.AvatarColor != nil {
+			nav.Profile.Color = *profile.AvatarColor
+		}
 	}
 	var own *models.ListeningProfile
 	if identity.User != nil {

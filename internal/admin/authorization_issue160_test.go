@@ -74,7 +74,7 @@ func TestPersonalServices160(t *testing.T) {
 	require.NoError(t, admin.RevokeKey(ctx, store, owner, own.ID, own.Slug, key.ID))
 	_, err = admin.UpdateProfile(ctx, store, owner, own.ID, own.Slug, "Owner", own.Slug, nil)
 	require.NoError(t, err)
-	_, err = admin.SetAvatar(ctx, store, owner, own.ID, own.Slug, "music", nil)
+	_, err = admin.SetAvatar(ctx, store, owner, own.ID, own.Slug, "music", nil, nil)
 	require.NoError(t, err)
 	require.NoError(t, admin.RemoveRelay(ctx, store, owner, own.ID, own.Slug))
 	for _, user := range []*models.User{nil, owner} {
@@ -84,7 +84,7 @@ func TestPersonalServices160(t *testing.T) {
 		require.Error(t, err)
 		_, err = admin.UpdateProfile(ctx, store, user, other.ID, other.Slug, "stolen", other.Slug, nil)
 		require.Error(t, err)
-		_, err = admin.SetAvatar(ctx, store, user, other.ID, other.Slug, "music", nil)
+		_, err = admin.SetAvatar(ctx, store, user, other.ID, other.Slug, "music", nil, nil)
 		require.Error(t, err)
 		require.Error(t, admin.RemoveRelay(ctx, store, user, other.ID, other.Slug))
 		require.Error(t, admin.ExportHistory(ctx, store, user, other.ID, io.Discard))

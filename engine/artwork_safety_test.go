@@ -41,7 +41,7 @@ func TestArtworkPublicationAndTrackAlbumIdentity(t *testing.T) {
 	require.NoError(t, err)
 	oldPath := imagecache.BuildImagePath(old, imagecache.ImageSizeSource)
 	require.FileExists(t, oldPath)
-	require.NoError(t, a.store.SetProfileAvatar(ctx, 2, ptr(old.String()), nil))
+	require.NoError(t, a.store.SetProfileAvatar(ctx, 2, ptr(old.String()), nil, nil))
 	replacement, err := admin.ReplaceArtwork(ctx, a.store, user, "track", 12, "", bytes.NewReader(b.Bytes()), admin.ArtworkClient{})
 	require.NoError(t, err)
 	require.NotEqual(t, old, replacement)

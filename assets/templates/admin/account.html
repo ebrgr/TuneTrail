@@ -35,6 +35,28 @@
   </label>
 {{end}}
 
+{{/* ISSUE-202: the avatar background, chosen from the fixed palette (models.AvatarPalette). The value is the
+     stored hex; the empty option keeps the theme colour. The server refuses anything outside the palette. */}}
+{{define "admin/color-select"}}
+  <label>{{tr "admin.avatar_color.label" "Background color"}}
+    <select name="color">
+      <option value=""{{if not (avatarColor .)}} selected{{end}}>{{tr "admin.avatar_color.default" "Theme default"}}</option>
+      <option value="#000000"{{if eq . "#000000"}} selected{{end}}>{{tr "admin.avatar_color.black" "Black"}} (#000000)</option>
+      <option value="#374151"{{if eq . "#374151"}} selected{{end}}>{{tr "admin.avatar_color.graphite" "Graphite"}} (#374151)</option>
+      <option value="#b91c1c"{{if eq . "#b91c1c"}} selected{{end}}>{{tr "admin.avatar_color.red" "Red"}} (#b91c1c)</option>
+      <option value="#c2410c"{{if eq . "#c2410c"}} selected{{end}}>{{tr "admin.avatar_color.orange" "Orange"}} (#c2410c)</option>
+      <option value="#a16207"{{if eq . "#a16207"}} selected{{end}}>{{tr "admin.avatar_color.amber" "Amber"}} (#a16207)</option>
+      <option value="#15803d"{{if eq . "#15803d"}} selected{{end}}>{{tr "admin.avatar_color.green" "Green"}} (#15803d)</option>
+      <option value="#0f766e"{{if eq . "#0f766e"}} selected{{end}}>{{tr "admin.avatar_color.teal" "Teal"}} (#0f766e)</option>
+      <option value="#1d4ed8"{{if eq . "#1d4ed8"}} selected{{end}}>{{tr "admin.avatar_color.blue" "Blue"}} (#1d4ed8)</option>
+      <option value="#6d28d9"{{if eq . "#6d28d9"}} selected{{end}}>{{tr "admin.avatar_color.violet" "Violet"}} (#6d28d9)</option>
+      <option value="#be185d"{{if eq . "#be185d"}} selected{{end}}>{{tr "admin.avatar_color.pink" "Pink"}} (#be185d)</option>
+      <option value="#d1d5db"{{if eq . "#d1d5db"}} selected{{end}}>{{tr "admin.avatar_color.light-gray" "Light gray"}} (#d1d5db)</option>
+      <option value="#ffffff"{{if eq . "#ffffff"}} selected{{end}}>{{tr "admin.avatar_color.white" "White"}} (#ffffff)</option>
+    </select>
+  </label>
+{{end}}
+
 {{/* The cards of the Account tab; the shell (admin/account-shell) owns the grid. */}}
 {{define "admin/account"}}
   {{template "admin/account-identity" .}}

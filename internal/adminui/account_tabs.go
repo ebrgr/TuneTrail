@@ -194,6 +194,9 @@ func (h *Handler) accountRows(ctx context.Context, actor *models.User, profiles 
 		if p.AvatarIcon != nil {
 			row.Avatar.Icon = *p.AvatarIcon
 		}
+		if p.AvatarColor != nil {
+			row.Avatar.Color = *p.AvatarColor
+		}
 		// A missing detail only hides the role and state of that row.
 		if details, err := h.store.ProfileAccount(ctx, p.ID); err == nil {
 			row.Account = details

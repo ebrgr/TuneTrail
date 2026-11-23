@@ -856,5 +856,19 @@
   "admin.settings.origin": "Origem",
   "admin.settings.locked": "Bloqueado",
   "admin.settings.restart_tag": "Reinício necessário",
-  "admin.settings.values": "Valores salvo, efetivo e em execução"
+  "admin.settings.values": "Valores salvo, efetivo e em execução",
+  "admin.avatar_color.label": "Cor de fundo",
+  "admin.avatar_color.default": "Padrão do tema",
+  "admin.avatar_color.black": "Preto",
+  "admin.avatar_color.graphite": "Grafite",
+  "admin.avatar_color.red": "Vermelho",
+  "admin.avatar_color.orange": "Laranja",
+  "admin.avatar_color.amber": "Âmbar",
+  "admin.avatar_color.green": "Verde",
+  "admin.avatar_color.teal": "Verde-azulado",
+  "admin.avatar_color.blue": "Azul",
+  "admin.avatar_color.violet": "Violeta",
+  "admin.avatar_color.pink": "Rosa",
+  "admin.avatar_color.light-gray": "Cinza claro",
+  "admin.avatar_color.white": "Branco"
 }

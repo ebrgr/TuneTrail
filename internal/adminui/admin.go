@@ -168,7 +168,7 @@ func New(store Store, opts Options) (*Handler, error) {
 			return ""
 		}
 		return *p
-	}, "avatarIcon": webassets.AvatarIcon, "icon": webassets.Icon, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
+	}, "avatarIcon": webassets.AvatarIcon, "avatarColor": webassets.AvatarColor, "icon": webassets.Icon, "themes": webassets.ThemeOptions}).ParseFS(templates, "templates/*.html")
 	if err == nil {
 		err = webassets.ValidateTemplates(tmpl)
 	}

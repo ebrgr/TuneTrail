@@ -146,6 +146,7 @@
       <input type="hidden" name="submission_token" value="{{.Submission}}">
       <input type="hidden" name="profile_slug" value="{{.Profile.Slug}}">
       {{template "admin/icon-select" (strval .Profile.AvatarIcon)}}
+      {{template "admin/color-select" (strval .Profile.AvatarColor)}}
       <label>{{tr "admin.text.photo" "Photo"}}
         <input type="file" name="image" accept="image/jpeg,image/png,image/webp"
           {{if and $mine $a.Error}}aria-describedby="profile-avatar-error"{{end}}>

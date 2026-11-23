@@ -4,12 +4,16 @@ import (
 	"html/template"
 	"net/url"
 	"strings"
+
+	"github.com/ebrgr/TuneTrail/internal/models"
 )
 
 // NavProfile is the profile shown by the shared sidebar, whatever page model it came from.
 type NavProfile struct {
 	ID                      int64 // carried by administration links so pages keep the profile
 	Name, Slug, Image, Icon string
+	// Color is a palette background (models.AvatarPalette) or empty for the theme colour (ISSUE-202).
+	Color string
 }
 
 // Nav is the data for the shared "partial/sidebar" template (ISSUE-122).
@@ -39,6 +43,15 @@ func Icon(name string) template.HTML {
 // AvatarIcon maps a stored avatar icon to its bundled SVG name; unknown values show initials.
 func AvatarIcon(name string) string {
 	return avatarIcons[name]
+}
+
+// AvatarColor returns the stored avatar background only when it is exactly one palette entry, so a value that
+// somehow reached the database can never be written into a page (ISSUE-202).
+func AvatarColor(hex string) string {
+	if models.ValidAvatarColor(hex) {
+		return hex
+	}
+	return ""
 }
 
 var avatarIcons = map[string]string{"music": "Music2", "headphones": "Headphones", "disc": "Disc3", "radio": "Radio", "user": "UserRound"}

@@ -1,7 +1,8 @@
 {{/* The single sidebar for public pages, the visual preview and administration (ISSUE-122).
      Called with a webassets.Nav: public pages pass .Nav, administration passes (nav .Profile). */}}
 {{define "partial/avatar"}}
-  <span class="avatar" aria-hidden="true">{{if .Image}}<img src="/image/{{.Image}}/128x128.webp" alt="" data-avatar-image>
+  <span class="avatar"{{with avatarColor .Color}} data-avatar-color="{{.}}"{{end}} aria-hidden="true">
+    {{- if .Image}}<img src="/image/{{.Image}}/128x128.webp" alt="" data-avatar-image>
     {{- /**/}}<span hidden data-avatar-fallback>{{initials .Name}}</span>{{else if avatarIcon .Icon}}{{icon (avatarIcon .Icon)}}
     {{- else}}{{initials .Name}}{{end}}</span>
 {{end}}

@@ -96,7 +96,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			return
 		} else if image != nil {
 			defer image.Close()
-			if _, e = admin.SetAvatar(r.Context(), h.store, identity.User, p.ID, p.Slug, f.SingleValue("icon"), image); e != nil {
+			if _, e = admin.SetAvatar(r.Context(), h.store, identity.User, p.ID, p.Slug, f.SingleValue("icon"), image, nil); e != nil {
 				h.render(w, 200, view{Error: "Profile created, but the photo could not be saved. Retry in Avatar.", Profile: p})
 				return
 			}
@@ -249,7 +249,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		}
 		_, err = admin.UpdateProfile(r.Context(), h.store, identity.User, id, slug, f.SingleValue("display_name"), f.SingleValue("slug"), visibility)
 	case "avatar", "avatar-clear":
-		if !fields(f, "profile_slug", "icon", "image") {
+		if !fields(f, "profile_slug", "icon", "image", "color") {
 			err = db.ErrInvalidInput
 			break
 		}
@@ -273,7 +273,12 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 		if imageFile != nil {
 			image = imageFile
 		}
-		_, err = admin.SetAvatar(r.Context(), h.store, identity.User, id, slug, icon, image)
+		// The avatar form always sends the colour (empty means the theme colour); "Use initials" sends none and keeps it.
+		var color *string
+		if values, sent := f.Values["color"]; sent && len(values) == 1 {
+			color = &values[0]
+		}
+		_, err = admin.SetAvatar(r.Context(), h.store, identity.User, id, slug, icon, image, color)
 	case "keys/create":
 		if !fields(f, "profile_slug", "label") {
 			err = db.ErrInvalidInput

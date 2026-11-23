@@ -856,5 +856,19 @@
   "admin.settings.origin": "Origin",
   "admin.settings.locked": "Locked",
   "admin.settings.restart_tag": "Restart needed",
-  "admin.settings.values": "Saved, effective and running values"
+  "admin.settings.values": "Saved, effective and running values",
+  "admin.avatar_color.label": "Background color",
+  "admin.avatar_color.default": "Theme default",
+  "admin.avatar_color.black": "Black",
+  "admin.avatar_color.graphite": "Graphite",
+  "admin.avatar_color.red": "Red",
+  "admin.avatar_color.orange": "Orange",
+  "admin.avatar_color.amber": "Amber",
+  "admin.avatar_color.green": "Green",
+  "admin.avatar_color.teal": "Teal",
+  "admin.avatar_color.blue": "Blue",
+  "admin.avatar_color.violet": "Violet",
+  "admin.avatar_color.pink": "Pink",
+  "admin.avatar_color.light-gray": "Light gray",
+  "admin.avatar_color.white": "White"
 }

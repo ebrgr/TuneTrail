@@ -55,6 +55,7 @@ type Profile struct {
 	Slug         string `json:"slug"`
 	Name         string `json:"display_name"`
 	Icon         string `json:"avatar_icon"`
+	Color        string `json:"avatar_color,omitempty"`
 	Image        string `json:"avatar_image_id,omitempty"`
 }
 type Media struct {
@@ -93,7 +94,7 @@ func (p Page) Nav() webassets.Nav {
 		nav.Kind = "live"
 	}
 	if p.Profile != nil {
-		nav.Profile = &webassets.NavProfile{ID: int64(p.Profile.ID), Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon}
+		nav.Profile = &webassets.NavProfile{ID: int64(p.Profile.ID), Name: p.Profile.Name, Slug: p.Profile.Slug, Image: p.Profile.Image, Icon: p.Profile.Icon, Color: p.Profile.Color}
 	}
 	nav.PeriodLinks = nav.DefaultPeriods()
 	return nav

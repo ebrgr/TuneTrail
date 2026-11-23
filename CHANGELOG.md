@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- The avatar has a background color chosen from a list of twelve (black first) in the Profile tab. The initials and the icon turn light or dark by themselves to stay readable, a photo still covers the background, and the color is saved per profile. This adds schema 22 (a nullable column), and the upgrade makes the usual backup first (ISSUE-202).
+
 ## [0.71] - 2026-11-23
 
 - API key details and ingestion health shortcuts have larger touch targets, key revocation is visually separated, and account and ingestion health controls show a distinct pressed state (ISSUE-074).

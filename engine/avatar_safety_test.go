@@ -26,12 +26,12 @@ type pausedAvatarStore struct {
 	resume chan struct{}
 }
 
-func (s pausedAvatarStore) SetProfileAvatar(ctx context.Context, id int32, img, icon *string) error {
+func (s pausedAvatarStore) SetProfileAvatar(ctx context.Context, id int32, img, icon, color *string) error {
 	if img != nil {
 		s.staged <- *img
 		<-s.resume
 	}
-	return s.AvatarStore.SetProfileAvatar(ctx, id, img, icon)
+	return s.AvatarStore.SetProfileAvatar(ctx, id, img, icon, color)
 }
 
 type failingImageStore struct{ db.ImageStore }
@@ -49,7 +49,7 @@ func TestAvatarPublicationAndCollectorSafety(t *testing.T) {
 	store := pausedAvatarStore{a.store, make(chan string, 1), make(chan struct{})}
 	done := make(chan error, 1)
 	go func() {
-		_, e := admin.SetAvatar(ctx, store, user, 2, "second", "", bytes.NewReader(data.Bytes()))
+		_, e := admin.SetAvatar(ctx, store, user, 2, "second", "", bytes.NewReader(data.Bytes()), nil)
 		done <- e
 	}()
 	var img string
@@ -90,7 +90,7 @@ func TestUnsupportedAvatar033(t *testing.T) {
 	require.NoError(t, err)
 	before, err := a.store.GetListeningProfileByID(ctx, 2)
 	require.NoError(t, err)
-	_, err = admin.SetAvatar(ctx, a.store, user, 2, "second", "", bytes.NewReader([]byte("GIF89a\x01\x00\x01\x00\x00\x00\x00")))
+	_, err = admin.SetAvatar(ctx, a.store, user, 2, "second", "", bytes.NewReader([]byte("GIF89a\x01\x00\x01\x00\x00\x00\x00")), nil)
 	require.ErrorIs(t, err, imagepipeline.ErrFormat)
 	after, err := a.store.GetListeningProfileByID(ctx, 2)
 	require.NoError(t, err)

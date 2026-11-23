@@ -36,7 +36,7 @@ func TestListeningVisibility161(t *testing.T) {
 	require.NoError(t, imagecache.SaveImage(avatarID, bytes.NewReader(artwork)))
 	t.Cleanup(func() { _ = imagecache.DeleteImage(avatarID) })
 	avatar := avatarID.String()
-	require.NoError(t, a.store.SetProfileAvatar(ctx, p.ID, &avatar, nil))
+	require.NoError(t, a.store.SetProfileAvatar(ctx, p.ID, &avatar, nil, nil))
 	require.NoError(t, a.store.Exec(fmt.Sprintf("UPDATE releases SET image='%s' WHERE id=11", id)))
 	require.NoError(t, a.store.Exec(fmt.Sprintf("INSERT INTO listens(profile_id,track_id,listened_at) VALUES(%d,12,100)", p.ID)))
 	require.NoError(t, a.store.Exec("DELETE FROM listens WHERE profile_id IN (2,3)"))

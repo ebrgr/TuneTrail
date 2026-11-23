@@ -38,6 +38,17 @@ the profile name. Photos accept JPEG, PNG and static WebP; animated images and
 other formats are not supported. The complete upload, including multipart data,
 is limited to 5 MiB.
 
+The avatar also has a **Background color**, chosen from a fixed list of twelve
+colors (black, graphite, red, orange, amber, green, teal, blue, violet, pink,
+light gray and white). The initials and the icon switch between light and dark
+by themselves so they stay readable (at least 4.5:1 contrast) on every color, and
+a photo covers the background. **Theme default** keeps the colors of the active
+theme, and **Use initials** clears the photo and icon but keeps the background.
+The color is saved with the profile in the database, not in `conf.toml`. The
+profile avatar API (`PUT /apis/web/v1/profiles/{slug}/avatar`) accepts an optional
+`color` field with one of those values; leaving it out keeps the current color
+and sending it empty returns to the theme default.
+
 Each profile starts with an API key. Create additional labelled keys for players,
 copy them into the appropriate player's settings, or revoke them to stop future
 submissions. Keys cannot be transferred between people. A player's key selects

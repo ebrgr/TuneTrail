@@ -167,7 +167,9 @@ type AvatarStore interface {
 }
 
 // SetAvatar serializes profile avatar updates and never deletes a previously published image during a concurrent catalog write.
-func SetAvatar(ctx context.Context, store AvatarStore, user *models.User, id int32, slug, icon string, image io.ReadSeeker) (*models.ListeningProfile, error) {
+// A nil color keeps the current background, an empty one returns to the theme colour and any other value must be
+// an exact palette entry (ISSUE-202).
+func SetAvatar(ctx context.Context, store AvatarStore, user *models.User, id int32, slug, icon string, image io.ReadSeeker, color *string) (*models.ListeningProfile, error) {
 	// Authorize before occupying a limited administrative image slot.
 	if _, err := AuthorizeProfile(ctx, store, user, id); err != nil {
 		return nil, err
@@ -187,8 +189,21 @@ func SetAvatar(ctx context.Context, store AvatarStore, user *models.User, id int
 	if err := ValidateProfile("avatar", slug, icon); err != nil {
 		return nil, err
 	}
-	if _, err := Profile(ctx, store, user, id, slug); err != nil {
+	current, err := Profile(ctx, store, user, id, slug)
+	if err != nil {
 		return nil, err
+	}
+	// Validate the colour before any image is written, so a refused value leaves no orphan file behind.
+	var colorValue *string
+	switch {
+	case color == nil:
+		colorValue = current.AvatarColor
+	case *color == "":
+	case models.ValidAvatarColor(*color):
+		v := *color
+		colorValue = &v
+	default:
+		return nil, db.ErrInvalidInput
 	}
 	unlockPublication, err := imagecache.LockPublicationContext(ctx)
 	if err != nil {
@@ -212,7 +227,7 @@ func SetAvatar(ctx context.Context, store AvatarStore, user *models.User, id int
 		v := uid.String()
 		imageID = &v
 	}
-	if err := store.SetProfileAvatar(ctx, id, imageID, iconValue); err != nil {
+	if err := store.SetProfileAvatar(ctx, id, imageID, iconValue, colorValue); err != nil {
 		if imageID != nil {
 			uid := uuid.MustParse(*imageID)
 			used, checkErr := store.ImageHasAssociation(context.WithoutCancel(ctx), uid)

@@ -157,7 +157,7 @@ func TestProfileAvatarLifecycle(t *testing.T) {
 	require.Equal(t, 200, imageResponse.Code)
 	require.Equal(t, "image/webp", imageResponse.Header().Get("Content-Type"))
 	// Keep a reference from another profile: removal cannot delete a shared file.
-	require.NoError(t, a.store.SetProfileAvatar(context.Background(), 3, p.AvatarImageID, nil))
+	require.NoError(t, a.store.SetProfileAvatar(context.Background(), 3, p.AvatarImageID, nil, nil))
 	require.Equal(t, 200, a.request("DELETE", prefix+"/avatar", "", "", true).Code)
 	require.FileExists(t, imagecache.BuildImagePath(id, imagecache.ImageSizeSource))
 	require.Equal(t, 204, a.request("DELETE", "/apis/web/v1/profiles/empty", `{"display_name":"Empty","listen_count":0}`, "", true).Code)

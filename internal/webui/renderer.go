@@ -34,8 +34,9 @@ func loadTemplates(prefix string) (*template.Template, error) {
 			return strings.ReplaceAll(fallback, "{{."+name+"}}", fmt.Sprint(value))
 		},
 		// Shared with the administration set so the single sidebar renders the same (ISSUE-122).
-		"avatarIcon": webassets.AvatarIcon,
-		"icon":       webassets.Icon,
+		"avatarIcon":  webassets.AvatarIcon,
+		"avatarColor": webassets.AvatarColor,
+		"icon":        webassets.Icon,
 		"tail": func(items []Media) []Media {
 			if len(items) < 2 {
 				return nil

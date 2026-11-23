@@ -550,6 +550,22 @@ footer a:hover { text-decoration: underline; }
   object-fit: cover
 }
 
+/* ISSUE-202: avatar background chosen from the fixed palette (models.AvatarPalette). The icon and the
+   initials follow the text colour, light on dark backgrounds and dark on light ones, at 4.5:1 or better.
+   A photo covers the background; without a colour the theme colours above apply. */
+.avatar[data-avatar-color="#000000"] { background: #000000; color: #ffffff }
+.avatar[data-avatar-color="#374151"] { background: #374151; color: #ffffff }
+.avatar[data-avatar-color="#b91c1c"] { background: #b91c1c; color: #ffffff }
+.avatar[data-avatar-color="#c2410c"] { background: #c2410c; color: #ffffff }
+.avatar[data-avatar-color="#a16207"] { background: #a16207; color: #ffffff }
+.avatar[data-avatar-color="#15803d"] { background: #15803d; color: #ffffff }
+.avatar[data-avatar-color="#0f766e"] { background: #0f766e; color: #ffffff }
+.avatar[data-avatar-color="#1d4ed8"] { background: #1d4ed8; color: #ffffff }
+.avatar[data-avatar-color="#6d28d9"] { background: #6d28d9; color: #ffffff }
+.avatar[data-avatar-color="#be185d"] { background: #be185d; color: #ffffff }
+.avatar[data-avatar-color="#d1d5db"] { background: #d1d5db; color: #111111 }
+.avatar[data-avatar-color="#ffffff"] { background: #ffffff; color: #111111 }
+
 /* Constrain this region without requiring a fixed layout width. */
 .profile-header {
   width: 100%;
