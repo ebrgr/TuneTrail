@@ -1,11 +1,11 @@
 ---
 id: ISSUE-127
 title: 127 — Remodelar a configuração do servidor
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-15T15:18:00Z'
-updated_date: '2026-11-23T14:23:00Z'
+updated_date: '2026-11-23T16:45:00Z'
 labels:
   - ui
   - admin
@@ -28,11 +28,11 @@ Parte da ISSUE-074 (remodelação responsiva da administração). Origem: pedido
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Campos agrupados em cartões por área no padrão comum
-- [ ] #2 Origem do valor e necessidade de reinício visíveis sem poluir o campo
-- [ ] #3 Ações Salvar e Testar sempre alcançáveis; sem JavaScript o formulário funciona como hoje
+- [x] #1 Campos agrupados em cartões por área no padrão comum
+- [x] #2 Origem do valor e necessidade de reinício visíveis sem poluir o campo
+- [x] #3 Ações Salvar e Testar sempre alcançáveis; sem JavaScript o formulário funciona como hoje
 - [ ] #4 Capturas 390/768/1440 em Yuu e Pearl com aceite visual
-- [ ] #5 Popup gera u/t/s do Navidrome no navegador sem enviar nem gravar a senha, com teste de conexão no próprio popup
+- [x] #5 Popup gera u/t/s do Navidrome no navegador sem enviar nem gravar a senha, com teste de conexão no próprio popup
 <!-- AC:END -->
 
 ## Comments
@@ -62,6 +62,15 @@ created: 2026-11-23T14:23:00Z
 ---
 
 Estudo 23/11/2026: popup <dialog> com cálculo md5(senha+sal) no navegador, aviso fixo (senha nunca gravada nem enviada; t+s equivalem a credencial), teste de conexão no popup, exibição de estado sem máscara. Auditoria de variáveis de ambiente em backlog/evidencias/issue-127/ESTUDO.md §7. Cartões, origem de valores e barra Salvar/Testar seguem pendentes (ACs 1–4).
+
+---
+
+author: claude
+created: 2026-11-23T16:45:00Z
+
+---
+
+Aceite: aprovada pelo usuário em 23/11/2026, após teste próprio da interface no servidor local com o banco dele. Verificado: cartões por área (6) e ordem; origem do valor e aviso de reinício por cartão; barra Salvar/Testar fixa e formulário sem JavaScript preservado (testes de integração de cmd/api); popup do Navidrome com cálculo no navegador, teste de conexão no popup contra Navidrome 0.64.2; correspondência de 12 campos × 12 chaves do conf.toml provada por teste; make check verde. AC 4 deixado sem marca: o aceite visual foi do próprio usuário, mas não há capturas arquivadas em 390/768/1440 nos dois temas (só as do popup em backlog/evidencias/issue-127/). Derivadas abertas: ISSUE-197, 198, 199 e 200. O Reviewer não foi executado: o usuário aceitou direto de Em andamento. Não publicada.
 
 ---
 <!-- COMMENTS:END -->
