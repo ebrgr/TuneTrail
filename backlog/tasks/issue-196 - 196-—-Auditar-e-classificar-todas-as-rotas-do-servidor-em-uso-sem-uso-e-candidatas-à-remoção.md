@@ -3,15 +3,20 @@ id: ISSUE-196
 title: >-
   196 — Auditar e classificar todas as rotas do servidor: em uso, sem uso e
   candidatas à remoção
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-23T00:58:00Z'
-updated_date: '2026-11-23T01:00:00Z'
+updated_date: '2026-11-23T01:08:00Z'
 labels:
   - api
 milestone: m-12
 dependencies:
   - ISSUE-194
+references:
+  - backlog/evidencias/issue-196/ROTAS.md
+  - backlog/evidencias/issue-196/REMOCOES.md
+  - backlog/evidencias/issue-196/OPENAPI.md
 type: chore
 ordinal: 209000
 ---
@@ -31,6 +36,24 @@ created: 2026-11-23T01:00:00Z
 ---
 
 Início (22/11/2026): despachada ao Codex em worktree própria, a pedido do usuário. Somente leitura e documentação: nada é removido.
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:00:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-196` na branch `chore/issue-196-auditar-e-classificar-todas-as` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-23T01:08:00Z
+
+---
+
+Auditoria concluída nesta worktree: 225 padrões da produção (145 em uso, 39 de compatibilidade, 9 combinações inválidas sem uso e 32 a decidir), mais cinco da prévia. A extração reproduz o inventário. Três percursos E2E passaram em 4130 com SQLite descartável e log sanitizado. TestRouteManifest, TestAssetHTTPContracts e TestExternalAssetExposure passaram. As propostas de restrição e o recorte para a ISSUE-104 estão nas evidências. A tarefa permanece Em andamento para revisão e aceite.
 
 ---
 <!-- COMMENTS:END -->
