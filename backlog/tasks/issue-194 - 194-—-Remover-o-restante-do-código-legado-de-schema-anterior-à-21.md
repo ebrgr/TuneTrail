@@ -1,11 +1,11 @@
 ---
 id: ISSUE-194
 title: 194 — Remover o restante do código legado de schema anterior à 21
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T00:10:00Z'
-updated_date: '2026-11-23T01:20:00Z'
+updated_date: '2026-11-23T01:27:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -69,6 +69,24 @@ created: 2026-11-23T01:20:00Z
 ---
 
 Reviewer: APROVADO, sem BUG. make check 13/13; -race ok em sqlite, importer, ingest, catalog, relay, admin; sem referências remanescentes em produção; escuta ao vivo e carga conferidas.
+
+---
+
+author: ebrgr
+created: 2026-11-23T01:27:00Z
+
+---
+
+Verificação: Reviewer APROVADO; make check 13/13; -race ok; escuta ao vivo e carga conferidas
+
+---
+
+author: evertonberger
+created: 2026-11-23T01:27:00Z
+
+---
+
+Aceite do usuário em 22/11/2026 ('aceito a 194').
 
 ---
 <!-- COMMENTS:END -->
