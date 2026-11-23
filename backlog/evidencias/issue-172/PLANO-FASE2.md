@@ -26,3 +26,65 @@ Manter: o que a flag `review` guardava (Revisar por perfil) em estrutura própri
 
 ## Decisão aberta (padrão adotado se o usuário não disser outra)
 Reenvio com ID externo confiável quando Revisar está ligado: manter o comportamento atual (abre pendência, caso f da ISSUE-181).
+
+## Decisão de contrato: escuta manual (22/11/2026)
+Escuta manual que coincide com escuta aceita de outra fonte no mesmo perfil, ocorrência e segundo: informar que já existe e manter a contagem, sem duplicata e sem pendência (resposta e interface como hoje: inseriu ou já existia).
+
+## Decisão de contrato: aliases secundários na importação Koito v1 (22/11/2026)
+Preservar os aliases secundários explícitos do arquivo (artista, álbum, faixa) no caminho por ocorrência. Alias já pertencente a outra entidade é ignorado e contado no relatório da importação, sem pendência e sem fusão. Default conservador; o usuário pode reverter.
+
+
+Como a resolução do Koito v1 é assíncrona, a contagem de conflitos fica no
+resultado durável por item. Reenviar o mesmo arquivo apenas lê o resultado
+apurado e apresenta a contagem no resumo, sem nova escuta. Alias novo mantém
+proveniência do perfil importador e não entra como alias canônico global.
+
+
+A escuta manual seleciona uma ocorrência já conhecida e tem resultado
+síncrono. Registra origem manual, sem mensagem de relay nem recibo de
+admissão, preservando as características da ação administrativa anterior.
+
+## Decisão de contrato: MBID de artista recebido na ocorrência (22/11/2026)
+Paridade com o legado (ISSUE-170): se exatamente um artista do catálogo do perfil tem o MBID recebido (artist_mbids ou mbid_mapping.artist_mbids), o crédito da ocorrência aponta para ele e a grafia observada fica como nome observado/alias, sem criar segundo artista. 2+ artistas com o MBID = pending_identity. Sem artista com o MBID, comportamento atual por nome. Default conservador; o usuário pode reverter.
+
+
+Os campos posicionais são usados quando há um MBID válido por crédito
+observado. Sem correspondência posicional inequívoca, resolver por nome,
+sem adivinhar vínculo. IDs válidos de `additional_info` têm prioridade
+sobre `mbid_mapping`, conforme ISSUE-170.
+
+A fusão de álbuns conserva a proteção da ISSUE-134 para lançamentos de
+ocorrências vinculadas. Recusa a mudança de lançamento com 409 e conserva
+as escutas nos dois álbuns. A fusão de catálogo legado continua coberta
+separadamente. A ordem de execução do worker não atribui significado a
+IDs sequenciais de catálogo.
+
+## Decisão de contrato: limite de aliases na importação Koito v1 (22/11/2026)
+A escuta nunca é perdida por volume de aliases: os aliases secundários entram no snapshot até o orçamento de 10 KiB por item (ordem do arquivo; campos obrigatórios têm prioridade); o excedente é ignorado e contado no relatório como alias ignorado por limite, sem rejeitar a escuta e sem aumentar o limite público. Caso de teste: 1 escuta com 220 aliases (18.345 bytes) deve gerar 1 escuta, aliases até o orçamento e o restante contado. Default conservador; o usuário pode reverter.
+
+## Decisão de contrato: campos opcionais gigantes em importações de arquivo (22/11/2026)
+Campos opcionais (client, versão do cliente, álbum/release, aliases etc.) são truncados em limite UTF-8 seguro (client 255 bytes; demais opcionais 1 KiB; aliases pelo orçamento já decidido) antes da medição de 10 KiB por item; a truncagem é contada no relatório como campo truncado. Título e artista obrigatórios acima de 4 KiB seguem recusados com erro claro. O limite público de 10 KiB não muda. Vale para TODOS os importadores de arquivo por ocorrência, não só o Koito v1. Default conservador; o usuário pode reverter.
+
+Nos cinco adaptadores de arquivo, truncar texto opcional em UTF-8 seguro
+antes da medição (cliente 255 B, demais 1 KiB), contabilizar no resumo e
+usar o orçamento restante para aliases. Recusar artista ou título acima
+de 4 KiB com erro explícito. Se ainda for preciso liberar espaço antes dos
+aliases, ceder listas opcionais e depois textos de cliente e álbum, com
+contagem. Manter o limite serializado de 10 KiB.
+
+## Decisão de contrato: item de arquivo acima de 10 KiB (22/11/2026)
+O limite de 10 KiB por item é contrato novo e não é perseguido caso a caso. Item cujo título+artista (após escape JSON) passa de 10 KiB mesmo com opcionais truncados é recusado individualmente, contado no relatório como item recusado (acima de 10 KiB), e o restante do arquivo segue (não se recusa o arquivo inteiro). Divergência aceita em relação ao legado. Vale para os cinco importadores.
+
+## Decisão de contrato: MBIDs declarados em importações offline (22/11/2026)
+Importações de arquivo vinculam MBIDs declarados (lançamento e artistas novos) mesmo offline, com proveniência declarada (mbid_source = formato da importação, mbid_declared_at = momento), nunca verificada. Não sobrescrever MBID diferente já existente (conflito ignorado e contado no relatório). MBID que já pertence a outra entidade segue a regra da ISSUE-170. Paridade com o legado; validação posterior fica na ISSUE-187 item 4. Default conservador; o usuário pode reverter.
+
+O resumo do reenvio consulta os conflitos apurados no recibo original, como nos
+aliases secundários. O relógio local da admissão fica na evidência e não muda
+a identidade do item de arquivo. No ListenBrainz, um release MBID explícito
+sem título de lançamento usa o título da faixa como rótulo, preservando a
+exportação legada. Sem título e sem release MBID, a ocorrência segue sem
+lançamento. As referências de capa do Koito v1 permanecem restritas à rede
+pública e só são instaladas na criação da entidade.
+
+## Decisão de contrato: relay como rascunho até a aprovação de rede (22/11/2026)
+Salvar o destino do relay em perfil por ocorrência cria um rascunho (aguardando aprovação de rede): sem entrega e sem intenções no outbox; nenhuma saída de rede antes da aprovação; escutas anteriores não são reenviadas retroativamente (informar na tela e nos docs). Aprovar ativa o destino; as validações de esquema, host, faixa de IP e allowlist continuam na aprovação e na ativação. Fluxo da interface preservado (salvar e depois aprovar). Default conservador; o usuário pode reverter.
