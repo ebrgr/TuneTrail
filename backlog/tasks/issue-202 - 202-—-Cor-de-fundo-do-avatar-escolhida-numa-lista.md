@@ -4,7 +4,7 @@ title: 202 — Cor de fundo do avatar escolhida numa lista
 status: Aberta
 assignee: []
 created_date: '2026-11-23T17:40:00Z'
-updated_date: '2026-11-23T17:40:00Z'
+updated_date: '2026-11-23T17:42:00Z'
 labels:
   - ui
   - admin
@@ -31,3 +31,16 @@ Origem: pedido do usuário em 23/11/2026, durante o teste do avatar. No cartão 
 - [ ] #4 A cor aparece onde o avatar aparece, com iniciais e ícone legíveis nos temas Yuu e Pearl; sem cor escolhida, o visual atual não muda
 - [ ] #5 Funciona sem JavaScript; textos em pt-BR e en; teste de regressão e make check verde
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-23T17:42:00Z
+
+---
+
+Decisões do usuário em 23/11/2026: (1) paleta fixa no código, sem hex livre; (2) o ícone e as iniciais trocam de cor sozinhos nas cores escuras, para manter o contraste.
+
+---
+<!-- COMMENTS:END -->
