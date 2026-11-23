@@ -3,10 +3,11 @@ id: ISSUE-201
 title: >-
   201 — Formulários de cartão não gravam com JavaScript: o envio vai para a URL
   da página
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-23T17:04:00Z'
-updated_date: '2026-11-23T17:04:00Z'
+updated_date: '2026-11-23T17:10:00Z'
 labels:
   - ui
   - admin
@@ -28,6 +29,19 @@ Origem: teste do usuário em 23/11/2026 («os avatares não ficam salvos depois 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Com JavaScript ligado, avatar (ícone e foto), nome do perfil, chaves de API, relay, senha e usuário da conta gravam, e a gestão de mídia continua gravando
-- [ ] #2 A resolução da URL de envio do enhance.js usa o formaction do botão quando existe e a action do formulário quando não, com teste de regressão
-- [ ] #3 Verificado no navegador, contra instância isolada, que a rede mostra POST na action do formulário e o banco guarda o valor
+- [x] #2 A resolução da URL de envio do enhance.js usa o formaction do botão quando existe e a action do formulário quando não, com teste de regressão
+- [x] #3 Verificado no navegador, contra instância isolada, que a rede mostra POST na action do formulário e o banco guarda o valor
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-23T17:04:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-201` na branch `fix/issue-201-formularios-de-cartao-nao-gravam` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->

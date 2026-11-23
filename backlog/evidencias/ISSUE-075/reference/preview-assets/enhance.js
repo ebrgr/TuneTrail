@@ -2,6 +2,12 @@
    in the background and only their section is replaced. Without this script every form
    posts normally and the server returns to the edited section's anchor. */
 (() => {
+  // Where a submission goes: the button's formaction attribute, else the form's action (ISSUE-201).
+  // submitter.formAction is not used: without the attribute it returns the document URL, so every card
+  // form posted to its own page and got a 405.
+  function submitURL(form, submitter) {
+    return new URL(submitter?.getAttribute('formaction') || form.action, location.href);
+  }
   // Each editor owns its ticket, status and listeners; a dialog never edits the document shell.
   function install(root, options = {}) {
     if (!options.submit && !root.querySelector('form[data-enhance]')) return;
@@ -47,7 +53,7 @@
         const data = new FormData(form);
         if (event.submitter?.name) data.set(event.submitter.name, event.submitter.value);
         // A submit button may carry its own formaction (ISSUE-126: relay Save and Test share one form).
-        const url = new URL(event.submitter?.formAction || form.action, location.href);
+        const url = submitURL(form, event.submitter);
         const init = {method: form.method.toUpperCase(), credentials: 'same-origin', redirect: 'manual',
           headers: {'X-TuneTrail-Partial': '1'}};
         if (init.method === 'GET') {
@@ -90,6 +96,6 @@
       }
     });
   }
-  window.TuneTrailEnhance = {install};
+  window.TuneTrailEnhance = {install, submitURL};
   install(document);
 })();

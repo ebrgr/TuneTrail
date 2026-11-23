@@ -90,7 +90,7 @@ ui.check:
 	node --check assets/js/live.js
 	node --check assets/js/admin.js
 	node --check assets/js/subsonic-credentials.js
-	node --test internal/webui/theme.test.mjs internal/webui/subsonic-credentials.test.mjs
+	node --test internal/webui/theme.test.mjs internal/webui/subsonic-credentials.test.mjs internal/webui/enhance.test.mjs
 	python3 -m unittest scripts/test_check_web_style.py
 	python3 scripts/check_web_style.py
 

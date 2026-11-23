@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed: with JavaScript on, the card forms of the account pages (avatar, profile name, API keys, relay, username and password) and the media management forms sent their changes to the page URL, got a 405 and reloaded without saving. They now save again, and the relay Save, Test and Remove buttons keep their own destinations (ISSUE-201).
+
 ## [0.69] - 2026-11-23
 
 - Server configuration is now organised in cards by area (General and log, Time, MusicBrainz, Images, Subsonic, Network and relay). Each field shows where its value comes from on one line, with the saved, effective and running values one tap away; a card announces when it needs a restart, fields set by the environment are marked Locked, and Save and Test stay reachable in a bar at the bottom. Its buttons now change colour on hover and press like the account pages, and the notice about legacy and shadow forwarding was removed because those modes no longer exist (ISSUE-127).
