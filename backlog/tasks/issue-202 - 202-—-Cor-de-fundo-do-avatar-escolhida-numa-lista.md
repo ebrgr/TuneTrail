@@ -1,8 +1,9 @@
 ---
 id: ISSUE-202
 title: 202 — Cor de fundo do avatar escolhida numa lista
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-23T17:40:00Z'
 updated_date: '2026-11-23T17:42:00Z'
 labels:
@@ -41,6 +42,15 @@ created: 2026-11-23T17:42:00Z
 ---
 
 Decisões do usuário em 23/11/2026: (1) paleta fixa no código, sem hex livre; (2) o ícone e as iniciais trocam de cor sozinhos nas cores escuras, para manter o contraste.
+
+---
+
+author: ebrgr
+created: 2026-11-23T17:42:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-202` na branch `feat/issue-202-cor-de-fundo-do-avatar` criada a partir de `main`.
 
 ---
 <!-- COMMENTS:END -->
