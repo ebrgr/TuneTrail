@@ -4,7 +4,7 @@ title: 194 — Remover o restante do código legado de schema anterior à 21
 status: Aberta
 assignee: []
 created_date: '2026-11-23T00:10:00Z'
-updated_date: '2026-11-23T00:31:00Z'
+updated_date: '2026-11-23T00:40:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -29,6 +29,15 @@ created: 2026-11-23T00:31:00Z
 ---
 
 Ordem registrada (22/11/2026): a ISSUE-195 (consolidar as migrações em um único salto da v2) depende desta e da ISSUE-055. Ao limpar, anotar quais colunas de transição de ingest_events (mode, resolver_variant, delivery_policy, parked_*, retry/claim bases) ficam sem leitor, para a 195 decidir se saem do schema final.
+
+---
+
+author: claude
+created: 2026-11-23T00:40:00Z
+
+---
+
+Início (22/11/2026): despachada ao Codex em worktree própria. Primeira da fila do banco (194 → 055 → 190 → 193 → 195).
 
 ---
 <!-- COMMENTS:END -->
