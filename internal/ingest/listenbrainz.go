@@ -74,9 +74,10 @@ func listenBrainzPlayedSeconds(raw json.RawMessage, unitsPerSecond float64) *int
 	return PlayedSeconds(value / unitsPerSecond)
 }
 
-// PlayedSeconds truncates a measurement to whole seconds and preserves an explicit zero.
+// PlayedSeconds truncates a measurement to whole seconds. Zero (including less than one second), a negative
+// value, NaN and anything above MaxInt32 mean "unknown" and return nil, so the track length is used instead.
 func PlayedSeconds(seconds float64) *int64 {
-	if !(seconds >= 0 && seconds <= math.MaxInt32) {
+	if !(seconds >= 1 && seconds <= math.MaxInt32) {
 		return nil
 	}
 	value := int64(seconds)

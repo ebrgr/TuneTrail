@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T20:05:00Z'
-updated_date: '2026-11-23T19:16:00Z'
+updated_date: '2026-11-23T21:20:00Z'
 labels:
   - ingestao
   - catalogo
@@ -71,6 +71,15 @@ created: 2026-11-23T19:16:00Z
 ---
 
 Correção da revisão: duration_played e duration_played_ms aceitam números e textos numéricos. Valores inválidos são ignorados e a API continua aceitando a escuta. Os casos de 120 s, 90,5 s truncados para 90 s e 200 s de catálogo continuam somando 410 s. Para confirmação do usuário: zero explícito é guardado como 0 e conta zero segundo nas estatísticas e no Rewind. Sem medição válida, guarda-se NULL e aplica-se a duração de catálogo. Decisão registrada no guia de ingestão. make check aprovado (13/13 jornadas E2E), com a referência de UI sem diferenças.
+
+---
+
+author: claude
+created: 2026-11-23T21:20:00Z
+
+---
+
+Decisão do usuário (23/11/2026): zero conta como ausente. duration_played 0, menos de 1 s, negativo ou não numérico viram NULL e a escuta usa a duração inteira da faixa; com segundos zerados e milissegundos válidos, vale o milissegundo. Aplicado em PlayedSeconds e na gravação SQL (NULLIF), cobrindo ingestão, importações, arquivos antigos e relay. Guia de ingestão e testes atualizados (faixa soma 810 com o zero contando 200).
 
 ---
 <!-- COMMENTS:END -->

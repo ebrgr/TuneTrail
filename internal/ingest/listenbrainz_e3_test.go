@@ -2,6 +2,7 @@ package ingest
 
 import (
 	"encoding/json"
+	"math"
 	"testing"
 	"time"
 
@@ -53,7 +54,7 @@ func TestListenBrainzPlaybackTime(t *testing.T) {
 	}{
 		{"seconds as text", `{"duration_played":"120"}`, PlayedSeconds(120)},
 		{"milliseconds as text", `{"duration_played_ms":"90500"}`, PlayedSeconds(90)},
-		{"zero takes precedence", `{"duration_played":"0","duration_played_ms":90500}`, PlayedSeconds(0)},
+		{"zero seconds fall back to milliseconds", `{"duration_played":"0","duration_played_ms":90500}`, PlayedSeconds(90)},
 		{"valid fallback", `{"duration_played":"unknown","duration_played_ms":"90500"}`, PlayedSeconds(90)},
 		{"nonnumeric", `{"duration_played":"unknown","duration_played_ms":"unknown"}`, nil},
 		{"null and absent", `{"duration_played":null}`, nil},
@@ -67,5 +68,20 @@ func TestListenBrainzPlaybackTime(t *testing.T) {
 			require.NoError(t, json.Unmarshal([]byte(`{"additional_info":`+tc.info+`}`), &meta))
 			require.Equal(t, tc.want, ListenBrainzSnapshot(meta).DurationPlayed)
 		})
+	}
+}
+
+// TestPlayedSecondsZeroIsUnknown makes zero, sub-second and invalid values unknown, so the track length is used (ISSUE-190).
+func TestPlayedSecondsZeroIsUnknown(t *testing.T) {
+	for _, unknown := range []float64{0, 0.4, 0.999, -1, math.NaN(), math.Inf(1), float64(math.MaxInt32) + 1} {
+		if got := PlayedSeconds(unknown); got != nil {
+			t.Errorf("PlayedSeconds(%v) = %d, want unknown", unknown, *got)
+		}
+	}
+	if got := PlayedSeconds(1); got == nil || *got != 1 {
+		t.Error("one second is the smallest measurement")
+	}
+	if got := PlayedSeconds(90.9); got == nil || *got != 90 {
+		t.Error("measurements truncate to whole seconds")
 	}
 }

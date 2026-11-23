@@ -15,7 +15,9 @@ import (
 
 // boundedPlayedSeconds takes the optional measurement and the resolved occurrence ID.
 // A missing catalog duration leaves the measurement intact, including for standalone occurrences.
-const boundedPlayedSeconds = `min(?, coalesce((SELECT duration FROM tracks WHERE id=? AND duration>0), 2147483647))`
+// boundedPlayedSeconds stores a measured playback time capped at the catalog track length. NULLIF makes a zero
+// (for example from an older export) unknown, and min() keeps NULL as NULL, so such a listen counts the whole track.
+const boundedPlayedSeconds = `min(NULLIF(?,0), coalesce((SELECT duration FROM tracks WHERE id=? AND duration>0), 2147483647))`
 
 // SaveManualListen inserts an explicitly selected occurrence unless that exact second already exists.
 func (s *Sqlite) SaveManualListen(ctx context.Context, opts db.SaveListenOpts) (bool, error) {

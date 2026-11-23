@@ -53,10 +53,13 @@ TuneTrail ignores invalid values and still accepts the listen. Spotify imports
 read `ms_played` for completed tracks. TuneTrail rounds down to whole seconds
 and caps the stored value at the catalog track length when known.
 
-An explicit playback time of zero is stored as zero and contributes zero
-seconds to listening statistics and Rewind. When neither field provides a
-valid measurement, the stored value is `NULL` and those totals use the catalog
-track length.
+A playback time of zero, or less than one second, is treated as unknown: some
+clients send zero when they do not know the time, so the listen counts the whole
+track in listening statistics and Rewind. The same applies when neither field
+provides a valid measurement, a value is negative or not a number, or an older
+export carries a zero: the stored value is `NULL` and the totals use the catalog
+track length. If `duration_played` is zero and `duration_played_ms` has a valid
+value, the milliseconds are used.
 
 TuneTrail exports preserve the stored value for reimport. ListenBrainz relay
 forwards the reported time in whole seconds so the destination can apply its
