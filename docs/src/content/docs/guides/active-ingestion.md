@@ -48,10 +48,15 @@ an existing candidate remains visible without decision buttons.
 ListenBrainz submissions and imports can report playback time in
 `track_metadata.additional_info`. TuneTrail uses `duration_played` (seconds)
 if valid and otherwise converts `duration_played_ms` (milliseconds) to
-seconds. Spotify imports read `ms_played` for completed tracks.
-TuneTrail rounds down to whole seconds, keeps an explicit zero, and caps the
-stored value at the catalog track length when known. If playback time is missing, listening statistics and Rewind
-use the catalog track length.
+seconds. The ListenBrainz fields accept JSON numbers and numeric strings.
+TuneTrail ignores invalid values and still accepts the listen. Spotify imports
+read `ms_played` for completed tracks. TuneTrail rounds down to whole seconds
+and caps the stored value at the catalog track length when known.
+
+An explicit playback time of zero is stored as zero and contributes zero
+seconds to listening statistics and Rewind. When neither field provides a
+valid measurement, the stored value is `NULL` and those totals use the catalog
+track length.
 
 TuneTrail exports preserve the stored value for reimport. ListenBrainz relay
 forwards the reported time in whole seconds so the destination can apply its

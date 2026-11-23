@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-22T20:05:00Z'
-updated_date: '2026-11-23T19:11:00Z'
+updated_date: '2026-11-23T19:16:00Z'
 labels:
   - ingestao
   - catalogo
@@ -62,6 +62,15 @@ created: 2026-11-23T19:11:00Z
 ---
 
 Verificação da implementação: migração aditiva 22→23 com backup restaurável, proteção de downgrade e CHECK. O caso ListenBrainz soma 410 s (120 + 90 + 200), preserva zero explícito e aplica o limite da faixa. Cobertos ingestão e revisão, arquivos ListenBrainz e Spotify, exportação e reimportação TuneTrail, relay, faixa, álbum, artista, período e Rewind. MEDICAO.md registra planos e tempos com 300.080 escutas. make check aprovado (13/13 jornadas E2E) e comparação da referência de UI aprovada (190 arquivos).
+
+---
+
+author: codex
+created: 2026-11-23T19:16:00Z
+
+---
+
+Correção da revisão: duration_played e duration_played_ms aceitam números e textos numéricos. Valores inválidos são ignorados e a API continua aceitando a escuta. Os casos de 120 s, 90,5 s truncados para 90 s e 200 s de catálogo continuam somando 410 s. Para confirmação do usuário: zero explícito é guardado como 0 e conta zero segundo nas estatísticas e no Rewind. Sem medição válida, guarda-se NULL e aplica-se a duração de catálogo. Decisão registrada no guia de ingestão. make check aprovado (13/13 jornadas E2E), com a referência de UI sem diferenças.
 
 ---
 <!-- COMMENTS:END -->

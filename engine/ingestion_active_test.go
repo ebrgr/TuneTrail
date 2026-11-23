@@ -90,7 +90,7 @@ func TestActiveIngestACK(t *testing.T) {
 	a := newProfileTestApp(t)
 	ctx := context.Background()
 	const path = "/apis/listenbrainz/1/submit-listens"
-	const valid = `{"listen_type":"import","payload":[{"listened_at":1700000000,"track_metadata":{"artist_name":"Artist","track_name":"Song"}}]}`
+	const valid = `{"listen_type":"import","payload":[{"listened_at":1700000000,"track_metadata":{"artist_name":"Artist","track_name":"Song","additional_info":{"duration_played":"unknown"}}}]}`
 	invalid := strings.TrimSuffix(valid, "]}") + `,{"track_metadata":{"track_name":"No artist"}}]}`
 
 	require.NoError(t, a.store.ActivateRelayDelivery(ctx))
@@ -121,6 +121,10 @@ func TestActiveIngestACK(t *testing.T) {
 	found, err := a.store.ResolveNextIngest(ctx, &mbz.MbzErrorCaller{})
 	require.NoError(t, err)
 	require.True(t, found)
+	// A malformed playback measurement still admits and saves the listen.
+	var played *int64
+	require.NoError(t, a.store.QueryRow(`SELECT duration_played FROM listens WHERE profile_id=1`).Scan(&played))
+	require.Nil(t, played)
 	n, err = a.store.Count(`SELECT count(*) FROM outbox o JOIN integrations i ON i.id=o.destination_id AND i.profile_id=o.profile_id
 		JOIN ingest_events e ON e.profile_id=o.profile_id AND e.event_id=o.event_id
 		WHERE i.id='relay:1' AND i.source_type='listenbrainz-relay' AND o.state='pending' AND o.closed_at IS NULL AND e.state='accepted'`)

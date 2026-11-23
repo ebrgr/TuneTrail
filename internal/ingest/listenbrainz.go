@@ -1,6 +1,7 @@
 package ingest
 
 import (
+	"encoding/json"
 	"math"
 	"strconv"
 	"strings"
@@ -16,11 +17,9 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 		ArtistNames: info.ArtistNames, DurationMS: int64(info.DurationMs), Client: info.SubmissionClient,
 		ClientVersion: info.SubmissionClientVersion}
 	// Prefer seconds when both units provide a usable playback time.
-	if info.DurationPlayed != nil {
-		s.DurationPlayed = PlayedSeconds(*info.DurationPlayed)
-	}
-	if s.DurationPlayed == nil && info.DurationPlayedMs != nil {
-		s.DurationPlayed = PlayedSeconds(*info.DurationPlayedMs / 1000)
+	s.DurationPlayed = listenBrainzPlayedSeconds(info.DurationPlayed, 1)
+	if s.DurationPlayed == nil {
+		s.DurationPlayed = listenBrainzPlayedSeconds(info.DurationPlayedMs, 1000)
 	}
 	s.DiscNumber = listenBrainzPosition(info.DiscNumber)
 	s.TrackNumber = listenBrainzPosition(info.TrackNumber)
@@ -57,6 +56,22 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 		s.MappedReleaseMBID = id.String()
 	}
 	return s
+}
+
+// listenBrainzPlayedSeconds accepts numeric JSON and numeric strings, ignoring other values.
+func listenBrainzPlayedSeconds(raw json.RawMessage, unitsPerSecond float64) *int64 {
+	text := strings.TrimSpace(string(raw))
+	if strings.HasPrefix(text, `"`) {
+		if err := json.Unmarshal(raw, &text); err != nil {
+			return nil
+		}
+		text = strings.TrimSpace(text)
+	}
+	value, err := strconv.ParseFloat(text, 64)
+	if err != nil {
+		return nil
+	}
+	return PlayedSeconds(value / unitsPerSecond)
 }
 
 // PlayedSeconds truncates a measurement to whole seconds and preserves an explicit zero.

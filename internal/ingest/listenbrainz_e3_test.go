@@ -44,3 +44,28 @@ func TestOccurrenceTimestamp(t *testing.T) {
 	require.Equal(t, "-03:00", offset)
 	require.Equal(t, "end", semantics)
 }
+
+func TestListenBrainzPlaybackTime(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		info string
+		want *int64
+	}{
+		{"seconds as text", `{"duration_played":"120"}`, PlayedSeconds(120)},
+		{"milliseconds as text", `{"duration_played_ms":"90500"}`, PlayedSeconds(90)},
+		{"zero takes precedence", `{"duration_played":"0","duration_played_ms":90500}`, PlayedSeconds(0)},
+		{"valid fallback", `{"duration_played":"unknown","duration_played_ms":"90500"}`, PlayedSeconds(90)},
+		{"nonnumeric", `{"duration_played":"unknown","duration_played_ms":"unknown"}`, nil},
+		{"null and absent", `{"duration_played":null}`, nil},
+		{"empty and boolean", `{"duration_played":"","duration_played_ms":true}`, nil},
+		{"object and list", `{"duration_played":{},"duration_played_ms":[]}`, nil},
+		{"negative and NaN", `{"duration_played":-1,"duration_played_ms":"NaN"}`, nil},
+		{"huge values", `{"duration_played":1e999,"duration_played_ms":"1e30"}`, nil},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var meta listenbrainz.LbzTrackMeta
+			require.NoError(t, json.Unmarshal([]byte(`{"additional_info":`+tc.info+`}`), &meta))
+			require.Equal(t, tc.want, ListenBrainzSnapshot(meta).DurationPlayed)
+		})
+	}
+}
