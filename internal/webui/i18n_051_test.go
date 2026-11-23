@@ -1,8 +1,8 @@
 package webui
 
 import (
-	"context"
 	"encoding/json"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -19,9 +19,7 @@ import (
 func TestTranslatedRewindAndPartialFailures(t *testing.T) {
 	s := pageStore(t)
 	at := time.Date(2025, 6, 10, 12, 0, 0, 0, time.UTC)
-	if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: at}); err != nil {
-		t.Fatal(err)
-	}
+	testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: at})
 	catalog, err := i18n.Load("../../langs")
 	if err != nil {
 		t.Fatal(err)
@@ -107,9 +105,7 @@ func TestHomeKPIComparisonTranslations(t *testing.T) {
 	now := time.Date(2026, 6, 15, 12, 0, 0, 0, time.UTC)
 	save := func(at time.Time) {
 		t.Helper()
-		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: at}); err != nil {
-			t.Fatal(err)
-		}
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: at})
 	}
 	catalog, err := i18n.Load("../../langs")
 	if err != nil {

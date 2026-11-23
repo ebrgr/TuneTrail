@@ -41,9 +41,10 @@ func TestOwnerHTTPImportProvenance160(t *testing.T) {
 			case "json-upload":
 				response := actor.upload(t, "POST", path, map[string]string{"format": "koito"}, "file", "history.json", []byte(data), true)
 				require.Equal(t, 204, response.Code, response.Body.String())
-				// Unknown MBIDs must still reuse the owner's name-scoped identities on retry.
+				// A replay reuses the original receipt and its declared identities.
 				duplicate := actor.upload(t, "POST", path, map[string]string{"format": "koito"}, "file", "history.json", []byte(data), true)
 				require.Equal(t, 204, duplicate.Code, duplicate.Body.String())
+				resolveFixtureHistory(t, a)
 				for _, table := range []string{"artists", "releases", "tracks", "listens"} {
 					var count int
 					require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM `+table).Scan(&count))
@@ -74,15 +75,16 @@ func TestOwnerHTTPImportProvenance160(t *testing.T) {
 				require.Equal(t, 303, response.Code, response.Body.String())
 				followed := taskRequest139(a, "GET", response.Header().Get("Location"), cookie, nil, nil)
 				require.Equal(t, 200, followed.Code, followed.Body.String())
-				require.Contains(t, followed.Body.String(), "Imported: 1")
+				require.Contains(t, followed.Body.String(), "Pending: 1")
 			}
+			resolveFixtureHistory(t, a)
 			var source, imageID string
 			require.NoError(t, a.store.QueryRow(`SELECT image_source,image FROM releases WHERE image IS NOT NULL LIMIT 1`).Scan(&source, &imageID))
 			require.Equal(t, target.URL+"#tunetrail-public-only", source)
 			for _, table := range []string{"artists", "releases", "tracks"} {
 				var count int
 				require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM `+table+` WHERE musicbrainz_id IS NOT NULL`).Scan(&count))
-				require.Zero(t, count)
+				require.Equal(t, 1, count)
 			}
 			var provenance string
 			require.NoError(t, a.store.QueryRow(`SELECT source FROM artist_aliases WHERE alias='HTTP Artist'`).Scan(&provenance))

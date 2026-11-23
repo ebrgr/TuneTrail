@@ -79,6 +79,7 @@ func TestProfileManagementLifecycle(t *testing.T) {
 		require.Equal(t, 200, a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Shared", ts), key, false).Code)
 	}
 	require.Equal(t, 200, a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("playing_now", "Shared", 0), keys[0].Key, false).Code)
+	resolveFixtureHistory(t, a)
 	prefix := "/apis/web/v1/profiles/new-listener"
 	for _, method := range []string{"GET", "DELETE"} {
 		endpoint := prefix
@@ -176,6 +177,7 @@ func TestProfileImportUpload(t *testing.T) {
 	require.Equal(t, 400, a.upload(t, "POST", prefix, map[string]string{"format": "wrong"}, "file", "test.json", data, true).Code)
 	w := a.upload(t, "POST", prefix, map[string]string{"format": "maloja"}, "file", "../../evil.json", data, true)
 	require.Equal(t, 204, w.Code, w.Body.String())
+	resolveFixtureHistory(t, a)
 	require.Equal(t, float64(1), getJSON(t, a, "/apis/web/v1/profiles/second/stats")["listen_count"])
 	require.Equal(t, float64(0), getJSON(t, a, "/apis/web/v1/profiles/default/stats")["listen_count"])
 	completeDir := filepath.Join(cfg.ConfigDir(), "import_complete", "2")

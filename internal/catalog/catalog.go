@@ -5,7 +5,6 @@ package catalog
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -19,28 +18,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type GetListensOpts struct {
-	ArtistID       int32
-	ReleaseGroupID int32
-	TrackID        int32
-	Limit          int
-}
-
-type SaveListenOpts struct {
-	TrackID int32
-	Time    time.Time
-}
-
 type ArtistMbidMap struct {
 	Artist string
 	Mbid   uuid.UUID
 }
 
 type SubmitListenOpts struct {
-	// When true, skips registering the listen and only associates or creates the
-	// artist, release, release group, and track in DB
-	SkipSaveListen bool
-
 	// When true, skips caching the images and only stores the image url in the db
 	SkipCacheImage bool
 
@@ -57,10 +40,9 @@ type SubmitListenOpts struct {
 	ReleaseGroupMbzID  uuid.UUID
 	Time               time.Time
 
-	UserID       int32
-	ProfileID    int32
-	Client       string
-	IsNowPlaying bool
+	UserID    int32
+	ProfileID int32
+	Client    string
 }
 
 const (
@@ -71,11 +53,6 @@ type listenCatalogStore interface {
 	db.ArtistStore
 	db.AlbumStore
 	db.TrackStore
-}
-
-type submitListenStore interface {
-	listenCatalogStore
-	db.ListenStore
 }
 
 type listenAssociation struct {
@@ -100,55 +77,29 @@ func LockAssociations(ctx context.Context) (func(), error) {
 	return func() { <-submitListenGate }, nil
 }
 
-// SubmitListen serializes shared associations and reports failures before saving a listen.
-func SubmitListen(ctx context.Context, store submitListenStore, opts SubmitListenOpts) error {
-	// Shared catalog association is a read-then-create sequence. Serialize it so
-	// simultaneous profiles do not create duplicate artists/albums/tracks.
+// PublishNowPlaying resolves the displayed track separately from historical admission.
+func PublishNowPlaying(ctx context.Context, store listenCatalogStore, opts SubmitListenOpts) error {
 	unlock, err := LockAssociations(ctx)
 	if err != nil {
 		return err
 	}
 	defer unlock()
-	if opts.ProfileID == 0 {
-		opts.ProfileID = db.ProfileID(ctx)
-	}
-	ctx = db.WithoutProfile(ctx) // Shared catalog identity; only the listen belongs to a profile.
-	l := logger.FromContext(ctx)
-
-	if opts.Artist == "" || opts.TrackTitle == "" {
-		return errors.New("track name and artist are required")
-	}
-
-	// bandaid to ensure new activity does not have sub-second precision
-	opts.Time = opts.Time.Truncate(time.Second)
-
-	association, err := resolveListenAssociation(ctx, store, opts)
+	association, err := resolveListenAssociation(db.WithoutProfile(ctx), store, opts)
 	if err != nil {
 		return err
 	}
-	track := association.track
+	setNowPlaying(opts.ProfileID, association.track)
+	return nil
+}
 
-	if opts.IsNowPlaying {
-		if track.Duration == 0 {
-			memkv.Store.Set(fmt.Sprintf("now-playing:%d", opts.ProfileID), track.ID)
-		} else {
-			memkv.Store.Set(fmt.Sprintf("now-playing:%d", opts.ProfileID), track.ID, time.Duration(track.Duration)*time.Second)
-		}
+// setNowPlaying keeps the existing cache lifetime for the chosen occurrence.
+func setNowPlaying(profile int32, track *models.Track) {
+	key := fmt.Sprintf("now-playing:%d", profile)
+	if track.Duration == 0 {
+		memkv.Store.Set(key, track.ID)
+	} else {
+		memkv.Store.Set(key, track.ID, time.Duration(track.Duration)*time.Second)
 	}
-
-	if opts.SkipSaveListen {
-		return nil
-	}
-
-	l.Info().Msgf("Received listen: '%s' by %s, from release '%s'", track.Title, buildArtistStr(association.artists), association.albumTitle)
-
-	return store.SaveListen(ctx, db.SaveListenOpts{
-		TrackID:   track.ID,
-		Time:      opts.Time,
-		UserID:    opts.UserID,
-		ProfileID: opts.ProfileID,
-		Client:    opts.Client,
-	})
 }
 
 // resolveListenAssociation resolves shared catalog identity under the caller's
@@ -253,14 +204,6 @@ func resolveListenAssociation(ctx context.Context, store listenCatalogStore, opt
 	return listenAssociation{track: track, artists: artists, albumTitle: rg.Title}, nil
 }
 
-func buildArtistStr(artists []*models.Artist) string {
-	artistNames := make([]string, len(artists))
-	for i, artist := range artists {
-		artistNames[i] = artist.Name
-	}
-	return strings.Join(artistNames, " & ")
-}
-
 var (
 	// Bracketed feat patterns
 	bracketFeatPatterns = []*regexp.Regexp{
@@ -337,21 +280,4 @@ func ParseArtists(artist string, title string, addlSeparators []*regexp.Regexp) 
 	}
 
 	return out
-}
-
-// ResolveListenTrack holds the shared association lock while mapping a receipt to a track.
-func ResolveListenTrack(ctx context.Context, store listenCatalogStore, opts SubmitListenOpts) (int32, error) {
-	if opts.Artist == "" || opts.TrackTitle == "" {
-		return 0, errors.New("track name and artist are required")
-	}
-	unlock, err := LockAssociations(ctx)
-	if err != nil {
-		return 0, err
-	}
-	defer unlock()
-	association, err := resolveListenAssociation(db.WithoutProfile(ctx), store, opts)
-	if err != nil {
-		return 0, err
-	}
-	return association.track.ID, nil
 }

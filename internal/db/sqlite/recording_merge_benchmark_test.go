@@ -64,7 +64,7 @@ func TestArchiveBoundaryUpgrade(t *testing.T) {
 			(SELECT recording_id FROM occurrences WHERE id=1),1;
 		UPDATE occurrences SET recording_id=(SELECT recording_id FROM occurrences WHERE id=1) WHERE id=70`)
 	start := time.Now().Unix()
-	_, err := provider.Up(t.Context())
+	_, err := provider.UpTo(t.Context(), 20)
 	require.NoError(t, err)
 	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM listen_export_order JOIN listens USING(event_id)`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM recording_moves WHERE stage=1 AND expires_at>=?`, start+recordingUndoSeconds))

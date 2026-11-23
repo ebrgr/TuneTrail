@@ -3,6 +3,7 @@ package webui
 import (
 	"context"
 	"github.com/ebrgr/TuneTrail/internal/memkv"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"strings"
 	"testing"
 	"time"
@@ -31,9 +32,7 @@ func TestHomeKPIsPeriodsAndEmptyBaseline(t *testing.T) {
 			ctx := db.WithProfile(context.Background(), 1)
 			save := func(profile int32, at time.Time) {
 				t.Helper()
-				if err := s.SaveListen(ctx, db.SaveListenOpts{ProfileID: profile, TrackID: 1, Time: at}); err != nil {
-					t.Fatal(err)
-				}
+				testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: profile, TrackID: 1, Time: at})
 			}
 			got, count, err := readHomeKPIs(ctx, s, tf)
 			if err != nil || count != 0 {
@@ -119,9 +118,7 @@ func TestHomeNowPlayingAppearsBeforePeriodSummary(t *testing.T) {
 func TestHomeHistoricalTotalsAndActivityTooltips(t *testing.T) {
 	// Historical totals remain independent of the selected KPI period; the hidden graph keeps its table.
 	s := pageStore(t)
-	if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)}); err != nil {
-		t.Fatal(err)
-	}
+	testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)})
 	h, err := NewHandler(s, Options{})
 	if err != nil {
 		t.Fatal(err)

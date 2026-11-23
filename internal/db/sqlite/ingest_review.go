@@ -23,6 +23,21 @@ const reviewPageSQL = `SELECT e.receipt_id,coalesce(e.file_format,e.source_type)
 	WHERE e.profile_id=? AND ` + reviewQueueScope + `
 	ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT ? OFFSET ?`
 
+// ingestReviewEnabled reads the post-cut default and explicit overrides.
+func ingestReviewEnabled(ctx context.Context, tx ingestModeReader, profile int32) (bool, error) {
+	version, err := ingestSchemaVersion(ctx, tx)
+	if err != nil {
+		return false, err
+	}
+	query := `SELECT coalesce((SELECT review FROM profile_ingest_review WHERE profile_id=?),1)`
+	if version < 21 {
+		query = `SELECT coalesce((SELECT review FROM profile_ingest_flags WHERE profile_id=?),0)`
+	}
+	var review bool
+	err = tx.QueryRowContext(ctx, query, profile).Scan(&review)
+	return review, err
+}
+
 // healthReviews reads the requested page and its candidates from one SQLite snapshot.
 func (s *Sqlite) healthReviews(ctx context.Context, profile int32, page int, health *db.IngestHealth) error {
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
@@ -30,11 +45,27 @@ func (s *Sqlite) healthReviews(ctx context.Context, profile int32, page int, hea
 		return err
 	}
 	defer tx.Rollback()
-	flags, err := ingestActivationFlags(ctx, tx, profile)
+	version, err := ingestSchemaVersion(ctx, tx)
 	if err != nil {
 		return err
 	}
-	health.ReviewAvailable, health.ReviewEnabled = flags.Active, flags.Review
+	if version < 21 {
+		err := tx.QueryRowContext(ctx, `SELECT coalesce(f.active,0),coalesce(f.review,0)
+			FROM listening_profiles p LEFT JOIN profile_ingest_flags f ON f.profile_id=p.id WHERE p.id=?`,
+			profile).Scan(&health.ReviewAvailable, &health.ReviewEnabled)
+		if errors.Is(err, sql.ErrNoRows) {
+			return db.ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+	} else {
+		health.ReviewAvailable = true
+		health.ReviewEnabled, err = ingestReviewEnabled(ctx, tx, profile)
+		if err != nil {
+			return err
+		}
+	}
 	err = tx.QueryRowContext(ctx, reviewCountSQL, profile).Scan(&health.ReviewCount)
 	if err != nil {
 		return err
@@ -127,14 +158,23 @@ const reviewCandidateRows = `SELECT DISTINCT l.event_id,l.listened_at,o.id AS oc
 // SetIngestReview changes future candidate handling without affecting activation or existing pendencies.
 func (s *Sqlite) SetIngestReview(ctx context.Context, profile int32, enabled bool) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		flags, err := ingestActivationFlags(ctx, tx, profile)
+		version, err := ingestSchemaVersion(ctx, tx)
 		if err != nil {
 			return err
 		}
-		if !flags.Active {
-			return db.ErrConflict
+		if version < 21 {
+			result, err := tx.ExecContext(ctx, `UPDATE profile_ingest_flags SET review=? WHERE profile_id=? AND active=1`, enabled, profile)
+			if err != nil {
+				return err
+			}
+			n, err := result.RowsAffected()
+			if err == nil && n == 0 {
+				return db.ErrConflict
+			}
+			return err
 		}
-		_, err = tx.ExecContext(ctx, `UPDATE profile_ingest_flags SET review=? WHERE profile_id=?`, enabled, profile)
+		_, err = tx.ExecContext(ctx, `INSERT INTO profile_ingest_review(profile_id,review) VALUES(?,?)
+			ON CONFLICT(profile_id) DO UPDATE SET review=excluded.review`, profile, enabled)
 		return err
 	})
 }

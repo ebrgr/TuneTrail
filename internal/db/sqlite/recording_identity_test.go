@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
-	"time"
 
 	migrations "github.com/ebrgr/TuneTrail/db/migrations_sqlite"
 	"github.com/ebrgr/TuneTrail/internal/db"
@@ -64,7 +63,7 @@ func TestRecordingIdentityUpgrade(t *testing.T) {
 	require.Equal(t, before, legacyDigests(t, s.db))
 	require.NoError(t, checkDatabase(s.db))
 
-	_, err = provider.Up(ctx)
+	_, err = provider.UpTo(ctx, 20)
 	require.NoError(t, err)
 	require.NoError(t, checkDatabase(s.db))
 	for name, digest := range before {
@@ -76,7 +75,7 @@ func TestRecordingIdentityUpgrade(t *testing.T) {
 	require.Equal(t, 2, scalar(t, s, `SELECT count(DISTINCT recording_id) FROM occurrences WHERE legacy_track_id=id AND id IN (1,70)`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='shadow' AND event_id IS NULL AND duplicate_decision='review'`))
 	after := legacyDigests(t, s.db)
-	_, err = provider.Up(ctx)
+	_, err = provider.UpTo(ctx, 20)
 	require.NoError(t, err)
 	require.Equal(t, after, legacyDigests(t, s.db))
 	_, err = provider.Down(ctx)
@@ -89,7 +88,7 @@ func TestRecordingIdentityBridge(t *testing.T) {
 	ctx := context.Background()
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)
-	_, err := provider.Up(ctx)
+	_, err := provider.UpTo(ctx, 20)
 	require.NoError(t, err)
 	for _, query := range []string{
 		`INSERT INTO occurrences(recording_id,release_id) SELECT id,1 FROM recordings LIMIT 1`,
@@ -106,14 +105,18 @@ func TestRecordingIdentityBridge(t *testing.T) {
 		require.Error(t, err, query)
 	}
 
-	opts := db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(42, 0)}
-	inserted, err := s.SaveListenWithResult(ctx, opts)
+	result, err := s.db.Exec(`INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,42)
+		ON CONFLICT DO NOTHING`)
 	require.NoError(t, err)
-	require.False(t, inserted)
-	opts.Time = time.Unix(43, 0)
-	inserted, err = s.SaveListenWithResult(ctx, opts)
+	inserted, err := result.RowsAffected()
 	require.NoError(t, err)
-	require.True(t, inserted)
+	require.Zero(t, inserted)
+	result, err = s.db.Exec(`INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,43)
+		ON CONFLICT DO NOTHING`)
+	require.NoError(t, err)
+	inserted, err = result.RowsAffected()
+	require.NoError(t, err)
+	require.EqualValues(t, 1, inserted)
 
 	execSQL(t, s, `INSERT INTO releases(id) VALUES(2);
 		INSERT INTO tracks(id,release_id) VALUES(100,2);
@@ -201,7 +204,7 @@ func TestRecordingIdentityExactDeletion(t *testing.T) {
 func TestRecordingIdentityCursor(t *testing.T) {
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)
-	_, err := provider.Up(context.Background())
+	_, err := provider.UpTo(context.Background(), 20)
 	require.NoError(t, err)
 	execSQL(t, s, `DROP INDEX idx_listens_legacy_identity;
 		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES
@@ -232,12 +235,12 @@ func TestRecordingIdentityBackupRestore(t *testing.T) {
 	before := legacyDigests(t, original)
 	_, err = original.Exec(`CREATE INDEX unexpected_legacy_index ON listens(client)`)
 	require.NoError(t, err)
-	_, err = bootstrap(dir, false)
+	_, err = bootstrapAtVersion(dir, false, 20)
 	require.ErrorContains(t, err, "unexpected index unexpected_legacy_index")
 	_, err = original.Exec(`DROP INDEX unexpected_legacy_index`)
 	require.NoError(t, err)
 
-	_, err = bootstrap(dir, false)
+	_, err = bootstrapAtVersion(dir, false, 20)
 	require.NoError(t, err)
 	backups, err := filepath.Glob(target + ".pre-recording-identity-*.bak")
 	require.NoError(t, err)
@@ -253,7 +256,7 @@ func TestRecordingIdentityBackupRestore(t *testing.T) {
 	require.Equal(t, 7, version)
 	require.Equal(t, before, legacyDigests(t, restored))
 	require.NoError(t, restored.Close())
-	_, err = bootstrap(restoredDir, false)
+	_, err = bootstrapAtVersion(restoredDir, false, 20)
 	require.NoError(t, err)
 }
 
@@ -284,7 +287,7 @@ func TestRecordingIdentityAllocator(t *testing.T) {
 	ctx := context.Background()
 	s, provider, _ := migrationDB(t, 7)
 	seedIdentityHistory(t, s)
-	_, err := provider.Up(ctx)
+	_, err := provider.UpTo(ctx, 20)
 	require.NoError(t, err)
 	execSQL(t, s, `DELETE FROM tracks WHERE id=70;
 		INSERT INTO occurrences(recording_id,presented_title) SELECT recording_id,'Independent track' FROM occurrences WHERE id=1`)
@@ -295,7 +298,7 @@ func TestRecordingIdentityAllocator(t *testing.T) {
 	track, err := s.SaveTrack(ctx, db.SaveTrackOpts{AlbumID: 1, ArtistIDs: []int32{1}, Title: "New track"})
 	require.NoError(t, err)
 	require.Greater(t, int(track.ID), independent)
-	require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: track.ID, Time: time.Unix(90, 0)}))
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,?,90)`, track.ID)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens l JOIN occurrences o ON o.id=l.track_id
 		WHERE l.listened_at=90 AND o.legacy_track_id=?`, track.ID))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id IN (70,?)`, independent))
@@ -343,7 +346,7 @@ func TestRecordingIdentityPreflight(t *testing.T) {
 			for _, name := range names {
 				dir := t.TempDir()
 				require.NoError(t, copyDatabase(source, filepath.Join(dir, name)))
-				_, err := bootstrap(dir, false)
+				_, err := bootstrapAtVersion(dir, false, 20)
 				require.ErrorContains(t, err, "unexpected index unexpected_listens_client")
 			}
 		})

@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
@@ -50,6 +51,9 @@ func (c *occurrenceReleaseCache) occurrenceReleaseLookup(ctx context.Context, id
 }
 
 type occurrenceProof struct {
+	aliasSource                       string
+	fileDeclared                      bool
+	artists                           map[string]int64
 	release, recording, track         string
 	conflict, ignoreDeclaredRecording bool
 	evidence                          *occurrenceMBEvidence
@@ -177,14 +181,16 @@ func occurrenceOrigin(r claimedReceipt) string {
 func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof occurrenceProof) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		var precision, admissionReason string
-		var review bool
-		err := tx.QueryRowContext(ctx, `SELECT e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),''),f.review
+		review, err := ingestReviewEnabled(ctx, tx, r.profile)
+		if err != nil {
+			return err
+		}
+		err = tx.QueryRowContext(ctx, `SELECT e.time_precision,coalesce(json_extract(e.reason_codes,'$[0]'),'')
 			FROM ingest_events e JOIN listening_profiles p ON p.id=e.profile_id
-			JOIN profile_ingest_flags f ON f.profile_id=p.id AND f.occurrence_write=1
 			WHERE e.receipt_id=? AND e.profile_id=? AND e.mode='active' AND e.resolver_variant='occurrence'
 			  AND e.closed_at IS NULL AND e.state IN ('received','retryable') AND e.resolution_version=?
 			  AND e.work_version=? AND e.lease_owner=? AND e.lease_until>?`,
-			r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&precision, &admissionReason, &review)
+			r.id, r.profile, r.version, r.work, r.lease, s.ingestNow().Unix()).Scan(&precision, &admissionReason)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
@@ -201,6 +207,18 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		if admissionReason == "client_batch_conflict" {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_duplicate", admissionReason, precision, nil, "", proof.evidence)
 		}
+		var artistConflicts []string
+		proof.artists, artistConflicts, err = identifyOccurrenceArtists(ctx, tx, r.profile, r.snapshot, proof.fileDeclared)
+		if err != nil {
+			return err
+		}
+		if len(artistConflicts) != 0 {
+			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_artist_mbid", precision, artistConflicts, "", proof.evidence)
+		}
+		proof.aliasSource = "Canonical"
+		if r.snapshot.OwnerImport && proof.fileDeclared {
+			proof.aliasSource = fmt.Sprintf("%s%d", db.ImportedAliasPrefix, r.profile)
+		}
 		// Release-less listens use the usual duplicate decision and relay transaction.
 		match, conflicts, err := resolveOccurrence(ctx, tx, r.snapshot, proof)
 		if err != nil {
@@ -208,6 +226,22 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		}
 		if len(conflicts) > 0 {
 			return writeOccurrenceDecision(ctx, tx, r, occurrenceMatch{}, "pending_identity", "ambiguous_occurrence", precision, conflicts, "", proof.evidence)
+		}
+		if proof.fileDeclared && match.id != 0 {
+			r.ignoredMBIDConflicts, err = bindFileMBIDs(ctx, tx, r.snapshot, match, proof)
+			if err != nil {
+				return err
+			}
+		}
+		// Explicit aliases belong to the identified catalog entity even if the delivery
+		// still needs a separate duplicate decision.
+		nativeAliases := r.snapshot.NativeAliases
+		if origin == "native_import" && nativeAliases != nil && match.id != 0 {
+			r.ignoredAliasConflicts, err = saveNativeOccurrenceAliases(ctx, tx, r.profile, match, nativeAliases)
+			if err != nil {
+				return err
+			}
+			nativeAliases = nil
 		}
 		// An exact repeat stays a single listen even when candidate review is disabled.
 		candidates, exact, err := occurrenceListenCandidates(ctx, tx, r, match.id)
@@ -232,7 +266,9 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			// Bridged tracks need catalog artists. Standalone credits can keep
 			// the observed name without a link when the alias is ambiguous.
 			if r.snapshot.Release != "" {
-				conflicts, err := occurrenceCreditConflicts(ctx, tx, observedCredits(r.snapshot))
+				names := observedCredits(r.snapshot)
+				names = slices.DeleteFunc(names, func(name string) bool { return proof.artists[name] != 0 })
+				conflicts, err := occurrenceCreditConflicts(ctx, tx, names)
 				if err != nil {
 					return err
 				}
@@ -244,6 +280,12 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			if err != nil {
 				return err
 			}
+			if proof.fileDeclared {
+				r.ignoredMBIDConflicts, err = bindFileMBIDs(ctx, tx, r.snapshot, match, proof)
+				if err != nil {
+					return err
+				}
+			}
 		} else if proof.recording != "" {
 			// Only independent proof can promote a provisional recording or add a track MBID.
 			if _, err := tx.ExecContext(ctx, `UPDATE recordings SET musicbrainz_id=?,mbid_source='validated'
@@ -254,6 +296,22 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 				if _, err := tx.ExecContext(ctx, `UPDATE occurrences SET track_mbid=? WHERE id=?`, proof.track, match.id); err != nil {
 					return err
 				}
+			}
+		}
+		if origin == "native_import" && nativeAliases != nil {
+			r.ignoredAliasConflicts, err = saveNativeOccurrenceAliases(ctx, tx, r.profile, match, nativeAliases)
+			if err != nil {
+				return err
+			}
+		}
+		// Keep the observed spelling as profile import data when it has no other owner.
+		for name, artist := range proof.artists {
+			if _, err := tx.ExecContext(ctx, `INSERT INTO artist_aliases(artist_id,alias,source,is_primary)
+				SELECT ?,?,?,0 WHERE NOT EXISTS(SELECT 1 FROM artist_aliases WHERE alias=?)
+				AND (EXISTS(SELECT 1 FROM artist_tracks WHERE track_id=? AND artist_id=?)
+				  OR EXISTS(SELECT 1 FROM occurrence_credits WHERE occurrence_id=? AND artist_id=?))`,
+				artist, name, fmt.Sprintf("ProfileImport:%d", r.profile), name, match.id, artist, match.id, artist); err != nil {
+				return err
 			}
 		}
 		event := uuid.NewString()
@@ -283,11 +341,13 @@ func writeOccurrenceDecision(ctx context.Context, tx *sql.Conn, r claimedReceipt
 		status = "resolved"
 	}
 	evidence, err := json.Marshal(struct {
-		Candidates  []string              `json:"candidates,omitempty"`
-		Precision   string                `json:"precision"`
-		Truncated   bool                  `json:"truncated,omitempty"`
-		MusicBrainz *occurrenceMBEvidence `json:"musicbrainz,omitempty"`
-	}{candidates[:min(len(candidates), 32)], precision, len(candidates) > 32, mbEvidence})
+		Candidates            []string              `json:"candidates,omitempty"`
+		Precision             string                `json:"precision"`
+		Truncated             bool                  `json:"truncated,omitempty"`
+		MusicBrainz           *occurrenceMBEvidence `json:"musicbrainz,omitempty"`
+		IgnoredAliasConflicts int                   `json:"ignored_alias_conflicts,omitempty"`
+		IgnoredMBIDConflicts  int                   `json:"ignored_mbid_conflicts,omitempty"`
+	}{candidates[:min(len(candidates), 32)], precision, len(candidates) > 32, mbEvidence, r.ignoredAliasConflicts, r.ignoredMBIDConflicts})
 	if err != nil {
 		return err
 	}

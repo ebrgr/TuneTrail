@@ -77,7 +77,7 @@ func getApiKey(t *testing.T, session string) {
 // deletes releases, which cascade to release_aliases, tracks, and track_aliases.
 func truncateTestData(t *testing.T) {
 	t.Helper()
-	require.NoError(t, store.Exec("DELETE FROM listens"))
+	require.NoError(t, store.Exec("DELETE FROM ingest_events; DELETE FROM listens"))
 	require.NoError(t, store.Exec("DELETE FROM artists"))
 	// Belt-and-suspenders: delete any releases the trigger may have missed
 	// (e.g. releases that were never associated with an artist).
@@ -194,7 +194,17 @@ func doSubmitListens(t *testing.T) {
 		respBytes, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		assert.Equal(t, `{"status": "ok"}`, string(respBytes))
+		waitFixtureResolution(t)
 	}
+}
+
+// waitFixtureResolution separates HTTP receipt acknowledgement from history assertions.
+func waitFixtureResolution(t *testing.T) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		open, err := store.Count(`SELECT count(*) FROM ingest_events WHERE state IN ('received','retryable')`)
+		return err == nil && open == 0
+	}, 15*time.Second, 20*time.Millisecond)
 }
 
 func doSubmitListensForMergeConflict(t *testing.T) {
@@ -265,6 +275,8 @@ func doSubmitListensForMergeConflict(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, `{"status": "ok"}`, string(respBytes))
 	}
+
+	waitFixtureResolution(t)
 }
 
 func TestGetters(t *testing.T) {
@@ -331,6 +343,12 @@ func TestGetters(t *testing.T) {
 func TestMerge(t *testing.T) {
 	truncateTestData(t)
 	t.Run("Submit Listens", doSubmitListens)
+	// This fixture models corroborated recordings, rather than unverified submitted UUIDs.
+	require.NoError(t, store.Exec(`UPDATE recordings SET mbid_source='validated',
+		musicbrainz_id=CASE WHEN id=(SELECT recording_id FROM occurrences WHERE id=1)
+			THEN '11111111-1111-4111-8111-111111111111'
+			ELSE '22222222-2222-4222-8222-222222222222' END WHERE id IN (
+			SELECT recording_id FROM occurrences WHERE id IN (1,2))`))
 
 	resp, err := makeAuthRequest(t, session, "POST", "/apis/web/v1/track/2/merge", strings.NewReader(`{"merge_from_id":1}`))
 	require.NoError(t, err)
@@ -362,16 +380,18 @@ func TestMerge(t *testing.T) {
 
 	t.Run("Submit Listens", doSubmitListens)
 
+	// A linked occurrence keeps its original release even through an explicit legacy merge.
 	resp, err = makeAuthRequest(t, session, "POST", "/apis/web/v1/album/2/merge", strings.NewReader(`{"merge_from_id":1}`))
 	require.NoError(t, err)
-	require.Equal(t, 204, resp.StatusCode)
-
-	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/album/2")
-	require.NoError(t, err)
-	var album models.Album
-	err = json.NewDecoder(resp.Body).Decode(&album)
-	require.NoError(t, err)
-	assert.EqualValues(t, 2, album.ListenCount)
+	require.Equal(t, http.StatusConflict, resp.StatusCode)
+	for _, id := range []int{1, 2} {
+		resp, err = http.DefaultClient.Get(fmt.Sprintf("%s/apis/web/v1/album/%d", host(), id))
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		var album models.Album
+		require.NoError(t, json.NewDecoder(resp.Body).Decode(&album))
+		assert.EqualValues(t, 1, album.ListenCount)
+	}
 
 	truncateTestData(t)
 }
@@ -389,7 +409,7 @@ func TestMerge_ConflictingListens(t *testing.T) {
 	var artist models.Artist
 	err = json.NewDecoder(resp.Body).Decode(&artist)
 	require.NoError(t, err)
-	assert.EqualValues(t, 1, artist.ListenCount) // conflicting listens should be ignored on merge, so only one remains
+	assert.EqualValues(t, 2, artist.ListenCount) // Catalog merges preserve distinct occurrence events.
 
 	// old artist deleted
 	resp, err = http.DefaultClient.Get(host() + "/apis/web/v1/artist/2")
@@ -991,6 +1011,7 @@ func TestSetPrimaryArtist(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, `{"status": "ok"}`, string(respBytes))
 
+	waitFixtureResolution(t)
 	// ensure only one artist can be primary at once
 
 	resp, err = makeAuthRequest(t, session, "PATCH", "/apis/web/v1/album/4/artists/4", strings.NewReader(`{"is_primary":true}`))

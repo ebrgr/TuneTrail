@@ -1,16 +1,13 @@
 package engine
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/netip"
 	"strings"
 	"sync/atomic"
 	"testing"
 
-	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/stretchr/testify/require"
 )
 
@@ -46,28 +43,26 @@ func TestProfileRelayAdministration(t *testing.T) {
 	require.Equal(t, 200, w.Code)
 	require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
 	require.JSONEq(t, `{"enabled":false,"url":""}`, w.Body.String())
-	w = a.request("POST", path+"/test", body, "", true)
-	require.Equal(t, 502, w.Code)
+	require.Equal(t, 409, a.request("POST", path+"/test", body, "", true).Code)
 	require.Zero(t, calls.Load())
-	host := strings.TrimPrefix(server.URL, "http://")
-	require.NoError(t, a.store.SetRelayPermission(t.Context(), 1, relay.Permission{HostPort: host, HTTP: true}))
-	require.Equal(t, 502, a.request("POST", path+"/test", body, "", true).Code)
-	require.NoError(t, a.store.SetRelayPermission(t.Context(), 1, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
+	require.Equal(t, 204, a.request("PUT", path, body, "", true).Code)
+	require.Equal(t, 409, a.request("POST", path+"/test", body, "", true).Code)
+	require.Zero(t, calls.Load())
+	approveFixtureRelay(t, a, 1)
 	w = a.request("POST", path+"/test", body, "", true)
 	require.Equal(t, 200, w.Code, w.Body.String())
 	require.Contains(t, w.Body.String(), "external-user")
 	require.NotContains(t, w.Body.String(), "external-token")
-	url, _, err := a.store.GetProfileRelay(context.Background(), 1)
-	require.NoError(t, err)
-	require.Empty(t, url, "testing must not enable or save a relay")
-	require.Equal(t, 204, a.request("PUT", path, body, "", true).Code)
 	w = a.request("GET", path, "", "", true)
 	require.JSONEq(t, fmt.Sprintf(`{"enabled":true,"url":%q}`, server.URL+"/1"), w.Body.String())
 	w = a.request("GET", "/apis/web/v1/profiles/second/relay", "", "", true)
 	require.JSONEq(t, `{"enabled":false,"url":""}`, w.Body.String())
 	for _, token := range []string{"invalid", "redirect", "invalid-json"} {
-		w = a.request("POST", path+"/test", strings.Replace(body, "external-token", token, 1), "", true)
-		require.GreaterOrEqual(t, w.Code, 400, token)
+		changed := strings.Replace(body, "external-token", token, 1)
+		require.Equal(t, 204, a.request("PUT", path, changed, "", true).Code)
+		approveFixtureRelay(t, a, 1)
+		w = a.request("POST", path+"/test", changed, "", true)
+		require.Equal(t, 502, w.Code, token)
 	}
 	for _, bad := range []string{`{`, `{"url":"file:///tmp/test","token":"x"}`, `{"url":"https://example.com/1?token=x","token":"x"}`, `{"url":"https://example.com/1","token":""}`} {
 		require.Equal(t, 400, a.request("PUT", path, bad, "", true).Code)

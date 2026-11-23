@@ -61,6 +61,11 @@ func newDatabase(allowCreate bool) (*Sqlite, error) {
 // Each call produces an independent database, making it safe for parallel tests.
 // Not intended for production use.
 func NewInMemory() (*Sqlite, error) {
+	return NewInMemoryAtVersion(currentSchemaVersion)
+}
+
+// NewInMemoryAtVersion opens an isolated schema for historical migration fixtures.
+func NewInMemoryAtVersion(version int64) (*Sqlite, error) {
 	// Named in-memory URIs with cache=shared let multiple sql.DB connections
 	// share the same logical database within a process. A unique name per call
 	// prevents parallel test instances from seeing each other's data.
@@ -80,7 +85,7 @@ func NewInMemory() (*Sqlite, error) {
 
 	goose.SetBaseFS(migrations_sqlite.Files)
 	goose.SetDialect("sqlite3")
-	if err := goose.Up(sqldb, "."); err != nil {
+	if err := goose.UpTo(sqldb, ".", version); err != nil {
 		sqldb.Close()
 		return nil, fmt.Errorf("sqlite.NewInMemory: goose: %w", err)
 	}

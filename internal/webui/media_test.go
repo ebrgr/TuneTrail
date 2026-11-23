@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"html"
 	"net/http"
 	"net/http/httptest"
@@ -279,9 +280,7 @@ func TestMediaLimitsAndCompleteAlbumLink(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: int32(id), Time: time.Now().Add(-time.Hour)}); err != nil {
-			t.Fatal(err)
-		}
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: 1, TrackID: int32(id), Time: time.Now().Add(-time.Hour)})
 	}
 	h, err := NewHandler(s, Options{})
 	if err != nil {

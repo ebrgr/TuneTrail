@@ -11,8 +11,12 @@ import (
 
 // mergeFixture gives both people the same two tracks at an identical timestamp.
 func mergeFixture(t *testing.T) *Sqlite {
+	return mergeFixtureAtVersion(t, currentSchemaVersion)
+}
+
+func mergeFixtureAtVersion(t *testing.T, version int64) *Sqlite {
 	t.Helper()
-	s, err := NewInMemory()
+	s, err := NewInMemoryAtVersion(version)
 	require.NoError(t, err)
 	t.Cleanup(func() { s.Close(context.Background()) })
 	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)

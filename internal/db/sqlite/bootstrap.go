@@ -19,7 +19,7 @@ import (
 )
 
 // currentSchemaVersion is the latest embedded migration understood by bootstrap.
-const currentSchemaVersion = 20
+const currentSchemaVersion = 21
 
 // regularFile rejects links and special files before opening database components.
 func regularFile(path string) (bool, error) {
@@ -204,6 +204,11 @@ func checkDatabase(db *sql.DB) error {
 var bootstrapPhase = func(phase string) error { return nil }
 
 func bootstrap(dir string, allowCreate bool) (string, error) {
+	return bootstrapAtVersion(dir, allowCreate, currentSchemaVersion)
+}
+
+// bootstrapAtVersion lets migration fixtures exercise a historical upgrade with the normal backup path.
+func bootstrapAtVersion(dir string, allowCreate bool, targetVersion int) (string, error) {
 	// Normalize relative configuration paths before constructing SQLite URIs.
 	absolute, err := filepath.Abs(dir)
 	if err != nil {
@@ -281,7 +286,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 				return "", err
 			}
 		}
-		if version < currentSchemaVersion {
+		if version < targetVersion {
 			backup, err := backupBeforeUpgrade(context.Background(), db, target, version)
 			if err != nil {
 				return "", err
@@ -330,7 +335,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 			if err := bootstrapPhase("inplace-backup-synced"); err != nil {
 				return "", err
 			}
-			if err := migrateDatabase(db); err != nil {
+			if err := migrateDatabaseToVersion(db, targetVersion); err != nil {
 				return "", err
 			}
 			if err := bootstrapPhase("inplace-migrated"); err != nil {
@@ -446,7 +451,7 @@ func bootstrap(dir string, allowCreate bool) (string, error) {
 	}
 	goose.SetBaseFS(migrations.Files)
 	if err = goose.SetDialect("sqlite3"); err == nil {
-		err = migrateDatabase(db)
+		err = migrateDatabaseToVersion(db, targetVersion)
 	}
 	if err == nil {
 		err = bootstrapPhase("temp-migrated")

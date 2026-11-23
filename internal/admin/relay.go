@@ -39,7 +39,7 @@ func RemoveRelay(ctx context.Context, store db.ProfileStore, user *models.User, 
 	return store.SetProfileRelay(ctx, id, "", "")
 }
 
-// TestRelay checks a draft without saving it or emitting a listening event.
+// TestRelay probes an approved destination without emitting a listening event.
 func TestRelay(ctx context.Context, store db.ProfileStore, user *models.User, id int32, slug, raw, token string, client relay.Client) (string, error) {
 	if _, err := Profile(ctx, store, user, id, slug); err != nil {
 		return "", err
@@ -47,6 +47,17 @@ func TestRelay(ctx context.Context, store db.ProfileStore, user *models.User, id
 	raw, token, err := relayDraft(ctx, store, id, raw, token)
 	if err != nil {
 		return "", err
+	}
+	if drafts, ok := store.(interface {
+		RelayTestApproved(context.Context, int32, string, string) (bool, error)
+	}); ok {
+		approved, err := drafts.RelayTestApproved(ctx, id, raw, token)
+		if err != nil {
+			return "", err
+		}
+		if !approved {
+			return "", db.ErrConflict
+		}
 	}
 	// A non-nil transport is a test seam and can bypass the policy dialer.
 	// Production adapters must pass the zero Client so DNS and IP checks stay active.

@@ -18,6 +18,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/relay"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -141,27 +142,38 @@ func TestAdministrationJourney(t *testing.T) {
 	require.Equal(t, 303, w.Code)
 	_, err = s.GetProfileByAPIKey(ctx, key.Key)
 	require.ErrorIs(t, err, db.ErrNotFound)
-	relayValues := url.Values{"csrf_token": {token}, "profile_slug": {"bob"}, "url": {"http://localhost:1234"}, "token": {"fake-token"}}
+	relayValues := url.Values{"csrf_token": {token}, "profile_slug": {"bob"}, "url": {"http://127.0.0.1:1234"}, "token": {"fake-token"}}
 	w = call("POST", bp+"relay/test", relayValues, session)
-	require.Equal(t, 303, w.Code, w.Body.String())
-	require.Equal(t, 1, calls)
+	require.Equal(t, 409, w.Code, w.Body.String())
+	require.Zero(t, calls)
 	raw, secret, err := s.GetProfileRelay(ctx, b)
 	require.NoError(t, err)
 	require.Empty(t, raw)
 	require.Empty(t, secret)
 	w = call("POST", bp+"relay/save", relayValues, session)
 	require.Equal(t, 303, w.Code)
+	w = call("POST", bp+"relay/test", relayValues, session)
+	require.Equal(t, 409, w.Code)
+	require.Zero(t, calls)
+	root, err := uuid.Parse(session.Value)
+	require.NoError(t, err)
+	grant, err := s.RelayGrant(ctx, root, b)
+	require.NoError(t, err)
+	require.NoError(t, s.ConfirmRelayGrant(ctx, root, b, grant.Fence))
+	w = call("POST", bp+"relay/test", relayValues, session)
+	require.Equal(t, 303, w.Code, w.Body.String())
+	require.Equal(t, 1, calls)
 	raw, secret, err = s.GetProfileRelay(ctx, b)
 	require.NoError(t, err)
-	require.Equal(t, "http://localhost:1234", raw)
+	require.Equal(t, "http://127.0.0.1:1234", raw)
 	require.Equal(t, "fake-token", secret)
 	relayPage := call("GET", fmt.Sprintf("/admin?section=relay&profile=%d", b), nil, session)
 	require.Equal(t, 200, relayPage.Code)
 	require.Contains(t, relayPage.Body.String(), `type="password" name="token"`)
 	require.NotContains(t, relayPage.Body.String(), "fake-token")
-	blankRelay := url.Values{"csrf_token": {token}, "profile_slug": {"bob"}, "url": {"http://localhost:1234"}, "token": {""}}
+	blankRelay := url.Values{"csrf_token": {token}, "profile_slug": {"bob"}, "url": {"http://127.0.0.1:1234"}, "token": {""}}
 	require.Equal(t, 303, call("POST", bp+"relay/save", blankRelay, session).Code)
-	blankRelay.Set("url", "http://localhost:4321")
+	blankRelay.Set("url", "http://127.0.0.1:4321")
 	require.Equal(t, 400, call("POST", bp+"relay/save", blankRelay, session).Code)
 	_, unchangedRelay, err := s.GetProfileRelay(ctx, b)
 	require.NoError(t, err)

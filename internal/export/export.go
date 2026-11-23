@@ -1,6 +1,7 @@
 package export
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -34,6 +35,7 @@ type ArchiveIdentity struct {
 }
 
 type KoitoListen struct {
+	AliasFieldOrder    []string         `json:"-"`
 	Identity           *ArchiveIdentity `json:"identity,omitempty"`
 	OriginalListenedAt string           `json:"-"`
 	ListenedAt         time.Time        `json:"listened_at"`
@@ -53,6 +55,26 @@ func (item *KoitoListen) UnmarshalJSON(data []byte) error {
 	value.listen = (*listen)(item)
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
+	}
+	// Keep the order of alias-bearing fields for the bounded v1 import snapshot.
+	fields := json.NewDecoder(bytes.NewReader(data))
+	if _, err := fields.Token(); err != nil {
+		return err
+	}
+	for fields.More() {
+		token, err := fields.Token()
+		if err != nil {
+			return err
+		}
+		key, _ := token.(string)
+		switch key {
+		case "track", "album", "artists":
+			item.AliasFieldOrder = append(item.AliasFieldOrder, key)
+		}
+		var ignored json.RawMessage
+		if err := fields.Decode(&ignored); err != nil {
+			return err
+		}
 	}
 	item.OriginalListenedAt = value.Time
 	if value.Time == "" {

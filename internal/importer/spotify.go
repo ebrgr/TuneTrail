@@ -67,11 +67,10 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 	if len(export) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
-	ctx, err = withFileShadow(ctx, store, db.ProfileID(ctx), "spotify", file)
+	ctx, err = withFileIngest(ctx, store, db.ProfileID(ctx), "spotify", file)
 	if err != nil {
 		return err
 	}
-	defer flushLegacyFileShadow(ctx)
 	for _, item := range export {
 		seen(ctx)
 		if err := ctx.Err(); err != nil {
@@ -103,7 +102,7 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			ProfileID:      db.ProfileID(ctx),
 			SkipCacheImage: !cfg.FetchImagesDuringImport(),
 		}
-		err = submitFileListen(ctx, store, opts, item.Timestamp.Format(time.RFC3339Nano), func(snapshot *ingest.Snapshot) {
+		err = submitFileListen(ctx, opts, item.Timestamp.Format(time.RFC3339Nano), func(snapshot *ingest.Snapshot) {
 			snapshot.ArtistNames = []string{item.ArtistName}
 			snapshot.OriginalTime = item.rawTimestamp
 			snapshot.DurationMS = int64(item.MsPlayed)
@@ -117,7 +116,7 @@ func ImportSpotifyFile(ctx context.Context, store importStore, mbzc mbz.MusicBra
 			return err
 		}
 	}
-	if err := flushFileShadow(ctx); err != nil {
+	if err := flushFileIngest(ctx); err != nil {
 		return err
 	}
 	return finishImport(ctx, filename, len(export))

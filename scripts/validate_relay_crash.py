@@ -10,6 +10,7 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from validate_admin_webui import approve_saved_relay
 from validate_multiuser import LBZ, WEB, Server, scrobble
 
 
@@ -50,7 +51,7 @@ def run_case(binary, directory, boundary):
     receiver = ThreadingHTTPServer(('127.0.0.1', 0), Receiver)
     thread = threading.Thread(target=receiver.serve_forever)
     thread.start()
-    app = Server(binary, directory, environment={'TUNETRAIL_INGEST_ACTIVE':'true'})
+    app = Server(binary, directory)
     path = directory/'tunetrail.db'
     try:
         app.start()
@@ -62,9 +63,7 @@ def run_case(binary, directory, boundary):
                     {'host_port':host,'cidr':'127.0.0.1/32','allow_private':True}, admin=True, expected=204)
         app.request('PUT', profile+'/relay', {'url':'http://'+host,'token':'fictional-crash-token'},
                     admin=True, expected=204)
-        preview = app.request('GET', profile+'/ingest-activation', admin=True)
-        app.request('PUT', profile+'/ingest-activation', {'active':True,'review':False,'digest':preview['digest']},
-                    admin=True, expected=204)
+        approve_saved_relay(app, 1)
         key = app.request('GET', profile+'/user/apikeys', admin=True)[0]['key']
         if boundary == 'admission':
             with sqlite3.connect(path) as db:

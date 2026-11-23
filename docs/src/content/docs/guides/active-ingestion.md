@@ -1,18 +1,17 @@
 ---
-title: Active ingestion pilot
-description: Enable and pause active ingestion for a listening profile.
+title: Listening history ingestion
+description: How TuneTrail admits, resolves, reviews, and relays listens.
 ---
 
-Active ingestion is off by default. It takes effect when the server starts with
-`TUNETRAIL_INGEST_ACTIVE=true` and an administrator enables it for the specific
-listening profile. It covers ListenBrainz submissions and history imports.
-Manual additions from the administration panel still use the existing writer.
+TuneTrail uses occurrence ingestion for ListenBrainz submissions and history
+imports. Manual additions use the selected occurrence and report when a listen
+already exists for the same profile, occurrence, and second.
 
-For new active submissions, HTTP 200 means TuneTrail has saved the submission
+For historical submissions, HTTP 200 means TuneTrail has saved the submission
 for processing. The listen may take time to appear in the history. For a 503
 response, respect `Retry-After` before resending. The import summary shows
 **Pending** for submissions waiting on processing and **Duplicates** for
-completed submissions the importer recognized. Duplicate review is off by
+completed submissions the importer recognized. Duplicate review is on by
 default. With review off, an indistinguishable repeat of the same track or
 occurrence in the same second links to the existing listen. The occurrence
 resolver keeps possible matches up to two seconds apart as separate listens.
@@ -26,8 +25,7 @@ receipt. Further replays reuse it.
 
 ## Review possible duplicates
 
-In **Health → Pending reviews**, the profile owner or root can turn on
-duplicate review for an active profile and open **View evidence** on a receipt.
+In **Health → Pending reviews**, the profile owner or root can turn duplicate review on or off and open **View evidence** on a receipt.
 Choose an existing listen and select **Accept as duplicate** to link the
 receipt to it. **Keep as a separate listen** adds a listen at the submitted
 time and queues relay delivery when eligible. Pending receipts do not count
@@ -45,73 +43,44 @@ Turning review off changes how new decisions are made. Receipts already in
 the queue remain available. A submission conflict without a resolved track or
 an existing candidate remains visible without decision buttons.
 
-## Prepare a pilot
+## Upgrade to schema 21
 
-Keep the master switch off during the agreed shadow measurement period. In
-shadow mode, TuneTrail records information about submissions while the existing
-writer continues to update the history. Keep a verified backup of the data
-directory, including its SQLite files. When upgrading from SQLite schema 8,
-TuneTrail creates a `.pre-ingest-activation-*.bak` backup beside the database.
-The old build requires a restored backup to roll back from schema 9.
+Set aside a 10-minute maintenance window. Pause submitting clients, finish import
+jobs, and stop TuneTrail before creating a backup on the same host. Production
+upgrades from Koito schema 2 directly to the current schema.
 
-Plan a maintenance window. Pause ListenBrainz writers and wait for import jobs
-for the profile to finish. Give the database writer time to finish any remaining
-work. Choose one profile for the pilot.
+Use the current database filename in these commands. Keep the backup private
+and keep the previous binary available until you have verified the upgrade.
 
-## Enable the profile
+```sh
+umask 077
+sqlite3 /path/to/koito.db ".backup /private/path/tunetrail-before-upgrade.db"
+sqlite3 -readonly /private/path/tunetrail-before-upgrade.db "PRAGMA quick_check;"
+```
 
-Use a signed-in root administrator's session for both requests. Send the
-requests to your own TuneTrail instance, using the same origin as the
-administrator session. Replace `<slug>` with the profile's URL name.
+Expect `ok`. Start the new binary and confirm that existing history and totals
+are visible. Submit one test listen and confirm it reaches the history. Resume
+writers once the checks pass. For development databases, resolve open v9
+receipts and clear unlinked shadow receipts with the previous release before
+retrying an upgrade that reports those receipts.
 
-1. Send `GET /apis/web/v1/profiles/<slug>/ingest-activation`. Save the response
-   as a record of the shadow measurements. It contains aggregate counts and a
-   confirmation digest.
-2. Send `PUT` to the same path with the digest from that response.
-
-   ```json
-   {"active": true, "review": false, "digest": "<preview digest>"}
-   ```
-
-   A 204 response confirms the profile switch and removal of its unlinked
-   shadow receipts. The operation preserves the listening history and receipts
-   linked to events. If you receive 409, get a new preview before confirming.
-3. Ensure the server is running with `TUNETRAIL_INGEST_ACTIVE=true`. Changing
-   the environment variable requires a restart. Check the preview again and
-   confirm that `active` and `master_active` are both true before resuming
-   clients. Verify that new test submissions appear in the history.
-
-## Pause or resume
-
-To pause the pilot for one profile, send `PUT` to the same path with
-`{"active": false, "review": false}`. TuneTrail keeps processing submissions
-already admitted by the active writer.
-
-Before resuming, drain the shadow writers, start a new preview and confirm
-activation again. Turn off the profile switch before using the master switch
-as a longer-term pause. If the master switch alone is turned off, the profile
-flag remains on and shadow receipts can accumulate. The new preview and purge
-give you a clean starting point for measuring the resumed pilot.
-
-If a client retries a submission whose key still belongs to an unlinked shadow
-receipt, active ingestion takes over that submission. TuneTrail keeps the
-existing listen if it matches the same track and second, or saves the listen if
-it is missing. Shadow receipts already linked to a listen remain available for
-replay.
-
+To roll back, stop TuneTrail and keep the upgraded database and its sidecars
+together in a separate directory. Restore the verified backup to the original
+filename in a clean directory without old WAL or SHM files. Run
+`PRAGMA quick_check;` on the restored copy, start the previous binary, and
+check the profile totals before allowing writes. Listens received after the
+backup belong to the upgraded database.
 
 ## Occurrence-based ingestion
 
 The occurrence resolver preserves the album and track position supplied by the
 source when there is enough evidence to identify the occurrence. It supports
 ListenBrainz submissions and ZIP archives, Last.fm, Spotify, Maloja, and
-TuneTrail/Koito imports. Existing active profiles continue to use the
-compatibility resolver.
+TuneTrail/Koito imports.
 
 With occurrence writing, a listen with an artist and track title can be accepted
 without an album. It counts toward the recording and the profile total and
-appears under **Unknown release** when tracks are grouped by release. The
-legacy writer can fall back to an album named after the track. Occurrence
+appears under **Unknown release** when tracks are grouped by release. Occurrence
 writing leaves the release empty even when the recording has a known album.
 A matching title or exact alias and the same ordered artist credits reuse an
 existing release-less occurrence. An explicit recording MusicBrainz ID
@@ -120,16 +89,8 @@ The Inbox reports the missing album as incomplete metadata. Accepted listens
 are eligible for relay, and v2 history archives preserve the empty release.
 An artist and track title are required.
 
-The occurrence resolver is opt-in and currently restricted to disposable test
-databases. Profiles with a configured ListenBrainz relay cannot convert.
-Conversion requires clearing unlinked shadow receipts and draining compatible
-active receipts. After conversion, disabling the master switch pauses new
-admissions while already accepted batches continue resolving. Identity conflicts
-remain pending, and turning on duplicate review can also hold possible duplicate
-listens. Pending items are excluded from listening counts.
-
-Upgrading a v9 database to v11 saves a `.pre-occurrence-ingest-*.bak` backup.
-TuneTrail 0.46 and earlier cannot open a v11 database.
+Identity conflicts remain pending. With duplicate review enabled, a possible
+duplicate can also wait for a decision. Pending items are excluded from totals.
 
 ## Ingestion health
 
@@ -164,11 +125,10 @@ on another profile's page.
 
 ## Durable ListenBrainz relay
 
-For active profiles, the submission acknowledgement means the local receipts
-were committed. Accepted API events are queued for delivery. Pending,
-invalid and duplicate decisions are skipped. Legacy and shadow submissions
-still forward the original request, as does playing now. Files and integrated
-sources do not create relay deliveries.
+The submission acknowledgement means the local receipts are committed. Only
+eligible ListenBrainz API listens received after a relay destination is approved
+can create delivery intents. Pending, invalid and duplicate decisions, file
+imports, integrated sources, and playing-now updates do not create relay work.
 
 The worker sends up to 100 events at a time. A destination that is unavailable
 or rate-limited pauses independently. Shutdown preserves queued work for the
@@ -182,7 +142,7 @@ cancellation.
 | --- | --- |
 | ListenBrainz | Unique combination of user, track, and `listened_at`. |
 | Koito | Primary key on `track_id` and `listened_at`. |
-| TuneTrail | v9 deduplicates by profile, track, and `listened_at`. With review enabled, either resolver can hold a possible duplicate for a decision. |
+| TuneTrail | A possible duplicate can be held for review. |
 | Maloja and multi-scrobbler | To be confirmed in the relay trial. |
 
 These keys describe receiver behavior. TuneTrail cannot guarantee that an
@@ -192,20 +152,19 @@ an old URL that arrives after the change leaves the item failed as
 `destination_changed`, even if the old server accepted it. Explicit retry
 can send it to the new destination.
 
-For a local relay, save its URL and sign in as an instance administrator.
-Open the profile's relay settings or **Server → Relay exceptions by
-destination**, choose **Allow this relay**, then confirm the address, port, and
-permissions shown. The button grants only the HTTP or private-network
-permissions that this destination needs and resumes delivery. For a DNS name,
-the confirmation lists its current addresses. HTTP permission follows the
-configured name and port. Private access stays limited to the listed
-addresses, so confirm again if the private address changes. Loopback and
-link-local always require a destination exception. Cloud metadata and other
-forbidden ranges are never eligible. The official ListenBrainz service and
-other public HTTPS destinations need no exception.
+Save the URL and token to create a draft. In the profile's relay settings or
+**Server → Relay exceptions by destination**, an instance administrator chooses
+**Allow this relay** and confirms the destination. The draft has no relay network
+traffic and creates no outbox entries. Only listens received after approval will
+be sent, including when older receipts are still awaiting resolution. Probe the
+destination with **Test approved relay** after approval.
 
-The panel lists and removes existing exceptions. Advanced CIDR rules are
-available through the root relay permissions API.
+Loopback and link-local addresses need destination exceptions. A literal IP
+can be reviewed with the specific exceptions shown on the confirmation page.
+For named destinations, confirmation resolves the host and verifies all
+addresses against the existing policy. Add any required HTTP or private CIDR
+permissions for that host and port through the root relay permissions API before
+approving. Cloud metadata and other forbidden ranges stay blocked.
 
 **Upgrading from v11:** By default, HTTP and LAN relays on non-administrator
 profiles stop delivering until an instance administrator grants the required
@@ -235,10 +194,6 @@ via GET `{base}/validate-token` and POST `{base}/submit-listens`. Prefer
 destination exceptions. Loopback and link-local addresses still need
 per-destination exceptions. Permanently forbidden ranges remain blocked.
 
-These restrictions apply only to durable delivery and the connection test.
-The legacy/shadow raw relay and `playing_now` use the v0.48 Sender with
-the default transport, outside the global flags and destination exceptions.
-
 The dialer checks permissions in this order:
 
 1. Forbidden endpoints and ranges always stay blocked, including cloud metadata
@@ -247,17 +202,14 @@ The dialer checks permissions in this order:
 3. A matching host:port exception can allow HTTP or a specific reserved CIDR.
 4. Without permission, cleartext and reserved networks stay blocked.
 
-The API also supports changing exceptions and resuming a saved relay under
-`/apis/web/v1/profiles/{slug}/relay`. Root can convert an already-active profile
-at `POST /apis/web/v1/profiles/{slug}/ingest-activation/occurrence` once its
-configured relay passes validation and has no current pause. Open v9 receipts
-and unlinked shadow receipts still block the cut.
+The API also supports changing exceptions and resuming a saved, approved relay
+under `/apis/web/v1/profiles/{slug}/relay`.
 
 Relay warnings include the configured scheme, host and port, a stable reason,
 and the range category when applicable. They omit DNS answers, paths, queries
 and credentials. The root panel shows the last pause reason and an instruction
 after failed revalidation. Non-root users receive only the policy or network
-class. The legacy raw relay retains its previous network behavior.
+class.
 
 The saved token is omitted from the admin response and from the HTML field.
 Leave it blank to keep the same credential for the displayed URL, or supply a
@@ -341,8 +293,7 @@ labels and internal IDs.
 Expand a group to see the current outcomes for receipts in the selected window.
 The window uses the time TuneTrail received the record. A replay that reuses a
 receipt still counts as one receipt. Requests rejected before a receipt is
-created are outside these totals. Shadow receipts can remain pending because
-they do not record the legacy writer’s final outcome. Missing metadata means the title or artist
+created are outside these totals. Missing metadata means the title or artist
 is absent. Incomplete metadata means the title and artist are present but the
 album, duration, or a MusicBrainz recording, release, or artist ID is missing.
 Each category can show one example with its title, artist, receipt time, and

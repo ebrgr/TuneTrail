@@ -82,7 +82,7 @@ func TestUIReference(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	s := pageStore(t)
+	s := pageStoreWithCatalog(t, "", false)
 	now := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
 	if err := s.Exec(`DELETE FROM listens; INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1714564800,'fixture-1'),(1,2,1714564800,'fixture-2'),(2,1,1714564800,'fixture-3'),(2,3,1714564800,'fixture-4')`); err != nil {
 		t.Fatal(err)

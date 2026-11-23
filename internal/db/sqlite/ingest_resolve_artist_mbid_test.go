@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestIngestCatalogOptionsArtistMBIDFallback170 keeps declared artist IDs first and uses
+// TestOccurrenceArtistMBIDFallback170 keeps declared artist IDs first and uses
 // mbid_mapping only when no declared ID is valid.
-func TestIngestCatalogOptionsArtistMBIDFallback170(t *testing.T) {
+func TestOccurrenceArtistMBIDFallback170(t *testing.T) {
 	declared := uuid.NewString()
 	mapped := uuid.NewString()
 	for _, tc := range []struct {
@@ -25,7 +25,7 @@ func TestIngestCatalogOptionsArtistMBIDFallback170(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var got []string
-			for _, id := range ingestCatalogOptions(tc.snapshot, "", nil).ArtistMbzIDs {
+			for _, id := range occurrenceArtistDeclarations(tc.snapshot) {
 				got = append(got, id.String())
 			}
 			require.Equal(t, tc.want, got)

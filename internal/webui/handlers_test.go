@@ -25,10 +25,23 @@ import (
 
 func pageStore(t *testing.T) *sqlite.Sqlite {
 	t.Helper()
+	return pageStoreWithCatalog(t, "", true)
+}
+
+// pageStoreWithCatalog applies catalog setup before receipts link to occurrences.
+func pageStoreWithCatalog(t *testing.T, catalogSetup string, occurrence bool) *sqlite.Sqlite {
+	t.Helper()
 	if err := cfg.Load(func(string) string { return "" }, "test"); err != nil {
 		t.Fatal(err)
 	}
-	s, err := sqlite.NewInMemory()
+	var s *sqlite.Sqlite
+	var err error
+	if occurrence {
+		s, err = sqlite.NewInMemory()
+	} else {
+		// Golden reference uses historical samples that must remain readable.
+		s, err = sqlite.NewInMemoryAtVersion(20)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,12 +63,20 @@ func pageStore(t *testing.T) *sqlite.Sqlite {
 			t.Fatal(err)
 		}
 	}
+	if catalogSetup != "" {
+		if err := s.Exec(catalogSetup); err != nil {
+			t.Fatal(err)
+		}
+	}
 	now := time.Now().Add(-time.Hour).Truncate(time.Second)
 	for _, v := range []struct {
 		p, tr int32
 		shift int
 	}{{1, 1, 0}, {1, 2, 0}, {1, 1, 1}, {2, 1, 0}, {2, 3, 2}} {
-		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: v.p, TrackID: v.tr, Time: now.Add(time.Duration(v.shift) * time.Minute)}); err != nil {
+		opts := db.SaveListenOpts{ProfileID: v.p, TrackID: v.tr, Time: now.Add(time.Duration(v.shift) * time.Minute)}
+		if occurrence {
+			testfixtures.OccurrenceListen(t, s, opts)
+		} else if err := s.Exec(`INSERT INTO listens(profile_id,track_id,listened_at) VALUES(?,?,?)`, opts.ProfileID, opts.TrackID, opts.Time.Unix()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -243,16 +264,13 @@ func TestNowPlayingIsScopedAndMissingTrackClearsOnlyItsProfile(t *testing.T) {
 
 // TestTrackChartGrouping exercises the public switch, scoped rows and occurrence URLs.
 func TestTrackChartGrouping(t *testing.T) {
-	s := pageStore(t)
-	if err := s.Exec(`
+	s := pageStoreWithCatalog(t, `
 		UPDATE occurrences SET recording_id=(SELECT recording_id FROM occurrences WHERE id=1) WHERE id=2;
 		INSERT INTO occurrences(id,recording_id,presented_title)
 			SELECT 20,recording_id,'Unreleased recording' FROM occurrences WHERE id=1;
 		INSERT INTO listens(profile_id,track_id,listened_at,origin)
 			VALUES(1,20,1700000000,'listenbrainz_api');
-	`); err != nil {
-		t.Fatal(err)
-	}
+	`, true)
 	langs, err := i18n.Load("../../langs")
 	if err != nil {
 		t.Fatal(err)

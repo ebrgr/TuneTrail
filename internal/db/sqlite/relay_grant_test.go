@@ -1,12 +1,17 @@
 package sqlite
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"net/netip"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/relay"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,8 +57,10 @@ func TestRelayGrantPlan(t *testing.T) {
 
 // TestRelayGrantRootFence verifies stale confirmation and ordinary-session rejection.
 func TestRelayGrantRootFence(t *testing.T) {
-	s, _ := relayStoreFixture(t)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	ctx := t.Context()
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	testfixtures.Profile(t, s, 2, "two", "Two", 0)
 	require.NoError(t, s.SetProfileRelay(ctx, 1, "http://127.0.0.1:9078", "fictional"))
 	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")
 	execSQL(t, s, "UPDATE users SET role='user',status='active',password=X'01' WHERE id=2")
@@ -76,4 +83,71 @@ func TestRelayGrantRootFence(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, s.ConfirmRelayGrant(ctx, root.ID, 1, preview.Fence))
 	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist WHERE host_port='127.0.0.1:9078'"))
+}
+
+// TestRelayDraftApproval fences both queued and unresolved pre-approval listens.
+func TestRelayDraftApproval(t *testing.T) {
+	s, _, _ := migrationDB(t, 21)
+	ctx := t.Context()
+	testfixtures.Profile(t, s, 1, "draft", "Draft", 0)
+	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")
+	root, err := s.SaveSession(ctx, 1, time.Now().Add(time.Hour), false)
+	require.NoError(t, err)
+	require.NoError(t, s.ActivateRelayDelivery(ctx))
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	require.NoError(t, s.SetProfileRelay(ctx, 1, "http://169.254.169.254", "fictional"))
+	_, err = s.RelayGrant(ctx, root.ID, 1)
+	require.ErrorIs(t, err, db.ErrForbidden)
+	require.NoError(t, s.SetProfileRelay(ctx, 1, server.URL, "fictional"))
+	draft, err := s.RelayAwaitingApproval(ctx, 1)
+	require.NoError(t, err)
+	require.True(t, draft)
+	require.ErrorIs(t, s.ResumeRelay(ctx, root.ID, 1), db.ErrConflict)
+
+	admit := func(stamp int64) {
+		t.Helper()
+		_, err := s.AdmitOccurrence(ctx, ingest.Batch{
+			ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ReceivedAt: time.Now(),
+			Items: []ingest.Item{{ListenedAt: time.Unix(stamp, 0), Snapshot: ingest.Snapshot{Artist: "Fixture", Title: "Track"}}},
+		})
+		require.NoError(t, err)
+	}
+	resolve := func() {
+		t.Helper()
+		found, err := s.ResolveNextIngest(ctx, nil)
+		require.NoError(t, err)
+		require.True(t, found)
+	}
+	admit(1780000000)
+	resolve()
+	admit(1780000060)
+	require.Zero(t, scalar(t, s, "SELECT count(*) FROM outbox"))
+	require.Zero(t, requests.Load())
+	grant, err := s.RelayGrant(ctx, root.ID, 1)
+	require.NoError(t, err)
+	require.True(t, grant.Draft)
+	require.True(t, grant.HTTP)
+	require.Len(t, grant.Private, 1)
+	require.Zero(t, scalar(t, s, "SELECT count(*) FROM relay_allowlist"))
+	require.NoError(t, s.ConfirmRelayGrant(ctx, root.ID, 1, grant.Fence))
+	draft, err = s.RelayAwaitingApproval(ctx, 1)
+	require.NoError(t, err)
+	require.False(t, draft)
+	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM relay_allowlist"))
+	resolve()
+	require.Zero(t, scalar(t, s, "SELECT count(*) FROM outbox"))
+	admit(1780000120)
+	resolve()
+	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox"))
+	require.Equal(t, 3, scalar(t, s, "SELECT count(*) FROM listens"))
+	require.Zero(t, requests.Load())
+	batch, err := s.ClaimRelayBatch(ctx, time.Now().Add(time.Second))
+	require.NoError(t, err)
+	require.Len(t, batch.Items, 1)
 }

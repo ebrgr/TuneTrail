@@ -176,6 +176,16 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			summaryKey = "admin.import.activeSummary"
 			importSummary = "Processed: {{.Processed}}. Pending: {{.Pending}}. Duplicates: {{.Duplicates}}. Ignored: {{.Ignored}}. Errors: {{.Errors}}."
 			values["Pending"] = result.Pending
+			// A replay can report conflicts counted after the original asynchronous admission.
+			if result.IgnoredMBIDConflicts > 0 || result.IgnoredAliasConflicts > 0 || result.IgnoredAliasLimit > 0 || result.TruncatedFields > 0 || result.RejectedOversizedItems > 0 {
+				summaryKey = "admin.import.activeAliasSummary"
+				importSummary += " Alias conflicts skipped: {{.IgnoredAliasConflicts}}. Aliases skipped due to size: {{.IgnoredAliasLimit}}. Fields truncated: {{.TruncatedFields}}. Items rejected (over 10 KiB): {{.RejectedOversizedItems}}. MBID conflicts skipped: {{.IgnoredMBIDConflicts}}."
+				values["IgnoredMBIDConflicts"] = result.IgnoredMBIDConflicts
+				values["IgnoredAliasConflicts"] = result.IgnoredAliasConflicts
+				values["IgnoredAliasLimit"] = result.IgnoredAliasLimit
+				values["TruncatedFields"] = result.TruncatedFields
+				values["RejectedOversizedItems"] = result.RejectedOversizedItems
+			}
 		}
 		if e != nil {
 			status := http.StatusInternalServerError
@@ -188,7 +198,11 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, identity admin.
 			case errors.Is(e, importer.ErrInvalidFile), errors.Is(e, db.ErrInvalidInput):
 				status = http.StatusBadRequest
 			}
-			h.render(w, status, view{Error: adminText(i18n.ViewOf(w), "admin.import.failed", "Import failed; some records may already be saved.") + " " + adminFormat(i18n.ViewOf(w), summaryKey, importSummary, values), Profile: current})
+			detail := adminText(i18n.ViewOf(w), "admin.import.failed", "Import failed; some records may already be saved.")
+			if errors.Is(e, importer.ErrRequiredTextTooLarge) {
+				detail = adminText(i18n.ViewOf(w), "admin.import.requiredTextTooLarge", importer.ErrRequiredTextTooLarge.Error())
+			}
+			h.render(w, status, view{Error: detail + " " + adminFormat(i18n.ViewOf(w), summaryKey, importSummary, values), Profile: current})
 			return
 		}
 		h.putNoticeData(identity.SessionID, id, summaryKey, importSummary, values)

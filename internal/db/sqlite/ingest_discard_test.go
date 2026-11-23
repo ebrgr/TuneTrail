@@ -223,7 +223,7 @@ func TestIngestDiscardTrustedReplay(t *testing.T) {
 			Snapshot: ingest.Snapshot{Title: "Trusted replay", Artist: "Artist", Release: "Album"}}}}
 	admit := func() ingest.Result {
 		t.Helper()
-		_, result, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+		result, err := s.AdmitOccurrence(ctx, batch)
 		require.NoError(t, err)
 		require.Len(t, result, 1)
 		return result[0]

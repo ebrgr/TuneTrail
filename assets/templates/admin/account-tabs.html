@@ -244,7 +244,7 @@
     {{if and $mine $a.Error}}<p class="account-message account-error" role="alert" data-section-message>{{$a.Error}}</p>{{end}}
     {{with .RelayState}}
       {{template "admin/relay-state" .}}
-      {{if .Grant.Available}}
+      {{if or (and .Draft (ne .Diagnostic.Code "forbidden_range") (ne .Diagnostic.Code "metadata_endpoint")) .Grant.Available}}
         <form method="post" class="account-form" action="/admin/settings/relay">
           <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
           <input type="hidden" name="submission_token" value="{{$.Submission}}">
@@ -261,7 +261,7 @@
       <label>{{tr "admin.text.token" "Token"}} <input type="password" name="token" autocomplete="new-password"></label>
       <button class="account-action" formaction="/admin/profile/{{.Profile.ID}}/relay/save">{{tr "admin.text.save_relay" "Save relay"}}</button>
       <button class="account-secondary" formaction="/admin/profile/{{.Profile.ID}}/relay/test">
-        {{- tr "admin.text.test_without_saving" "Test without saving" -}}
+        {{- tr "admin.relay.test_approved" "Test approved relay" -}}
       </button>
     </form>
     <form method="post" class="account-form" action="/admin/profile/{{.Profile.ID}}/relay/remove" data-enhance>

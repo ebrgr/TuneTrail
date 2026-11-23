@@ -29,7 +29,7 @@ func TestOccurrenceDistinctSameSecond(t *testing.T) {
 					batch.Items[0].ExternalNamespace, batch.Items[1].ExternalNamespace = "fixture", "fixture"
 					batch.Items[0].ExternalID, batch.Items[1].ExternalID = "first", "second"
 				}
-				_, admitted, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+				admitted, err := s.AdmitOccurrence(ctx, batch)
 				require.NoError(t, err)
 				require.Len(t, admitted, 2)
 				for range admitted {
@@ -55,7 +55,7 @@ func TestOccurrenceTrustedReplay(t *testing.T) {
 					Snapshot: ingest.Snapshot{Title: "Trusted replay", Artist: "Artist", Release: "Album"}}}}
 			admit := func() ingest.Result {
 				t.Helper()
-				_, result, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+				result, err := s.AdmitOccurrence(ctx, batch)
 				require.NoError(t, err)
 				require.Len(t, result, 1)
 				return result[0]

@@ -5,6 +5,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 )
@@ -72,7 +73,7 @@ type ListenStore interface {
 	GetListensPaginated(ctx context.Context, opts GetItemsOpts) (*PaginatedResponse[*models.Listen], error)
 	GetListenActivity(ctx context.Context, opts ListenActivityOpts) ([]ListenActivityItem, error)
 	GetInterest(ctx context.Context, opts GetInterestOpts) ([]InterestBucket, error)
-	SaveListen(ctx context.Context, opts SaveListenOpts) error
+	SaveManualListen(ctx context.Context, opts SaveListenOpts) (bool, error)
 	DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time) error
 	DeleteListenEvent(ctx context.Context, eventID string) error
 	CountListens(ctx context.Context, timeframe Timeframe) (int64, error)
@@ -115,6 +116,7 @@ type ExportStore interface {
 }
 
 type DB interface {
+	AdmitOccurrence(context.Context, ingest.Batch) ([]ingest.Result, error)
 	ProfileStore
 	ArtistStore
 	AlbumStore

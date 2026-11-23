@@ -19,7 +19,8 @@ func TestIngestBetweenReviewAndConfirmKeepsBothProfilesAndRejectsStalePlan(t *te
 	done := make(chan error, 1)
 	go func() {
 		close(started)
-		done <- s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(999999, 0)})
+		_, err := s.SaveManualListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(999999, 0)})
+		done <- err
 	}()
 	<-started
 	select {
@@ -41,7 +42,8 @@ func TestIngestBetweenDeleteReviewAndConfirmRejectsStalePlan(t *testing.T) {
 	ctx := context.Background()
 	plan, err := s.PreviewCatalogMutation(ctx, db.CatalogPlan{Action: "delete", Kind: "track", From: 1})
 	require.NoError(t, err)
-	require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(999999, 0)}))
+	_, err = s.SaveManualListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(999999, 0)})
+	require.NoError(t, err)
 	require.ErrorIs(t, s.ApplyCatalogMutation(ctx, plan), db.ErrConflict)
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=1 AND track_id=1 AND listened_at=999999`))
 	require.Equal(t, 1, scalar(t, s, `SELECT COUNT(*) FROM tracks WHERE id=1`))

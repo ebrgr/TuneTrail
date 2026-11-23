@@ -13,11 +13,8 @@ const healthDeliveryJoin = ` LEFT JOIN outbox o ON o.profile_id=e.profile_id AND
 	AND o.destination_id='relay:'||e.profile_id AND o.operation='listen' AND o.format_version>0
 	LEFT JOIN relay_destinations d ON d.profile_id=o.profile_id `
 
-// healthDeliverySQL only references durable-relay columns on schemas that provide them.
-func healthDeliverySQL(version int) (state, join string) {
-	if version < 12 {
-		return "'untracked'", ""
-	}
+// healthDeliverySQL projects relay state and delivery eligibility.
+func healthDeliverySQL() (state, join string) {
 	return `coalesce(` + relayProjectedState + `,
 		CASE WHEN e.delivery_policy='durable' THEN 'not_queued' ELSE 'untracked' END)`, healthDeliveryJoin
 }
@@ -25,16 +22,13 @@ func healthDeliverySQL(version int) (state, join string) {
 // IngestHealth reads only typed diagnostics for a single, previously authorized profile.
 func (s *Sqlite) IngestHealth(ctx context.Context, profile int32, pages ...int) (db.IngestHealth, error) {
 	var health db.IngestHealth
-	version, err := ingestSchemaVersion(ctx, s.db)
-	if err != nil {
-		return health, err
-	}
 	// Browse the summary independently of the review queue's page.
 	sourcePage := 1
 	if len(pages) > 1 {
 		sourcePage = pages[1]
 	}
-	health.Sources, err = s.healthSources(ctx, profile, version, int64(sourcePage-1)*healthSourcePageSize)
+	var err error
+	health.Sources, err = s.healthSources(ctx, profile, int64(sourcePage-1)*healthSourcePageSize)
 	if len(health.Sources) > healthSourcePageSize {
 		health.Sources = health.Sources[:healthSourcePageSize]
 		health.SourceNext = sourcePage + 1
@@ -44,7 +38,7 @@ func (s *Sqlite) IngestHealth(ctx context.Context, profile int32, pages ...int) 
 		return health, err
 	}
 	health.Decisions, err = s.healthDecisions(ctx, profile)
-	if err != nil || version < 12 {
+	if err != nil {
 		return health, err
 	}
 	health.RelayTracked = true
@@ -60,10 +54,8 @@ func (s *Sqlite) IngestHealth(ctx context.Context, profile int32, pages ...int) 
 	if !until.Valid || until.Time.After(time.Now()) {
 		health.Pause = pause
 	}
-	if version >= 13 {
-		health.Failures, health.FailureCount, err = s.healthFailures(ctx, profile)
-	}
-	if err == nil && version >= 16 {
+	health.Failures, health.FailureCount, err = s.healthFailures(ctx, profile)
+	if err == nil {
 		page := 1
 		if len(pages) > 0 {
 			page = pages[0]
@@ -100,41 +92,19 @@ func (s *Sqlite) healthFailures(ctx context.Context, profile int32) ([]db.Ingest
 const healthSourcePageSize = 100
 
 // healthSourcesSQL uses one row per source dimension, with the live state of its last receipt.
-func healthSourcesSQL(version int) string {
-	delivery, join := healthDeliverySQL(version)
-	if version >= 17 {
-		return `SELECT coalesce(nullif(i.display_name,''),x.source_instance_id),x.source,x.client,x.received_at,e.time_precision,
+func healthSourcesSQL() string {
+	delivery, join := healthDeliverySQL()
+	return `SELECT coalesce(nullif(i.display_name,''),x.source_instance_id),x.source,x.client,x.received_at,e.time_precision,
 			` + delivery + `
 		FROM ingest_source_summary x
 		CROSS JOIN ingest_events e ON e.profile_id=x.profile_id AND e.receipt_id=x.receipt_id
 		JOIN integrations i ON i.profile_id=x.profile_id AND i.id=x.source_instance_id
 		` + join + ` WHERE x.profile_id=? ORDER BY x.received_at DESC,x.receipt_id DESC LIMIT 101 OFFSET ?`
-	}
-	policy := "'legacy' AS delivery_policy"
-	if version >= 12 {
-		policy = "e.delivery_policy"
-	}
-	return `WITH sources AS (
-		SELECT e.profile_id,e.receipt_id,e.source_instance_id,e.received_at,e.time_precision,e.event_id,` + policy + `,
-			substr(coalesce(nullif(e.client_name,''),
-			CASE WHEN json_valid(e.original_snapshot) THEN
-				CASE WHEN json_type(e.original_snapshot,'$.client')='text' THEN json_extract(e.original_snapshot,'$.client') END
-			END,''),1,120) AS client,
-			coalesce(e.file_format,e.source_type) AS source
-		FROM ingest_events e WHERE e.profile_id=?
-	), latest AS (
-		SELECT *, row_number() OVER (PARTITION BY source_instance_id, source, client ORDER BY received_at DESC, receipt_id DESC) AS rank
-		FROM sources
-	)
-	SELECT coalesce(nullif(i.display_name,''),e.source_instance_id), e.source, e.client, e.received_at, e.time_precision,
-		` + delivery + `
-	FROM latest e JOIN integrations i ON i.profile_id=e.profile_id AND i.id=e.source_instance_id
-	` + join + ` WHERE e.rank=1 ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT 101 OFFSET ?`
 }
 
 // healthSources projects the latest receipt per integration, format and client.
-func (s *Sqlite) healthSources(ctx context.Context, profile int32, version int, offset int64) ([]db.IngestSource, error) {
-	rows, err := s.db.QueryContext(ctx, healthSourcesSQL(version), profile, offset)
+func (s *Sqlite) healthSources(ctx context.Context, profile int32, offset int64) ([]db.IngestSource, error) {
+	rows, err := s.db.QueryContext(ctx, healthSourcesSQL(), profile, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -210,19 +180,12 @@ func (s *Sqlite) healthDeliveries(ctx context.Context, profile int32) ([]db.Inge
 // ListenProvenance uses the canonical accepted receipt and exact event link.
 // Distinct events for the same track and second can each have their own explanation.
 func (s *Sqlite) ListenProvenance(ctx context.Context, profile, track int32, at int64, eventIDs ...string) ([]db.ListenProvenance, error) {
-	version, err := ingestSchemaVersion(ctx, s.db)
-	if err != nil {
-		return nil, err
-	}
-	delivery, join := healthDeliverySQL(version)
+	delivery, join := healthDeliverySQL()
 	var event string
 	if len(eventIDs) > 0 {
 		event = eventIDs[0]
 	}
 	archiveJoin := `LEFT JOIN archive_events a ON (a.profile_id,a.event_id)=(l.profile_id,l.event_id)`
-	if version < 14 {
-		archiveJoin = `LEFT JOIN (SELECT NULL AS origin,NULL AS provenance) a ON 0`
-	}
 	// Archived receipts are historical evidence and cannot enter the live processing queue.
 	// The v9 writer keeps the legacy origin enum even when a receipt identifies the source.
 	rows, err := s.db.QueryContext(ctx, `SELECT

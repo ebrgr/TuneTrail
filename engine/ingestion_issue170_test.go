@@ -1,12 +1,11 @@
 package engine
 
 import (
-	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
-	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,33 +18,84 @@ func TestMappedArtistMBIDResolution170(t *testing.T) {
 	body := fmt.Sprintf(`{"listen_type":"single","payload":[{"listened_at":1700000000,"track_metadata":{
 		"artist_name":"Spelled Differently","track_name":"Mapped Song","release_name":"Mapped Album",
 		"mbid_mapping":{"artist_mbids":[%q]}}}]}`, mbid)
-	for _, tc := range []struct {
-		name   string
-		active bool
-	}{{"legacy writer", false}, {"active resolver", true}} {
-		t.Run(tc.name, func(t *testing.T) {
+	for _, useMapping := range []bool{false, true} {
+		t.Run(fmt.Sprintf("mapping=%t", useMapping), func(t *testing.T) {
 			a := newProfileTestApp(t)
 			require.NoError(t, a.store.Exec(`INSERT INTO artists(id,musicbrainz_id) VALUES(9001,?);
 				INSERT INTO artist_aliases(artist_id,alias,source,is_primary) VALUES(9001,'Canonical Name','Manual',1)`, mbid))
-			if tc.active {
-				require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`))
+			payload := body
+			if !useMapping {
+				payload = strings.Replace(payload, "mbid_mapping", "additional_info", 1)
 			}
-			response := a.request("POST", path, body, "first-key", false)
+			response := a.request("POST", path, payload, "first-key", false)
 			require.Equal(t, http.StatusOK, response.Code, response.Body.String())
-			if tc.active {
-				found, err := a.store.ResolveNextIngest(context.Background(), &mbz.MbzErrorCaller{})
-				require.NoError(t, err)
-				require.True(t, found)
-			}
-			count := func(query string) int {
-				t.Helper()
+			resolveFixtureHistory(t, a)
+			for _, query := range []string{
+				`SELECT count(*) FROM listens`,
+				`SELECT count(*) FROM artists`,
+				`SELECT count(*) FROM artist_tracks WHERE artist_id=9001`,
+				`SELECT count(*) FROM artist_aliases WHERE artist_id=9001 AND alias='Spelled Differently'`,
+			} {
 				n, err := a.store.Count(query)
 				require.NoError(t, err)
-				return n
+				require.Equal(t, 1, n, query)
 			}
-			require.Equal(t, 1, count(`SELECT count(*) FROM listens`))
-			require.Equal(t, 1, count(`SELECT count(*) FROM artists`), "no duplicate artist")
-			require.Equal(t, 1, count(`SELECT count(*) FROM artist_tracks WHERE artist_id=9001`))
+		})
+	}
+}
+
+// TestOccurrenceArtistMBIDBranches exercises the profile catalog and the name fallback.
+func TestOccurrenceArtistMBIDBranches(t *testing.T) {
+	const mbid = "abcdefab-2222-4333-8444-555555555555"
+	for _, tc := range []struct {
+		name      string
+		artistIDs string
+		duplicate bool
+		album     string
+		want      int
+	}{
+		{"ambiguous case variants", mbid, true, "Album", 0},
+		{"unknown MBID", "11111111-2222-4333-8444-555555555555", false, "Album", 2},
+		{"no MBID", "", false, "Album", 2},
+		{"standalone", mbid, false, "", 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			app := newProfileTestApp(t)
+			require.NoError(t, app.store.Exec(`INSERT INTO artists(id,musicbrainz_id) VALUES(9001,?);
+				INSERT INTO artist_aliases VALUES(9001,'Canonical Name','Manual',1)`, mbid))
+			if tc.duplicate {
+				require.NoError(t, app.store.Exec(`INSERT INTO artists(id,musicbrainz_id) VALUES(9002,?);
+					INSERT INTO artist_aliases VALUES(9002,'Other Name','Manual',1)`, strings.ToUpper(mbid)))
+			}
+			body := fmt.Sprintf(`{"listen_type":"single","payload":[{"listened_at":1700000000,"track_metadata":{
+				"artist_name":"Observed Name","track_name":"Mapped Song","release_name":%q,
+				"additional_info":{"artist_mbids":[%q]}}}]}`, tc.album, tc.artistIDs)
+			res := app.request(http.MethodPost, "/apis/listenbrainz/1/submit-listens", body, "first-key", false)
+			require.Equal(t, http.StatusOK, res.Code, res.Body.String())
+			progress, err := app.store.ResolveNextIngest(t.Context(), nil)
+			require.NoError(t, err)
+			require.True(t, progress)
+			if tc.duplicate {
+				count, err := app.store.Count(`SELECT count(*) FROM ingest_events WHERE state='pending_identity'
+					AND json_extract(reason_codes,'$[0]')='ambiguous_artist_mbid' AND event_id IS NULL`)
+				require.NoError(t, err)
+				require.Equal(t, 1, count)
+				count, err = app.store.Count(`SELECT count(*) FROM listens`)
+				require.NoError(t, err)
+				require.Zero(t, count)
+				return
+			}
+			count, err := app.store.Count(`SELECT count(*) FROM artists`)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, count)
+			count, err = app.store.Count(`SELECT count(*) FROM listens`)
+			require.NoError(t, err)
+			require.Equal(t, 1, count)
+			if tc.album == "" {
+				count, err = app.store.Count(`SELECT count(*) FROM occurrence_credits WHERE artist_id=9001 AND name='Observed Name'`)
+				require.NoError(t, err)
+				require.Equal(t, 1, count)
+			}
 		})
 	}
 }

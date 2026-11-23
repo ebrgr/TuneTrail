@@ -1,11 +1,13 @@
 package sqlite
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +24,6 @@ func TestIngestInboxMigrationAndCounts(t *testing.T) {
 	require.NoError(t, err)
 	_, err = provider.Down(ctx)
 	require.Error(t, err)
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`)
 
 	first, err := s.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: "unused-secret-a", ProfileID: 1, Label: "Player A"})
 	require.NoError(t, err)
@@ -31,13 +32,18 @@ func TestIngestInboxMigrationAndCounts(t *testing.T) {
 	receive := func(profile int32, key int64, source string, age time.Duration, snapshot ingest.Snapshot) string {
 		t.Helper()
 		at := now.Add(-age)
-		_, receipts, err := s.AdmitIngest(ctx, ingest.Batch{
-			ProfileID: profile, APIKeyID: key, Source: source, Operation: "single", ReceivedAt: at,
-			Items: []ingest.Item{{Snapshot: snapshot, ListenedAt: at}},
-		}, true, nil, nil)
-		require.NoError(t, err)
-		require.Len(t, receipts, 1)
-		return receipts[0].ReceiptID
+		id := uuid.NewString()
+		instance := fmt.Sprintf("%s:%d", source, profile)
+		execSQL(t, s, `INSERT OR IGNORE INTO integrations(id,profile_id,source_type,created_at) VALUES(?,?,?,0)`, instance, profile, source)
+		item := ingest.Item{Snapshot: snapshot, ListenedAt: at}
+		encoded, digest := item.Encode()
+		// Seed v19 receipt attribution directly, including historical file imports.
+		execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,
+            adapter_version,batch_id,item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,
+            original_snapshot,snapshot_digest,digest_version,mode,state,resolver_variant,api_key_id)
+            VALUES(?,?,?,1,?,'1',?,0,'single',?,?,'second','start',?,?,?,'active','received','v9',nullif(?,0))`,
+			id, profile, instance, source, id, at.Unix(), at.Format(receiptTime), encoded, digest, ingest.DigestVersion, key)
+		return id
 	}
 	missing := ingest.Snapshot{Title: "Missing artist", Client: "player"}
 	incomplete := ingest.Snapshot{Title: "Incomplete track", Artist: "Artist", Client: "player"}

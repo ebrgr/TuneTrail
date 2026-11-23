@@ -1,8 +1,8 @@
 package webui
 
 import (
-	"context"
 	"encoding/json"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -20,9 +20,7 @@ func TestHistoryHTMLAndJSONShareCivilMonthBounds(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, at := range []time.Time{time.Date(2024, 5, 1, 0, 0, 0, 0, loc), time.Date(2024, 5, 31, 23, 59, 59, 0, loc)} {
-		if err = s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: 2, Time: at}); err != nil {
-			t.Fatal(err)
-		}
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: 1, TrackID: 2, Time: at})
 	}
 	h, err := NewHandler(s, Options{})
 	if err != nil {

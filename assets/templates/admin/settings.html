@@ -151,12 +151,21 @@
 
 {{define "admin/relay-state"}}
   <p><code>{{.Diagnostic.Scheme}}://{{.Diagnostic.HostPort}}</code>
-    {{if .Paused}}{{tr "admin.relay.paused" "Paused"}}{{else}}{{tr "admin.relay.active" "Active"}}{{end}}
+    {{if .Draft}}
+      {{tr "admin.relay.awaiting_approval" "Awaiting network approval"}}
+    {{else if .Paused}}
+      {{tr "admin.relay.paused" "Paused"}}
+    {{else}}
+      {{tr "admin.relay.active" "Active"}}
+    {{end}}
   </p>
+  {{if .Draft}}
+    <p>{{tr "admin.relay.no_backfill" "Only listens received after approval will be sent."}}</p>
+  {{end}}
   {{if .Grant.Available}}
     <p>{{tr "admin.relay.grant_required" "Permission required"}}
       <strong>{{template "admin/relay-grant-kind" .Grant}}</strong></p>
-  {{else if .Paused}}
+  {{else if or .Paused (eq .Diagnostic.Code "forbidden_range") (eq .Diagnostic.Code "metadata_endpoint")}}
     <p>{{tr (printf "admin.relay.reason_%s" .Diagnostic.Code) "Check the relay configuration and try again."}}</p>
   {{end}}
 {{end}}
@@ -175,7 +184,7 @@
               <input type="hidden" name="csrf_token" value="{{$.CSRF}}">
               <input type="hidden" name="submission_token" value="{{$.Submission}}">
               <input type="hidden" name="profile" value="{{.ID}}">
-              {{if .Grant.Available}}
+              {{if or (and .Draft (ne .Diagnostic.Code "forbidden_range") (ne .Diagnostic.Code "metadata_endpoint")) .Grant.Available}}
                 <button name="operation" value="preview">{{tr "admin.relay.allow" "Allow this relay"}}</button>
               {{else}}
                 <button name="operation" value="resume">{{tr "admin.relay.resume" "Revalidate and resume"}}</button>
@@ -214,8 +223,8 @@
         <main class="admin-main">
           <h1>{{tr "admin.relay.confirm" "Confirm relay permission"}}</h1>
           {{with .RelayGrant}}
-            <p><code>{{.Scheme}}://{{.Authority}}</code> · {{template "admin/relay-grant-kind" .}}</p>
-            {{if .Named}}
+            <p><code>{{.Scheme}}://{{.Authority}}</code>{{if .Available}} · {{template "admin/relay-grant-kind" .}}{{end}}</p>
+            {{if and .Named .Addresses}}
               <p>{{tr "admin.relay.resolves_now" "This name currently resolves to"}}</p>
               <ul>{{range .Addresses}}<li><code>{{.}}</code></li>{{end}}</ul>
               <p>{{tr "admin.relay.dns_scope" "If granted, HTTP permission follows this name. Private access is limited to the listed addresses."}}</p>

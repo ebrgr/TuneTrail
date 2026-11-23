@@ -7,19 +7,21 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 )
 
-// TestIngestHealthBeforeDurableRelay guards the normal v11 startup path.
-func TestIngestHealthBeforeDurableRelay(t *testing.T) {
-	s, _, _ := migrationDB(t, 11)
-	seedIdentityHistory(t, s)
+// TestIngestHealthPreservesLegacyProvenance reads history with no durable receipt.
+func TestIngestHealthPreservesLegacyProvenance(t *testing.T) {
+	s, _, _ := migrationDB(t, currentSchemaVersion)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	seedMusic(t, s)
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,42)`)
 	health, err := s.IngestHealth(t.Context(), 1)
 	require.NoError(t, err)
-	require.False(t, health.RelayTracked)
-	require.Len(t, health.Sources, 1)
-	require.Equal(t, "untracked", health.Sources[0].Delivery)
-	require.Len(t, health.Decisions, 1)
+	require.True(t, health.RelayTracked)
+	require.Empty(t, health.Sources)
+	require.Empty(t, health.Decisions)
 
 	provenance, err := s.ListenProvenance(t.Context(), 1, 1, 42)
 	require.NoError(t, err)
@@ -36,18 +38,26 @@ func TestIngestHealthSourceSummary(t *testing.T) {
 	seedIdentityHistory(t, s)
 	batch := ingest.Batch{ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single",
 		ReceivedAt: time.Unix(1, 0), Items: []ingest.Item{{Snapshot: ingest.Snapshot{Client: "rare client"}}}}
-	rare, err := s.ReceiveBatch(ctx, batch)
-	require.NoError(t, err)
+	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,
+		adapter_version,batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version)
+		VALUES('rare',1,'source',1,'listenbrainz','1','rare',0,'single',1,'second','start','{"client":"rare client"}','digest','1')`)
+	var rare []ingest.Result
+	var err error
 	_, err = provider.UpTo(ctx, 17)
 	require.NoError(t, err)
 	require.NoError(t, checkDatabase(s.db))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_source_summary WHERE profile_id=1 AND client='rare client' AND receipt_id=?`, rare[0].ReceiptID))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_source_summary WHERE profile_id=1 AND client='rare client' AND receipt_id=?`, "rare"))
 
 	// Admission is the only application write needed to index a new source.
+	s, _, _ = migrationDB(t, currentSchemaVersion)
+	testfixtures.Profile(t, s, 1, "one", "One", 0)
+	testfixtures.Profile(t, s, 2, "two", "Two", 0)
+	rare, err = s.AdmitOccurrence(ctx, batch)
+	require.NoError(t, err)
 	batch.Items[0].Snapshot.Client = "active client"
 	for _, stamp := range []int64{1000, 500, 1000} {
 		batch.ReceivedAt = time.Unix(stamp, 0)
-		_, err := s.ReceiveBatch(ctx, batch)
+		_, err := s.AdmitOccurrence(ctx, batch)
 		require.NoError(t, err)
 	}
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_source_summary x WHERE client='active client' AND receipt_id=(
@@ -59,14 +69,15 @@ func TestIngestHealthSourceSummary(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_source_summary WHERE client='active client' AND received_at=1000 AND receipt_id<>?`, latest))
 
 	batch.ProfileID = 2
-	_, err = s.ReceiveBatch(ctx, batch)
+	_, err = s.AdmitOccurrence(ctx, batch)
 	require.NoError(t, err)
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM ingest_source_summary WHERE client='active client'`))
-	execSQL(t, s, `WITH RECURSIVE sample(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM sample WHERE n<101)
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('source',1,'test',0);
+		WITH RECURSIVE sample(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM sample WHERE n<101)
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
-			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version)
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,mode,resolver_variant)
 		SELECT 'source-summary-'||n,1,'source',1,'test','1','batch',n,'single',n+10,'second','start',
-			json_object('client','client-'||n),'digest','1' FROM sample`)
+			json_object('client','client-'||n),'digest','1','active','occurrence' FROM sample`)
 	first, err := s.IngestHealth(ctx, 1)
 	require.NoError(t, err)
 	require.Len(t, first.Sources, healthSourcePageSize)

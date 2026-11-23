@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -17,7 +15,6 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
-	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/testfixtures"
@@ -138,7 +135,7 @@ func TestRelayBootstrapWAL(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(target+suffix, data, 0600))
 	}
-	file, err := bootstrap(dir, false)
+	file, err := bootstrapAtVersion(dir, false, 20)
 	require.NoError(t, err)
 	require.Equal(t, target, file)
 	matches, err := filepath.Glob(target + ".pre-relay-delivery-*.bak")
@@ -149,7 +146,7 @@ func TestRelayBootstrapWAL(t *testing.T) {
 	defer backup.Close()
 	require.Equal(t, 11, scalar(t, &Sqlite{db: backup}, "SELECT max(version_id) FROM goose_db_version"))
 	require.Equal(t, 1, scalar(t, &Sqlite{db: backup}, "SELECT count(*) FROM ingest_events WHERE receipt_id='wal-only'"))
-	_, err = bootstrap(dir, false)
+	_, err = bootstrapAtVersion(dir, false, 20)
 	require.NoError(t, err)
 	second, err := filepath.Glob(target + ".pre-relay-delivery-*.bak")
 	require.NoError(t, err)
@@ -170,43 +167,12 @@ func TestRelayD4KeepsTheLegacyCut(t *testing.T) {
 	require.Error(t, s.SetProfileRelay(t.Context(), 2, "https://relay.test", "fixture"))
 	execSQL(t, s, "UPDATE relay_delivery_gate SET policy='durable'")
 	execSQL(t, s, "UPDATE profile_ingest_flags SET occurrence_write=1 WHERE profile_id=1")
-	require.Error(t, s.SetProfileRelay(t.Context(), 2, "http://127.0.0.1:1", "fixture"))
+	require.NoError(t, s.SetProfileRelay(t.Context(), 2, "http://127.0.0.1:1", "fixture"))
 	_, err = s.db.Exec("UPDATE relay_delivery_gate SET policy='legacy'")
 	require.ErrorContains(t, err, "cannot be reversed")
 }
 
 // TestRelayOccurrenceConversion requires a healthy permitted relay or no relay.
-func TestRelayOccurrenceConversion(t *testing.T) {
-	s, _, _ := migrationDB(t, 12)
-	ctx := t.Context()
-	testfixtures.Profile(t, s, 1, "one", "One", 0)
-	testfixtures.Profile(t, s, 2, "two", "Two", 0)
-	execSQL(t, s, "UPDATE users SET role='admin',status='active',password=X'01' WHERE id=1")
-	session, err := s.SaveSession(ctx, 1, time.Now().Add(time.Hour), false)
-	require.NoError(t, err)
-	execSQL(t, s, "INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)")
-	require.NoError(t, s.ActivateRelayDelivery(ctx))
-	require.NoError(t, s.ConvertOccurrence(ctx, session.ID, 2))
-	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/validate-token" || r.Header.Get("Authorization") != "Token fixture" {
-			w.WriteHeader(401)
-			return
-		}
-		_, _ = w.Write([]byte(`{"valid":true,"user_name":"synthetic"}`))
-	}))
-	defer target.Close()
-	require.NoError(t, s.SetProfileRelay(ctx, 1, target.URL, "fixture"))
-	require.ErrorIs(t, s.ConvertOccurrence(ctx, session.ID, 1), db.ErrConflict)
-	key := strings.TrimPrefix(target.URL, "http://")
-	require.NoError(t, s.SetRelayPermissionAsRoot(ctx, session.ID, 1, RelayPermission{HostPort: key, HTTP: true}))
-	require.ErrorIs(t, s.ConvertOccurrence(ctx, session.ID, 1), db.ErrConflict)
-	require.NoError(t, s.SetRelayPermissionAsRoot(ctx, session.ID, 1, RelayPermission{HostPort: key, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
-	require.NoError(t, s.ConvertOccurrence(ctx, session.ID, 1))
-	require.ErrorIs(t, s.SetProfileRelay(ctx, 1, target.URL, "bad-token"), db.ErrConflict)
-	require.Equal(t, 2, scalar(t, s, "SELECT count(*) FROM profile_ingest_flags WHERE occurrence_write=1"))
-}
-
-// relayReceipt creates an active fixture under the simulated E3 policy.
 func relayReceipt(t *testing.T, s *Sqlite, profile int32, id, variant string, track int, instant time.Time) {
 	t.Helper()
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('origin:'||?,?,'listenbrainz',0) ON CONFLICT DO NOTHING`, profile, profile)
@@ -220,7 +186,7 @@ func relayReceipt(t *testing.T, s *Sqlite, profile int32, id, variant string, tr
 // relayStoreFixture supplies catalog rows and profiles for the two independent writers.
 func relayStoreFixture(t *testing.T) (*Sqlite, string) {
 	t.Helper()
-	s, _, path := migrationDB(t, currentSchemaVersion)
+	s, _, path := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, "UPDATE relay_delivery_gate SET policy='durable'")
 	require.NoError(t, s.SetProfileRelay(t.Context(), 1, "https://RELAY.test:443/prefix", "relay-fixture"))
@@ -236,8 +202,8 @@ func resolveRelayV9(t *testing.T, s *Sqlite) {
 	require.NotEmpty(t, r.id)
 	at, err := time.Parse(receiptTime, instant)
 	require.NoError(t, err)
-	r.track, r.unix = 1, at.Unix()
-	require.NoError(t, s.finishIngest(t.Context(), r))
+	r.unix = at.Unix()
+	require.NoError(t, s.finishIngest(t.Context(), r, 1))
 }
 
 // TestRelayOutboxClaims exercises accepted/duplicate decisions, fencing, ordering and both formats.
@@ -701,15 +667,8 @@ func TestRelayCapacity(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().UTC().Truncate(time.Second)
 	fillRelayCapacity(t, s, now)
-	execSQL(t, s, "INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)")
-	active, receipts, policy, err := s.AdmitIngestPolicy(t.Context(), ingest.Batch{
-		ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ReceivedAt: now,
-		Items: []ingest.Item{{Snapshot: ingest.Snapshot{Artist: "Fixture", Title: "Overflow"}, ListenedAt: now.Add(time.Hour)}},
-	}, true, nil, nil)
-	require.NoError(t, err)
-	require.True(t, active)
-	require.Len(t, receipts, 1)
-	require.Equal(t, "durable", policy)
+	relayReceipt(t, s, 1, "overflow", "v9", 1, now.Add(time.Hour))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='overflow' AND delivery_policy='durable'`))
 	resolveRelayV9(t, s)
 	require.Equal(t, 100000, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.Equal(t, 1, scalar(t, s, "SELECT count(*) FROM outbox WHERE json_extract(result,'$.reason')='queue_capacity'"))

@@ -53,6 +53,7 @@ type Exception struct {
 
 // Grant describes a root-only preview tied to a specific destination and DNS answer.
 type Grant struct {
+	Draft                    bool
 	Profile                  int32
 	Version                  int64
 	Authority, Scheme, Fence string
@@ -65,6 +66,7 @@ func (g Grant) Available() bool { return g.HTTP || len(g.Private) > 0 }
 
 // ProfileView contains only root-visible policy configuration and diagnostics.
 type ProfileView struct {
+	Draft              bool
 	ID                 int32
 	Name               string
 	Configured, Paused bool

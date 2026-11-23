@@ -86,7 +86,8 @@ func TestPreparedMediaFormsAndProfileContext(t *testing.T) {
 	count, err = a.store.ProfileListenCount(ctx, 2)
 	require.NoError(t, err)
 	require.EqualValues(t, 1, count)
-	require.NoError(t, a.store.SaveListen(ctx, db.SaveListenOpts{ProfileID: 3, TrackID: 12, Time: time.Unix(1699999980, 0)}))
+	_, err = a.store.SaveManualListen(ctx, db.SaveListenOpts{ProfileID: 3, TrackID: 12, Time: time.Unix(1699999980, 0)})
+	require.NoError(t, err)
 	deletion := url.Values{"csrf_token": {match[1]}, "profile_id": {"2"}, "profile_slug": {"second"}, "unix": {"1699999980"}}
 	require.Equal(t, 400, call("POST", base+"/listen-delete", deletion, true).Code)
 	deletion.Set("confirm", "1")

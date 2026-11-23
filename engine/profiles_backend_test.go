@@ -76,6 +76,19 @@ func (a *profileTestApp) request(method, url, body, key string, admin bool) *htt
 	a.router.ServeHTTP(w, r)
 	return w
 }
+
+// resolveFixtureHistory drains the test worker before checking persisted history.
+func resolveFixtureHistory(t *testing.T, a *profileTestApp) {
+	t.Helper()
+	for {
+		found, err := a.store.ResolveNextIngest(t.Context(), nil)
+		require.NoError(t, err)
+		if !found {
+			return
+		}
+	}
+}
+
 func listenBody(kind, track string, ts int64) string {
 	return fmt.Sprintf(`{"listen_type":%q,"payload":[{"listened_at":%d,"track_metadata":{"artist_name":"Shared Artist","release_name":"Shared Album","track_name":%q,"additional_info":{"duration":180}}}]}`, kind, ts, track)
 }
@@ -106,10 +119,11 @@ func TestProfileBackendIsolationAndIngestion(t *testing.T) {
 	for code := range codes {
 		require.Equal(t, 200, code)
 	}
-	w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Shared Track", ts+1), "phone-key", false)
+	w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Shared Track", ts+10), "phone-key", false)
 	require.Equal(t, 200, w.Code, w.Body.String())
 	w = a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Other Track", ts+2), "second-key", false)
 	require.Equal(t, 200, w.Code, w.Body.String())
+	resolveFixtureHistory(t, a)
 	require.Equal(t, float64(2), getJSON(t, a, "/apis/web/v1/profiles/default/stats")["listen_count"])
 	require.Equal(t, float64(2), getJSON(t, a, "/apis/web/v1/profiles/second/stats")["listen_count"])
 	require.Equal(t, float64(1), getJSON(t, a, "/apis/web/v1/profiles/default/stats")["track_count"])
@@ -126,11 +140,14 @@ func TestProfileBackendIsolationAndIngestion(t *testing.T) {
 			require.Equal(t, 200, w.Code, endpoint+" "+w.Body.String())
 		}
 	}
-	shared := getJSON(t, a, "/apis/web/v1/profiles/default/track/1")
+	var sharedID, otherID int32
+	require.NoError(t, a.store.QueryRow(`SELECT track_id FROM track_aliases WHERE alias='Shared Track' AND is_primary=1`).Scan(&sharedID))
+	require.NoError(t, a.store.QueryRow(`SELECT track_id FROM track_aliases WHERE alias='Other Track' AND is_primary=1`).Scan(&otherID))
+	shared := getJSON(t, a, fmt.Sprintf("/apis/web/v1/profiles/default/track/%d", sharedID))
 	require.Equal(t, float64(2), shared["listen_count"])
 	require.Equal(t, float64(360), shared["time_listened"])
-	require.Equal(t, float64(1), getJSON(t, a, "/apis/web/v1/profiles/second/track/1")["listen_count"])
-	require.Equal(t, 404, a.request("GET", "/apis/web/v1/profiles/default/track/2", "", "", false).Code)
+	require.Equal(t, float64(1), getJSON(t, a, fmt.Sprintf("/apis/web/v1/profiles/second/track/%d", sharedID))["listen_count"])
+	require.Equal(t, 404, a.request("GET", fmt.Sprintf("/apis/web/v1/profiles/default/track/%d", otherID), "", "", false).Code)
 	require.Equal(t, float64(2), getJSON(t, a, "/apis/web/v1/profiles/default/summary?period=all_time")["plays"])
 	// A new playing-now track has no recorded listen yet, but must be visible only here.
 	w = a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("playing_now", "Unplayed Track", 0), "second-key", false)
@@ -146,7 +163,7 @@ func TestProfileBackendIsolationAndIngestion(t *testing.T) {
 	require.Equal(t, 200, w.Code)
 	require.NotContains(t, w.Body.String(), "first-key")
 	// Deleting a single profile's shared listen cannot erase the other's.
-	w = a.request("DELETE", fmt.Sprintf("/apis/web/v1/profiles/default/listens?track_id=1&unix=%d", ts), "", "", true)
+	w = a.request("DELETE", fmt.Sprintf("/apis/web/v1/profiles/default/listens?track_id=%d&unix=%d", sharedID, ts), "", "", true)
 	require.Equal(t, 204, w.Code)
 	require.Equal(t, float64(1), getJSON(t, a, "/apis/web/v1/profiles/default/stats")["listen_count"])
 	require.Equal(t, float64(2), getJSON(t, a, "/apis/web/v1/profiles/second/stats")["listen_count"])
@@ -182,6 +199,7 @@ func TestProfileBackendAdminAndSlugChanges(t *testing.T) {
 	ts := time.Now().Add(-time.Hour).Unix()
 	w = a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Shared Track", ts), "first-key", false)
 	require.Equal(t, 200, w.Code, w.Body.String())
+	resolveFixtureHistory(t, a)
 	require.Equal(t, float64(1), getJSON(t, a, "/apis/web/v1/profiles/everton/stats")["listen_count"])
 	w = a.request("GET", "/apis/web/v1/profiles/everton/export", "", "", true)
 	require.Equal(t, 200, w.Code, w.Body.String())
@@ -202,6 +220,7 @@ func TestProfileBackendAdminAndSlugChanges(t *testing.T) {
 
 func TestProfileImportAndRelay(t *testing.T) {
 	a := newProfileTestApp(t)
+
 	dir := filepath.Join(cfg.ConfigDir(), "import", "2")
 	require.NoError(t, os.MkdirAll(dir, 0744))
 	name := "maloja_profile_backend_test.json"
@@ -214,6 +233,7 @@ func TestProfileImportAndRelay(t *testing.T) {
 	require.Equal(t, 400, a.request("POST", "/apis/web/v1/profiles/second/import", `{"filename":"../secret"}`, "", true).Code)
 	w := a.request("POST", "/apis/web/v1/profiles/second/import", reqBody, "", true)
 	require.Equal(t, 204, w.Code, w.Body.String())
+	resolveFixtureHistory(t, a)
 	require.Equal(t, float64(0), getJSON(t, a, "/apis/web/v1/profiles/default/stats")["listen_count"])
 	require.Equal(t, float64(1), getJSON(t, a, "/apis/web/v1/profiles/second/stats")["listen_count"])
 	_, err := os.Stat(filepath.Join(cfg.ConfigDir(), "import_complete", "2", name))
@@ -224,11 +244,14 @@ func TestProfileImportAndRelay(t *testing.T) {
 		w.WriteHeader(200)
 	}))
 	defer relay.Close()
+	startFixtureRelay(t, a, 1, relay.URL)
 	relayBody := fmt.Sprintf(`{"url":%q,"token":"external-token"}`, relay.URL)
 	require.Equal(t, 401, a.request("PUT", "/apis/web/v1/profiles/default/relay", relayBody, "first-key", false).Code)
 	require.Equal(t, 204, a.request("PUT", "/apis/web/v1/profiles/default/relay", relayBody, "", true).Code)
+	approveFixtureRelay(t, a, 1)
 	ts := time.Now().Add(-time.Hour).Unix()
 	require.Equal(t, 200, a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Relay Track", ts), "first-key", false).Code)
+	resolveFixtureHistory(t, a)
 	select {
 	case token := <-received:
 		require.Equal(t, "Token external-token", token)
@@ -236,6 +259,7 @@ func TestProfileImportAndRelay(t *testing.T) {
 		t.Fatal("profile relay not called")
 	}
 	require.Equal(t, 200, a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Relay Track", ts), "second-key", false).Code)
+	resolveFixtureHistory(t, a)
 	select {
 	case <-received:
 		t.Fatal("another profile was forwarded to the relay")

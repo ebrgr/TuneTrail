@@ -52,7 +52,7 @@ func TestOccurrenceUpgrade(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(target+suffix, data, 0600))
 	}
-	_, err := bootstrap(dir, false)
+	_, err := bootstrapAtVersion(dir, false, 20)
 	require.NoError(t, err)
 
 	backups, err := filepath.Glob(target + ".pre-occurrence-ingest-*.bak")
@@ -78,7 +78,7 @@ func TestOccurrenceUpgrade(t *testing.T) {
 		require.Equal(t, 1, scalar(t, current, `SELECT count(*) FROM ingest_revisions WHERE author='migration'
 			AND decision='different' AND json_extract(evidence,'$.after.occurrence_id')=1`))
 		require.NoError(t, conn.Close())
-		_, err = bootstrap(dir, false)
+		_, err = bootstrapAtVersion(dir, false, 20)
 		require.NoError(t, err)
 	}
 }
@@ -130,7 +130,7 @@ func TestOccurrenceRepairAssertions(t *testing.T) {
 			seedOccurrenceLinks(t, s)
 			simulateLegacyOccurrenceMerge(t, s)
 			execSQL(t, s, tc.query)
-			_, err := provider.Up(ctx)
+			_, err := provider.UpTo(ctx, 20)
 			require.ErrorContains(t, err, tc.message)
 			require.Equal(t, 9, scalar(t, s, `SELECT max(version_id) FROM goose_db_version`))
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE author='migration'`))
@@ -216,7 +216,7 @@ func TestOccurrenceGuardCascades(t *testing.T) {
 
 // TestOccurrenceMergeSync revises both receipts without changing the linked occurrence.
 func TestOccurrenceMergeSync(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 20)
 	seedOccurrenceLinks(t, s)
 	require.NoError(t, s.MergeTracks(context.Background(), 70, 1))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id='linked-42'`))
@@ -229,7 +229,7 @@ func TestOccurrenceMergeSync(t *testing.T) {
 
 // TestOccurrenceMergeRequiresRevision rolls back when a receipt cannot be revised.
 func TestOccurrenceMergeRequiresRevision(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 20)
 	seedOccurrenceLinks(t, s)
 	// A NULL decision is legal on the ledger but violates the revision's NOT NULL.
 	execSQL(t, s, `UPDATE ingest_events SET duplicate_decision=NULL,resolution_version=2 WHERE receipt_id='linked-43'`)

@@ -16,6 +16,7 @@ from pathlib import Path
 
 from roadmap05_fixture import BASE, disposable_fixture
 from roadmap06_fixture import FIXTURE_PASSWORD_HASH
+from validate_admin_webui import approve_saved_relay
 from validate_multiuser import LBZ, WEB, Server
 from validate_admin_webui import Forms
 
@@ -25,6 +26,15 @@ def relay_receiver():
     """Capture fictional relay requests in one local process."""
     messages=queue.Queue()
     class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path != '/validate-token':
+                self.send_error(404)
+                return
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"valid":true,"user_name":"fixture"}')
+
         def do_POST(self):
             content=self.rfile.read(int(self.headers.get('Content-Length','0')))
             messages.put((self.headers.get('Authorization'),json.loads(content)))
@@ -126,7 +136,7 @@ def run_fixture(binary,root,mode):
         assert checked_json(server,'alpha','/stats')['listen_count']==3
         assert checked_json(server,'beta','/stats')['listen_count']==2
         server.request('POST',LBZ+'/submit-listens',scrobble('Faixa comum',BASE+10),token='fixture-alpha-key',admin=True)
-        assert checked_json(server,'alpha','/stats')['listen_count']==4
+        server.wait_listens(WEB + '/profiles/alpha', 4)
         assert checked_json(server,'beta','/stats')['listen_count']==2
         server.request('POST',LBZ+'/submit-listens',scrobble('Faixa comum',0,'playing_now'),token='fixture-beta-key')
         assert checked_json(server,'beta','/now-playing')['currently_playing']
@@ -196,8 +206,15 @@ def run_import_relay_and_cache(binary,root):
         assert checked_json(server,'alpha','/stats')['listen_count']==3
         assert checked_json(server,'beta','/stats')['listen_count']==2
         with relay_receiver() as (url_a,msg_a), relay_receiver() as (url_b,msg_b):
+            for slug, url in [('alpha', url_a), ('beta', url_b)]:
+                permissions = WEB + '/profiles/' + slug + '/relay/permissions'
+                host = urllib.parse.urlsplit(url).netloc
+                server.request('PUT', permissions, {'host_port': host, 'allow_http': True}, admin=True, expected=204)
+                server.request('PUT', permissions, {'host_port': host, 'cidr': '127.0.0.1/32', 'allow_private': True}, admin=True, expected=204)
             server.request('PUT',WEB+'/profiles/alpha/relay',{'url':url_a,'token':'fictional-relay-alpha'},admin=True,expected=204)
             server.request('PUT',WEB+'/profiles/beta/relay',{'url':url_b,'token':'fictional-relay-beta'},admin=True,expected=204)
+            approve_saved_relay(server, 1)
+            approve_saved_relay(server, 2)
             server.request('POST',LBZ+'/submit-listens',scrobble('Faixa comum',BASE+20),token='fixture-alpha-key')
             server.request('POST',LBZ+'/submit-listens',scrobble('Faixa comum',BASE+21),token='fixture-beta-key')
             header_a,payload_a=msg_a.get(timeout=5);header_b,payload_b=msg_b.get(timeout=5)

@@ -57,8 +57,7 @@ func TestOccurrenceHTTPCompatibility183(t *testing.T) {
 
 	before := read("default")
 	other := read("second")
-	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1),(2,1,1)
-		ON CONFLICT(profile_id) DO UPDATE SET active=1,occurrence_write=1`))
+
 	require.Equal(t, before, read("default"))
 	require.Equal(t, other, read("second"))
 

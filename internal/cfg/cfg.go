@@ -41,7 +41,6 @@ const (
 	SUBSONIC_PARAMS_ENV            = "KOITO_SUBSONIC_PARAMS"
 	LASTFM_API_KEY_ENV             = "KOITO_LASTFM_API_KEY"
 	SKIP_IMPORT_ENV                = "KOITO_SKIP_IMPORT"
-	INGEST_ACTIVE_ENV              = "TUNETRAIL_INGEST_ACTIVE"
 	ALLOWED_HOSTS_ENV              = "KOITO_ALLOWED_HOSTS"
 	CORS_ORIGINS_ENV               = "KOITO_CORS_ALLOWED_ORIGINS"
 	DISABLE_RATE_LIMIT_ENV         = "KOITO_DISABLE_RATE_LIMIT"
@@ -81,7 +80,6 @@ type config struct {
 	lastfmApiKey           string
 	subsonicEnabled        bool
 	skipImport             bool
-	ingestActive           bool
 	fetchImageDuringImport bool
 	allowedHosts           []string
 	allowAllHosts          bool
@@ -249,7 +247,6 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 	}
 	cfg.lastfmApiKey = getenv(LASTFM_API_KEY_ENV)
 	// Keep the master ingestion switch fixed for this process.
-	cfg.ingestActive = parseBool(getenv(INGEST_ACTIVE_ENV))
 	cfg.skipImport = parseBool(getenv(SKIP_IMPORT_ENV))
 
 	// Identify TuneTrail itself to MusicBrainz, Deezer and Last.fm with a project contact URL,

@@ -35,8 +35,6 @@ func TestOccurrenceArchiveRoundTrip(t *testing.T) {
 	target, _, _ := migrationDB(t, currentSchemaVersion)
 	for _, profile := range []int32{1, 2} {
 		testfixtures.Profile(t, target, int(profile), fmt.Sprintf("p-%d", profile), "Restored", 1)
-		execSQL(t, target, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(?,1,1)
-			ON CONFLICT(profile_id) DO UPDATE SET active=1, occurrence_write=1`, profile)
 		var items []*db.ExportItem
 		cursor := ""
 		var ceiling int64

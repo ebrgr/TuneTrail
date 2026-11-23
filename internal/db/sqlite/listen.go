@@ -13,41 +13,31 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Sqlite) SaveListen(ctx context.Context, opts db.SaveListenOpts) error {
-	_, err := s.SaveListenWithResult(ctx, opts)
-	return err
-}
-
-// SaveListenWithResult reports whether the profile-scoped listen was actually inserted.
-func (s *Sqlite) SaveListenWithResult(ctx context.Context, opts db.SaveListenOpts) (bool, error) {
-	if opts.TrackID == 0 {
-		return false, errors.New("SaveListen: required parameter TrackID missing")
+// SaveManualListen inserts an explicitly selected occurrence unless that exact second already exists.
+func (s *Sqlite) SaveManualListen(ctx context.Context, opts db.SaveListenOpts) (bool, error) {
+	if opts.ProfileID <= 0 || opts.TrackID <= 0 || opts.Time.IsZero() {
+		return false, db.ErrInvalidInput
 	}
-	if opts.Time.IsZero() {
-		opts.Time = time.Now()
-	}
-	profileID, err := s.resolveWriteProfile(ctx, opts.ProfileID, opts.UserID)
-	if err != nil {
-		return false, fmt.Errorf("SaveListen: %w", err)
-	}
-	client := ""
-	if opts.Client != "" {
-		client = opts.Client
-	}
-	result, err := s.db.ExecContext(ctx,
-		`INSERT INTO listens (track_id, listened_at, user_id, profile_id, client) VALUES (?,?,?,?,?)
-         ON CONFLICT DO NOTHING`,
-		opts.TrackID, opts.Time.Unix(), nullableLegacyUserID(opts.UserID), profileID, client,
-	)
-	// Manual legacy writes cannot bypass a converted profile's admission.
-	if isOccurrenceGuard(err, "Legacy listen conflicts") {
-		return false, fmt.Errorf("SaveListen: %w: %w", db.ErrConflict, err)
-	}
-	if err != nil {
-		return false, err
-	}
-	n, err := result.RowsAffected()
-	return n > 0, err
+	var inserted bool
+	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		// During the schema 20 transition, register provenance before the first manual write.
+		if _, err := tx.ExecContext(ctx, `INSERT INTO event_origins VALUES('manual','Manual listen')
+			ON CONFLICT(origin) DO NOTHING`); err != nil {
+			return err
+		}
+		stamp := opts.Time.Unix()
+		result, err := tx.ExecContext(ctx, `INSERT INTO listens(profile_id,track_id,listened_at,client,origin)
+			SELECT ?,?,?,?,'manual' WHERE NOT EXISTS (
+				SELECT 1 FROM listens WHERE profile_id=? AND track_id=? AND listened_at=?
+			)`, opts.ProfileID, opts.TrackID, stamp, opts.Client, opts.ProfileID, opts.TrackID, stamp)
+		if err != nil {
+			return err
+		}
+		count, err := result.RowsAffected()
+		inserted = count == 1
+		return err
+	})
+	return inserted && err == nil, err
 }
 
 // DeleteListen removes scoped history, receipts and open relay items atomically.

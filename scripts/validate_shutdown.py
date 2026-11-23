@@ -10,6 +10,7 @@ import time
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 
+from validate_admin_webui import approve_saved_relay
 from validate_multiuser import Server,WEB,LBZ,scrobble
 
 
@@ -31,7 +32,7 @@ def main():
     relay=ThreadingHTTPServer(('127.0.0.1',0),Receiver);thread=threading.Thread(target=relay.serve_forever,daemon=True);thread.start()
     try:
         with tempfile.TemporaryDirectory(prefix='koito-shutdown-020-') as root:
-            server=Server(args.binary.resolve(),Path(root)/'data',environment={'TUNETRAIL_INGEST_ACTIVE':'true'})
+            server=Server(args.binary.resolve(),Path(root)/'data')
             try:
                 server.start();server.login();key=server.request('GET',WEB+'/profiles/default/user/apikeys',admin=True)[0]['key']
                 path=WEB+'/profiles/default'
@@ -39,9 +40,7 @@ def main():
                 server.request('PUT',path+'/relay/permissions',{'host_port':host,'allow_http':True},admin=True,expected=204)
                 server.request('PUT',path+'/relay/permissions',{'host_port':host,'cidr':'127.0.0.1/32','allow_private':True},admin=True,expected=204)
                 server.request('PUT',path+'/relay',{'url':f'http://{host}','token':'fictional-relay-token'},admin=True,expected=204)
-                state=server.request('GET',path+'/ingest-activation',admin=True)
-                server.request('PUT',path+'/ingest-activation',
-                               {'active':True,'review':False,'digest':state['digest']},admin=True,expected=204)
+                approve_saved_relay(server, 1)
                 stamp=int(time.time())-60;server.request('POST',LBZ+'/submit-listens',scrobble(stamp),token=key)
                 assert entered.wait(5),'relay request did not reach local receiver'
                 start=time.monotonic();server.process.send_signal(signal.SIGTERM)

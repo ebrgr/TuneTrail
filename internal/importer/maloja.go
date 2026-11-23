@@ -51,11 +51,10 @@ func ImportMalojaFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 	if len(export.Scrobbles) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
-	ctx, err = withFileShadow(ctx, store, db.ProfileID(ctx), "maloja", file)
+	ctx, err = withFileIngest(ctx, store, db.ProfileID(ctx), "maloja", file)
 	if err != nil {
 		return err
 	}
-	defer flushLegacyFileShadow(ctx)
 	for _, item := range export.Scrobbles {
 		seen(ctx)
 		if err := ctx.Err(); err != nil {
@@ -92,7 +91,7 @@ func ImportMalojaFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 			ProfileID:      db.ProfileID(ctx),
 			SkipCacheImage: !cfg.FetchImagesDuringImport(),
 		}
-		err = submitFileListen(ctx, store, opts, "")
+		err = submitFileListen(ctx, opts, "")
 		if err != nil {
 			l.Err(err).Msg("Failed to import maloja playback item")
 			return fmt.Errorf("ImportMalojaFile: %w", err)
@@ -101,7 +100,7 @@ func ImportMalojaFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 			return err
 		}
 	}
-	if err := flushFileShadow(ctx); err != nil {
+	if err := flushFileIngest(ctx); err != nil {
 		return err
 	}
 	return finishImport(ctx, filename, len(export.Scrobbles))

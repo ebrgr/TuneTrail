@@ -45,7 +45,7 @@ const ingestDiscardGeneration = `coalesce((SELECT id FROM ingest_discards d
 	ORDER BY id DESC LIMIT 1),0)`
 
 // ingestDiscardRows reads only versions and safe display fields for one profile.
-func ingestDiscardRows(ctx context.Context, tx ingestActivationReader, profile int32, now int64, receipt string, limit, offset int) ([]ingestDiscardRow, error) {
+func ingestDiscardRows(ctx context.Context, tx ingestQueryer, profile int32, now int64, receipt string, limit, offset int) ([]ingestDiscardRow, error) {
 	filter := ""
 	args := []any{profile, now}
 	if receipt != "" {
@@ -96,7 +96,7 @@ func ingestDiscardDigest(profile int32, receipt string, rows []ingestDiscardRow)
 }
 
 // scanIngestDiscardSet visits the complete eligible set in stable index order.
-func scanIngestDiscardSet(ctx context.Context, reader ingestActivationReader, profile int32, now int64, visit func(ingestDiscardCandidate) error) error {
+func scanIngestDiscardSet(ctx context.Context, reader ingestQueryer, profile int32, now int64, visit func(ingestDiscardCandidate) error) error {
 	rows, err := reader.QueryContext(ctx, `SELECT receipt_id,state,resolution_version,work_version,parked_at,
 		coalesce(park_reason,''),received_at,`+ingestDiscardGeneration+`
 		FROM ingest_events WHERE profile_id=? AND `+ingestDiscardScope+`
@@ -118,7 +118,7 @@ func scanIngestDiscardSet(ctx context.Context, reader ingestActivationReader, pr
 }
 
 // ingestDiscardSetDigest hashes the ordered set without putting its IDs into the form.
-func ingestDiscardSetDigest(ctx context.Context, reader ingestActivationReader, profile int32, now int64, capture *[]ingestDiscardCandidate) (db.IngestReviewBatch, error) {
+func ingestDiscardSetDigest(ctx context.Context, reader ingestQueryer, profile int32, now int64, capture *[]ingestDiscardCandidate) (db.IngestReviewBatch, error) {
 	sum := sha256.New()
 	encoder := json.NewEncoder(sum)
 	preview := db.IngestReviewBatch{}
@@ -171,7 +171,7 @@ func (s *Sqlite) IngestDiscardPreview(ctx context.Context, profile int32, receip
 }
 
 // checkIngestDiscardTarget distinguishes linked listens and an idempotent replay from a stale target.
-func checkIngestDiscardTarget(ctx context.Context, reader ingestActivationReader, profile int32, receipt string) error {
+func checkIngestDiscardTarget(ctx context.Context, reader ingestQueryer, profile int32, receipt string) error {
 	var protected, discarded bool
 	err := reader.QueryRowContext(ctx, `SELECT event_id IS NOT NULL OR state='accepted',0
 		FROM ingest_events WHERE profile_id=? AND receipt_id=?

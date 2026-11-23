@@ -79,14 +79,8 @@ func ManualListen(ctx context.Context, s interface {
 	if client == "" {
 		client = "TuneTrail Web UI" // client recorded for listens added in the UI (ISSUE-111); existing rows keep theirs
 	}
-	opts := db.SaveListenOpts{ProfileID: profileID, TrackID: trackID, Time: at, Client: client}
-	if recorder, ok := s.(interface {
-		SaveListenWithResult(context.Context, db.SaveListenOpts) (bool, error)
-	}); ok {
-		return recorder.SaveListenWithResult(ctx, opts)
-	}
-	err := s.SaveListen(ctx, opts)
-	return err == nil, err
+	// The store checks every accepted source under its write lock.
+	return s.SaveManualListen(ctx, db.SaveListenOpts{ProfileID: profileID, TrackID: trackID, Time: at, Client: client})
 }
 
 // RemovePersonalListen addresses a single profile, track and instant.

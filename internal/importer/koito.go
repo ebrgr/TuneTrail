@@ -2,20 +2,18 @@ package importer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/imagefetch"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/models"
-	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
 	"math"
 )
@@ -53,11 +51,10 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 	if data.Version != "1" {
 		return invalidFile(fmt.Errorf("unsupported TuneTrail/Koito export version"))
 	}
-	ctx, err = withFileShadow(ctx, store, profileID, "koito", f)
+	ctx, err = withFileIngest(ctx, store, profileID, "koito", f)
 	if err != nil {
 		return err
 	}
-	defer flushLegacyFileShadow(ctx)
 	// Validate all required identities before writing anything. Uploaded exports
 	// are untrusted and an empty artist list must not panic at artistIds[0].
 	for _, item := range data.Listens {
@@ -67,8 +64,8 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		if item.Track.Duration < 0 || item.Track.Duration > math.MaxInt32 {
 			return invalidFile(fmt.Errorf("invalid track duration"))
 		}
-		if len(item.Artists) == 0 || getPrimaryAliasFromAliasSlice(item.Track.Aliases) == "" || (!occurrenceFileIngest(ctx) && getPrimaryAliasFromAliasSlice(item.Album.Aliases) == "") {
-			return invalidFile(fmt.Errorf("invalid TuneTrail/Koito export: artists, album and track required"))
+		if len(item.Artists) == 0 || getPrimaryAliasFromAliasSlice(item.Track.Aliases) == "" {
+			return invalidFile(fmt.Errorf("invalid TuneTrail/Koito export: artists and track required"))
 		}
 		for _, artist := range item.Artists {
 			if getPrimaryAliasFromAliasSlice(artist.Aliases) == "" {
@@ -77,8 +74,6 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 		}
 	}
 	l.Info().Msg("Beginning TuneTrail/Koito data import")
-
-	count := 0
 
 	for i := range data.Listens {
 		seen(ctx)
@@ -99,196 +94,42 @@ func ImportKoitoFile(ctx context.Context, store importStore, filename string) er
 			Client:       item.Client,
 			OriginalTime: item.ListenedAt.Format(time.RFC3339Nano),
 		}
-		if occurrenceFileIngest(ctx) {
-			// Admit the observed native item before resolving or mutating catalog metadata.
-			snapshot.OriginalTime = item.OriginalListenedAt
-			snapshot.TrackMBID = item.Track.TrackMBID
-			snapshot.DiscNumber, snapshot.TrackNumber = item.Track.DiscNumber, item.Track.TrackNumber
-			snapshot.MBIDSource, snapshot.MBIDDeclaredAt = ingest.DeclaredMBIDProvenance(item.Track.MBIDSource, item.Track.MBIDDeclaredAt)
-			if item.Track.MBID != nil && *item.Track.MBID != uuid.Nil {
-				snapshot.Recording = item.Track.MBID.String()
-			}
-			if item.Album.MBID != nil && *item.Album.MBID != uuid.Nil {
-				snapshot.ReleaseMBID = item.Album.MBID.String()
-			}
-			for _, artist := range item.Artists {
-				snapshot.ArtistNames = append(snapshot.ArtistNames, getPrimaryAliasFromAliasSlice(artist.Aliases))
-			}
-			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
-				return err
-			}
-			continue
+		// Admit the observed native item before resolving or mutating catalog metadata.
+		snapshot.OriginalTime = item.OriginalListenedAt
+		snapshot.OwnerImport = untrustedImport(ctx)
+		snapshot.NativeVariousArtists = item.Album.VariousArtists
+		snapshot.NativeReleaseImage = imagefetch.PublicSource(item.Album.ImageUrl)
+		snapshot.TrackMBID = item.Track.TrackMBID
+		snapshot.DiscNumber, snapshot.TrackNumber = item.Track.DiscNumber, item.Track.TrackNumber
+		snapshot.MBIDSource, snapshot.MBIDDeclaredAt = ingest.DeclaredMBIDProvenance(item.Track.MBIDSource, item.Track.MBIDDeclaredAt)
+		if item.Track.MBID != nil && *item.Track.MBID != uuid.Nil {
+			snapshot.Recording = item.Track.MBID.String()
 		}
-		if !activeFileIngest(ctx) {
-			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
-				return err
+		if item.Album.MBID != nil && *item.Album.MBID != uuid.Nil {
+			snapshot.ReleaseMBID = item.Album.MBID.String()
+		}
+		for _, artist := range item.Artists {
+			name := getPrimaryAliasFromAliasSlice(artist.Aliases)
+			snapshot.ArtistNames = append(snapshot.ArtistNames, name)
+			if source := imagefetch.PublicSource(artist.ImageUrl); source != "" {
+				if snapshot.NativeArtistImages == nil {
+					snapshot.NativeArtistImages = make(map[string]string)
+				}
+				snapshot.NativeArtistImages[name] = source
+			}
+			if artist.MBID != nil && *artist.MBID != uuid.Nil {
+				snapshot.ArtistMbidMappings = append(snapshot.ArtistMbidMappings, ingest.ArtistMapping{Name: name, MBID: artist.MBID.String()})
 			}
 		}
-		err := func() error {
-			unlock, err := catalog.LockAssociations(ctx)
-			if err != nil {
-				return err
-			}
-			defer unlock()
-			// use this for save/get mbid for all artist/album/track
-			var mbid uuid.UUID
-
-			// Imported image URLs retain their network restriction in the stored source.
-			if untrustedImport(ctx) {
-				data.Listens[i].Album.ImageUrl = imagefetch.PublicSource(data.Listens[i].Album.ImageUrl)
-				for j := range data.Listens[i].Artists {
-					data.Listens[i].Artists[j].ImageUrl = imagefetch.PublicSource(data.Listens[i].Artists[j].ImageUrl)
-				}
-			}
-			artistIds := make([]int32, 0)
-			for _, ia := range data.Listens[i].Artists {
-				mbid = uuid.Nil
-				if ia.MBID != nil {
-					mbid = *ia.MBID
-				}
-				artist, err := store.GetArtist(ctx, db.GetArtistOpts{
-					MusicBrainzID: mbid,
-					Name:          getPrimaryAliasFromAliasSlice(ia.Aliases),
-				})
-				if errors.Is(err, db.ErrNotFound) && untrustedImport(ctx) && mbid != uuid.Nil {
-					artist, err = store.GetArtist(ctx, db.GetArtistOpts{Name: getPrimaryAliasFromAliasSlice(ia.Aliases)})
-				}
-				if errors.Is(err, db.ErrNotFound) {
-					var imgid = uuid.Nil
-					// not a perfect way to check if the image url is an actual source vs manual upload but
-					// im like 99% sure it will work perfectly
-					if strings.HasPrefix(ia.ImageUrl, "http") {
-						imgid = uuid.New()
-					}
-					// save artist
-					artist, err := store.SaveArtist(ctx, db.SaveArtistOpts{
-						Name:          getPrimaryAliasFromAliasSlice(ia.Aliases),
-						Image:         imgid,
-						ImageSrc:      ia.ImageUrl,
-						MusicBrainzID: mbid,
-						Aliases:       utils.FlattenAliases(ia.Aliases),
-					})
-					if err != nil {
-						return fmt.Errorf("ImportKoitoFile: %w", err)
-					}
-					artistIds = append(artistIds, artist.ID)
-				} else if err != nil {
-					return fmt.Errorf("ImportKoitoFile: %w", err)
-				} else {
-					artistIds = append(artistIds, artist.ID)
-				}
-			}
-			// call associate album
-			albumId := int32(0)
-			mbid = uuid.Nil
-			if data.Listens[i].Album.MBID != nil {
-				mbid = *data.Listens[i].Album.MBID
-			}
-			album, err := store.GetAlbum(ctx, db.GetAlbumOpts{
-				MusicBrainzID: mbid,
-				Title:         getPrimaryAliasFromAliasSlice(data.Listens[i].Album.Aliases),
-				ArtistID:      artistIds[0],
-			})
-			if errors.Is(err, db.ErrNotFound) && untrustedImport(ctx) && mbid != uuid.Nil {
-				album, err = store.GetAlbum(ctx, db.GetAlbumOpts{Title: getPrimaryAliasFromAliasSlice(data.Listens[i].Album.Aliases), ArtistID: artistIds[0]})
-			}
-			if errors.Is(err, db.ErrNotFound) {
-				var imgid = uuid.Nil
-				// not a perfect way to check if the image url is an actual source vs manual upload but
-				// im like 99% sure it will work perfectly
-				if strings.HasPrefix(data.Listens[i].Album.ImageUrl, "http") {
-					imgid = uuid.New()
-				}
-				// save album
-				album, err = store.SaveAlbum(ctx, db.SaveAlbumOpts{
-					Title:          getPrimaryAliasFromAliasSlice(data.Listens[i].Album.Aliases),
-					Image:          imgid,
-					ImageSrc:       data.Listens[i].Album.ImageUrl,
-					MusicBrainzID:  mbid,
-					Aliases:        utils.FlattenAliases(data.Listens[i].Album.Aliases),
-					ArtistIDs:      artistIds,
-					VariousArtists: data.Listens[i].Album.VariousArtists,
-				})
-				if err != nil {
-					return fmt.Errorf("ImportKoitoFile: %w", err)
-				}
-				albumId = album.ID
-			} else if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
-			} else {
-				albumId = album.ID
-			}
-
-			// call associate track
-			mbid = uuid.Nil
-			if data.Listens[i].Track.MBID != nil {
-				mbid = *data.Listens[i].Track.MBID
-			}
-			track, err := store.GetTrack(ctx, db.GetTrackOpts{
-				MusicBrainzID: mbid,
-				Title:         getPrimaryAliasFromAliasSlice(data.Listens[i].Track.Aliases),
-				ReleaseID:     albumId,
-				ArtistIDs:     artistIds,
-			})
-			if errors.Is(err, db.ErrNotFound) && untrustedImport(ctx) && mbid != uuid.Nil {
-				track, err = store.GetTrack(ctx, db.GetTrackOpts{Title: getPrimaryAliasFromAliasSlice(data.Listens[i].Track.Aliases), ReleaseID: albumId, ArtistIDs: artistIds})
-			}
-			if errors.Is(err, db.ErrNotFound) {
-				// save track
-				track, err = store.SaveTrack(ctx, db.SaveTrackOpts{
-					Title:          getPrimaryAliasFromAliasSlice(data.Listens[i].Track.Aliases),
-					RecordingMbzID: mbid,
-					Duration:       int32(data.Listens[i].Track.Duration),
-					ArtistIDs:      artistIds,
-					AlbumID:        albumId,
-				})
-				if err != nil {
-					return fmt.Errorf("ImportKoitoFile: %w", err)
-				}
-				// save track aliases
-				err = store.SaveTrackAliases(ctx, track.ID, utils.FlattenAliases(data.Listens[i].Track.Aliases), "Import")
-				if err != nil {
-					return fmt.Errorf("ImportKoitoFile: %w", err)
-				}
-			} else if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
-			}
-
-			// The active receipt preserves the catalog association made by this importer.
-			if activeFileIngest(ctx) {
-				snapshot.CatalogTrackID = track.ID
-				return nil
-			}
-			// save listen
-			err = store.SaveListen(ctx, db.SaveListenOpts{
-				TrackID:   track.ID,
-				Time:      data.Listens[i].ListenedAt,
-				Client:    data.Listens[i].Client,
-				ProfileID: profileID,
-			})
-			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
-			}
-
-			l.Info().Msgf("ImportKoitoFile: Imported listen for track %s", track.Title)
-			count++
-			return nil
-		}()
-		if err != nil {
+		if err := captureFileListen(ctx, snapshot, item.ListenedAt, item); err != nil {
 			return err
 		}
-		// Admit the resolved native track after releasing the catalog lock.
-		if snapshot.CatalogTrackID != 0 {
-			if err := captureFileListen(ctx, snapshot, item.ListenedAt); err != nil {
-				return err
-			}
-		}
 	}
 
-	if err := flushFileShadow(ctx); err != nil {
+	if err := flushFileIngest(ctx); err != nil {
 		return err
 	}
-	return finishImport(ctx, filename, count)
+	return finishImport(ctx, filename, 0)
 }
 func getPrimaryAliasFromAliasSlice(aliases []models.Alias) string {
 	for _, a := range aliases {
@@ -297,4 +138,64 @@ func getPrimaryAliasFromAliasSlice(aliases []models.Alias) string {
 		}
 	}
 	return ""
+}
+
+// budgetNativeAliases keeps the longest prefix that fits with the required snapshot fields.
+func budgetNativeAliases(snapshot ingest.Snapshot, item export.KoitoListen) ingest.Snapshot {
+	type entry struct{ field, artist, name string }
+	var entries []entry
+	add := func(field, artist string, aliases []models.Alias) {
+		for _, alias := range aliases {
+			if name := strings.TrimSpace(alias.Alias); !alias.Primary && name != "" {
+				entries = append(entries, entry{field, artist, name})
+			}
+		}
+	}
+	seen := make(map[string]bool)
+	for _, field := range item.AliasFieldOrder {
+		if seen[field] {
+			continue
+		}
+		seen[field] = true
+		switch field {
+		case "track":
+			add(field, "", item.Track.Aliases)
+		case "album":
+			add(field, "", item.Album.Aliases)
+		case "artists":
+			for _, artist := range item.Artists {
+				add(field, getPrimaryAliasFromAliasSlice(artist.Aliases), artist.Aliases)
+			}
+		}
+	}
+	if len(entries) == 0 {
+		return snapshot
+	}
+	build := func(n int) ingest.Snapshot {
+		bounded := snapshot
+		bounded.IgnoredAliasLimit = len(entries) - n
+		if n == 0 {
+			return bounded
+		}
+		aliases := &ingest.NativeAliases{Artists: make(map[string][]string)}
+		for _, alias := range entries[:n] {
+			switch alias.field {
+			case "track":
+				aliases.Track = append(aliases.Track, alias.name)
+			case "album":
+				aliases.Release = append(aliases.Release, alias.name)
+			case "artists":
+				aliases.Artists[alias.artist] = append(aliases.Artists[alias.artist], alias.name)
+			}
+		}
+		bounded.NativeAliases = aliases
+		return bounded
+	}
+	// No encoded alias uses fewer than three bytes including JSON delimiters.
+	upper := min(len(entries), ingest.MaxItemBytes/3)
+	firstTooLarge := sort.Search(upper+1, func(n int) bool {
+		encoded, _ := (ingest.Item{Snapshot: build(n), ListenedAt: item.ListenedAt}).Encode()
+		return len(encoded) > ingest.MaxItemBytes
+	})
+	return build(max(0, firstTooLarge-1))
 }

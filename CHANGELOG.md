@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+- Occurrence ingestion now handles listening history for every profile. Duplicate review is enabled by default, and schema 21 removes the old activation flags (ISSUE-172).
+
+- Saving a relay creates a draft. Only listens received after network approval are eligible for delivery (ISSUE-172).
+
+- File imports use occurrence ingestion, report oversized items individually, and preserve declared MusicBrainz IDs without overwriting existing IDs (ISSUE-172).
+
+- Occurrence file imports trim oversized optional metadata at UTF-8 boundaries and report truncated fields (ISSUE-172).
+
+- Koito v1 occurrence imports keep listens with large alias lists and report aliases skipped at the per-item limit (ISSUE-172).
+
+- Occurrence ingestion links known artist MusicBrainz IDs to their existing artist and holds ambiguous IDs for review (ISSUE-172).
+
+- Koito v1 imports through occurrence ingestion preserve explicit secondary aliases and count conflicting aliases they skip (ISSUE-172).
+
 ## [0.64] - 2026-11-22
 
 - "My account" is now the single place to manage your account and profile, with five tabs: Account, Profile, API keys, History and Relay. The Profile tab keeps the name, URL name, listen protection (with the relay note) and avatar; the separate "My profile" menu entry is gone, and the own profile has one address, `/account/profile`, so `/admin?profile=<own id>` and its `section=` variants redirect there (ISSUE-126).

@@ -3,7 +3,6 @@ package sqlite
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"path/filepath"
 	"testing"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
 	"github.com/rs/zerolog"
@@ -21,14 +21,26 @@ import (
 // admitRetryFixture commits a receipt through the same admission used before an ACK.
 func admitRetryFixture(t *testing.T, s *Sqlite, now time.Time, key string) string {
 	t.Helper()
-	active, results, err := s.AdmitIngest(t.Context(), ingest.Batch{
-		ProfileID: 1, Source: "file", Operation: "import", ClientKey: key, ReceivedAt: now,
-		Items: []ingest.Item{{ListenedAt: time.Unix(100, 0), Snapshot: ingest.Snapshot{Artist: "A", Title: "T", CatalogTrackID: 1}}},
-	}, true, &ingest.JobMode{Active: true, Variant: "v9"}, nil)
+	results, err := s.AdmitOccurrence(t.Context(), ingest.Batch{
+		ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ClientKey: key, ReceivedAt: now,
+		Items: []ingest.Item{{ListenedAt: time.Unix(100, 0), Snapshot: ingest.Snapshot{Artist: "A", Title: "T", Release: "Synthetic Album"}}},
+	})
 	require.NoError(t, err)
-	require.True(t, active)
 	require.Len(t, results, 1)
 	return results[0].ReceiptID
+}
+
+// seedHistoricalRetryReceipt inserts an already-admitted v9 receipt in a migration fixture.
+func seedHistoricalRetryReceipt(t *testing.T, s *Sqlite, key string) string {
+	t.Helper()
+	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at)
+		VALUES('listenbrainz:1',1,'listenbrainz',0) ON CONFLICT DO NOTHING`)
+	execSQL(t, s, `INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,
+		adapter_version,batch_id,item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,
+		original_snapshot,snapshot_digest,digest_version,mode,client_idempotency_key,batch_digest)
+		VALUES(?,1,'listenbrainz:1',1,'listenbrainz','1',?,0,'single',0,?,'second','start',
+		'{"artist":"A","title":"T"}','fixture','1','active',?,'fixture-batch')`, key, key, time.Unix(100, 0).UTC().Format(receiptTime), key)
+	return key
 }
 
 func TestIngestRetryBudgetAndRecovery(t *testing.T) {
@@ -39,8 +51,8 @@ func TestIngestRetryBudgetAndRecovery(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			ctx := t.Context()
-			s, _, path := migrationDB(t, currentSchemaVersion)
-			seedIdentityHistory(t, s)
+			s, _, path := migrationDB(t, 21)
+			testfixtures.Profile(t, s, 1, "retry", "Retry", 0)
 			now := time.Now().Truncate(time.Second)
 			s.ingestClock = func() time.Time { return now }
 			id := admitRetryFixture(t, s, now, "retry-key")
@@ -106,8 +118,8 @@ func TestIngestRetryBudgetAndRecovery(t *testing.T) {
 			found, err = worker.ResolveNextIngest(ctx, nil)
 			require.NoError(t, err)
 			require.True(t, found)
-			crashed.track, crashed.unix = 1, 100
-			require.ErrorIs(t, s.finishIngest(ctx, crashed), sql.ErrNoRows)
+			crashed.unix = 100
+			require.NoError(t, s.finishOccurrence(ctx, crashed, occurrenceProof{}))
 			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events e JOIN listens l USING(profile_id,event_id)
 				WHERE e.receipt_id=? AND e.state='accepted' AND l.listened_at=100`, id))
 			require.Equal(t, int(crashed.attempts), scalar(t, s, `SELECT attempt_count-retry_attempt_base FROM ingest_events WHERE receipt_id=?`, id))
@@ -123,8 +135,8 @@ func TestIngestRetryRejectsInvalidInput(t *testing.T) {
 		{"malformed snapshot JSON", "original_snapshot", `{"duration_ms":`, "invalid_snapshot"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			s, _, _ := migrationDB(t, currentSchemaVersion)
-			seedIdentityHistory(t, s)
+			s, _, _ := migrationDB(t, 21)
+			testfixtures.Profile(t, s, 1, "retry", "Retry", 0)
 			id := admitRetryFixture(t, s, time.Now(), tc.reason)
 			// Simulate a malformed historical receipt beyond the normal writer guards.
 			execSQL(t, s, `DROP TRIGGER trg_ingest_snapshot_immutable; PRAGMA ignore_check_constraints=ON`)
@@ -144,12 +156,12 @@ func TestIngestRetryRejectsInvalidInput(t *testing.T) {
 func TestIngestRetryUpgradeFromV12(t *testing.T) {
 	old, _, source := migrationDB(t, 12)
 	seedIdentityHistory(t, old)
-	id := admitRetryFixture(t, old, time.Now(), "v12-key")
+	id := seedHistoricalRetryReceipt(t, old, "v12-key")
 	execSQL(t, old, `UPDATE ingest_events SET state='retryable',attempt_count=3,next_attempt_at=0 WHERE receipt_id=?`, id)
 	dir := t.TempDir()
 	target := filepath.Join(dir, "tunetrail.db")
 	require.NoError(t, copyDatabase(source, target))
-	_, err := bootstrap(dir, false)
+	_, err := bootstrapAtVersion(dir, false, 20)
 	require.NoError(t, err)
 	conn, err := openExisting(target)
 	require.NoError(t, err)
@@ -158,7 +170,7 @@ func TestIngestRetryUpgradeFromV12(t *testing.T) {
 	migrated := &Sqlite{db: conn}
 	version, err := schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, currentSchemaVersion, version)
+	require.Equal(t, 20, version)
 	require.Equal(t, 1, scalar(t, migrated, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND
 		client_idempotency_key='v12-key' AND attempt_count=3 AND retry_attempt_base=0 AND parked_at IS NULL`, id))
 	claimed, _, _, err := migrated.claimNextIngest(t.Context())
@@ -194,8 +206,8 @@ func TestIngestParkWarningRate(t *testing.T) {
 
 // TestIngestLeaseClaimCap makes every resolution cross the lease boundary using the scheduler clock.
 func TestIngestLeaseClaimCap(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
-	seedIdentityHistory(t, s)
+	s, _, _ := migrationDB(t, 21)
+	testfixtures.Profile(t, s, 1, "retry", "Retry", 0)
 	now := time.Now().Truncate(time.Second)
 	id := admitRetryFixture(t, s, now, "lease-cap")
 	var snapshot string
@@ -216,7 +228,7 @@ func TestIngestLeaseClaimCap(t *testing.T) {
 			}
 			found, err := s.ResolveNextIngest(ctx, nil)
 			require.True(t, found)
-			require.ErrorIs(t, err, sql.ErrNoRows)
+			require.NoError(t, err)
 		}
 		s.ingestClock = func() time.Time { return now }
 		found, err := s.ResolveNextIngest(ctx, nil)
@@ -240,8 +252,8 @@ func TestIngestLeaseClaimCap(t *testing.T) {
 // TestIngestReprocessAllWithResolver lets two connections contend for the active writer.
 func TestIngestReprocessAllWithResolver(t *testing.T) {
 	ctx := t.Context()
-	s, _, path := migrationDB(t, currentSchemaVersion)
-	seedIdentityHistory(t, s)
+	s, _, path := migrationDB(t, 21)
+	testfixtures.Profile(t, s, 1, "retry", "Retry", 0)
 	now := time.Now().Truncate(time.Second)
 	s.ingestClock = func() time.Time { return now }
 	id := admitRetryFixture(t, s, now, "bulk-race")
@@ -281,14 +293,14 @@ func TestIngestReprocessAllWithResolver(t *testing.T) {
 func TestIngestReprocessUpgradeFromV17(t *testing.T) {
 	old, _, source := migrationDB(t, 17)
 	seedIdentityHistory(t, old)
-	id := admitRetryFixture(t, old, time.Now(), "v17-key")
+	id := seedHistoricalRetryReceipt(t, old, "v17-key")
 	execSQL(t, old, `UPDATE ingest_events SET state='retryable',attempt_count=40,retry_attempt_base=38,
 		parked_at=1,park_reason='retry_exhausted' WHERE receipt_id=?`, id)
 
 	dir := t.TempDir()
 	target := filepath.Join(dir, "tunetrail.db")
 	require.NoError(t, copyDatabase(source, target))
-	_, err := bootstrap(dir, false)
+	_, err := bootstrapAtVersion(dir, false, 20)
 	require.NoError(t, err)
 	conn, err := openExisting(target)
 	require.NoError(t, err)
@@ -314,13 +326,13 @@ func TestIngestReprocessUpgradeFromV17(t *testing.T) {
 	require.ErrorContains(t, err, "CHECK constraint failed")
 	version, err = schemaVersion(conn)
 	require.NoError(t, err)
-	require.Equal(t, currentSchemaVersion, version)
+	require.Equal(t, 20, version)
 	require.NoError(t, checkDatabase(conn))
 }
 
 // TestIngestReprocessAllLargeQueue verifies multiple batches and reports the writer transaction's wall time.
 func TestIngestReprocessAllLargeQueue(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `WITH RECURSIVE sample(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM sample WHERE n<10000)
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
@@ -411,13 +423,13 @@ func TestIngestAttemptShutdown(t *testing.T) {
 
 // TestIngestReprocessHistory exercises both actions, both reasons and the profile boundary.
 func TestIngestReprocessHistory(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	ctx := t.Context()
 	now := time.Now().Truncate(time.Second)
 	s.ingestClock = func() time.Time { return now }
-	first := admitRetryFixture(t, s, now, "short-budget")
-	second := admitRetryFixture(t, s, now, "full-budget")
+	first := seedHistoricalRetryReceipt(t, s, "short-budget")
+	second := seedHistoricalRetryReceipt(t, s, "full-budget")
 	execSQL(t, s, `INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('other',2,'test',0);
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
 			item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,

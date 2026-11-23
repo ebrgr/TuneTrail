@@ -54,7 +54,7 @@ func (h *Handler) relaySettingsAction(w http.ResponseWriter, r *http.Request, id
 	case "preview":
 		var grant relay.Grant
 		grant, err = store.RelayGrant(ctx, identity.SessionID, profile)
-		if err == nil && grant.Available() {
+		if err == nil && (grant.Available() || grant.Draft) {
 			h.renderRelayGrant(w, r, identity, grant)
 			return
 		}

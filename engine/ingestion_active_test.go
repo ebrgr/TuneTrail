@@ -25,8 +25,7 @@ import (
 func TestActiveIngestImports(t *testing.T) {
 	a := newProfileTestApp(t)
 	ctx := context.Background()
-	require.True(t, cfg.ActiveIngestEnabled())
-	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(2,1)`))
+
 	mb := &mbz.MbzErrorCaller{}
 	const native = `{"version":"1","listens":[{"listened_at":"2023-11-14T22:13:20Z",
 		"track":{"aliases":[{"alias":"Native Track","is_primary":true}]},
@@ -43,8 +42,7 @@ func TestActiveIngestImports(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, checkpoints, 1)
 	require.Equal(t, 0, checkpoints[0].Ordinal)
-	require.Positive(t, checkpoints[0].Snapshot.CatalogTrackID)
-	require.NoError(t, a.store.Exec(`DELETE FROM tracks WHERE id=?`, checkpoints[0].Snapshot.CatalogTrackID))
+	require.Zero(t, checkpoints[0].Snapshot.CatalogTrackID)
 	found, err := a.store.ResolveNextIngest(ctx, mb)
 	require.NoError(t, err)
 	require.True(t, found)
@@ -72,7 +70,7 @@ func TestActiveIngestImports(t *testing.T) {
 	found, err = a.store.ResolveNextIngest(ctx, mb)
 	require.NoError(t, err)
 	require.True(t, found)
-	n, err := a.store.Count(`SELECT count(*) FROM listens l JOIN artist_tracks c ON c.track_id=l.track_id
+	n, err := a.store.Count(`SELECT count(*) FROM listens l JOIN occurrence_credits c ON c.occurrence_id=l.track_id
 		JOIN artists a ON a.id=c.artist_id WHERE l.profile_id=2 AND l.listened_at=1700000050 AND a.musicbrainz_id=?`, artistMBID)
 	require.NoError(t, err)
 	require.Equal(t, 1, n)
@@ -94,7 +92,11 @@ func TestActiveIngestACK(t *testing.T) {
 	const path = "/apis/listenbrainz/1/submit-listens"
 	const valid = `{"listen_type":"import","payload":[{"listened_at":1700000000,"track_metadata":{"artist_name":"Artist","track_name":"Song"}}]}`
 	invalid := strings.TrimSuffix(valid, "]}") + `,{"track_metadata":{"track_name":"No artist"}}]}`
-	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)`))
+
+	require.NoError(t, a.store.ActivateRelayDelivery(ctx))
+	require.NoError(t, a.store.Exec(`INSERT INTO profile_relays(profile_id,url,token)
+		VALUES(1,'http://127.0.0.1:1','fixture-token')`))
+	approveFixtureRelay(t, a, 1)
 	response := a.request("POST", path, invalid, "first-key", false)
 	require.Equal(t, http.StatusBadRequest, response.Code, response.Body.String())
 	n, err := a.store.Count(`SELECT count(*) FROM ingest_events`)
@@ -115,15 +117,13 @@ func TestActiveIngestACK(t *testing.T) {
 	n, err = a.store.Count(`SELECT count(*) FROM listens`)
 	require.NoError(t, err)
 	require.Zero(t, n)
-	// Configure the relay after admission so the test never performs a network send.
-	require.NoError(t, a.store.SetProfileRelay(ctx, 1, "https://relay.invalid", "fixture-token"))
+
 	found, err := a.store.ResolveNextIngest(ctx, &mbz.MbzErrorCaller{})
 	require.NoError(t, err)
 	require.True(t, found)
 	n, err = a.store.Count(`SELECT count(*) FROM outbox o JOIN integrations i ON i.id=o.destination_id AND i.profile_id=o.profile_id
 		JOIN ingest_events e ON e.profile_id=o.profile_id AND e.event_id=o.event_id
-		WHERE i.id='relay:1' AND i.source_type='listenbrainz-relay' AND o.state='discarded' AND o.closed_at IS NOT NULL
-		AND json_extract(o.result,'$.reason')='pre_082_best_effort' AND e.state='accepted'`)
+		WHERE i.id='relay:1' AND i.source_type='listenbrainz-relay' AND o.state='pending' AND o.closed_at IS NULL AND e.state='accepted'`)
 	require.NoError(t, err)
 	require.Equal(t, 1, n)
 }
@@ -139,9 +139,9 @@ func TestActiveIngestBusy(t *testing.T) {
 	const token = "issue081-busy-fixture"
 	_, err = store.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: token, ProfileID: profile.ID})
 	require.NoError(t, err)
-	require.NoError(t, store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(?,1)`, profile.ID))
+
 	t.Cleanup(func() {
-		require.NoError(t, store.Exec(`DELETE FROM profile_ingest_flags WHERE profile_id=?`, profile.ID))
+
 		require.NoError(t, store.Exec(`DELETE FROM api_keys WHERE key=?`, token))
 	})
 
@@ -171,7 +171,7 @@ func TestActiveIngestBusy(t *testing.T) {
 // TestActiveKoitoValidatesBeforeCatalog verifies that an invalid item leaves no catalog writes.
 func TestActiveKoitoValidatesBeforeCatalog(t *testing.T) {
 	a := newProfileTestApp(t)
-	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(2,1)`))
+
 	const input = `{"version":"1","listens":[
 		{"listened_at":"2023-11-14T22:13:20Z","track":{"aliases":[{"alias":"Track","is_primary":true}]},
 		 "album":{"aliases":[{"alias":"Album","is_primary":true}]},"artists":[{"aliases":[{"alias":"Artist","is_primary":true}]}]},
@@ -189,24 +189,26 @@ func TestActiveKoitoValidatesBeforeCatalog(t *testing.T) {
 	}
 }
 
-// TestListenAdmissionErrorClasses checks whether a failure permits the legacy writer.
+// TestListenAdmissionErrorClasses verifies admission never falls back after a storage error.
 func TestListenAdmissionErrorClasses(t *testing.T) {
 	for _, tc := range []struct {
 		name, setup     string
 		status, listens int
 	}{
-		{"generic before mode", `ALTER TABLE profile_ingest_flags RENAME TO fixture_flags`, 200, 1},
-		{"generic after active mode", `INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1);
-			CREATE TRIGGER fixture_admission_abort BEFORE INSERT ON ingest_events
+		{"missing delivery policy", `ALTER TABLE relay_delivery_gate RENAME TO fixture_gate`, 503, 0},
+		{"generic after admission begins", `CREATE TRIGGER fixture_admission_abort BEFORE INSERT ON ingest_events
 			BEGIN SELECT RAISE(ABORT, 'generic fixture error'); END`, 500, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			a := newProfileTestApp(t)
-			require.True(t, cfg.ActiveIngestEnabled())
 			require.NoError(t, a.store.Exec(tc.setup))
 			out := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Retry Fixture", 1714564800), "first-key", false)
 			require.Equal(t, tc.status, out.Code, out.Body.String())
-			require.Empty(t, out.Header().Get("Retry-After"))
+			if tc.status == http.StatusServiceUnavailable {
+				require.Equal(t, "1", out.Header().Get("Retry-After"))
+			} else {
+				require.Empty(t, out.Header().Get("Retry-After"))
+			}
 			n, err := a.store.Count(`SELECT count(*) FROM listens`)
 			require.NoError(t, err)
 			require.Equal(t, tc.listens, n)

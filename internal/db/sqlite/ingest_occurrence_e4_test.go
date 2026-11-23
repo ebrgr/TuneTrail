@@ -57,9 +57,8 @@ func TestOccurrenceAdmissionSQLiteFull(t *testing.T) {
 		batch.Items = append(batch.Items, ingest.Item{Ordinal: i,
 			Snapshot: ingest.Snapshot{Artist: "Artist", Title: strings.Repeat("x", 7000), Release: "Album"}})
 	}
-	active, results, err := store.AdmitIngest(ctx, batch, true, nil, nil)
+	results, err := store.AdmitOccurrence(ctx, batch)
 	var unavailable *ingest.ErrUnavailable
-	require.True(t, active)
 	require.ErrorAs(t, err, &unavailable)
 	require.ErrorContains(t, err, "database or disk is full")
 	require.Empty(t, results)
@@ -67,7 +66,7 @@ func TestOccurrenceAdmissionSQLiteFull(t *testing.T) {
 	require.Zero(t, scalar(t, store, `SELECT count(*) FROM integrations WHERE id='listenbrainz:1'`))
 
 	execSQL(t, store, fmt.Sprintf("PRAGMA max_page_count=%d", limit+2000))
-	_, results, err = store.AdmitIngest(ctx, batch, true, nil, nil)
+	results, err = store.AdmitOccurrence(ctx, batch)
 	require.NoError(t, err)
 	require.Len(t, results, len(batch.Items))
 	require.Equal(t, len(batch.Items), scalar(t, store, `SELECT count(*) FROM ingest_events WHERE resolver_variant='occurrence'`))

@@ -36,6 +36,7 @@ func TestImportMaloja(t *testing.T) {
 	require.NoError(t, os.WriteFile(dest, input, os.ModePerm))
 
 	engine.RunImporter(logger.Get(), store, &mbz.MbzErrorCaller{})
+	resolveTestImport(t, store, &mbz.MbzErrorCaller{})
 
 	// maloja test import is 38 Magnify Tokyo streams
 	a, err := store.GetArtist(context.Background(), db.GetArtistOpts{Name: "Magnify Tokyo"})
@@ -61,6 +62,7 @@ func TestImportSpotify(t *testing.T) {
 	require.NoError(t, os.WriteFile(dest, input, os.ModePerm))
 
 	engine.RunImporter(logger.Get(), store, &mbz.MbzErrorCaller{})
+	resolveTestImport(t, store, &mbz.MbzErrorCaller{})
 
 	a, err := store.GetArtist(context.Background(), db.GetArtistOpts{Name: "The Story So Far"})
 	require.NoError(t, err)
@@ -102,6 +104,7 @@ func TestImportLastFM(t *testing.T) {
 	}
 
 	engine.RunImporter(logger.Get(), store, mbzcMock)
+	resolveTestImport(t, store, mbzcMock)
 
 	album, err := store.GetAlbum(context.Background(), db.GetAlbumOpts{MusicBrainzID: uuid.MustParse("e9e78802-0bf8-4ca3-9655-1d943d2d2fa0")})
 	require.NoError(t, err)
@@ -136,6 +139,7 @@ func TestImportLastFM_MbzDisabled(t *testing.T) {
 	require.NoError(t, os.WriteFile(dest, input, os.ModePerm))
 
 	engine.RunImporter(logger.Get(), store, &mbz.MbzErrorCaller{})
+	resolveTestImport(t, store, &mbz.MbzErrorCaller{})
 
 	album, err := store.GetAlbum(context.Background(), db.GetAlbumOpts{MusicBrainzID: uuid.MustParse("e9e78802-0bf8-4ca3-9655-1d943d2d2fa0")})
 	require.NoError(t, err)
@@ -193,6 +197,7 @@ func TestImportListenBrainz(t *testing.T) {
 	}
 
 	engine.RunImporter(logger.Get(), store, mbzcMock)
+	resolveTestImport(t, store, mbzcMock)
 
 	album, err := store.GetAlbum(context.Background(), db.GetAlbumOpts{MusicBrainzID: uuid.MustParse("ce330d67-9c46-4a3b-9d62-08406370f234")})
 	require.NoError(t, err)
@@ -231,6 +236,7 @@ func TestImportListenBrainz_MbzDisabled(t *testing.T) {
 	require.NoError(t, os.WriteFile(dest, input, os.ModePerm))
 
 	engine.RunImporter(logger.Get(), store, &mbz.MbzErrorCaller{})
+	resolveTestImport(t, store, &mbz.MbzErrorCaller{})
 
 	album, err := store.GetAlbum(context.Background(), db.GetAlbumOpts{MusicBrainzID: uuid.MustParse("ce330d67-9c46-4a3b-9d62-08406370f234")})
 	require.NoError(t, err)
@@ -269,6 +275,7 @@ func TestImportListenBrainz_MBIDMapping(t *testing.T) {
 	require.NoError(t, os.WriteFile(dest, input, os.ModePerm))
 
 	engine.RunImporter(logger.Get(), store, &mbz.MbzErrorCaller{})
+	resolveTestImport(t, store, &mbz.MbzErrorCaller{})
 
 	album, err := store.GetAlbum(context.Background(), db.GetAlbumOpts{MusicBrainzID: uuid.MustParse("177ebc28-0115-3897-8eb3-ebf74ce23790")})
 	require.NoError(t, err)
@@ -305,6 +312,7 @@ func TestImportKoito(t *testing.T) {
 	require.NoError(t, os.WriteFile(dest, input, os.ModePerm))
 
 	engine.RunImporter(logger.Get(), store, &mbz.MbzErrorCaller{})
+	resolveTestImport(t, store, &mbz.MbzErrorCaller{})
 
 	// ensure all artists are saved
 	_, err = store.GetArtist(ctx, db.GetArtistOpts{Name: "American Football"})
@@ -372,4 +380,18 @@ func TestImportKoito(t *testing.T) {
 	count, err = store.CountArtists(ctx, db.Timeframe{Period: db.PeriodAllTime})
 	require.NoError(t, err)
 	assert.EqualValues(t, 6, count)
+}
+
+// resolveTestImport drains admissions using the same metadata client as the fixture.
+func resolveTestImport(t *testing.T, store interface {
+	ResolveNextIngest(context.Context, mbz.MusicBrainzCaller) (bool, error)
+}, client mbz.MusicBrainzCaller) {
+	t.Helper()
+	for {
+		found, err := store.ResolveNextIngest(t.Context(), client)
+		require.NoError(t, err)
+		if !found {
+			return
+		}
+	}
 }

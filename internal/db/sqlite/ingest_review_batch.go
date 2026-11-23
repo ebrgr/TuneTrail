@@ -22,7 +22,7 @@ const reviewSingleCandidate = `CASE
 	END`
 
 // ingestReviewBatch selects the oldest eligible receipts and binds the action to those exact versions.
-func ingestReviewBatch(ctx context.Context, tx ingestActivationReader, profile int32, value string) ([]db.IngestReviewDecision, string, error) {
+func ingestReviewBatch(ctx context.Context, tx ingestQueryer, profile int32, value string) ([]db.IngestReviewDecision, string, error) {
 	query := `SELECT e.receipt_id,e.resolution_version,l.event_id
 		FROM ingest_events e CROSS JOIN listens l ON l.profile_id=e.profile_id AND l.event_id=(` + reviewSingleCandidate + `)
 		JOIN occurrences o ON o.id=l.track_id WHERE e.profile_id=? AND ` + reviewQueueScope + `

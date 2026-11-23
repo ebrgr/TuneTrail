@@ -92,6 +92,16 @@ class Server:
                 time.sleep(0.1)
         raise RuntimeError("Validation API did not become ready")
 
+    def wait_listens(self, path, count):
+        """Wait for durable admission to become visible, verifying the exact total."""
+        until = time.monotonic() + 30
+        while True:
+            actual = self.request("GET", path + "/stats")["listen_count"]
+            if actual >= count or time.monotonic() >= until:
+                assert actual == count, f"expected {count} resolved listens, got {actual}"
+                return
+            time.sleep(.05)
+
     def stop(self):
         if self.process and self.process.poll() is None:
             self.process.send_signal(signal.SIGINT)
@@ -164,12 +174,12 @@ def validate_journey(server):
     # Identical song and timestamp from different players must produce two rows.
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
         list(pool.map(lambda k: server.request("POST", LBZ + "/submit-listens", scrobble(timestamp), token=k["key"]), keys))
-    payload = scrobble(timestamp + 1)
+    payload = scrobble(timestamp + 10)
     payload["profile_id"] = profiles[1]["id"]
     payload["payload"][0]["profile_id"] = profiles[1]["id"]
     server.request("POST", LBZ + "/submit-listens", payload, token=second_key["key"])
-    assert server.request("GET", alpha + "/stats")["listen_count"] == 2
-    assert server.request("GET", beta + "/stats")["listen_count"] == 1
+    server.wait_listens(alpha, 2)
+    server.wait_listens(beta, 1)
     for prefix in [alpha, beta]:
         for route in ["/listens", "/top/artists", "/top/albums", "/top/tracks", "/listen-activity", "/first-activity", "/summary?period=all_time"]:
             server.request("GET", prefix + route)
@@ -221,8 +231,8 @@ def validate_journey(server):
     server.request("DELETE", alpha + f'/user/apikeys/{keys[0]["id"]}', admin=True, expected=204)
     server.request("POST", LBZ + "/submit-listens", scrobble(timestamp + 2), token=keys[0]["key"], expected=401)
     assert server.request("GET", alpha + "/stats")["listen_count"] == 2
-    server.request("POST", LBZ + "/submit-listens", scrobble(timestamp + 2), token=second_key["key"])
-    assert server.request("GET", alpha + "/stats")["listen_count"] == 3
+    server.request("POST", LBZ + "/submit-listens", scrobble(timestamp + 20), token=second_key["key"])
+    server.wait_listens(alpha, 3)
     server.request("DELETE", beta, {"display_name": profiles[1]["display_name"], "listen_count": 3}, admin=True, expected=204)
     server.request("GET", beta + "/stats", expected=404)
     assert server.request("GET", alpha + "/stats")["listen_count"] == 3

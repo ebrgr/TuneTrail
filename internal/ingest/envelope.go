@@ -2,7 +2,6 @@
 package ingest
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -22,32 +21,51 @@ const (
 	ShadowSourceFile         = "file"
 )
 
+// MaxItemBytes limits the serialized receipt snapshot.
+const MaxItemBytes = 10 << 10
+
 // Snapshot only carries fields explicitly selected by an adapter.
+
 type Snapshot struct {
-	TrackMBID          string          `json:"track_mbid,omitempty"`
-	DiscNumber         int             `json:"disc_number,omitempty"`
-	TrackNumber        int             `json:"track_number,omitempty"`
-	MBIDSource         string          `json:"mbid_source,omitempty"`
-	MBIDDeclaredAt     string          `json:"mbid_declared_at,omitempty"`
-	CatalogTrackID     int32           `json:"catalog_track_id,omitempty"`
-	ArtistMBIDs        []string        `json:"artist_mbids,omitempty"`
-	MappedArtistMBIDs  []string        `json:"mapped_artist_mbids,omitempty"`
-	ReleaseGroupMBID   string          `json:"release_group_mbid,omitempty"`
-	ArtistNames        []string        `json:"artist_names,omitempty"`
-	Client             string          `json:"client,omitempty"`
-	ClientVersion      string          `json:"client_version,omitempty"`
-	MappedRecording    string          `json:"mapped_recording_mbid,omitempty"`
-	ReleaseMBID        string          `json:"release_mbid,omitempty"`
-	MappedReleaseMBID  string          `json:"mapped_release_mbid,omitempty"`
-	Artist             string          `json:"artist"`
-	Title              string          `json:"title"`
-	Release            string          `json:"release,omitempty"`
-	Recording          string          `json:"recording_mbid,omitempty"`
-	DurationMS         int64           `json:"duration_ms,omitempty"`
-	TimeSemantics      string          `json:"time_semantics,omitempty"`
-	OriginalTime       string          `json:"original_time,omitempty"`
-	ArtistMbidMappings []ArtistMapping `json:"artist_mbid_mappings,omitempty"`
-	SkipCacheImage     bool            `json:"skip_cache_image,omitempty"`
+	TruncatedFields   int            `json:"truncated_fields,omitempty"`
+	IgnoredAliasLimit int            `json:"ignored_alias_limit,omitempty"`
+	NativeAliases     *NativeAliases `json:"native_aliases,omitempty"`
+
+	TrackMBID            string            `json:"track_mbid,omitempty"`
+	DiscNumber           int               `json:"disc_number,omitempty"`
+	TrackNumber          int               `json:"track_number,omitempty"`
+	MBIDSource           string            `json:"mbid_source,omitempty"`
+	MBIDDeclaredAt       string            `json:"mbid_declared_at,omitempty"`
+	CatalogTrackID       int32             `json:"catalog_track_id,omitempty"`
+	ArtistMBIDs          []string          `json:"artist_mbids,omitempty"`
+	MappedArtistMBIDs    []string          `json:"mapped_artist_mbids,omitempty"`
+	ReleaseGroupMBID     string            `json:"release_group_mbid,omitempty"`
+	ArtistNames          []string          `json:"artist_names,omitempty"`
+	Client               string            `json:"client,omitempty"`
+	ClientVersion        string            `json:"client_version,omitempty"`
+	MappedRecording      string            `json:"mapped_recording_mbid,omitempty"`
+	ReleaseMBID          string            `json:"release_mbid,omitempty"`
+	MappedReleaseMBID    string            `json:"mapped_release_mbid,omitempty"`
+	Artist               string            `json:"artist"`
+	Title                string            `json:"title"`
+	Release              string            `json:"release,omitempty"`
+	Recording            string            `json:"recording_mbid,omitempty"`
+	DurationMS           int64             `json:"duration_ms,omitempty"`
+	TimeSemantics        string            `json:"time_semantics,omitempty"`
+	OriginalTime         string            `json:"original_time,omitempty"`
+	ArtistMbidMappings   []ArtistMapping   `json:"artist_mbid_mappings,omitempty"`
+	NativeReleaseImage   string            `json:"native_release_image,omitempty"`
+	NativeArtistImages   map[string]string `json:"native_artist_images,omitempty"`
+	NativeVariousArtists bool              `json:"native_various_artists,omitempty"`
+	OwnerImport          bool              `json:"owner_import,omitempty"`
+	SkipCacheImage       bool              `json:"skip_cache_image,omitempty"`
+}
+
+// NativeAliases carries explicit secondary names from a Koito v1 file.
+type NativeAliases struct {
+	Artists map[string][]string `json:"artists,omitempty"`
+	Release []string            `json:"release,omitempty"`
+	Track   []string            `json:"track,omitempty"`
 }
 
 // DeclaredMBIDProvenance recognizes only the reserved external lookup sources.
@@ -87,32 +105,13 @@ type Batch struct {
 }
 
 type Result struct {
-	DeliveryPolicy string
-	ReceiptID      string
-	Decision       string
-	Pending        bool
-	Replay         bool
-}
-
-// JobMode pins admission and the resolver variant for every page of an import.
-type JobMode struct {
-	Active  bool
-	Variant string
-}
-
-// Admission selects active mode atomically or admits pages using a pinned import mode.
-type Admission interface {
-	AdmitIngest(context.Context, Batch, bool, *JobMode, error) (bool, []Result, error)
-	BeginImportIngest(context.Context, int32, bool) (JobMode, error)
-}
-
-// PolicyAdmission exposes the transaction's effective relay policy for HTTP submissions.
-type PolicyAdmission interface {
-	AdmitIngestPolicy(context.Context, Batch, bool, *JobMode, error) (bool, []Result, string, error)
-}
-
-type Receiver interface {
-	ReceiveBatch(context.Context, Batch) ([]Result, error)
+	IgnoredMBIDConflicts  int
+	IgnoredAliasConflicts int
+	DeliveryPolicy        string
+	ReceiptID             string
+	Decision              string
+	Pending               bool
+	Replay                bool
 }
 
 // ErrUnavailable marks storage failures for which callers must withhold an ACK.
@@ -132,6 +131,11 @@ func (i Item) Encode() ([]byte, string) {
 	snapshot := i.Snapshot
 	snapshot.OriginalTime = i.OriginalTime()
 	data, _ := json.Marshal(snapshot)
+	// Keep the import report counter in memory if the required fields filled the envelope.
+	if len(data) > MaxItemBytes && snapshot.NativeAliases == nil && snapshot.IgnoredAliasLimit != 0 {
+		snapshot.IgnoredAliasLimit = 0
+		data, _ = json.Marshal(snapshot)
+	}
 	return data, Digest(data)
 }
 
@@ -215,10 +219,12 @@ func (i Item) OccurrenceTime() (at time.Time, precision, offset, semantics strin
 
 // FileReceipt is a durable ordinal checkpoint that can be read without staging.
 type FileReceipt struct {
-	Ordinal    int
-	ReceiptID  string
-	Snapshot   Snapshot
-	ListenedAt time.Time
-	Precision  string
-	Pending    bool
+	IgnoredMBIDConflicts  int
+	IgnoredAliasConflicts int
+	Ordinal               int
+	ReceiptID             string
+	Snapshot              Snapshot
+	ListenedAt            time.Time
+	Precision             string
+	Pending               bool
 }

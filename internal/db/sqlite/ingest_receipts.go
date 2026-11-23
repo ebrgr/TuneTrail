@@ -23,51 +23,6 @@ type preparedReceipt struct {
 	snapshot, digest, legacyDigest string
 }
 
-// ReceiveBatch retains the legacy shadow writer for callers without active admission.
-func (s *Sqlite) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]ingest.Result, error) {
-	_, results, err := s.AdmitIngest(ctx, batch, false, nil, nil)
-	return results, err
-}
-
-// BeginImportIngest selects the mode once for the entire import job.
-func (s *Sqlite) BeginImportIngest(ctx context.Context, profile int32, master bool) (mode ingest.JobMode, err error) {
-	mode.Variant = "v9"
-	if !master {
-		// A disabled job only needs a committed flag snapshot. SQL guards still enforce a concurrent conversion.
-		version, err := ingestSchemaVersion(ctx, s.db)
-		if err != nil || version < 11 {
-			return mode, err
-		}
-		converted, err := occurrenceWriteFlag(ctx, s.db, profile)
-		if err != nil {
-			return mode, err
-		}
-		if converted {
-			return mode, &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
-		}
-		return mode, nil
-	}
-	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		version, err := ingestSchemaVersion(ctx, tx)
-		// Active import admission requires the occurrence-ready schema.
-		if err != nil || version < 10 {
-			return err
-		}
-		if version >= 11 {
-			converted, err := occurrenceWriteFlag(ctx, tx, profile)
-			if err != nil {
-				return err
-			}
-			if converted {
-				mode.Variant = "occurrence"
-			}
-		}
-		mode.Active, err = activeIngestMode(ctx, tx, profile)
-		return err
-	})
-	return mode, ingestStorageError(err, true)
-}
-
 type ingestModeReader interface {
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
@@ -79,34 +34,8 @@ func ingestSchemaVersion(ctx context.Context, tx ingestModeReader) (int, error) 
 	return version, err
 }
 
-// activeIngestMode runs inside the admission writer transaction on schema v9 or later.
-func activeIngestMode(ctx context.Context, tx *sql.Conn, profile int32) (bool, error) {
-	var active bool
-	err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT active FROM profile_ingest_flags WHERE profile_id=?),0)`, profile).Scan(&active)
-	return active, err
-}
-
-var errOccurrenceAdmissionPaused = errors.New("occurrence admission is paused")
-
-// occurrenceWriteFlag reads the irreversible cut from the caller’s connection.
-func occurrenceWriteFlag(ctx context.Context, tx ingestModeReader, profile int32) (bool, error) {
-	var converted bool
-	err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT occurrence_write FROM profile_ingest_flags WHERE profile_id=?),0)`, profile).Scan(&converted)
-	return converted, err
-}
-
-// AdmitIngest fixes the mode under the writer lock, honoring the import job's pinned mode.
-func (s *Sqlite) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (active bool, results []ingest.Result, err error) {
-	active, results, _, err = s.AdmitIngestPolicy(ctx, batch, master, pinned, invalid)
-	return active, results, err
-}
-
-// AdmitIngestPolicy returns the delivery policy selected in the committed admission transaction.
-func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (active bool, results []ingest.Result, policy string, err error) {
-	policy = "legacy"
-	if len(batch.Items) == 0 && !master && (pinned == nil || !pinned.Active) {
-		return false, nil, policy, nil
-	}
+// AdmitOccurrence stores the entire occurrence batch before returning its acknowledgement.
+func (s *Sqlite) AdmitOccurrence(ctx context.Context, batch ingest.Batch) ([]ingest.Result, error) {
 	source := receiptSourcePrefix(batch.Source) + fmt.Sprint(batch.ProfileID)
 	batchID := uuid.NewString()
 	prepared := make([]preparedReceipt, len(batch.Items))
@@ -114,6 +43,12 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 	legacyDigests := make([]string, len(batch.Items))
 	for n, item := range batch.Items {
 		snapshot, digest := item.Encode()
+		if batch.FileDigest != "" && item.Snapshot.MBIDSource == batch.FileFormat {
+			// The admission clock is evidence, not a change to file contents.
+			digestItem := item
+			digestItem.Snapshot.MBIDDeclaredAt = ""
+			_, digest = digestItem.Encode()
+		}
 		prepared[n] = preparedReceipt{Item: item, snapshot: string(snapshot), digest: digest, legacyDigest: item.LegacyDigest(batch.Source, batch.FileFormat)}
 		digests[n] = digest
 		legacyDigests[n] = prepared[n].legacyDigest
@@ -125,50 +60,11 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 		legacy, _ := json.Marshal(legacyDigests)
 		legacyBatchDigest = ingest.Digest(legacy)
 	}
-	modeKnown := !master || pinned != nil
-	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		version, err := ingestSchemaVersion(ctx, tx)
-		if err != nil {
-			return err
-		}
-		variant := "v9"
-		if version >= 11 {
-			converted, err := occurrenceWriteFlag(ctx, tx, batch.ProfileID)
-			if err != nil {
-				return err
-			}
-			if converted {
-				active = true
-				if !master || (pinned != nil && (!pinned.Active || pinned.Variant != "occurrence")) {
-					return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
-				}
-				variant = "occurrence"
-			}
-		}
-		hasMode := version >= 9
-		// Older layouts can still receive historical shadow receipts.
-		if pinned != nil {
-			if pinned.Variant != variant {
-				return &ingest.ErrUnavailable{Cause: errOccurrenceAdmissionPaused}
-			}
-			active = pinned.Active && version >= 10
-		} else if master && version >= 10 {
-			profileActive, err := activeIngestMode(ctx, tx, batch.ProfileID)
-			if err != nil {
-				return err
-			}
-			active = profileActive
-		}
-		modeKnown = true
-		deliveryPolicy := ""
-		if active && version >= 12 {
-			if err := tx.QueryRowContext(ctx, "SELECT policy FROM relay_delivery_gate WHERE id=1").Scan(&deliveryPolicy); err != nil {
-				return err
-			}
-			policy = deliveryPolicy
-		}
-		if active && invalid != nil {
-			return invalid
+	var results []ingest.Result
+	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		var policy string
+		if err := tx.QueryRowContext(ctx, "SELECT policy FROM relay_delivery_gate WHERE id=1").Scan(&policy); err != nil {
+			return &ingest.ErrUnavailable{Cause: err}
 		}
 		if len(prepared) == 0 {
 			return nil
@@ -192,13 +88,8 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 		}
 		batchConflict := previousBatchDigest != "" && previousBatchDigest != comparableBatchDigest
 		for _, item := range prepared {
-			var result ingest.Result
-			var err error
-			if active {
-				result, err = receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, variant, deliveryPolicy, version >= 19)
-			} else {
-				result, err = receiveItem(ctx, tx, batch, item, source, batchID, batchDigest, legacyBatchDigest, batchConflict, hasMode, version >= 19)
-			}
+			result, err := receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest,
+				legacyBatchDigest, batchConflict, policy)
 			if err != nil {
 				return err
 			}
@@ -210,24 +101,19 @@ func (s *Sqlite) AdmitIngestPolicy(ctx context.Context, batch ingest.Batch, mast
 		return nil
 	})
 	if err != nil {
-		// Unknown-mode generic failures fall through to legacy. Unavailable storage
-		// still fails closed, as does a profile already known to be active.
-		return active, nil, "", ingestStorageError(err, active || !modeKnown || (pinned != nil && pinned.Active))
+		return nil, ingestStorageError(err)
 	}
-	return active, results, policy, nil
+	return results, nil
 }
 
-// ingestStorageError preserves shadow fail-open on lock contention.
-func ingestStorageError(err error, active bool) error {
+// ingestStorageError maps storage failures to a retryable HTTP acknowledgement.
+func ingestStorageError(err error) error {
 	var storage *sqlitedriver.Error
 	if errors.As(err, &storage) {
 		switch storage.Code() & 255 {
-		case sqlitecodes.SQLITE_FULL, sqlitecodes.SQLITE_IOERR, sqlitecodes.SQLITE_READONLY, sqlitecodes.SQLITE_CANTOPEN, sqlitecodes.SQLITE_CORRUPT, sqlitecodes.SQLITE_NOTADB:
+		case sqlitecodes.SQLITE_FULL, sqlitecodes.SQLITE_IOERR, sqlitecodes.SQLITE_READONLY, sqlitecodes.SQLITE_CANTOPEN,
+			sqlitecodes.SQLITE_CORRUPT, sqlitecodes.SQLITE_NOTADB, sqlitecodes.SQLITE_BUSY, sqlitecodes.SQLITE_LOCKED:
 			return &ingest.ErrUnavailable{Cause: err}
-		case sqlitecodes.SQLITE_BUSY, sqlitecodes.SQLITE_LOCKED:
-			if active {
-				return &ingest.ErrUnavailable{Cause: err}
-			}
 		}
 	}
 	return err
@@ -254,20 +140,11 @@ func isAlreadyRolledBack(err error) bool {
 const receiptColumns = `receipt_id, source_instance_id, coalesce(external_namespace,''), coalesce(external_event_id,''),
 	snapshot_digest, coalesce(batch_digest,''), time_precision, listened_at, original_snapshot, state, digest_version`
 
-// scanReceipt reads the narrow projection used by historical shadow receipts.
-func scanReceipt(row interface{ Scan(...any) error }) (dedup.Receipt, error) {
-	return scanReceiptMode(row, false)
-}
-
-// scanReceiptMode adds key ownership and the stored verdict for schema v9.
-func scanReceiptMode(row interface{ Scan(...any) error }, hasMode bool) (r dedup.Receipt, err error) {
+// scanReceipt reads the stored receipt and its verdict.
+func scanReceipt(row interface{ Scan(...any) error }) (r dedup.Receipt, err error) {
 	var instant sql.NullString
 	var snapshot string
-	r.Mode = "shadow"
-	fields := []any{&r.ID, &r.Source, &r.Namespace, &r.ExternalID, &r.Digest, &r.BatchDigest, &r.Precision, &instant, &snapshot, &r.State, &r.DigestVersion}
-	if hasMode {
-		fields = append(fields, &r.Mode, &r.Decision)
-	}
+	fields := []any{&r.ID, &r.Source, &r.Namespace, &r.ExternalID, &r.Digest, &r.BatchDigest, &r.Precision, &instant, &snapshot, &r.State, &r.DigestVersion, &r.Mode, &r.Decision}
 	if err = row.Scan(fields...); err != nil {
 		return r, err
 	}
@@ -283,15 +160,12 @@ func scanReceiptMode(row interface{ Scan(...any) error }, hasMode bool) (r dedup
 var errReceiptKeyConflict = errors.New("receipt keys resolve to different items")
 
 // findKey checks each applicable unique index under the same writer transaction.
-func findKey(ctx context.Context, tx *sql.Conn, b ingest.Batch, i ingest.Item, source string, hasMode bool) (*dedup.Receipt, error) {
-	columns := receiptColumns
-	if hasMode {
-		columns += ",mode,coalesce(duplicate_decision,'')"
-	}
+func findKey(ctx context.Context, tx *sql.Conn, b ingest.Batch, i ingest.Item, source string) (*dedup.Receipt, error) {
+	columns := receiptColumns + ",mode,coalesce(duplicate_decision,'')"
 	base := `SELECT ` + columns + ` FROM ingest_events WHERE profile_id=? AND source_instance_id=? AND `
 	var found *dedup.Receipt
 	find := func(predicate string, args ...any) error {
-		r, err := scanReceiptMode(tx.QueryRowContext(ctx, base+predicate, append([]any{b.ProfileID, source}, args...)...), hasMode)
+		r, err := scanReceipt(tx.QueryRowContext(ctx, base+predicate, append([]any{b.ProfileID, source}, args...)...))
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
@@ -330,112 +204,23 @@ func findKey(ctx context.Context, tx *sql.Conn, b ingest.Batch, i ingest.Item, s
 }
 
 // receiveItem records the decision without setting any of the future identity columns.
-func receiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict, hasMode, hasInbox bool) (ingest.Result, error) {
-	r := dedup.Receipt{Source: source, Namespace: i.ExternalNamespace, ExternalID: i.ExternalID, Digest: i.digest,
-		BatchDigest: batchDigest, Snapshot: i.Snapshot, Time: i.ListenedAt, Precision: "second"}
-	if r.Time.IsZero() {
-		r.Time, r.Precision = b.ReceivedAt, "estimated"
-	}
-	previous, err := findKey(ctx, tx, b, i.Item, source, hasMode)
-	if err != nil {
-		return ingest.Result{}, err
-	}
-	if previous != nil && previous.Mode == "active" {
-		return replayIngest(previous), nil
-	}
-	if previous != nil && previous.DigestVersion == ingest.LegacyDigestVersion {
-		r.Digest, r.BatchDigest = i.legacyDigest, legacyBatchDigest
-	}
-	decision := dedup.Compare(dedup.Shadow, r, previous, previous != nil)
-	if previous == nil && batchConflict {
-		// An extra ordinal under a reused batch key is still part of the conflict.
-		decision.Value, decision.Reason = "review", "client_batch_conflict"
-	} else if previous == nil {
-		decision, err = compareNearby(ctx, tx, b.ProfileID, r, decision, hasMode)
-		if err != nil {
-			return ingest.Result{}, err
-		}
-	}
-	reasons, _ := json.Marshal([]string{decision.Reason})
-	evidence, _ := json.Marshal(decision.Evidence)
-	state := "received"
-	if decision.Value == "review" {
-		state = "pending_duplicate"
-	}
-	id := uuid.NewString()
-	if previous != nil {
-		id = previous.ID
-		if decision.Value == "same" {
-			// A keyed retry returns the existing receipt without rewriting its verdict.
-			return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: previous.State == "pending_duplicate"}, nil
-		}
-		observation, err := tx.ExecContext(ctx, `INSERT INTO ingest_observations(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)
-				VALUES(?,?,?,1,?,?,?,?) ON CONFLICT(profile_id,receipt_id,digest_version,snapshot_digest) DO NOTHING`,
-			uuid.NewString(), b.ProfileID, id, i.digest, ingest.DigestVersion, i.snapshot, b.ReceivedAt.Unix())
-		if err != nil {
-			return ingest.Result{}, err
-		}
-		added, err := observation.RowsAffected()
-		if err != nil {
-			return ingest.Result{}, err
-		}
-		// Only a new conflicting observation can update the stored review evidence.
-		if added > 0 {
-			_, err = tx.ExecContext(ctx, `UPDATE ingest_events SET duplicate_decision=?,reason_codes=?,evidence=?,rule_version=?,state=?
-				WHERE profile_id=? AND receipt_id=?`+shadowModeClause(hasMode), decision.Value, string(reasons), string(evidence), decision.RuleVersion, state, b.ProfileID, id)
-		}
-		return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: true}, err
-	} else {
-		statement := `INSERT INTO ingest_events
-			(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
-			external_namespace,external_event_id,external_id_trusted,client_idempotency_key,batch_digest,file_digest,file_format,format_version,
-			listened_at,original_time,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,state,duplicate_decision,reason_codes,evidence,rule_version%s)
-			VALUES(?,?,?,1,?,'1',?,?,?,?,nullif(?,''),nullif(?,''),?,nullif(?,''),nullif(?,''),nullif(?,''),nullif(?,''),CASE WHEN ?!='' THEN '1' END,
-			?,nullif(?,''),?,'unknown',?,?,?,?,?,?,?,?%s)`
-		args := []any{
-			id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
-			b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, r.Time.UTC().Format(receiptTime), i.OriginalTime(), r.Precision, i.snapshot, i.digest, ingest.DigestVersion, state, decision.Value, string(reasons), string(evidence), decision.RuleVersion}
-		statement, args = inboxReceiptInsert(statement, args, hasInbox, b.APIKeyID)
-		_, err = tx.ExecContext(ctx, statement, args...)
-	}
-	return ingest.Result{ReceiptID: id, Decision: decision.Value, Pending: state == "pending_duplicate"}, err
-}
-
-// replayIngest reports the stored outcome without updating a receipt or claim.
 func replayIngest(r *dedup.Receipt) ingest.Result {
 	return ingest.Result{ReceiptID: r.ID, Decision: r.Decision, Replay: true,
 		Pending: r.State != "accepted" && r.State != "duplicate" && r.State != "invalid"}
 }
 
-// receiveActiveItem replaces unlinked shadow receipts and replays linked or active owners.
-func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, variant, policy string, hasInbox bool) (ingest.Result, error) {
-	previous, err := findKey(ctx, tx, b, i.Item, source, true)
+// receiveActiveItem replays existing keys or inserts a new receipt.
+func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, policy string) (ingest.Result, error) {
+	previous, err := findKey(ctx, tx, b, i.Item, source)
 	if errors.Is(err, errReceiptKeyConflict) {
 		return ingest.Result{Decision: "review", Pending: true}, nil
 	}
 	if err != nil {
 		return ingest.Result{}, err
 	}
-	var shadowEstimate time.Time
+	// Schema 21 admits no unlinked shadow rows. Linked receipts retain ownership.
 	if previous != nil && previous.Mode == "shadow" {
-		// Release the shared key under the admission writer lock. Foreign keys
-		// remove shadow observations and details as part of the same transaction.
-		result, err := tx.ExecContext(ctx, `DELETE FROM ingest_events WHERE profile_id=? AND receipt_id=?
-			AND mode='shadow' AND event_id IS NULL`, b.ProfileID, previous.ID)
-		if err != nil {
-			return ingest.Result{}, err
-		}
-		deleted, err := result.RowsAffected()
-		if err != nil {
-			return ingest.Result{}, err
-		}
-		if deleted == 0 {
-			return replayIngest(previous), nil
-		}
-		if previous.Precision == "estimated" {
-			shadowEstimate = previous.Time
-		}
-		previous = nil
+		return replayIngest(previous), nil
 	}
 	if previous != nil {
 		result := replayIngest(previous)
@@ -451,105 +236,50 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 				return result, err
 			}
 		}
+		// Read the completed file outcome without changing ordinal replay semantics.
+		if b.FileDigest != "" {
+			err := tx.QueryRowContext(ctx, `SELECT coalesce(json_extract(evidence,'$.ignored_alias_conflicts'),0), coalesce(json_extract(evidence,'$.ignored_mbid_conflicts'),0)
+				FROM ingest_events WHERE profile_id=? AND receipt_id=?`, b.ProfileID, previous.ID).Scan(&result.IgnoredAliasConflicts, &result.IgnoredMBIDConflicts)
+			if err != nil {
+				return result, err
+			}
+		}
 		// File replays keep their ordinal-based receipt semantics.
-		if variant == "occurrence" && policy != "" && b.FileDigest == "" &&
+		if b.FileDigest == "" &&
 			i.ExternalID != "" && previous.Digest == digest && (previous.State == "accepted" || previous.State == "duplicate") {
-			return reviewTrustedReplay(ctx, tx, b, i.Item, previous.ID, batchID, policy, result, hasInbox)
+			return reviewTrustedReplay(ctx, tx, b, i.Item, previous.ID, batchID, policy, result)
 		}
 		return result, nil
 	}
 	id := uuid.NewString()
-	at, precision := i.ListenedAt, "second"
-	offset, semantics := "", "unknown"
-	if variant == "occurrence" {
-		at, precision, offset, semantics = i.Item.OccurrenceTime()
-	}
+	at, precision, offset, semantics := i.Item.OccurrenceTime()
 	if at.IsZero() {
 		at, precision = b.ReceivedAt, "estimated"
-		// Reuse the original estimate for a keyed retry without a timestamp.
-		if !shadowEstimate.IsZero() {
-			at = shadowEstimate
-		}
 	}
-	state, reasons := "received", "[]"
-	if batchConflict && variant == "occurrence" {
+	reasons := "[]"
+	if batchConflict {
 		reasons = `["client_batch_conflict"]`
-	} else if batchConflict {
-		var review bool
-		if err := tx.QueryRowContext(ctx, `SELECT coalesce((SELECT review FROM profile_ingest_flags WHERE profile_id=?),0)`, b.ProfileID).Scan(&review); err != nil {
-			return ingest.Result{}, err
-		}
-		reasons = `["review_deferred"]`
-		if review {
-			state, reasons = "pending_duplicate", `["client_batch_conflict"]`
-		}
 	}
 	statement := `INSERT INTO ingest_events
 		(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,item_ordinal,operation,received_at,
 		external_namespace,external_event_id,external_id_trusted,client_idempotency_key,batch_digest,file_digest,file_format,format_version,
-		listened_at,original_time,time_precision,time_semantics,original_offset,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant%s)
+		listened_at,original_time,time_precision,time_semantics,original_offset,original_snapshot,snapshot_digest,digest_version,mode,state,reason_codes,rule_version,resolver_variant,delivery_policy,api_key_id)
 		VALUES(?,?,?,1,?,'1',?,?,?,?,nullif(?,''),nullif(?,''),?,nullif(?,''),nullif(?,''),nullif(?,''),nullif(?,''),CASE WHEN ?!='' THEN '1' END,
-		?,nullif(?,''),?,?,nullif(?,''),?,?,?,'active',?,?,?,?%s)`
+		?,nullif(?,''),?,?,nullif(?,''),?,?,?,'active','received',?,?,'occurrence',?,CASE WHEN ?>0 THEN ? END)`
 	args := []any{
 		id, b.ProfileID, source, b.Source, batchID, i.Ordinal, b.Operation, b.ReceivedAt.Unix(), i.ExternalNamespace, i.ExternalID, i.ExternalID != "",
 		b.ClientKey, batchDigest, b.FileDigest, b.FileFormat, b.FileDigest, at.UTC().Format(receiptTime), i.OriginalTime(), precision, semantics, offset,
-		i.snapshot, i.digest, ingest.DigestVersion, state, reasons, activeRuleVersion, variant}
-	if policy == "" {
-		statement, args = inboxReceiptInsert(statement, args, hasInbox, b.APIKeyID)
-		_, err = tx.ExecContext(ctx, statement, args...)
-		return ingest.Result{ReceiptID: id, Pending: true, DeliveryPolicy: "legacy"}, err
-	}
-	args = append(args, policy)
+		i.snapshot, i.digest, ingest.DigestVersion, reasons, activeRuleVersion, policy, b.APIKeyID, b.APIKeyID}
 	var confirmed string
-	statement = fmt.Sprintf(statement, ",delivery_policy%s", ",?%s")
-	statement, args = inboxReceiptInsert(statement, args, hasInbox, b.APIKeyID)
 	err = tx.QueryRowContext(ctx, statement+" RETURNING delivery_policy", args...).Scan(&confirmed)
 	return ingest.Result{ReceiptID: id, Pending: true, DeliveryPolicy: confirmed}, err
-}
-
-// inboxReceiptInsert binds only an internal ID on schemas that support attribution.
-func inboxReceiptInsert(statement string, args []any, enabled bool, id int64) (string, []any) {
-	if enabled && id > 0 {
-		return fmt.Sprintf(statement, ",api_key_id", ",?"), append(args, id)
-	}
-	return fmt.Sprintf(statement, "", ""), args
-}
-
-// shadowModeClause selects only shadow rows once mode is present in the schema.
-func shadowModeClause(hasMode bool) string {
-	if hasMode {
-		return " AND mode='shadow'"
-	}
-	return ""
-}
-
-// compareNearby keeps the shadow baseline limited to shadow receipts; active
-// evidence comes from live events and must not change the shadow verdicts.
-func compareNearby(ctx context.Context, tx *sql.Conn, profile int32, r dedup.Receipt, decision dedup.Decision, hasMode bool) (dedup.Decision, error) {
-	rows, err := tx.QueryContext(ctx, `SELECT `+receiptColumns+` FROM ingest_events
-		WHERE profile_id=? AND listened_at BETWEEN ? AND ? AND state!='invalid'`+shadowModeClause(hasMode)+`
-		ORDER BY listened_at,receipt_id`, profile, r.Time.Add(-dedup.Shadow.Window).UTC().Format(receiptTime), r.Time.Add(dedup.Shadow.Window).UTC().Format(receiptTime))
-	if err != nil {
-		return decision, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		candidate, err := scanReceipt(rows)
-		if err != nil {
-			return decision, err
-		}
-		result := dedup.Compare(dedup.Shadow, r, &candidate, false)
-		if result.Value == "review" {
-			return result, nil
-		}
-	}
-	return decision, rows.Err()
 }
 
 // ReadFileReceipts returns checkpoints in absolute ordinal order, independent of staging.
 // Pass -1 to begin and the last returned ordinal to continue.
 func (s *Sqlite) ReadFileReceipts(ctx context.Context, profile int32, format, digest string, after int) ([]ingest.FileReceipt, error) {
-	rows, err := s.db.QueryContext(ctx, `SELECT item_ordinal,receipt_id,original_snapshot,listened_at,time_precision,state
+	rows, err := s.db.QueryContext(ctx, `SELECT item_ordinal,receipt_id,original_snapshot,listened_at,time_precision,state,
+		coalesce(json_extract(evidence,'$.ignored_alias_conflicts'),0), coalesce(json_extract(evidence,'$.ignored_mbid_conflicts'),0)
 		FROM ingest_events WHERE profile_id=? AND source_instance_id=? AND file_format=? AND format_version='1'
 		  AND file_digest=? AND item_ordinal>? ORDER BY item_ordinal LIMIT 500`,
 		profile, receiptSourcePrefix(ingest.ShadowSourceFile)+fmt.Sprint(profile), format, digest, after)
@@ -561,7 +291,7 @@ func (s *Sqlite) ReadFileReceipts(ctx context.Context, profile int32, format, di
 	for rows.Next() {
 		var record ingest.FileReceipt
 		var snapshot, instant, state string
-		if err := rows.Scan(&record.Ordinal, &record.ReceiptID, &snapshot, &instant, &record.Precision, &state); err != nil {
+		if err := rows.Scan(&record.Ordinal, &record.ReceiptID, &snapshot, &instant, &record.Precision, &state, &record.IgnoredAliasConflicts, &record.IgnoredMBIDConflicts); err != nil {
 			return nil, err
 		}
 		if err := json.Unmarshal([]byte(snapshot), &record.Snapshot); err != nil {

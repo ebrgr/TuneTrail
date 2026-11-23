@@ -138,12 +138,11 @@ func TestOccurrenceReviewSetting(t *testing.T) {
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, nearby, "accepted")
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=? AND reason_codes='["review_deferred"]'`, nearby))
-	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write,review) VALUES(2,1,1,1)`)
-	active, other, err := s.AdmitIngest(ctx, ingest.Batch{ProfileID: 2, Source: ingest.ShadowSourceListenBrainz,
+	require.NoError(t, s.SetIngestReview(ctx, 2, true))
+	other, err := s.AdmitOccurrence(ctx, ingest.Batch{ProfileID: 2, Source: ingest.ShadowSourceListenBrainz,
 		Operation: "single", ReceivedAt: time.Now(),
-		Items: []ingest.Item{{ListenedAt: time.Unix(1000, 0), Snapshot: snapshot}}}, true, nil, nil)
+		Items: []ingest.Item{{ListenedAt: time.Unix(1000, 0), Snapshot: snapshot}}})
 	require.NoError(t, err)
-	require.True(t, active)
 	require.Len(t, other, 1)
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, other[0].ReceiptID, "accepted")

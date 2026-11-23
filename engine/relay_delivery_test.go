@@ -10,11 +10,27 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/relayoutbox"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
+
+// startFixtureRelay permits a loopback receiver and runs the production outbox worker.
+func startFixtureRelay(t *testing.T, app *profileTestApp, profile int32, url string) {
+	t.Helper()
+	ctx := t.Context()
+	require.NoError(t, app.store.ActivateRelayDelivery(ctx))
+	host := strings.TrimPrefix(url, "http://")
+	require.NoError(t, app.store.SetRelayPermission(ctx, profile, relay.Permission{HostPort: host, HTTP: true}))
+	require.NoError(t, app.store.SetRelayPermission(ctx, profile, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
+	claims, stopClaims := context.WithCancel(ctx)
+	attempts, cancel := context.WithCancel(ctx)
+	done := relayoutbox.Run(attempts, claims, app.store)
+	t.Cleanup(func() { stopClaims(); cancel(); <-done })
+}
 
 // TestDurableRelayAdmission exercises mixed decisions and an admitted receipt across the cut.
 func TestDurableRelayAdmission(t *testing.T) {
@@ -31,11 +47,19 @@ func TestDurableRelayAdmission(t *testing.T) {
 		require.Equal(t, 200, w.Code, w.Body.String())
 		require.JSONEq(t, `{"status":"ok"}`, w.Body.String())
 	}
-	require.NoError(t, app.store.Exec("INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1)"))
+
 	const legacyItem = `{"listened_at":1700000000,"track_metadata":{"artist_name":"Fixture Artist","track_name":"Old Track","release_name":"Album"}}`
 	const newItem = `{"listened_at":1700000010,"track_metadata":{"artist_name":"Fixture Artist","track_name":"New Track","release_name":"Album"}}`
 	legacy := `{"listen_type":"single","payload":[` + legacyItem + `]}`
-	submit(legacy, "old")
+	items, err := app.store.AdmitOccurrence(ctx, ingest.Batch{
+		ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single",
+		ReceivedAt: time.Now(), ClientKey: ingest.Digest([]byte("old")),
+		Items: []ingest.Item{{ListenedAt: time.Unix(1700000000, 0), Snapshot: ingest.Snapshot{
+			Artist: "Fixture Artist", Title: "Old Track", Release: "Album", OriginalTime: "1700000000",
+		}}},
+	})
+	require.NoError(t, err)
+	require.Len(t, items, 1)
 	require.NoError(t, app.store.ActivateRelayDelivery(ctx))
 	calls := make(chan string, 8)
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,11 +81,12 @@ func TestDurableRelayAdmission(t *testing.T) {
 	require.NoError(t, app.store.SetProfileRelay(ctx, 1, base, "fixture-relay"))
 	require.NoError(t, app.store.SetRelayPermission(ctx, 1, relay.Permission{HostPort: host, HTTP: true}))
 	require.NoError(t, app.store.SetRelayPermission(ctx, 1, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
-	submit(legacy, "old")
-	// Resolve the older receipt first so the mixed batch has a stable duplicate candidate.
+	// Resolve the older receipt after approval to verify the admission fence.
+	approveFixtureRelay(t, app, 1)
 	found, err := app.store.ResolveNextIngest(ctx, &mbz.MbzErrorCaller{})
 	require.NoError(t, err)
 	require.True(t, found)
+	submit(legacy, "old")
 	mixed := `{"listen_type":"import","payload":[` + legacyItem + "," + newItem + `]}`
 	submit(mixed, "mixed")
 	submit(mixed, "mixed")
@@ -73,7 +98,7 @@ func TestDurableRelayAdmission(t *testing.T) {
 	}
 	legacyRows, err := app.store.Count("SELECT count(*) FROM outbox WHERE state='discarded' AND json_extract(result,'$.reason')='pre_082_best_effort'")
 	require.NoError(t, err)
-	require.Equal(t, 1, legacyRows)
+	require.Zero(t, legacyRows)
 	claims, stopClaims := context.WithCancel(ctx)
 	attempts, cancel := context.WithCancel(ctx)
 	done := relayoutbox.Run(attempts, claims, app.store)
@@ -98,7 +123,7 @@ func TestSlowRelayDoesNotBlockOtherProfile(t *testing.T) {
 	app := newProfileTestApp(t)
 	ctx := t.Context()
 	require.NoError(t, app.store.ActivateRelayDelivery(ctx))
-	require.NoError(t, app.store.Exec("INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)"))
+
 	slowEntered := make(chan struct{})
 	fastEntered := make(chan struct{})
 	release := make(chan struct{})
@@ -124,6 +149,7 @@ func TestSlowRelayDoesNotBlockOtherProfile(t *testing.T) {
 		require.NoError(t, app.store.SetProfileRelay(ctx, profile, target, "fictional-token"))
 		require.NoError(t, app.store.SetRelayPermission(ctx, profile, relay.Permission{HostPort: host, HTTP: true}))
 		require.NoError(t, app.store.SetRelayPermission(ctx, profile, relay.Permission{HostPort: host, Private: true, Prefix: netip.MustParsePrefix("127.0.0.1/32")}))
+		approveFixtureRelay(t, app, profile)
 	}
 	submit := func(key string) {
 		w := app.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Fixture", 1700000000), key, false)
@@ -148,4 +174,14 @@ func TestSlowRelayDoesNotBlockOtherProfile(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("slow destination blocked the second profile")
 	}
+}
+
+// approveFixtureRelay uses the root confirmation path for a saved local destination.
+func approveFixtureRelay(t *testing.T, app *profileTestApp, profile int32) {
+	t.Helper()
+	session, err := uuid.Parse(app.cookie)
+	require.NoError(t, err)
+	grant, err := app.store.RelayGrant(t.Context(), session, profile)
+	require.NoError(t, err)
+	require.NoError(t, app.store.ConfirmRelayGrant(t.Context(), session, profile, grant.Fence))
 }

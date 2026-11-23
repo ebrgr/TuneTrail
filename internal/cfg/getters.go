@@ -225,13 +225,6 @@ func ForceTZ() *time.Location {
 
 func WebUI() string { lock.RLock(); defer lock.RUnlock(); return globalConfig.webUI }
 
-// ActiveIngestEnabled returns the master switch loaded at startup.
-func ActiveIngestEnabled() bool {
-	lock.RLock()
-	defer lock.RUnlock()
-	return globalConfig.ingestActive
-}
-
 // RelayNetworkPolicy returns both flags from the running configuration snapshot.
 func RelayNetworkPolicy() (allowHTTP, allowPrivate bool) {
 	lock.RLock()

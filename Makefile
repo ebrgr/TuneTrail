@@ -56,10 +56,10 @@ api.vet:
 # The per-package limit leaves room for 2-vCPU CI runners: internal/db/sqlite and engine
 # grew past 60s there after ISSUE-173..188 (v0.62 CI failed on the old limit).
 api.test:
-	CGO_ENABLED=0 go test -count=1 ./... -timeout 10m
+	CGO_ENABLED=0 go test -count=1 -timeout 30m ./...
 
 api.race:
-	CGO_ENABLED=1 go test -race -count=1 ./... -timeout 10m
+	CGO_ENABLED=1 go test -race -count=1 -timeout 30m ./...
 
 api.build:
 	CGO_ENABLED=0 go build -ldflags='-s -w' -o tunetrail ./cmd/api/main.go

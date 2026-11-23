@@ -130,6 +130,9 @@ func profileImportHandler(store db.DB, mbzc mbz.MusicBrainzCaller) http.HandlerF
 				quarantineErr = utils.MoveFile(stagePath, path.Join(failedDir, uuid.NewString()+"-"+body.Filename))
 			}
 			message := "import failed; some records may have been saved"
+			if errors.Is(err, importer.ErrRequiredTextTooLarge) {
+				message = importer.ErrRequiredTextTooLarge.Error()
+			}
 			if quarantineErr != nil {
 				logger.FromContext(ctx).Error().Err(quarantineErr).Msg("Manual import remains in staging")
 				message += "; file retained in staging"
@@ -192,7 +195,11 @@ func uploadProfileImport(w http.ResponseWriter, r *http.Request, store db.DB, mb
 	ctx := importer.WithUploadSource(r.Context(), destination)
 	if err = importProfileFile(ctx, store, mbzc, path.Join(fmt.Sprint(db.ProfileID(ctx)), name)); err != nil {
 		status := importFailureStatus(w, err)
-		utils.WriteError(w, "import failed; some records may have been saved. Check the file before retrying", status)
+		message := "import failed; some records may have been saved. Check the file before retrying"
+		if errors.Is(err, importer.ErrRequiredTextTooLarge) {
+			message = importer.ErrRequiredTextTooLarge.Error()
+		}
+		utils.WriteError(w, message, status)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

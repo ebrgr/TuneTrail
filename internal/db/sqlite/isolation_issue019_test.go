@@ -12,7 +12,7 @@ import (
 
 // TestProfileScopeAndCatalogEscape documents scoped reads and the intentional internal global context.
 func TestProfileScopeAndCatalogEscape(t *testing.T) {
-	s, _, _ := migrationDB(t, 13)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedMediaRead(t, s)
 	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
@@ -22,7 +22,7 @@ func TestProfileScopeAndCatalogEscape(t *testing.T) {
 		if profile == 1 && scalar(t, s, `SELECT COUNT(*) FROM listens WHERE profile_id=1`) > 0 {
 			stamp++
 		}
-		require.NoError(t, s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: profile, TrackID: 1, Time: time.Unix(stamp, 0)}))
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: profile, TrackID: 1, Time: time.Unix(stamp, 0)})
 	}
 	for _, tc := range []struct {
 		id   int32

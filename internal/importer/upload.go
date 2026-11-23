@@ -9,13 +9,17 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
-	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/google/uuid"
 )
 
 // Result distinguishes newly stored listens from duplicates and skipped entries.
 type Result struct {
+	IgnoredMBIDConflicts                             int  `json:",omitempty"`
+	RejectedOversizedItems                           int  `json:",omitempty"`
+	TruncatedFields                                  int  `json:",omitempty"`
+	IgnoredAliasLimit                                int  `json:",omitempty"`
+	IgnoredAliasConflicts                            int  `json:",omitempty"`
 	Active                                           bool `json:",omitempty"`
 	Processed, Imported, Duplicates, Ignored, Errors int
 	Pending                                          int // Active receipts awaiting a decision, or shadow reviews in legacy mode.
@@ -39,50 +43,10 @@ func ignored(ctx context.Context) {
 
 type UploadStore interface {
 	Store
-	SaveListenWithResult(context.Context, db.SaveListenOpts) (bool, error)
 }
 type countingStore struct {
 	UploadStore
 	result *Result
-}
-
-// ReceiveBatch forwards optional shadow support through the counting wrapper.
-func (s countingStore) ReceiveBatch(ctx context.Context, batch ingest.Batch) ([]ingest.Result, error) {
-	receiver, ok := s.UploadStore.(ingest.Receiver)
-	if !ok {
-		return nil, nil
-	}
-	return receiver.ReceiveBatch(ctx, batch)
-}
-
-// BeginImportIngest forwards the optional mode selection through the counting store.
-func (s countingStore) BeginImportIngest(ctx context.Context, profile int32, master bool) (ingest.JobMode, error) {
-	if admission, ok := s.UploadStore.(ingest.Admission); ok {
-		return admission.BeginImportIngest(ctx, profile, master)
-	}
-	return ingest.JobMode{Variant: "v9"}, nil
-}
-
-// AdmitIngest forwards an already pinned job to the underlying durable writer.
-func (s countingStore) AdmitIngest(ctx context.Context, batch ingest.Batch, master bool, pinned *ingest.JobMode, invalid error) (bool, []ingest.Result, error) {
-	if admission, ok := s.UploadStore.(ingest.Admission); ok {
-		return admission.AdmitIngest(ctx, batch, master, pinned, invalid)
-	}
-	results, err := s.ReceiveBatch(ctx, batch)
-	return false, results, err
-}
-
-func (s countingStore) SaveListen(ctx context.Context, o db.SaveListenOpts) error {
-	inserted, err := s.UploadStore.SaveListenWithResult(ctx, o)
-	if err != nil {
-		return err
-	}
-	if inserted {
-		s.result.Imported++
-	} else {
-		s.result.Duplicates++
-	}
-	return nil
 }
 
 // RestoreArchive forwards the atomic restore and counts idempotent events.

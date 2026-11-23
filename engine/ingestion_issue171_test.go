@@ -14,8 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestShadowReceiptACK verifies deferred commit failure, retry and playing_now.
-func TestShadowReceiptACK(t *testing.T) {
+// TestHistoricalReceiptACK verifies deferred commit failure, retry and playing_now.
+func TestHistoricalReceiptACK(t *testing.T) {
 	a := newProfileTestApp(t)
 	const path = "/apis/listenbrainz/1/submit-listens"
 	const body = `{"listen_type":"import","payload":[
@@ -37,6 +37,7 @@ func TestShadowReceiptACK(t *testing.T) {
 	require.Equal(t, http.StatusOK, response.Code)
 	require.JSONEq(t, `{"status":"ok"}`, response.Body.String())
 	count("ingest_events", 2)
+	resolveFixtureHistory(t, a)
 	count("ingest_events WHERE duplicate_decision='review'", 1)
 	count("ingest_events WHERE original_snapshot LIKE '%private%'", 0)
 	count("listens", 1)
@@ -44,14 +45,15 @@ func TestShadowReceiptACK(t *testing.T) {
 	count("ingest_events", 2)
 	count("listens", 1)
 	require.NoError(t, a.store.Exec(`CREATE TRIGGER shadow_test_fail BEFORE INSERT ON ingest_events BEGIN SELECT RAISE(ABORT,'shadow only'); END`))
-	require.Equal(t, http.StatusOK, a.request("POST", path, listenBody("single", "Fail open", 1700000001), "first-key", false).Code)
+	require.Equal(t, http.StatusInternalServerError, a.request("POST", path, listenBody("single", "Failed receipt", 1700000001), "first-key", false).Code)
 	count("ingest_events", 2)
-	count("listens", 2)
+	count("listens", 1)
 }
 
 // TestShadowFileResume covers ignored ordinals, a renamed resend and the staging-independent cursor.
 func TestShadowFileResume(t *testing.T) {
 	a := newProfileTestApp(t)
+
 	ctx := context.Background()
 	data := []byte(`[
 		{"ts":"2026-11-01T01:30:00-04:00","master_metadata_track_name":"Song","master_metadata_album_artist_name":"Artist","reason_end":"trackdone"},
@@ -63,9 +65,10 @@ func TestShadowFileResume(t *testing.T) {
 		require.NoError(t, os.WriteFile(file, data, 0600))
 		result, err := importer.Upload(ctx, a.store, &mbz.MbzErrorCaller{}, 2, "spotify", file)
 		require.NoError(t, err)
-		require.Equal(t, 1-i, result.Imported)
-		require.Equal(t, 1+i, result.Duplicates)
-		require.Equal(t, 1, result.Pending)
+		require.Zero(t, result.Imported)
+		require.Equal(t, 2*i, result.Duplicates)
+		require.Equal(t, 2*(1-i), result.Pending)
+		resolveFixtureHistory(t, a)
 		require.Equal(t, 1, result.Ignored)
 		require.NoError(t, os.Remove(file))
 	}
@@ -74,7 +77,10 @@ func TestShadowFileResume(t *testing.T) {
 	require.Len(t, checkpoints, 2)
 	require.Equal(t, 0, checkpoints[0].Ordinal)
 	require.Equal(t, 2, checkpoints[1].Ordinal)
-	require.True(t, checkpoints[1].Pending)
+	require.False(t, checkpoints[1].Pending)
+	count, err := a.store.ProfileListenCount(ctx, 2)
+	require.NoError(t, err)
+	require.EqualValues(t, 2, count)
 	tail, err := a.store.ReadFileReceipts(ctx, 2, "spotify", ingest.Digest(data), checkpoints[0].Ordinal)
 	require.NoError(t, err)
 	require.Equal(t, checkpoints[1:], tail)

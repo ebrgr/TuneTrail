@@ -26,19 +26,20 @@ func TestIngestHealthIsolation(t *testing.T) {
 		w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Shared Track", stamp), key, false)
 		require.Equal(t, 200, w.Code, w.Body.String())
 	}
+	resolveFixtureHistory(t, a)
 	for _, profile := range []int{1, 2} {
-		require.NoError(t, a.store.SetProfileRelay(t.Context(), int32(profile), "https://fixture.invalid/private-url", "PRIVATE_RELAY_TOKEN"))
+		require.NoError(t, a.store.Exec(`INSERT INTO profile_relays(profile_id,url,token) VALUES(?,'https://fixture.invalid/private-url','PRIVATE_RELAY_TOKEN')`, profile))
 		require.NoError(t, a.store.Exec(`INSERT INTO integrations(id,profile_id,source_type,display_name,token_ref,created_at) VALUES
 			('health:'||?,?,'listenbrainz','Fixture integration '||?,'PRIVATE_TOKEN_REF',0),
 			('relay:'||?,?,'listenbrainz-relay','','PRIVATE_TOKEN_REF',0)`,
 			profile, profile, profile, profile, profile))
 		require.NoError(t, a.store.Exec(`INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,
 			source_type,adapter_version,batch_id,item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,
-			snapshot_digest,digest_version,mode,state,event_id,duplicate_decision,reason_codes,rule_version,evidence,resolved_at,delivery_policy,identity_status,occurrence_id,recording_id)
+			snapshot_digest,digest_version,mode,state,event_id,duplicate_decision,reason_codes,rule_version,evidence,resolved_at,delivery_policy,identity_status,occurrence_id,recording_id,resolver_variant)
 			SELECT 'health:'||profile_id,profile_id,'health:'||profile_id,1,'listenbrainz','1','fixture',0,'single',?,
 			'estimated','start',json_object('client','Fixture client '||profile_id,'private','PRIVATE_RAW_SNAPSHOT'),
 			'fixture','1','active','accepted',event_id,'different',json_array('fixture_reason_'||profile_id),'fixture-rule-'||profile_id,
-			json_object('delta_seconds',17,'private','PRIVATE_EVIDENCE'),?,'durable','resolved',l.track_id,o.recording_id
+			json_object('delta_seconds',17,'private','PRIVATE_EVIDENCE'),?,'durable','resolved',l.track_id,o.recording_id,'occurrence'
 			FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=?`, stamp+int(profile)*60, stamp+120, profile))
 		require.NoError(t, a.store.Exec(`INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,attempt_count,result,format_version)
 			SELECT 'health:'||profile_id,profile_id,'relay:'||profile_id,event_id,'listen','PRIVATE_DELIVERY_KEY','failed',?,3,
@@ -69,7 +70,7 @@ func TestIngestHealthIsolation(t *testing.T) {
 		{"root first profile", health + "?profile=1", a, true, "", 200, 1, []string{"Fixture client 1"}},
 		{"root second profile", health + "?profile=2", a, true, "", 200, 2, []string{"Fixture client 2"}},
 		{"visitor listen", firstListen, a, false, "", 303, 0, nil},
-		{"owner listen", secondListen, &ownerApp, true, "", 200, 2, []string{"Why is this listen here?", "<samp>listenbrainz</samp>", "fixture_reason_2", "fixture-rule-2", "failed", "2024-05-01T12:02:00Z"}},
+		{"owner listen", secondListen, &ownerApp, true, "", 200, 2, []string{"Why is this listen here?", "<samp>listenbrainz_api</samp>", "fixture_reason_2", "fixture-rule-2", "failed", "2024-05-01T12:02:00Z"}},
 		{"owner cross-profile listen", firstListen, &ownerApp, true, "", 403, 0, nil},
 		{"root listen", firstListen, a, true, "", 200, 1, []string{"fixture_reason_1", "fixture-rule-1"}},
 	} {
@@ -108,8 +109,7 @@ func TestIngestHealthIsolation(t *testing.T) {
 // TestIngestHealthReprocess uses the same profile authorization for the queue and its action.
 func TestIngestHealthReprocess(t *testing.T) {
 	a := newProfileTestApp(t)
-	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2;
-		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)`))
+	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2`))
 	const payload = "PRIVATE_SNAPSHOT_TITLE"
 	const idempotencyKey = "PRIVATE_IDEMPOTENCY_KEY"
 	keyDigest := ingest.Digest([]byte(idempotencyKey))
@@ -232,7 +232,7 @@ func TestIngestHealthReviewActions(t *testing.T) {
 		w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Review Track", stamp), key, false)
 		require.Equal(t, 200, w.Code, w.Body.String())
 	}
-	require.NoError(t, a.store.Exec(`INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)`))
+	resolveFixtureHistory(t, a)
 	receipts := map[int]string{1: "f0000000-0000-4000-8000-000000000181", 2: "f0000000-0000-4000-8000-000000000182"}
 	for profile, receipt := range receipts {
 		require.NoError(t, a.store.Exec(`INSERT INTO integrations(id,profile_id,source_type,token_ref,created_at)
@@ -240,11 +240,11 @@ func TestIngestHealthReviewActions(t *testing.T) {
 		require.NoError(t, a.store.Exec(`INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,
 			source_type,adapter_version,batch_id,item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,
 			original_snapshot,snapshot_digest,digest_version,mode,state,duplicate_decision,reason_codes,evidence,rule_version,
-			resolution_version,occurrence_id,recording_id,identity_status)
+			resolution_version,occurrence_id,recording_id,identity_status,resolver_variant)
 			SELECT ?,l.profile_id,'review:'||l.profile_id,1,'listenbrainz','1','review',0,'single',?,
 			'2024-05-01T12:00:00.000000000Z','second','start','{"private":"PRIVATE_BODY"}','fixture','1','active',
 			'pending_duplicate','review','["legacy_identity_collision"]',json_object('candidate_event_id',l.event_id,'private','PRIVATE_EVIDENCE'),
-			'active-v1',1,o.id,o.recording_id,'resolved'
+			'active-v1',1,o.id,o.recording_id,'resolved','occurrence'
 			FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=?`, receipt, stamp, profile))
 	}
 	session, err := a.store.SaveSession(t.Context(), 2, time.Now().Add(time.Hour), false)
@@ -385,8 +385,7 @@ func TestIngestHealthInboxKeyFilter(t *testing.T) {
 // TestIngestHealthDiscard submits the actual confirmation fields rendered to each account.
 func TestIngestHealthDiscard(t *testing.T) {
 	a := newProfileTestApp(t)
-	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2;
-		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(1,1),(2,1)`))
+	require.NoError(t, a.store.Exec(`UPDATE users SET status='active',password=(SELECT password FROM users WHERE id=1) WHERE id=2`))
 	for _, key := range []string{"first-key", "second-key"} {
 		w := a.request("POST", "/apis/listenbrainz/1/submit-listens", listenBody("single", "Discard fixture", 1714564800), key, false)
 		require.Equal(t, http.StatusOK, w.Code, w.Body.String())

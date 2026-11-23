@@ -14,7 +14,6 @@ import (
 
 	"github.com/ebrgr/TuneTrail/engine/middleware"
 	"github.com/ebrgr/TuneTrail/internal/catalog"
-	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
@@ -140,7 +139,7 @@ type submitListenHandlerStore interface {
 	db.ArtistStore
 	db.AlbumStore
 	db.TrackStore
-	db.ListenStore
+	AdmitOccurrence(context.Context, ingest.Batch) ([]ingest.Result, error)
 }
 
 // LbzSubmitListenHandler bounds raw bodies before buffering, decoding or relaying them.
@@ -203,47 +202,30 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 			return
 		}
 
-		// The active path validates and commits the entire batch before acknowledging.
-		if receiver, ok := store.(ingest.Receiver); ok && req.ListenType != ListenTypePlayingNow {
+		// A historical ACK follows durable occurrence admission.
+		if req.ListenType != ListenTypePlayingNow {
 			batch, invalid := listenIngestBatch(profile.ID, req, r.Header.Get("Idempotency-Key"), receivedAt)
-			// Carry only the ID resolved by ingestion authentication.
-			batch.APIKeyID = profile.IngestionKeyID
-			var active bool
-			policy := "legacy"
-			var err error
-			if admission, ok := store.(ingest.PolicyAdmission); ok {
-				active, _, policy, err = admission.AdmitIngestPolicy(r.Context(), batch, cfg.ActiveIngestEnabled(), nil, invalid)
-			} else if admission, ok := store.(ingest.Admission); ok {
-				active, _, err = admission.AdmitIngest(r.Context(), batch, cfg.ActiveIngestEnabled(), nil, invalid)
-			} else {
-				_, err = receiver.ReceiveBatch(r.Context(), batch)
-			}
-			var unavailable *ingest.ErrUnavailable
-			switch {
-			case errors.As(err, &unavailable):
-				l.Warn().Msg("ListenBrainz receipt storage unavailable")
-				// Storage failures can occur before the profile mode is known.
-				w.Header().Set("Retry-After", "1")
-				utils.WriteError(w, "listen receipt storage unavailable", http.StatusServiceUnavailable)
-				return
-			case active && invalid != nil && errors.Is(err, invalid):
+			if invalid != nil {
 				utils.WriteError(w, invalid.Error(), http.StatusBadRequest)
 				return
-			case active && err != nil:
-				l.Warn().Msg("ListenBrainz active receipt failed")
-				utils.WriteError(w, "listen receipt failed", http.StatusInternalServerError)
-				return
-			case active:
-				writeListenOK(w)
-				// A legacy receipt replayed after the durable cut never sends the raw POST again.
-				// A failed legacy delivery remains undelivered through active admission.
-				if policy == "legacy" {
-					relayListenRequest(r.Context(), store, profile.ID, requestBytes, l)
-				}
-				return
-			case err != nil:
-				l.Warn().Msg("ListenBrainz receipt admission fell back to legacy")
 			}
+			batch.APIKeyID = profile.IngestionKeyID
+			if _, err := store.AdmitOccurrence(r.Context(), batch); err != nil {
+				var unavailable *ingest.ErrUnavailable
+				if errors.As(err, &unavailable) {
+					l.Warn().Msg("ListenBrainz receipt storage unavailable")
+					w.Header().Set("Retry-After", "1")
+					utils.WriteError(w, "listen receipt storage unavailable", http.StatusServiceUnavailable)
+					return
+				}
+				l.Warn().Msg("ListenBrainz receipt failed")
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(`{"status":"internal server error"}`))
+				return
+			}
+			writeListenOK(w)
+			return
 		}
 
 		for _, payload := range req.Payload {
@@ -251,11 +233,6 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 				l.Debug().Msg("LbzSubmitListenHandler: Artist name or track name are missing")
 				utils.WriteError(w, "Artist name or track name are missing", http.StatusBadRequest)
 				return
-			}
-
-			if req.ListenType != ListenTypePlayingNow && req.ListenType != ListenTypeSingle && req.ListenType != ListenTypeImport {
-				l.Debug().Msg("LbzSubmitListenHandler: No listen type provided, assuming 'single'")
-				req.ListenType = "single"
 			}
 
 			artistMbzIDs, err := utils.ParseUUIDSlice(payload.TrackMeta.AdditionalInfo.ArtistMBIDs)
@@ -335,12 +312,10 @@ func LbzSubmitListenHandler(store submitListenHandlerStore, mbzc mbz.MusicBrainz
 				Time:               listenedAt,
 				ProfileID:          profile.ID,
 				Client:             client,
-				IsNowPlaying:       req.ListenType == ListenTypePlayingNow,
-				SkipSaveListen:     req.ListenType == ListenTypePlayingNow,
 			}
 
 			_, err, shared := sfGroup.Do(fmt.Sprintf("%d:%s:%d:%s", profile.ID, req.ListenType, listenedAt.Unix(), buildCaolescingKey(payload)), func() (interface{}, error) {
-				return 0, catalog.SubmitListen(r.Context(), store, opts)
+				return 0, catalog.PublishNowPlaying(r.Context(), store, opts)
 			})
 			if shared {
 				l.Info().Msg("LbzSubmitListenHandler: Duplicate requests detected; results were coalesced")

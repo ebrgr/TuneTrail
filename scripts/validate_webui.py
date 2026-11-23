@@ -38,6 +38,8 @@ def seed(server):
     server.request('POST', LBZ + '/submit-listens', {'listen_type': 'import', 'payload': payload}, token=key)
     second = server.request('GET', WEB + '/profiles/luna/user/apikeys', admin=True)[0]['key']
     server.request('POST', LBZ + '/submit-listens', {'listen_type': 'single', 'payload': [{'listened_at': now, 'track_metadata': {'artist_name': 'Luna Artist', 'release_name': 'Luna Album', 'track_name': 'Exclusive Luna Song'}}]}, token=second)
+    server.wait_listens(WEB + '/profiles/mara', 152)
+    server.wait_listens(WEB + '/profiles/luna', 1)
     # Local generated artwork, uploaded through the real administrative endpoint.
     image = (ROOT / 'assets/preview/avatar.webp').read_bytes()
     for kind in ['artists', 'albums']:
@@ -64,16 +66,19 @@ def validate(server, key):
     for params in ['limit=-1', 'page=-1', 'month=13', 'year=2025&week=53', 'period=unknown', 'page=99999999999999']:
         server.request('GET', '/mara/listens?' + params, expected=400)
     server.request('GET', '/missing', expected=404)
-    for kind in ['artist', 'album', 'track']:
-        content = server.request('GET', f'/mara/{kind}/1').decode()
+    # Resolution order can differ across profiles, so use IDs visible to Mara.
+    entity_ids = {kind: server.request('GET', WEB + f'/profiles/mara/top/{group}?period=all_time')['items'][0]['item']['id']
+                  for kind, group in [('artist', 'artists'), ('album', 'albums'), ('track', 'tracks')]}
+    for kind, entity_id in entity_ids.items():
+        content = server.request('GET', f'/mara/{kind}/{entity_id}').decode()
         assert 'data-assets="/web-assets"' in content
         assert 'data-media-task' not in content
-        admin_content = server.request('GET', f'/mara/{kind}/1', admin=True).decode()
-        assert f'/mara/manage/{kind}/1/edit' in admin_content
+        admin_content = server.request('GET', f'/mara/{kind}/{entity_id}', admin=True).decode()
+        assert f'/mara/manage/{kind}/{entity_id}/edit' in admin_content
         assert 'data-media-task' in admin_content
         server.request('GET', f'/mara/{kind}/0', expected=400)
-        server.request('GET', f'/iara/{kind}/1', expected=404)
-        assert 'data-admin-ui="go"' in server.request('GET', f'/mara/manage/{kind}/1', admin=True).decode()
+        server.request('GET', f'/iara/{kind}/{entity_id}', expected=404)
+        assert 'data-admin-ui="go"' in server.request('GET', f'/mara/manage/{kind}/{entity_id}', admin=True).decode()
     assert 'data-assets="/web-assets"' in server.request('GET', '/mara/rewind?year=2026&month=1').decode()
     server.request('GET', '/admin')
     assert 'Exclusive Luna Song' not in server.request('GET', '/mara/search?q=Exclusive').decode()
@@ -81,19 +86,19 @@ def validate(server, key):
     assert server.request('GET', WEB + '/config')['web_ui'] == 'go'
     # Interest keeps its shape, scoped counts and safe input bounds in the real API.
     interest_totals = {}
-    for kind in ['artist', 'album', 'track']:
-        entity = server.request('GET', WEB + f'/profiles/mara/{kind}/1')
-        intervals = server.request('GET', WEB + f'/profiles/mara/{kind}/1/interest?buckets=16')
+    for kind, entity_id in entity_ids.items():
+        entity = server.request('GET', WEB + f'/profiles/mara/{kind}/{entity_id}')
+        intervals = server.request('GET', WEB + f'/profiles/mara/{kind}/{entity_id}/interest?buckets=16')
         assert len(intervals) == 16
         total = sum(row['listen_count'] for row in intervals)
         assert total == entity['listen_count']
         interest_totals[kind] = total
         for i in range(1, len(intervals)):
             assert intervals[i]['bucket_start'] == intervals[i-1]['bucket_end']
-        other = server.request('GET', WEB + f'/profiles/luna/{kind}/1/interest?buckets=16')
+        other = server.request('GET', WEB + f'/profiles/luna/{kind}/{entity_id}/interest?buckets=16')
         assert sum(row['listen_count'] for row in other) == 0
         for count in ['-1', '0', '513', '999999999999999999999']:
-            server.request('GET', WEB + f'/profiles/mara/{kind}/1/interest?buckets={count}', expected=400)
+            server.request('GET', WEB + f'/profiles/mara/{kind}/{entity_id}/interest?buckets={count}', expected=400)
         server.request('GET', WEB + f'/profiles/mara/{kind}/0/interest?buckets=16', expected=400)
     # Auth and origin checks use a disposable record, then restore it for comparisons.
     listen = server.request('GET', WEB + '/profiles/mara/listens?limit=1')['items'][0]

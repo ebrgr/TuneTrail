@@ -4,19 +4,20 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"github.com/stretchr/testify/require"
 )
 
 // ingestFixture creates two unrelated profiles and an inactive receipt.
 func ingestFixture(t *testing.T) *Sqlite {
 	t.Helper()
-	s, err := NewInMemory()
+	s, err := NewInMemoryAtVersion(20)
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, s.db.Close()) })
 	testfixtures.Profile(t, s, 1, "one", "One", 0)
@@ -300,6 +301,8 @@ func TestBootstrapKoitoV2WithoutUpstreamIndexes(t *testing.T) {
 	require.NoError(t, err)
 	_, err = legacy.Exec(`DROP INDEX idx_artist_aliases_artist_id; DROP INDEX idx_listens_track_id_listened_at`)
 	require.NoError(t, err)
+	columns := []string{"track_id", "listened_at", "client"}
+	before := digestTable(t, legacy, "listens", columns)
 	require.NoError(t, legacy.Close())
 	path, err := bootstrap(dir, true)
 	require.NoError(t, err)
@@ -316,5 +319,56 @@ func TestBootstrapKoitoV2WithoutUpstreamIndexes(t *testing.T) {
 	var listens int
 	require.NoError(t, conn.QueryRow(`SELECT COUNT(*) FROM listens`).Scan(&listens))
 	require.Equal(t, 200, listens)
+	require.Equal(t, before, digestTable(t, conn, "listens", columns))
+	require.Equal(t, 200, scalar(t, &Sqlite{db: conn}, `SELECT count(*) FROM listens WHERE profile_id=1`))
 	require.NoError(t, checkDatabase(conn))
+	verifyOccurrenceUpgrade(t, &Sqlite{db: conn}, 200)
+}
+
+// verifyOccurrenceUpgrade proves that an existing profile accepts new occurrence history.
+func verifyOccurrenceUpgrade(t *testing.T, store *Sqlite, before int) {
+	t.Helper()
+	ctx := t.Context()
+	enabled, err := ingestReviewEnabled(ctx, store.db, 1)
+	require.NoError(t, err)
+	require.True(t, enabled)
+	require.NoError(t, store.ActivateRelayDelivery(ctx))
+	results, err := store.AdmitOccurrence(ctx, ingest.Batch{
+		ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ReceivedAt: time.Now(),
+		Items: []ingest.Item{{ListenedAt: time.Unix(1780000000, 0),
+			Snapshot: ingest.Snapshot{Artist: "Synthetic upgrade artist", Title: "Synthetic upgrade track"}}},
+	})
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	found, err := store.ResolveNextIngest(ctx, nil)
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Equal(t, before+1, scalar(t, store, `SELECT count(*) FROM listens WHERE profile_id=1`))
+}
+
+// TestSchema021DevelopmentUpgrade verifies the upgrade guard and preservation on retry.
+func TestSchema021DevelopmentUpgrade(t *testing.T) {
+	s, provider, _ := migrationDB(t, 20)
+	ctx := t.Context()
+	seedIdentityHistory(t, s)
+	execSQL(t, s, `INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,0)`)
+	baseline := digestTable(t, s.db, "listens", []string{"profile_id", "track_id", "listened_at", "client", "event_id", "origin"})
+	_, err := provider.Up(ctx)
+	require.ErrorContains(t, err, "clearing unlinked shadow receipts")
+	require.Equal(t, 20, scalar(t, s, `SELECT max(version_id) FROM goose_db_version WHERE is_applied=1`))
+	require.Equal(t, baseline, digestTable(t, s.db, "listens", baseline.columns))
+
+	// This development fixture owns the unlinked shadow rows and can discard them explicitly.
+	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow' AND event_id IS NULL`)
+	_, err = provider.Up(ctx)
+	require.NoError(t, err)
+	require.Equal(t, baseline, digestTable(t, s.db, "listens", baseline.columns))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM sqlite_master WHERE name IN ('profile_ingest_flags','idx_listens_legacy_identity')`))
+	verifyOccurrenceUpgrade(t, s, 2)
+	testfixtures.Profile(t, s, 3, "new-profile", "New profile", 0)
+	enabled, err := ingestReviewEnabled(ctx, s.db, 3)
+	require.NoError(t, err)
+	require.True(t, enabled)
+	_, err = provider.Down(ctx)
+	require.ErrorContains(t, err, "restore_verified_backup")
 }

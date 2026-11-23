@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ebrgr/TuneTrail/internal/testfixtures"
 	"math"
 	"net/http/httptest"
 	"net/url"
@@ -30,9 +31,7 @@ func TestRewindSQLiteAndSummaryAPI(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: listen.profile, TrackID: listen.track, Time: at}); err != nil {
-			t.Fatal(err)
-		}
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: listen.profile, TrackID: listen.track, Time: at})
 	}
 	h, err := NewHandler(s, Options{Now: func() time.Time { return time.Date(2026, 11, 5, 12, 0, 0, 0, time.UTC) }})
 	if err != nil {
@@ -121,9 +120,7 @@ func TestRewindLimitsRankingsToFive(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: 1, TrackID: int32(i), Time: time.Date(2026, 1, i, 0, 0, 0, 0, time.UTC)}); err != nil {
-			t.Fatal(err)
-		}
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: 1, TrackID: int32(i), Time: time.Date(2026, 1, i, 0, 0, 0, 0, time.UTC)})
 	}
 	result, err := summary.GenerateSummary(context.Background(), s, 1, db.Timeframe{Year: 2026, Month: 1, Timezone: time.UTC}, "")
 	if err != nil {

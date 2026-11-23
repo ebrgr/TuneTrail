@@ -12,15 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/listenbrainz"
 	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
-	"github.com/ebrgr/TuneTrail/internal/utils"
-	"github.com/google/uuid"
 )
 
 // ImportListenBrainzExport uses one ordinal stream across the archive members.
@@ -60,11 +57,10 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 		}
 		declared += f.UncompressedSize64
 	}
-	ctx, err = withFileShadow(ctx, store, db.ProfileID(ctx), "listenbrainz", file)
+	ctx, err = withFileIngest(ctx, store, db.ProfileID(ctx), "listenbrainz", file)
 	if err != nil {
 		return err
 	}
-	defer flushLegacyFileShadow(ctx)
 	budget := &io.LimitedReader{N: maxExpanded + 1}
 	totalLines := 0
 	ctx = context.WithValue(ctx, archiveLinesKey{}, &totalLines)
@@ -106,7 +102,7 @@ func ImportListenBrainzExport(ctx context.Context, store importStore, mbzc mbz.M
 	if matched == 0 {
 		return invalidFile(fmt.Errorf("archive has no ListenBrainz listen files"))
 	}
-	if err := flushFileShadow(ctx); err != nil {
+	if err := flushFileIngest(ctx); err != nil {
 		return err
 	}
 	return finishImport(ctx, filename, 0)
@@ -158,94 +154,28 @@ func ImportListenBrainzFile(ctx context.Context, store importStore, mbzc mbz.Mus
 			ignored(ctx)
 			continue
 		}
-		artistMbzIDs, err := utils.ParseUUIDSlice(payload.TrackMeta.AdditionalInfo.ArtistMBIDs)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("ImportListenBrainzFile: Failed to parse one or more UUIDs")
-		}
-		if len(artistMbzIDs) < 1 {
-			l.Debug().AnErr("error", err).Msg("ImportListenBrainzFile: Attempting to parse artist UUIDs from mbid_mapping")
-			artistMbzIDs, err = utils.ParseUUIDSlice(payload.TrackMeta.MBIDMapping.ArtistMBIDs)
-			if err != nil {
-				l.Debug().AnErr("error", err).Msg("ImportListenBrainzFile: Failed to parse one or more UUIDs")
-			}
-		}
-		rgMbzID, err := uuid.Parse(payload.TrackMeta.AdditionalInfo.ReleaseGroupMBID)
-		if err != nil {
-			rgMbzID = uuid.Nil
-		}
-		releaseMbzID, err := uuid.Parse(payload.TrackMeta.AdditionalInfo.ReleaseMBID)
-		if err != nil {
-			releaseMbzID, err = uuid.Parse(payload.TrackMeta.MBIDMapping.ReleaseMBID)
-			if err != nil {
-				releaseMbzID = uuid.Nil
-			}
-		}
-		recordingMbzID, err := uuid.Parse(payload.TrackMeta.AdditionalInfo.RecordingMBID)
-		if err != nil {
-			recordingMbzID, err = uuid.Parse(payload.TrackMeta.MBIDMapping.RecordingMBID)
-			if err != nil {
-				recordingMbzID = uuid.Nil
-			}
-		}
-
-		var client string
-		if payload.TrackMeta.AdditionalInfo.MediaPlayer != "" {
-			client = payload.TrackMeta.AdditionalInfo.MediaPlayer
-		} else if payload.TrackMeta.AdditionalInfo.SubmissionClient != "" {
-			client = payload.TrackMeta.AdditionalInfo.SubmissionClient
-		}
-
-		var duration int32
-		if payload.TrackMeta.AdditionalInfo.Duration != 0 {
-			duration = payload.TrackMeta.AdditionalInfo.Duration
-		} else if payload.TrackMeta.AdditionalInfo.DurationMs != 0 {
-			duration = payload.TrackMeta.AdditionalInfo.DurationMs / 1000
-		}
-
-		var artistMbidMap []catalog.ArtistMbidMap
-		for _, a := range payload.TrackMeta.MBIDMapping.Artists {
-			if a.ArtistMBID == "" || a.ArtistName == "" {
-				continue
-			}
-			mbid, err := uuid.Parse(a.ArtistMBID)
-			if err != nil {
-				l.Err(err).Msgf("LbzSubmitListenHandler: Failed to parse UUID for artist '%s'", a.ArtistName)
-			}
-			artistMbidMap = append(artistMbidMap, catalog.ArtistMbidMap{Artist: a.ArtistName, Mbid: mbid})
-		}
-
-		opts := catalog.SubmitListenOpts{
-			MbzCaller:          mbzc,
-			ArtistNames:        payload.TrackMeta.AdditionalInfo.ArtistNames,
-			Artist:             payload.TrackMeta.ArtistName,
-			ArtistMbzIDs:       artistMbzIDs,
-			TrackTitle:         payload.TrackMeta.TrackName,
-			RecordingMbzID:     recordingMbzID,
-			ReleaseTitle:       payload.TrackMeta.ReleaseName,
-			ReleaseMbzID:       releaseMbzID,
-			ReleaseGroupMbzID:  rgMbzID,
-			ArtistMbidMappings: artistMbidMap,
-			Duration:           duration,
-			Time:               ts,
-			ProfileID:          db.ProfileID(ctx),
-			Client:             client,
-			SkipCacheImage:     !cfg.FetchImagesDuringImport(),
-		}
 		var observedAt time.Time
 		if payload.ListenedAt != 0 {
 			observedAt = time.Unix(int64(payload.ListenedAt), 0)
 		}
 		// Active files write only through durable receipt admission.
 		snapshot := ingest.ListenBrainzSnapshot(payload.TrackMeta)
+		// Export mapping can carry individual credits when additional_info omits them.
+		if len(snapshot.ArtistNames) == 0 {
+			for _, credit := range snapshot.ArtistMbidMappings {
+				snapshot.ArtistNames = append(snapshot.ArtistNames, credit.Name)
+			}
+		}
+		// An explicitly identified release can use the legacy display fallback.
+		if snapshot.Release == "" && (snapshot.ReleaseMBID != "" || snapshot.MappedReleaseMBID != "") {
+			snapshot.Release = snapshot.Title
+		}
 		// Keep zero-value timestamps missing in receipts, as in the legacy shadow writer.
 		if payload.ListenedAt != 0 {
 			snapshot.OriginalTime = payload.OriginalListenedAt
 		}
-		snapshot.SkipCacheImage = opts.SkipCacheImage
+		snapshot.SkipCacheImage = !cfg.FetchImagesDuringImport()
 		err = captureFileListen(ctx, snapshot, observedAt)
-		if err == nil && !activeFileIngest(ctx) {
-			err = catalog.SubmitListen(ctx, store, opts)
-		}
 		if err != nil {
 			l.Err(err).Msg("Failed to import LastFM playback item")
 			return fmt.Errorf("ImportListenBrainzFile: %w", err)

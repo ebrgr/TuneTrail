@@ -74,15 +74,27 @@ func (s *Sqlite) RelayGrant(ctx context.Context, session uuid.UUID, profile int3
 	if err := checkIngestRoot(ctx, s.db, session); err != nil {
 		return relay.Grant{}, err
 	}
-	var raw string
-	var version int64
-	err := s.db.QueryRowContext(ctx, `SELECT r.url,d.config_version FROM profile_relays r
-		JOIN relay_destinations d USING(profile_id) WHERE r.profile_id=?`, profile).Scan(&raw, &version)
-	if errors.Is(err, sql.ErrNoRows) {
-		return relay.Grant{}, db.ErrNotFound
-	}
+	draft, err := s.RelayAwaitingApproval(ctx, profile)
 	if err != nil {
 		return relay.Grant{}, err
+	}
+	raw, version, err := s.relayGrantEndpoint(ctx, profile)
+	if err != nil {
+		return relay.Grant{}, err
+	}
+	if draft {
+		// Named drafts are resolved only after a root confirms network approval.
+		_, authority, err := canonicalRelay(raw)
+		if err != nil {
+			return relay.Grant{}, db.ErrInvalidInput
+		}
+		host, _, _ := net.SplitHostPort(authority)
+		if _, err := netip.ParseAddr(host); err != nil {
+			sum := sha256.Sum256([]byte(fmt.Sprintf("named:%d:%d:%q", profile, version, raw)))
+			return relay.Grant{Profile: profile, Version: version, Draft: true, Named: true,
+				Authority: authority, Scheme: relay.Describe(raw, "", "").Scheme,
+				Fence: hex.EncodeToString(sum[:])}, nil
+		}
 	}
 	policy, err := s.RelayNetworkPolicyForProfile(ctx, profile)
 	if err != nil {
@@ -91,10 +103,23 @@ func (s *Sqlite) RelayGrant(ctx context.Context, session uuid.UUID, profile int3
 	dns, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	grant, err := planRelayGrant(dns, net.DefaultResolver, raw, version, policy)
+	grant.Draft = draft
 	grant.Profile, grant.Version = profile, version
 	sum := sha256.Sum256([]byte(fmt.Sprintf("%d:%s", profile, grant.Fence)))
 	grant.Fence = hex.EncodeToString(sum[:])
 	return grant, err
+}
+
+// relayGrantEndpoint reads the endpoint and configuration fence without selecting its token.
+func (s *Sqlite) relayGrantEndpoint(ctx context.Context, profile int32) (string, int64, error) {
+	var raw string
+	var version int64
+	err := s.db.QueryRowContext(ctx, `SELECT r.url,d.config_version FROM profile_relays r
+		JOIN relay_destinations d USING(profile_id) WHERE r.profile_id=?`, profile).Scan(&raw, &version)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = db.ErrNotFound
+	}
+	return raw, version, err
 }
 
 // ConfirmRelayGrant resolves again and fences the entire grant under the writer reservation.
@@ -103,8 +128,31 @@ func (s *Sqlite) ConfirmRelayGrant(ctx context.Context, session uuid.UUID, profi
 	if err != nil {
 		return err
 	}
-	if grant.Fence != fence || !grant.Available() {
+	if grant.Fence != fence || (!grant.Available() && !grant.Draft) {
 		return db.ErrConflict
+	}
+	if grant.Draft && grant.Named {
+		raw, version, err := s.relayGrantEndpoint(ctx, profile)
+		if err != nil {
+			return err
+		}
+		if version != grant.Version {
+			return db.ErrConflict
+		}
+		policy, err := s.RelayNetworkPolicyForProfile(ctx, profile)
+		if err != nil {
+			return err
+		}
+		dns, cancel := context.WithTimeout(ctx, 2*time.Second)
+		defer cancel()
+		resolved, err := planRelayGrant(dns, net.DefaultResolver, raw, version, policy)
+		if err != nil {
+			return err
+		}
+		// Never add an exception for a DNS answer the approver has not seen.
+		if resolved.Available() {
+			return db.ErrForbidden
+		}
 	}
 	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		if err := checkIngestRoot(ctx, tx, session); err != nil {
@@ -129,8 +177,13 @@ func (s *Sqlite) ConfirmRelayGrant(ctx context.Context, session uuid.UUID, profi
 				return err
 			}
 		}
-		_, err = tx.ExecContext(ctx, `UPDATE relay_destinations SET config_version=config_version+1,
-			pause_class=NULL,paused_until=NULL,backoff_count=0 WHERE profile_id=?`, profile)
+		query := `UPDATE relay_destinations SET config_version=config_version+1,
+			pause_class=NULL,paused_until=NULL,backoff_count=0 WHERE profile_id=?`
+		if grant.Draft {
+			query = `UPDATE relay_destinations SET config_version=config_version+1,awaiting_approval=0,
+				pause_class=NULL,paused_until=NULL,backoff_count=0 WHERE profile_id=?`
+		}
+		_, err = tx.ExecContext(ctx, query, profile)
 		return err
 	})
 	if err == nil {
@@ -139,4 +192,21 @@ func (s *Sqlite) ConfirmRelayGrant(ctx context.Context, session uuid.UUID, profi
 			Msg("Relay exception confirmed")
 	}
 	return err
+}
+
+// RelayAwaitingApproval reads the draft state without resolving or contacting the destination.
+func (s *Sqlite) RelayAwaitingApproval(ctx context.Context, profile int32) (bool, error) {
+	var draft bool
+	err := s.db.QueryRowContext(ctx, `SELECT coalesce((SELECT awaiting_approval FROM relay_destinations
+		JOIN profile_relays USING(profile_id) WHERE profile_id=?),0)`, profile).Scan(&draft)
+	return draft, err
+}
+
+// RelayTestApproved checks the exact approved configuration before an explicit probe.
+func (s *Sqlite) RelayTestApproved(ctx context.Context, profile int32, url, token string) (bool, error) {
+	var approved bool
+	err := s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM profile_relays r
+		JOIN relay_destinations d USING(profile_id) WHERE r.profile_id=? AND r.url=? AND r.token=? AND d.awaiting_approval=0)`,
+		profile, url, token).Scan(&approved)
+	return approved, err
 }

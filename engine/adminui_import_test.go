@@ -56,7 +56,8 @@ func TestAdminUIImportExport(t *testing.T) {
 	req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	page = httptest.NewRecorder()
 	h.ServeHTTP(page, req)
-	require.Contains(t, page.Body.String(), "Imported: 1")
+	require.Contains(t, page.Body.String(), "Pending: 1")
+	resolveFixtureHistory(t, a)
 	req = httptest.NewRequest("GET", "/admin/profile/2/export", nil)
 	req.AddCookie(&http.Cookie{Name: "tunetrail_session", Value: a.cookie})
 	out = httptest.NewRecorder()
@@ -74,8 +75,7 @@ func TestAdminUIImportExport(t *testing.T) {
 	require.Equal(t, 401, out.Code, fmt.Sprint(out.Body))
 
 	// A deferred FK makes active admission fail specifically at commit.
-	require.NoError(t, a.store.Exec(`DELETE FROM ingest_events WHERE profile_id=2 AND mode='shadow';
-		INSERT INTO profile_ingest_flags(profile_id,active) VALUES(2,1);
+	require.NoError(t, a.store.Exec(`DELETE FROM ingest_events WHERE profile_id=2;
 		CREATE TABLE panel_test_fk(id INTEGER REFERENCES listening_profiles(id) DEFERRABLE INITIALLY DEFERRED);
 		CREATE TRIGGER panel_test_commit AFTER INSERT ON ingest_events
 		BEGIN INSERT INTO panel_test_fk VALUES(-1); END`))

@@ -81,7 +81,11 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 			execSQL(t, s, `ANALYZE`)
 		}
 		t.Logf("schema v%d", version)
-		explain("sources", healthSourcesSQL(version), 1, 0)
+		sources := healthSourcesSQL()
+		if version == 15 {
+			sources = healthSourcesV15FixtureSQL()
+		}
+		explain("sources", sources, 1, 0)
 		explain("decisions", healthDecisionsSQL, 1)
 		explain("pending list", reviewPageSQL, 1, reviewPageSize, 0)
 		explain("pending count", reviewCountSQL, 1)
@@ -100,8 +104,14 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 		}
 
 		measure("sources", func() error {
-			_, err := s.healthSources(t.Context(), 1, version, 0)
-			return err
+			rows, err := s.db.QueryContext(t.Context(), sources, 1, 0)
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+			for rows.Next() {
+			}
+			return rows.Err()
 		})
 		measure("decisions", func() error {
 			_, err := s.healthDecisions(t.Context(), 1)
@@ -112,4 +122,26 @@ func TestIngestHealthQueryPlans(t *testing.T) {
 			return s.healthReviews(t.Context(), 1, 1, &health)
 		})
 	}
+}
+
+// healthSourcesV15FixtureSQL preserves the pre-index baseline of the scale comparison.
+func healthSourcesV15FixtureSQL() string {
+	delivery, join := healthDeliverySQL()
+	policy := "e.delivery_policy"
+	return `WITH sources AS (
+		SELECT e.profile_id,e.receipt_id,e.source_instance_id,e.received_at,e.time_precision,e.event_id,` + policy + `,
+			substr(coalesce(nullif(e.client_name,''),
+			CASE WHEN json_valid(e.original_snapshot) THEN
+				CASE WHEN json_type(e.original_snapshot,'$.client')='text' THEN json_extract(e.original_snapshot,'$.client') END
+			END,''),1,120) AS client,
+			coalesce(e.file_format,e.source_type) AS source
+		FROM ingest_events e WHERE e.profile_id=?
+	), latest AS (
+		SELECT *, row_number() OVER (PARTITION BY source_instance_id, source, client ORDER BY received_at DESC, receipt_id DESC) AS rank
+		FROM sources
+	)
+	SELECT coalesce(nullif(i.display_name,''),e.source_instance_id), e.source, e.client, e.received_at, e.time_precision,
+		` + delivery + `
+	FROM latest e JOIN integrations i ON i.profile_id=e.profile_id AND i.id=e.source_instance_id
+	` + join + ` WHERE e.rank=1 ORDER BY e.received_at DESC,e.receipt_id DESC LIMIT 101 OFFSET ?`
 }

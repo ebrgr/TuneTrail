@@ -11,7 +11,7 @@ import sqlite3
 import tempfile
 import time
 
-from rehearse_issue081 import SUBMIT, database, percentiles, sample_resources, wait_for
+from rehearsal_support import SUBMIT, database, percentiles, sample_resources, wait_for
 from rehearse_issue133 import fill
 from validate_multiuser import ROOT, WEB, Server, scrobble
 

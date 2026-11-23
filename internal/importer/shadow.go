@@ -4,15 +4,15 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/cfg"
+	"github.com/ebrgr/TuneTrail/internal/export"
 	"io"
 	"os"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
-	"github.com/ebrgr/TuneTrail/internal/logger"
 	"github.com/google/uuid"
 )
 
@@ -21,82 +21,36 @@ type shadowKey struct{}
 const shadowBatchSize = 200
 
 type fileShadow struct {
-	receiver  ingest.Receiver
-	admission ingest.Admission
-	mode      ingest.JobMode
-	batch     ingest.Batch
-	ordinal   int
+	admission interface {
+		AdmitOccurrence(context.Context, ingest.Batch) ([]ingest.Result, error)
+	}
+	batch   ingest.Batch
+	ordinal int
 }
 
-// withFileShadow hashes exact file bytes using an independent reader position.
-func withFileShadow(ctx context.Context, store importStore, profile int32, format string, file *os.File) (context.Context, error) {
-	receiver, ok := store.(ingest.Receiver)
-	if !ok {
-		return ctx, nil
-	}
-	admission, _ := store.(ingest.Admission)
-	mode := ingest.JobMode{Variant: "v9"}
-	// Check the profile cut even with the master switch off.
-	if admission != nil {
-		var err error
-		mode, err = admission.BeginImportIngest(ctx, profile, cfg.ActiveIngestEnabled())
-		if err != nil {
-			return ctx, err
-		}
-	}
-	if mode.Variant == "occurrence" && !occurrenceFileReady(format) {
-		return ctx, &ingest.ErrUnavailable{Cause: fmt.Errorf("occurrence adapter for %s is not ready", format)}
-	}
-	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
-		result.Active = mode.Active
-	}
+// withFileIngest hashes exact file bytes using an independent reader position.
+func withFileIngest(ctx context.Context, store importStore, profile int32, format string, file *os.File) (context.Context, error) {
 	info, err := file.Stat()
 	if err != nil {
-		if mode.Active {
-			return ctx, fmt.Errorf("stat active import: %w", err)
-		}
-		logger.FromContext(ctx).Warn().Msg("Could not stat import for shadow receipt")
-		return ctx, nil
+		return ctx, fmt.Errorf("stat import file: %w", err)
 	}
 	hash := sha256.New()
 	if _, err := io.Copy(hash, &contextReader{ctx: ctx, reader: io.NewSectionReader(file, 0, info.Size())}); err != nil {
-		if mode.Active {
-			return ctx, fmt.Errorf("hash active import: %w", err)
-		}
-		logger.FromContext(ctx).Warn().Msg("Could not hash import for shadow receipt")
-		return ctx, nil
+		return ctx, fmt.Errorf("hash import file: %w", err)
+	}
+	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
+		result.Active = true
 	}
 	return context.WithValue(ctx, shadowKey{}, &fileShadow{
-		receiver: receiver, admission: admission, mode: mode,
-		batch:   ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceFile, Operation: "import", FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
+		admission: store,
+		batch: ingest.Batch{ProfileID: profile, Source: ingest.ShadowSourceFile, Operation: "import",
+			FileDigest: hex.EncodeToString(hash.Sum(nil)), FileFormat: format, Items: make([]ingest.Item, 0, shadowBatchSize)},
 		ordinal: -1,
 	}), nil
 }
 
-// occurrenceFileReady enables each format only once its adapter is ready.
-func occurrenceFileReady(format string) bool {
-	switch format {
-	case "listenbrainz", "lastfm", "spotify", "maloja", "koito":
-		return true
-	default:
-		return false
-	}
-}
-
-// activeFileIngest reports the mode pinned before reading this job's items.
-func activeFileIngest(ctx context.Context) bool {
-	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
-	return ok && job.mode.Active
-}
-
-// occurrenceFileIngest reports whether the pinned job uses the occurrence adapter.
-func occurrenceFileIngest(ctx context.Context) bool {
-	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
-	return ok && job.mode.Variant == "occurrence"
-}
-
 // captureFileListen buffers a bounded page with absolute ordinals.
-func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Time) error {
+func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Time, native ...export.KoitoListen) error {
 	shadow, ok := ctx.Value(shadowKey{}).(*fileShadow)
 	if !ok {
 		return nil
@@ -104,74 +58,71 @@ func captureFileListen(ctx context.Context, snapshot ingest.Snapshot, at time.Ti
 	if len(shadow.batch.Items) == 0 {
 		shadow.batch.ReceivedAt = time.Now()
 	}
-	item := ingest.Item{Ordinal: shadow.ordinal, Snapshot: snapshot, ListenedAt: at}
-	if shadow.mode.Active {
-		if snapshot.Artist == "" || snapshot.Title == "" {
-			return invalidFile(fmt.Errorf("listen at ordinal %d requires an artist and title", item.Ordinal))
+	// Exclude local admission time from replay identity but retain it in the receipt.
+	if snapshot.ReleaseMBID != "" || snapshot.MappedReleaseMBID != "" || len(snapshot.ArtistMBIDs) != 0 || len(snapshot.MappedArtistMBIDs) != 0 || len(snapshot.ArtistMbidMappings) != 0 {
+		snapshot.MBIDSource = shadow.batch.FileFormat
+		snapshot.MBIDDeclaredAt = shadow.batch.ReceivedAt.UTC().Format(time.RFC3339Nano)
+	}
+	item, err := prepareFileItem(shadow.ordinal, snapshot, at, native)
+	if errors.Is(err, errFileItemEnvelopeTooLarge) {
+		// Keep absolute ordinals even when this item cannot be admitted.
+		if result, ok := ctx.Value(resultKey{}).(*Result); ok {
+			result.RejectedOversizedItems++
 		}
-		encoded, _ := item.Encode()
-		if len(encoded) > 10<<10 {
-			return invalidFile(fmt.Errorf("listen at ordinal %d exceeds 10 KiB", item.Ordinal))
-		}
+		return nil
+	}
+	if err != nil {
+		return err
 	}
 	shadow.batch.Items = append(shadow.batch.Items, item)
 	if len(shadow.batch.Items) == shadowBatchSize {
-		return flushFileShadow(ctx)
+		return flushFileIngest(ctx)
 	}
 	return nil
 }
 
-// flushLegacyFileShadow preserves the partial-page behavior of the legacy parser.
-func flushLegacyFileShadow(ctx context.Context) {
-	if !activeFileIngest(ctx) {
-		_ = flushFileShadow(ctx) // Shadow errors are logged and never affect the import.
-	}
-}
-
-// flushFileShadow admits a page, with active failures returned to the importer.
-func flushFileShadow(ctx context.Context) error {
-	shadow, ok := ctx.Value(shadowKey{}).(*fileShadow)
-	if !ok || len(shadow.batch.Items) == 0 {
+// flushFileIngest commits a file page before the staging cursor can advance.
+func flushFileIngest(ctx context.Context) error {
+	job, ok := ctx.Value(shadowKey{}).(*fileShadow)
+	if !ok || len(job.batch.Items) == 0 {
 		return nil
 	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	var results []ingest.Result
-	var err error
-	if shadow.mode.Active {
-		_, results, err = shadow.admission.AdmitIngest(ctx, shadow.batch, true, &shadow.mode, nil)
-	} else {
-		results, err = shadow.receiver.ReceiveBatch(ctx, shadow.batch)
-	}
-	clear(shadow.batch.Items)
-	shadow.batch.Items = shadow.batch.Items[:0]
+	results, err := job.admission.AdmitOccurrence(ctx, job.batch)
 	if err != nil {
-		if shadow.mode.Active {
-			return err
-		}
-		logger.FromContext(ctx).Warn().Msg("Import shadow receipt batch failed")
-		return nil
+		return err
 	}
 	if result, ok := ctx.Value(resultKey{}).(*Result); ok {
+		for _, item := range job.batch.Items {
+			result.TruncatedFields += item.Snapshot.TruncatedFields
+			result.IgnoredAliasLimit += item.Snapshot.IgnoredAliasLimit
+		}
 		for _, receipt := range results {
+			result.IgnoredAliasConflicts += receipt.IgnoredAliasConflicts
+			result.IgnoredMBIDConflicts += receipt.IgnoredMBIDConflicts
 			if receipt.Pending {
 				result.Pending++
-			} else if shadow.mode.Active && receipt.Replay {
+			} else if receipt.Replay {
 				result.Duplicates++
 			}
 		}
 	}
+	clear(job.batch.Items)
+	job.batch.Items = job.batch.Items[:0]
 	return nil
 }
 
 // submitFileListen records the observed fields before catalog enrichment.
-func submitFileListen(ctx context.Context, store importStore, opts catalog.SubmitListenOpts, originalTime string, enrich ...func(*ingest.Snapshot)) error {
+func submitFileListen(ctx context.Context, opts catalog.SubmitListenOpts, originalTime string, enrich ...func(*ingest.Snapshot)) error {
 	snapshot := ingest.Snapshot{Artist: opts.Artist, ArtistNames: opts.ArtistNames, Title: opts.TrackTitle,
 		Release: opts.ReleaseTitle, DurationMS: int64(opts.Duration) * 1000, Client: opts.Client, OriginalTime: originalTime, SkipCacheImage: opts.SkipCacheImage}
 	// Preserve the same identifiers and named credits passed to the legacy catalog.
 	for _, id := range opts.ArtistMbzIDs {
-		snapshot.ArtistMBIDs = append(snapshot.ArtistMBIDs, id.String())
+		if id != uuid.Nil {
+			snapshot.ArtistMBIDs = append(snapshot.ArtistMBIDs, id.String())
+		}
 	}
 	for _, credit := range opts.ArtistMbidMappings {
 		snapshot.ArtistMbidMappings = append(snapshot.ArtistMbidMappings, ingest.ArtistMapping{Name: credit.Artist, MBID: credit.Mbid.String()})
@@ -185,13 +136,8 @@ func submitFileListen(ctx context.Context, store importStore, opts catalog.Submi
 	if opts.RecordingMbzID != uuid.Nil {
 		snapshot.Recording = opts.RecordingMbzID.String()
 	}
-	if occurrenceFileIngest(ctx) {
-		for _, apply := range enrich {
-			apply(&snapshot)
-		}
+	for _, apply := range enrich {
+		apply(&snapshot)
 	}
-	if err := captureFileListen(ctx, snapshot, opts.Time); err != nil || activeFileIngest(ctx) {
-		return err
-	}
-	return catalog.SubmitListen(ctx, store, opts)
+	return captureFileListen(ctx, snapshot, opts.Time)
 }

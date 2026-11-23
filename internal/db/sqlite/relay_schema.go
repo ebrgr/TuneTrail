@@ -341,6 +341,11 @@ func upgradeRelaySchema(ctx context.Context, db *sql.DB, resolver relayResolver)
 
 // migrateDatabase applies historical Goose migrations and the atomic relay upgrade.
 func migrateDatabase(db *sql.DB) error {
+	return migrateDatabaseToVersion(db, currentSchemaVersion)
+}
+
+// migrateDatabaseToVersion retains the relay seed transaction for historical fixtures.
+func migrateDatabaseToVersion(db *sql.DB, targetVersion int) error {
 	// Preserve the custom relay seed transaction before applying later SQL migrations.
 	version, err := goose.EnsureDBVersion(db)
 	if err != nil {
@@ -354,7 +359,7 @@ func migrateDatabase(db *sql.DB) error {
 	if err := upgradeRelaySchema(context.Background(), db, net.DefaultResolver); err != nil {
 		return err
 	}
-	return goose.Up(db, ".")
+	return goose.UpTo(db, ".", int64(targetVersion))
 }
 
 // ActivateRelayDelivery switches the durable writer on before the service accepts requests.

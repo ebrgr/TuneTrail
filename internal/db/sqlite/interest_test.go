@@ -82,7 +82,7 @@ func TestInterestRejectsInvalidCountsBeforeDatabaseAccess(t *testing.T) {
 }
 
 func TestInterestSQLiteScopesEntitiesAndExcludesFuture(t *testing.T) {
-	s, _, _ := migrationDB(t, 5)
+	s, _, _ := migrationDB(t, currentSchemaVersion)
 	seedMediaRead(t, s)
 	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
 	testfixtures.Profile(t, s, 2, "beta", "Beta", 1)
@@ -93,9 +93,7 @@ func TestInterestSQLiteScopesEntitiesAndExcludesFuture(t *testing.T) {
 		profile int32
 		shift   time.Duration
 	}{{1, 0}, {1, time.Second}, {1, 2 * time.Second}, {1, 24 * time.Hour}, {2, 0}, {4, 24 * time.Hour}} {
-		if err := s.SaveListen(context.Background(), db.SaveListenOpts{ProfileID: v.profile, TrackID: 1, Time: base.Add(v.shift)}); err != nil {
-			t.Fatal(err)
-		}
+		testfixtures.OccurrenceListen(t, s, db.SaveListenOpts{ProfileID: v.profile, TrackID: 1, Time: base.Add(v.shift)})
 	}
 	for _, opts := range []db.GetInterestOpts{{ArtistID: 1}, {AlbumID: 1}, {TrackID: 1}} {
 		opts.Buckets = 16

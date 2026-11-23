@@ -8,7 +8,6 @@ import (
 
 	"github.com/ebrgr/TuneTrail/engine/middleware"
 	"github.com/ebrgr/TuneTrail/internal/adminweb"
-	"github.com/ebrgr/TuneTrail/internal/cfg"
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/ebrgr/TuneTrail/internal/utils"
@@ -20,7 +19,6 @@ type RelayManagementStore interface {
 	SetRelayPermissionAsRoot(context.Context, uuid.UUID, int32, relay.Permission) error
 	RemoveRelayPermissionAsRoot(context.Context, uuid.UUID, int32, string, netip.Prefix) error
 	ResumeRelay(context.Context, uuid.UUID, int32) error
-	ConvertOccurrence(context.Context, uuid.UUID, int32) error
 }
 
 // RelayManagementHandler handles root actions scoped to a listening profile.
@@ -55,12 +53,6 @@ func RelayManagementHandler(store RelayManagementStore, action string) http.Hand
 			}
 		case "resume":
 			err = store.ResumeRelay(ctx, actor.SessionID, profile.ID)
-		case "occurrence":
-			if !cfg.ActiveIngestEnabled() {
-				err = db.ErrConflict
-			} else {
-				err = store.ConvertOccurrence(ctx, actor.SessionID, profile.ID)
-			}
 		default:
 			err = db.ErrNotFound
 		}

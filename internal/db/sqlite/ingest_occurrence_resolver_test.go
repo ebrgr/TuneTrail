@@ -31,24 +31,25 @@ func (m occurrenceReleaseFixture) GetTrack(_ context.Context, id uuid.UUID) (*mb
 	return m.recordings[id], nil
 }
 
-// convertedOccurrenceFixture installs an opt-in after legacy fixture setup.
+// convertedOccurrenceFixture carries a populated legacy history into the current schema.
 func convertedOccurrenceFixture(t *testing.T) *Sqlite {
 	t.Helper()
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, provider, _ := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
-	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow' AND event_id IS NULL;
-		INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
+	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow' AND event_id IS NULL`)
+	_, err := provider.UpTo(t.Context(), 21)
+	require.NoError(t, err)
+	require.NoError(t, s.SetIngestReview(t.Context(), 1, false))
 	return s
 }
 
 func admitOccurrenceFixture(t *testing.T, s *Sqlite, snapshot ingest.Snapshot, stamp int64, key string) string {
 	t.Helper()
-	active, receipts, err := s.AdmitIngest(context.Background(), ingest.Batch{
+	receipts, err := s.AdmitOccurrence(context.Background(), ingest.Batch{
 		ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ClientKey: key, ReceivedAt: time.Now(),
 		Items: []ingest.Item{{ListenedAt: time.Unix(stamp, 0), Snapshot: snapshot}},
-	}, true, nil, nil)
+	})
 	require.NoError(t, err)
-	require.True(t, active)
 	require.Len(t, receipts, 1)
 	return receipts[0].ReceiptID
 }
@@ -111,7 +112,7 @@ func TestOccurrenceResolverAB(t *testing.T) {
 			execSQL(t, s, `DELETE FROM tracks WHERE musicbrainz_id=?`, fixtureRecording)
 			legacy, err := s.SaveTrack(ctx, db.SaveTrackOpts{RecordingMbzID: uuid.MustParse(fixtureRecording), AlbumID: 1, ArtistIDs: []int32{1}, Title: "Shared"})
 			require.NoError(t, err)
-			require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 2, TrackID: legacy.ID, Time: time.Unix(160, 0)}))
+			execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(2,?,160)`, legacy.ID)
 			require.NoError(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: legacy.ID, MusicBrainzID: uuid.MustParse(fixtureRecording), OnlyFillMusicBrainzID: true}))
 			require.ErrorIs(t, s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: legacy.ID, MusicBrainzID: uuid.New()}), db.ErrConflict)
 			again := admitOccurrenceFixture(t, s, snapshots[1], 200, "after-delete")
@@ -173,9 +174,8 @@ func TestOccurrenceResolverOverlap(t *testing.T) {
 		batch := ingest.Batch{ProfileID: 1, Source: ingest.ShadowSourceFile, FileFormat: "lastfm", Operation: "import",
 			FileDigest: ingest.Digest([]byte(uuid.NewString())),
 			ReceivedAt: time.Now(), Items: []ingest.Item{{ListenedAt: time.Unix(stamp, 0), Snapshot: snapshot}}}
-		active, items, err := s.AdmitIngest(context.Background(), batch, true, nil, nil)
+		items, err := s.AdmitOccurrence(context.Background(), batch)
 		require.NoError(t, err)
-		require.True(t, active)
 		began := time.Now()
 		resolveOccurrenceFixture(t, s, nil)
 		elapsed += time.Since(began)
@@ -218,30 +218,6 @@ func TestOccurrenceResolverRecovery(t *testing.T) {
 		UPDATE ingest_events SET next_attempt_at=0 WHERE receipt_id=?`, id)
 	resolveOccurrenceFixture(t, s, nil)
 	requireReceiptState(t, s, id, "accepted")
-}
-
-// TestOccurrenceResolverCut prevents new writes by old admission paths.
-func TestOccurrenceResolverCut(t *testing.T) {
-	ctx := context.Background()
-	s := convertedOccurrenceFixture(t)
-	snapshot := ingest.Snapshot{Title: "Track", Artist: "Artist", Release: "B"}
-	id := admitOccurrenceFixture(t, s, snapshot, 900, "original")
-	resolveOccurrenceFixture(t, s, nil)
-	requireReceiptState(t, s, id, "accepted")
-	batch := ingest.Batch{ProfileID: 1, Source: ingest.ShadowSourceListenBrainz, Operation: "single", ClientKey: "original", ReceivedAt: time.Now(),
-		Items: []ingest.Item{{Snapshot: snapshot, ListenedAt: time.Unix(900, 0)}}}
-	active, results, err := s.AdmitIngest(ctx, batch, false, nil, nil)
-	var unavailable *ingest.ErrUnavailable
-	require.ErrorAs(t, err, &unavailable)
-	require.True(t, active)
-	require.Empty(t, results)
-	_, err = s.BeginImportIngest(ctx, 1, false)
-	require.ErrorAs(t, err, &unavailable)
-	err = s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(900, 0)})
-	require.ErrorContains(t, err, "Legacy listen conflicts")
-	_, err = s.db.Exec(`INSERT INTO profile_relays VALUES(1,'https://fixture.invalid','fixture')`)
-	require.ErrorContains(t, err, "Relay conflicts")
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at=900`))
 }
 
 // TestOccurrenceResolverStandalone persists a new declared recording without an album.
@@ -317,7 +293,7 @@ func TestOccurrenceOriginGuard(t *testing.T) {
 
 // TestOccurrenceCutRequiresClearedShadow checks both conversion paths against shadow replays.
 func TestOccurrenceCutRequiresClearedShadow(t *testing.T) {
-	s, _, _ := migrationDB(t, currentSchemaVersion)
+	s, _, _ := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	const enable = `INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`
 	_, err := s.db.Exec(enable)
@@ -420,11 +396,16 @@ func TestOccurrenceProvenTrackDisambiguatesRelease(t *testing.T) {
 // TestOccurrenceWriteConflicts exposes the three SQL boundaries as typed administrative conflicts.
 func TestOccurrenceWriteConflicts(t *testing.T) {
 	ctx := context.Background()
-	s := convertedOccurrenceFixture(t)
-	require.ErrorIs(t, s.SetProfileRelay(ctx, 1, "https://fixture.invalid", "token"), db.ErrConflict)
-	require.ErrorIs(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: 1, TrackID: 1, Time: time.Unix(1500, 0)}), db.ErrConflict)
+	s, _, _ := migrationDB(t, 20)
+	seedIdentityHistory(t, s)
+	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow';
+		INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
+	_, err := s.db.Exec(`INSERT INTO profile_relays VALUES(1,'https://fixture.invalid','token')`)
+	require.ErrorContains(t, err, "Relay conflicts")
+	_, err = s.db.Exec(`INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,1500)`)
+	require.ErrorContains(t, err, "Legacy listen conflicts")
 	execSQL(t, s, `UPDATE recordings SET musicbrainz_id=?,mbid_source='validated' WHERE id=(SELECT recording_id FROM occurrences WHERE id=1)`, fixtureRecording)
-	err := s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 70, MusicBrainzID: uuid.MustParse(fixtureRecording)})
+	err = s.UpdateTrack(ctx, db.UpdateTrackOpts{ID: 70, MusicBrainzID: uuid.MustParse(fixtureRecording)})
 	require.ErrorIs(t, err, db.ErrConflict)
 	require.ErrorContains(t, err, "recordings.musicbrainz_id")
 }
@@ -444,28 +425,6 @@ func TestOccurrenceLinkedReleaseGuard(t *testing.T) {
 	execSQL(t, s, `DELETE FROM releases WHERE id=?`, release)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, id))
 	require.NoError(t, checkIntegrity(s.db))
-}
-
-// TestOccurrenceImportMasterOffReadsUnderContention keeps the legacy import gate read-only.
-func TestOccurrenceImportMasterOffReadsUnderContention(t *testing.T) {
-	ctx := context.Background()
-	s, _, path := migrationDB(t, currentSchemaVersion)
-	seedIdentityHistory(t, s)
-	execSQL(t, s, `DELETE FROM ingest_events WHERE profile_id=1 AND mode='shadow';
-		INSERT INTO profile_ingest_flags(profile_id,active,occurrence_write) VALUES(1,1,1)`)
-	other, err := sql.Open("sqlite", sqliteURI(path)+"?mode=rw")
-	require.NoError(t, err)
-	defer other.Close()
-	_, err = other.ExecContext(ctx, "BEGIN IMMEDIATE")
-	require.NoError(t, err)
-	defer func() { _, err := other.ExecContext(ctx, "ROLLBACK"); require.NoError(t, err) }()
-	active, err := s.BeginImportIngest(ctx, 2, false)
-	require.NoError(t, err)
-	require.False(t, active.Active)
-	active, err = s.BeginImportIngest(ctx, 1, false)
-	var unavailable *ingest.ErrUnavailable
-	require.ErrorAs(t, err, &unavailable)
-	require.False(t, active.Active)
 }
 
 // TestOccurrenceLegacyUnpositionedCharacterization records how textual matching reuses a legacy bridge.
@@ -501,7 +460,7 @@ func TestOccurrenceReimportAfterDeletion(t *testing.T) {
 			} else {
 				batch.ClientKey = "batch"
 			}
-			_, first, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			first, err := s.AdmitOccurrence(ctx, batch)
 			require.NoError(t, err)
 			resolveOccurrenceFixture(t, s, nil)
 			resolveOccurrenceFixture(t, s, nil)
@@ -517,7 +476,7 @@ func TestOccurrenceReimportAfterDeletion(t *testing.T) {
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_events WHERE receipt_id=?`, duplicate))
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id=?`, duplicate))
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_revisions WHERE receipt_id=?`, first[0].ReceiptID))
-			_, partial, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			partial, err := s.AdmitOccurrence(ctx, batch)
 			require.NoError(t, err)
 			require.NotEqual(t, first[0].ReceiptID, partial[0].ReceiptID)
 			require.Equal(t, first[1].ReceiptID, partial[1].ReceiptID)
@@ -525,7 +484,7 @@ func TestOccurrenceReimportAfterDeletion(t *testing.T) {
 			require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE event_id=?`, oldEvent))
 			require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND listened_at IN (1800,1820)`))
 			execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND listened_at IN (1800,1820)`)
-			_, full, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+			full, err := s.AdmitOccurrence(ctx, batch)
 			require.NoError(t, err)
 			require.NotEqual(t, partial[0].ReceiptID, full[0].ReceiptID)
 			require.NotEqual(t, partial[1].ReceiptID, full[1].ReceiptID)
@@ -576,13 +535,18 @@ func TestExpandedV9SnapshotReplay(t *testing.T) {
 			client_idempotency_key,batch_digest)
 		VALUES('old',1,'listenbrainz:1',1,'listenbrainz','1','seed',0,'single',0,'second','unknown',?,?,?,'active','stable','old')`,
 		string(snapshot), digest, ingest.DigestVersion)
-	_, err := provider.Up(ctx)
+	_, err := provider.UpTo(ctx, 20)
+	require.NoError(t, err)
+	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow' AND event_id IS NULL;
+		UPDATE ingest_events SET state='duplicate',identity_status='resolved',duplicate_decision='same',
+			closed_at=1,resolution_version=1,occurrence_id=1,recording_id=(SELECT recording_id FROM occurrences WHERE id=1),
+			event_id=(SELECT event_id FROM listens WHERE rowid=10) WHERE receipt_id='old'`)
+	_, err = provider.UpTo(ctx, currentSchemaVersion)
 	require.NoError(t, err)
 	batch.Items[0].Snapshot.TrackNumber = 2
 	for range 2 {
-		active, results, err := s.AdmitIngest(ctx, batch, true, nil, nil)
+		results, err := s.AdmitOccurrence(ctx, batch)
 		require.NoError(t, err)
-		require.True(t, active)
 		require.Len(t, results, 1)
 		require.True(t, results[0].Replay)
 		require.Equal(t, "old", results[0].ReceiptID)

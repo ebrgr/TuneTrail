@@ -16,7 +16,7 @@ func TestListenBrainzResponsesDeclareJSON(t *testing.T) {
 	success := a.request("POST", path, listenBody("single", "Header Success", stamp), "first-key", false)
 	require.Equal(t, http.StatusOK, success.Code)
 	require.Equal(t, "application/json", success.Result().Header.Get("Content-Type"))
-	require.NoError(t, a.store.Exec(`CREATE TRIGGER issue021_fail_listen BEFORE INSERT ON listens BEGIN SELECT RAISE(ABORT,'injected'); END`))
+	require.NoError(t, a.store.Exec(`CREATE TRIGGER issue021_fail_listen BEFORE INSERT ON ingest_events BEGIN SELECT RAISE(ABORT,'injected'); END`))
 	failure := a.request("POST", path, listenBody("single", "Header Failure", stamp+1), "first-key", false)
 	require.Equal(t, http.StatusInternalServerError, failure.Code)
 	require.Equal(t, "application/json", failure.Result().Header.Get("Content-Type"))

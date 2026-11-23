@@ -237,10 +237,13 @@ func TestProtectedIngestionAndRelay161(t *testing.T) {
 		received <- relayRequest{r.Header.Get("Authorization"), r.URL.Path, body.Payload[0].TrackMetadata.TrackName}
 	}))
 	defer relay.Close()
+	startFixtureRelay(t, a, 1, relay.URL)
 	require.Equal(t, 204, json160(a, "PUT", api+"/relay", fmt.Sprintf(`{"url":%q,"token":"relay-key"}`, relay.URL), a.cookie, "").Code)
+	approveFixtureRelay(t, a, 1)
 	submit := "/apis/listenbrainz/1/submit-listens"
 	now := time.Now().Add(-time.Hour).Unix()
 	require.Equal(t, 200, a.request("POST", submit, listenBody("single", "Protected Relay Track", now), "first-key", false).Code)
+	resolveFixtureHistory(t, a)
 	select {
 	case got := <-received:
 		require.Equal(t, "Token relay-key", got.token)

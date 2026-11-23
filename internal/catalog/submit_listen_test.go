@@ -7,15 +7,34 @@ import (
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/ebrgr/TuneTrail/internal/memkv"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// this file is very long
+// publishCatalogFixture checks catalog identity through the live association path
+// and adds a manual listen for the history assertions.
+func publishCatalogFixture(t *testing.T, ctx context.Context, store *sqlite.Sqlite, opts catalog.SubmitListenOpts) error {
+	t.Helper()
+	opts.ProfileID = 1
+	const cacheKey = "now-playing:1"
+	memkv.Store.Delete(cacheKey)
+	t.Cleanup(func() { memkv.Store.Delete(cacheKey) })
+	if err := catalog.PublishNowPlaying(ctx, store, opts); err != nil {
+		return err
+	}
+	value, ok := memkv.Store.Get(cacheKey)
+	require.True(t, ok)
+	id, ok := value.(int32)
+	require.True(t, ok)
+	_, err := store.SaveManualListen(ctx, db.SaveListenOpts{TrackID: id, ProfileID: 1, Time: opts.Time, Client: opts.Client})
+	return err
+}
 
-func TestSubmitListen_CreateAllMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_CreateAllMbzIDs(t *testing.T) {
 	store := newTestDB()
 
 	// artist gets created with musicbrainz id
@@ -50,7 +69,7 @@ func TestSubmitListen_CreateAllMbzIDs(t *testing.T) {
 		UserID:            1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -70,7 +89,7 @@ func TestSubmitListen_CreateAllMbzIDs(t *testing.T) {
 	EqualTime(t, opts.Time.Truncate(time.Second), l.Time)
 }
 
-func TestSubmitListen_CreateAllMbzIDsNoReleaseGroupID(t *testing.T) {
+func TestNowPlayingCatalog_CreateAllMbzIDsNoReleaseGroupID(t *testing.T) {
 	store := newTestDB()
 
 	// release group gets created with release id
@@ -100,7 +119,7 @@ func TestSubmitListen_CreateAllMbzIDsNoReleaseGroupID(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -120,7 +139,7 @@ func TestSubmitListen_CreateAllMbzIDsNoReleaseGroupID(t *testing.T) {
 	assert.True(t, exists, "expected release to be created")
 }
 
-func TestSubmitListen_CreateAllNoMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_CreateAllNoMbzIDs(t *testing.T) {
 	store := newTestDB()
 
 	// artist gets created with artist names
@@ -139,7 +158,7 @@ func TestSubmitListen_CreateAllNoMbzIDs(t *testing.T) {
 		UserID:       1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -152,7 +171,7 @@ func TestSubmitListen_CreateAllNoMbzIDs(t *testing.T) {
 	assert.True(t, exists, "expected listen row to exist")
 }
 
-func TestSubmitListen_CreateAllNoMbzIDsNoArtistNamesNoReleaseTitle(t *testing.T) {
+func TestNowPlayingCatalog_CreateAllNoMbzIDsNoArtistNamesNoReleaseTitle(t *testing.T) {
 	store := newTestDB()
 
 	// artists get created with artist and track title
@@ -171,7 +190,7 @@ func TestSubmitListen_CreateAllNoMbzIDsNoArtistNamesNoReleaseTitle(t *testing.T)
 		UserID:     1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -221,7 +240,7 @@ func TestSubmitListen_CreateAllNoMbzIDsNoArtistNamesNoReleaseTitle(t *testing.T)
 	assert.True(t, exists, "expected primary artist to be marked as primary for release")
 }
 
-func TestSubmitListen_MatchAllMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_MatchAllMbzIDs(t *testing.T) {
 	store := newTestDB()
 	setupTestDataWithMbzIDs(store, t)
 
@@ -253,7 +272,7 @@ func TestSubmitListen_MatchAllMbzIDs(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -283,7 +302,7 @@ func TestSubmitListen_MatchAllMbzIDs(t *testing.T) {
 	assert.Equal(t, 1, count, "duplicate artist created")
 }
 
-func TestSubmitListen_DoNotOverwriteMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_DoNotOverwriteMbzIDs(t *testing.T) {
 	store := newTestDB()
 	setupTestDataWithMbzIDs(store, t)
 
@@ -314,7 +333,7 @@ func TestSubmitListen_DoNotOverwriteMbzIDs(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.ErrorIs(t, err, db.ErrTrackIdentityConflict)
 
 	// Verify that the rejected listen was not saved
@@ -349,7 +368,7 @@ func TestSubmitListen_DoNotOverwriteMbzIDs(t *testing.T) {
 	assert.Equal(t, 0, count, "duplicate artist created")
 }
 
-func TestSubmitListen_MatchTrackFromMbzTitle(t *testing.T) {
+func TestNowPlayingCatalog_MatchTrackFromMbzTitle(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -369,7 +388,7 @@ func TestSubmitListen_MatchTrackFromMbzTitle(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -399,7 +418,7 @@ func TestSubmitListen_MatchTrackFromMbzTitle(t *testing.T) {
 	assert.Equal(t, 1, count, "duplicate artist created")
 }
 
-func TestSubmitListen_VariousArtistsRelease(t *testing.T) {
+func TestNowPlayingCatalog_VariousArtistsRelease(t *testing.T) {
 	store := newTestDB()
 
 	ctx := context.Background()
@@ -418,7 +437,7 @@ func TestSubmitListen_VariousArtistsRelease(t *testing.T) {
 		UserID:       1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -438,7 +457,7 @@ func TestSubmitListen_VariousArtistsRelease(t *testing.T) {
 	assert.EqualValues(t, 1, count)
 }
 
-func TestSubmitListen_MatchOneArtistMbzIDOneArtistName(t *testing.T) {
+func TestNowPlayingCatalog_MatchOneArtistMbzIDOneArtistName(t *testing.T) {
 	store := newTestDB()
 	setupTestDataWithMbzIDs(store, t)
 
@@ -471,7 +490,7 @@ func TestSubmitListen_MatchOneArtistMbzIDOneArtistName(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -506,7 +525,7 @@ func TestSubmitListen_MatchOneArtistMbzIDOneArtistName(t *testing.T) {
 	assert.Equal(t, 1, count, "expected featured artist to be created")
 }
 
-func TestSubmitListen_MatchAllMbzIDsNoReleaseGroupIDNoTrackID(t *testing.T) {
+func TestNowPlayingCatalog_MatchAllMbzIDsNoReleaseGroupIDNoTrackID(t *testing.T) {
 	store := newTestDB()
 	setupTestDataWithMbzIDs(store, t)
 
@@ -536,7 +555,7 @@ func TestSubmitListen_MatchAllMbzIDsNoReleaseGroupIDNoTrackID(t *testing.T) {
 		UserID:       1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -561,7 +580,7 @@ func TestSubmitListen_MatchAllMbzIDsNoReleaseGroupIDNoTrackID(t *testing.T) {
 	assert.Equal(t, 1, count, "duplicate track created")
 }
 
-func TestSubmitListen_MatchNoMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_MatchNoMbzIDs(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -577,7 +596,7 @@ func TestSubmitListen_MatchNoMbzIDs(t *testing.T) {
 		UserID:       1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -607,7 +626,7 @@ func TestSubmitListen_MatchNoMbzIDs(t *testing.T) {
 	assert.Equal(t, 1, count, "duplicate track created or has been associated with fake musicbrainz id")
 }
 
-func TestSubmitListen_UpdateTrackDuration(t *testing.T) {
+func TestNowPlayingCatalog_UpdateTrackDuration(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -624,7 +643,7 @@ func TestSubmitListen_UpdateTrackDuration(t *testing.T) {
 		UserID:       1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -643,7 +662,7 @@ func TestSubmitListen_UpdateTrackDuration(t *testing.T) {
 	assert.Equal(t, 1, count, "expected duration to be updated")
 }
 
-func TestSubmitListen_UpdateTrackDurationWithMbz(t *testing.T) {
+func TestNowPlayingCatalog_UpdateTrackDurationWithMbz(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -662,7 +681,7 @@ func TestSubmitListen_UpdateTrackDurationWithMbz(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -681,7 +700,7 @@ func TestSubmitListen_UpdateTrackDurationWithMbz(t *testing.T) {
 	assert.Equal(t, 1, count, "expected duration to be updated")
 }
 
-func TestSubmitListen_MatchFromTrackTitleNoMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_MatchFromTrackTitleNoMbzIDs(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -701,7 +720,7 @@ func TestSubmitListen_MatchFromTrackTitleNoMbzIDs(t *testing.T) {
 		UserID:       1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -726,7 +745,7 @@ func TestSubmitListen_MatchFromTrackTitleNoMbzIDs(t *testing.T) {
 	assert.Equal(t, 1, count, "duplicate release created")
 }
 
-func TestSubmitListen_AssociateAllMbzIDs(t *testing.T) {
+func TestNowPlayingCatalog_AssociateAllMbzIDs(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -758,7 +777,7 @@ func TestSubmitListen_AssociateAllMbzIDs(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -811,7 +830,7 @@ func TestSubmitListen_AssociateAllMbzIDs(t *testing.T) {
 	assert.True(t, exists, "expected release row with mbz id to exist")
 }
 
-func TestSubmitListen_AssociateAllMbzIDsWithMbzUnreachable(t *testing.T) {
+func TestNowPlayingCatalog_AssociateAllMbzIDsWithMbzUnreachable(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -839,7 +858,7 @@ func TestSubmitListen_AssociateAllMbzIDsWithMbzUnreachable(t *testing.T) {
 		UserID:         1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -893,7 +912,7 @@ func TestSubmitListen_AssociateAllMbzIDsWithMbzUnreachable(t *testing.T) {
 	assert.True(t, exists, "expected release row with mbz id to exist")
 }
 
-func TestSubmitListen_AssociateReleaseAliases(t *testing.T) {
+func TestNowPlayingCatalog_AssociateReleaseAliases(t *testing.T) {
 	store := newTestDB()
 	setupTestDataSansMbzIDs(store, t)
 
@@ -928,7 +947,7 @@ func TestSubmitListen_AssociateReleaseAliases(t *testing.T) {
 		UserID:            1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -948,7 +967,7 @@ func TestSubmitListen_AssociateReleaseAliases(t *testing.T) {
 	assert.Equal(t, 1, count, "expected release alias to exist")
 }
 
-func TestSubmitListen_MusicBrainzUnreachable(t *testing.T) {
+func TestNowPlayingCatalog_MusicBrainzUnreachable(t *testing.T) {
 	store := newTestDB()
 
 	// test don't fail when mbz unreachable
@@ -975,7 +994,7 @@ func TestSubmitListen_MusicBrainzUnreachable(t *testing.T) {
 		UserID:            1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved
@@ -988,7 +1007,7 @@ func TestSubmitListen_MusicBrainzUnreachable(t *testing.T) {
 	assert.True(t, exists, "expected listen row to exist")
 }
 
-func TestSubmitListen_MusicBrainzUnreachableMBIDMappings(t *testing.T) {
+func TestNowPlayingCatalog_MusicBrainzUnreachableMBIDMappings(t *testing.T) {
 	store := newTestDB()
 
 	// correctly associate MBID when musicbrainz unreachable, but map provided
@@ -1018,7 +1037,7 @@ func TestSubmitListen_MusicBrainzUnreachableMBIDMappings(t *testing.T) {
 		UserID:             1,
 	}
 
-	err := catalog.SubmitListen(ctx, store, opts)
+	err := publishCatalogFixture(t, ctx, store, opts)
 	require.NoError(t, err)
 
 	// Verify that the listen was saved

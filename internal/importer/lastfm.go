@@ -63,11 +63,10 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 	if len(export) > MaxImportItems {
 		return invalidFile(fmt.Errorf("too many import items"))
 	}
-	ctx, err = withFileShadow(ctx, store, db.ProfileID(ctx), "lastfm", file)
+	ctx, err = withFileIngest(ctx, store, db.ProfileID(ctx), "lastfm", file)
 	if err != nil {
 		return err
 	}
-	defer flushLegacyFileShadow(ctx)
 	for _, item := range export {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -82,9 +81,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 				return err
 			}
 			album := track.Album.Text
-			if album == "" && !occurrenceFileIngest(ctx) {
-				album = track.Name
-			}
+
 			if track.Name == "" || track.Artist.Text == "" {
 				l.Debug().Msg("Skipping invalid LastFM import item")
 				ignored(ctx)
@@ -139,7 +136,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 				ProfileID:          db.ProfileID(ctx),
 				SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 			}
-			err = submitFileListen(ctx, store, opts, track.Date.Unix, func(snapshot *ingest.Snapshot) {
+			err = submitFileListen(ctx, opts, track.Date.Unix, func(snapshot *ingest.Snapshot) {
 				snapshot.ArtistNames = []string{track.Artist.Text}
 			})
 			if err != nil {
@@ -152,7 +149,7 @@ func ImportLastFMFile(ctx context.Context, store importStore, mbzc mbz.MusicBrai
 			}
 		}
 	}
-	if err := flushFileShadow(ctx); err != nil {
+	if err := flushFileIngest(ctx); err != nil {
 		return err
 	}
 	return finishImport(ctx, filename, count)

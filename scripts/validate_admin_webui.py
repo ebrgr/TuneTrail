@@ -66,6 +66,16 @@ class Forms:
         _, headers = self.request('POST', '/admin/login', {'csrf_token': token, 'username':'validation-admin', 'password':password, 'next':next_path}, expected=303)
         assert headers['Location'] == next_path
 
+def approve_saved_relay(server, profile):
+    forms = Forms(server)
+    path = '/admin/settings/relay'
+    fields = {'csrf_token': forms.token('/admin/settings'), 'profile': profile}
+    preview, _ = forms.request('POST', path, dict(fields, operation='preview'))
+    match = re.search(rb'name="fence" value="([a-f0-9]+)"', preview)
+    assert match, 'Missing network approval confirmation'
+    forms.request('POST', path, dict(fields, operation='allow', fence=match[1].decode()), expected=303)
+
+
 @contextlib.contextmanager
 def relay_server():
     class Handler(BaseHTTPRequestHandler):
@@ -125,8 +135,9 @@ def validate(server):
         for endpoint, forbidden in (('http://169.254.169.254', True), ('https://203.0.114.2', False)):
             f.request('POST', prefix+'relay/save', dict(draft, url=endpoint), expected=303)
             page = f.request('GET', '/admin/settings')[0]
-            assert b'Allow this relay' not in page
+            assert b'Awaiting network approval' in page
             if forbidden:
+                assert b'Allow this relay' not in page
                 assert b'permanently forbidden' in page
         f.request('POST', prefix+'relay/save', draft, expected=303)
         panel = f.request('GET', '/admin/settings')[0]
@@ -176,10 +187,11 @@ def validate(server):
         fields=dict(common,submission_token=f.ticket(),profile_name='Mara Fictional',confirm='1',format=format)
         body,ctype=multipart(fields,data)
         f.request('POST',prefix+'import',body,expected=303,headers={'Content-Type':ctype})
+    server.wait_listens(WEB+'/profiles/mara',5)
     data,headers=f.request('GET',prefix+'export');doc=json.loads(data);assert len(doc['listens'])==5;assert 'attachment' in headers['Content-Disposition']
     body,ctype=multipart({'csrf_token':token,'submission_token':f.ticket(),'profile_slug':'luna','profile_name':'Luna Paz','confirm':'1','format':'koito'},data)
     f.request('POST',f'/admin/profile/{other["id"]}/import',body,expected=303,headers={'Content-Type':ctype})
-    assert server.request('GET',WEB+'/profiles/luna/stats')['listen_count']==5
+    server.wait_listens(WEB+'/profiles/luna',5)
     tracks=server.request('GET',WEB+'/profiles/mara/top/tracks?period=all_time')['items'];track=tracks[0]['item'];tid=track['id']
     manage=f'/mara/manage/track/{tid}'
     # The index links to tasks and the sign-out confirmation.

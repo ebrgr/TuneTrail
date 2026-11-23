@@ -69,11 +69,6 @@ func bindRoutes(
 				r.Patch("/", handlers.UpdateProfileHandler(db))
 				r.Get("/management", handlers.ProfileManagementHandler(db))
 				r.With(middleware.RequireAdmin(db)).Delete("/", handlers.DeleteProfileHandler(db))
-				if activation, ok := db.(dbstore.IngestActivationStore); ok {
-					handler := handlers.IngestActivationHandler(activation)
-					r.With(middleware.RequireAdmin(db)).Get("/ingest-activation", handler)
-					r.With(middleware.RequireAdmin(db)).Put("/ingest-activation", handler)
-				}
 				r.Put("/avatar", handlers.ProfileAvatarHandler(db))
 				r.Delete("/avatar", handlers.ProfileAvatarHandler(db))
 				r.Post("/import", profileImportHandler(db, mbz))
@@ -82,7 +77,6 @@ func bindRoutes(
 					r.With(middleware.RequireAdmin(db)).Put("/relay/permissions", handlers.RelayManagementHandler(management, "permission"))
 					r.With(middleware.RequireAdmin(db)).Delete("/relay/permissions", handlers.RelayManagementHandler(management, "permission"))
 					r.With(middleware.RequireAdmin(db)).Post("/relay/resume", handlers.RelayManagementHandler(management, "resume"))
-					r.With(middleware.RequireAdmin(db)).Post("/ingest-activation/occurrence", handlers.RelayManagementHandler(management, "occurrence"))
 				}
 				r.Post("/relay/test", handlers.TestProfileRelayHandler(db))
 				r.Put("/relay", handlers.SetProfileRelayHandler(db))

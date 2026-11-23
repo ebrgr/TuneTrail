@@ -23,13 +23,13 @@ func (s failedAlbumLink) AddArtistsToAlbum(context.Context, db.AddArtistsToAlbum
 	return errAssociation
 }
 
-// TestSubmitListenReportsAlbumAssociationFailure rejects success without a required relation.
-func TestSubmitListenReportsAlbumAssociationFailure(t *testing.T) {
+// TestPublishNowPlayingReportsAlbumAssociationFailure rejects success without a required relation.
+func TestPublishNowPlayingReportsAlbumAssociationFailure(t *testing.T) {
 	s, err := sqlite.NewInMemory()
 	require.NoError(t, err)
 	defer s.Close(context.Background())
 	testfixtures.Profile(t, s, 1, "alpha", "Alpha", 1)
-	err = catalog.SubmitListen(context.Background(), failedAlbumLink{s}, catalog.SubmitListenOpts{MbzCaller: &mbz.MbzErrorCaller{}, Artist: "Test artist", TrackTitle: "Test track", ReleaseTitle: "Test album", Time: time.Unix(1700000000, 0), ProfileID: 1, SkipCacheImage: true})
+	err = catalog.PublishNowPlaying(context.Background(), failedAlbumLink{s}, catalog.SubmitListenOpts{MbzCaller: &mbz.MbzErrorCaller{}, Artist: "Test artist", TrackTitle: "Test track", ReleaseTitle: "Test album", Time: time.Unix(1700000000, 0), ProfileID: 1, SkipCacheImage: true})
 	require.ErrorIs(t, err, errAssociation)
 	n, err := s.ProfileListenCount(context.Background(), 1)
 	require.NoError(t, err)

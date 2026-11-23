@@ -11,7 +11,7 @@ import (
 
 // TestTrackRankingsByIdentity covers shared recordings, release buckets and profile-local discovery.
 func TestTrackRankingsByIdentity(t *testing.T) {
-	s := mergeFixture(t)
+	s := mergeFixtureAtVersion(t, 20)
 	execSQL(t, s, `
 		DELETE FROM listens;
 		INSERT INTO integrations(id,profile_id,source_type,created_at) VALUES('source',1,'test',0);

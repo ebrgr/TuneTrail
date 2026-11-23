@@ -130,15 +130,20 @@ func TestProfilesFreshDatabaseAndWriteCompatibility(t *testing.T) {
 	seedMusic(t, s)
 	ts := time.Unix(1700000000, 0)
 	for _, userID := range []int32{1, 2} {
-		opts := db.SaveListenOpts{TrackID: 1, UserID: userID, Time: ts}
-		require.NoError(t, s.SaveListen(ctx, opts))
-		require.NoError(t, s.SaveListen(ctx, opts)) // Deduplicate within the profile.
+		execSQL(t, s, `INSERT INTO listens(track_id,user_id,profile_id,listened_at)
+			SELECT 1,?,id,? FROM listening_profiles WHERE user_id=? ON CONFLICT DO NOTHING`, userID, ts.Unix(), userID)
+		execSQL(t, s, `INSERT INTO listens(track_id,user_id,profile_id,listened_at)
+			SELECT 1,?,id,? FROM listening_profiles WHERE user_id=? ON CONFLICT DO NOTHING`, userID, ts.Unix(), userID)
 	}
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM listens`))
-	require.Error(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, UserID: 999, Time: ts}))
-	require.Error(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, Time: ts}))
-	require.Error(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, UserID: 1, ProfileID: 2, Time: ts}))
-	require.Error(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 999, ProfileID: 1, Time: ts}))
+	for _, opts := range []db.SaveApiKeyOpts{
+		{Key: "invalid-user", UserID: 999}, {Key: "missing-owner"}, {Key: "wrong-owner", UserID: 1, ProfileID: 2},
+	} {
+		_, err := s.SaveApiKey(ctx, opts)
+		require.Error(t, err)
+	}
+	_, err = s.db.Exec(`INSERT INTO listens(track_id,profile_id,listened_at) VALUES(999,1,?)`, ts.Unix())
+	require.Error(t, err)
 	key, err := s.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: "first", UserID: 1, Label: "phone"})
 	require.NoError(t, err)
 	require.EqualValues(t, 1, key.ProfileID)
@@ -151,11 +156,12 @@ func TestProfilesFreshDatabaseAndWriteCompatibility(t *testing.T) {
 	_, err = s.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: "other-profile", UserID: 2})
 	require.NoError(t, err)
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM api_keys WHERE profile_id=1`))
-	require.Error(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, ProfileID: 999, Time: ts}))
+	_, err = s.db.Exec(`INSERT INTO listens(track_id,profile_id,listened_at) VALUES(1,999,?)`, ts.Unix())
+	require.Error(t, err)
 
 	// Public identities have pending accounts without a usable password.
 	testfixtures.Profile(t, s, 10, "independent", "Independent", 123)
-	require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{TrackID: 1, ProfileID: 10, Time: ts}))
+	execSQL(t, s, `INSERT INTO listens(track_id,profile_id,listened_at) VALUES(1,10,?)`, ts.Unix())
 	_, err = s.SaveApiKey(ctx, db.SaveApiKeyOpts{Key: "independent", ProfileID: 10})
 	require.NoError(t, err)
 	execSQL(t, s, `DELETE FROM api_keys WHERE key='independent'`)
@@ -340,7 +346,8 @@ func TestMergeTracksPreservesProfilesAtSameTimestamp(t *testing.T) {
 	execSQL(t, s, `INSERT INTO artist_tracks(artist_id,track_id) VALUES (1,1),(1,2)`)
 	ts := time.Unix(1700000000, 0)
 	for _, pair := range [][2]int32{{1, 1}, {1, 2}, {2, 2}} {
-		require.NoError(t, s.SaveListen(ctx, db.SaveListenOpts{ProfileID: pair[0], TrackID: pair[1], Time: ts}))
+		_, err := s.SaveManualListen(ctx, db.SaveListenOpts{ProfileID: pair[0], TrackID: pair[1], Time: ts})
+		require.NoError(t, err)
 	}
 	require.NoError(t, s.MergeTracks(ctx, 1, 2))
 	require.Equal(t, 2, scalar(t, s, `SELECT COUNT(*) FROM listens WHERE track_id=2`))

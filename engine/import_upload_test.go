@@ -45,7 +45,8 @@ func TestPreparedUploadsCountAndScope(t *testing.T) {
 			require.NoError(t, os.WriteFile(f, content, 0600))
 			result, err := importer.Upload(ctx, a.store, mb, 2, format, f)
 			require.NoError(t, err)
-			require.Equal(t, 1, result.Imported)
+			require.Equal(t, 1, result.Pending)
+			resolveFixtureHistory(t, a)
 			require.Zero(t, result.Duplicates)
 			if format == "spotify" {
 				require.Equal(t, 1, result.Ignored)
@@ -58,8 +59,8 @@ func TestPreparedUploadsCountAndScope(t *testing.T) {
 		})
 	}
 	// More than one export page, including negative timestamps and same-time distinct tracks.
-	require.NoError(t, a.store.Exec(`INSERT INTO listens(track_id,listened_at,profile_id,client) SELECT id,-100,2,'test' FROM tracks LIMIT 2`))
-	require.NoError(t, a.store.Exec(`WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<1005) INSERT INTO listens(track_id,listened_at,profile_id,client) SELECT (SELECT min(id) FROM tracks),x,2,'test' FROM n`))
+	require.NoError(t, a.store.Exec(`INSERT INTO listens(track_id,listened_at,profile_id,client,event_id,origin) SELECT id,-100,2,'test',lower(hex(randomblob(16))),'native_import' FROM tracks LIMIT 2`))
+	require.NoError(t, a.store.Exec(`WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<1005) INSERT INTO listens(track_id,listened_at,profile_id,client,event_id,origin) SELECT (SELECT min(id) FROM tracks),x,2,'test',lower(hex(randomblob(16))),'native_import' FROM n`))
 	profile, err := a.store.GetListeningProfileByID(ctx, 2)
 	require.NoError(t, err)
 	var output bytes.Buffer
@@ -144,7 +145,8 @@ func TestUploadArchiveFailureReportsPartial(t *testing.T) {
 	require.NoError(t, os.WriteFile(input, []byte(`[{"ts":"2023-11-14T22:13:20Z","master_metadata_track_name":"Archive Track","master_metadata_album_artist_name":"Archive Artist","reason_end":"trackdone"}]`), 0600))
 	result, err := importer.Upload(ctx, a.store, &mbz.MbzErrorCaller{}, 99, "spotify", input)
 	require.Error(t, err)
-	require.Equal(t, 1, result.Imported)
+	require.Equal(t, 1, result.Pending)
+	resolveFixtureHistory(t, a)
 	require.Equal(t, 1, result.Errors)
 	count, err := a.store.ProfileListenCount(ctx, 99)
 	require.NoError(t, err)
@@ -189,7 +191,8 @@ func TestListenBrainzImportAcceptsDecimalTimestamp(t *testing.T) {
 	require.NoError(t, os.WriteFile(f, z.Bytes(), 0600))
 	result, err := importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, 2, "listenbrainz", f)
 	require.NoError(t, err)
-	require.Equal(t, 1, result.Imported)
+	require.Equal(t, 1, result.Pending)
+	resolveFixtureHistory(t, a)
 	require.Zero(t, result.Errors)
 	var n int
 	require.NoError(t, a.store.QueryRow(`SELECT COUNT(*) FROM listens WHERE profile_id=2 AND listened_at=1700000100`).Scan(&n))

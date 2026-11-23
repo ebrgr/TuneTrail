@@ -1,7 +1,7 @@
 package engine
 
 // Import recovery tests (ISSUE-064). The import contract is non-transactional:
-// each listen is committed on its own, so a failure or an interruption keeps
+// each receipt page is committed independently, so a failure or an interruption keeps
 // what was already saved, and importing the same file again resumes without
 // duplicating listens. A malformed (truncated) file is rejected before any
 // listen is written.
@@ -17,9 +17,9 @@ import (
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/cfg"
-	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
 	"github.com/ebrgr/TuneTrail/internal/importer"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/mbz"
 	"github.com/stretchr/testify/require"
 )
@@ -54,17 +54,17 @@ type failingStore struct {
 	onLimit func()
 }
 
-func (s failingStore) SaveListenWithResult(ctx context.Context, o db.SaveListenOpts) (bool, error) {
+func (s failingStore) AdmitOccurrence(ctx context.Context, batch ingest.Batch) ([]ingest.Result, error) {
 	if *s.saved >= s.limit {
 		if s.onLimit != nil {
 			s.onLimit()
-			return false, ctx.Err()
+			return nil, ctx.Err()
 		}
-		return false, fmt.Errorf("write listen: %w", syscall.ENOSPC)
+		return nil, fmt.Errorf("write listen: %w", syscall.ENOSPC)
 	}
-	inserted, err := s.Sqlite.SaveListenWithResult(ctx, o)
+	inserted, err := s.Sqlite.AdmitOccurrence(ctx, batch)
 	if err == nil {
-		*s.saved++
+		*s.saved += len(batch.Items)
 	}
 	return inserted, err
 }
@@ -85,48 +85,53 @@ func stagingEntries(t *testing.T) int {
 	return len(entries)
 }
 
-// TestImportDiskFailureKeepsSavedListensAndResumes fails the store after seven
+// TestImportDiskFailureKeepsSavedListensAndResumes fails the store after the first page of 200
 // listens, then imports the same file again until it is complete.
 func TestImportDiskFailureKeepsSavedListensAndResumes(t *testing.T) {
 	a := newProfileTestApp(t)
-	file := writeImport(t, spotifyExport(t, 20))
+	file := writeImport(t, spotifyExport(t, 213))
 	staged := stagingEntries(t)
 	saved := 0
-	result, err := importer.Upload(context.Background(), failingStore{Sqlite: a.store, limit: 7, saved: &saved}, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
+	result, err := importer.Upload(context.Background(), failingStore{Sqlite: a.store, limit: 200, saved: &saved}, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
 	require.ErrorIs(t, err, syscall.ENOSPC)
-	require.Equal(t, 7, result.Imported)
-	require.EqualValues(t, 7, profileListens(t, a), "listens committed before the failure are kept")
+	require.Equal(t, 200, result.Pending)
+	resolveFixtureHistory(t, a)
+	require.EqualValues(t, 200, profileListens(t, a), "listens committed before the failure are kept")
 	require.Equal(t, staged, stagingEntries(t), "the staged upload is removed after a failure")
 	// The disk recovers: importing the same file again completes without duplicates.
 	result, err = importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
 	require.NoError(t, err)
-	require.Equal(t, 13, result.Imported)
-	require.Equal(t, 7, result.Duplicates)
-	require.EqualValues(t, 20, profileListens(t, a))
+	require.Equal(t, 13, result.Pending)
+	require.Equal(t, 200, result.Duplicates)
+	resolveFixtureHistory(t, a)
+	require.EqualValues(t, 213, profileListens(t, a))
 	// A third run is a no-op.
 	result, err = importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
 	require.NoError(t, err)
-	require.Zero(t, result.Imported)
-	require.Equal(t, 20, result.Duplicates)
-	require.EqualValues(t, 20, profileListens(t, a))
+	require.Zero(t, result.Pending)
+	require.Equal(t, 213, result.Duplicates)
+	resolveFixtureHistory(t, a)
+	require.EqualValues(t, 213, profileListens(t, a))
 }
 
 // TestImportShutdownMidwayResumesWithoutDuplicates cancels the import context
-// after twelve listens, as a service stop would, and restarts the import.
+// at the second page, as a service stop would, and restarts the import.
 func TestImportShutdownMidwayResumesWithoutDuplicates(t *testing.T) {
 	a := newProfileTestApp(t)
-	file := writeImport(t, spotifyExport(t, 30))
+	file := writeImport(t, spotifyExport(t, 218))
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	saved := 0
-	_, err := importer.Upload(ctx, failingStore{Sqlite: a.store, limit: 12, saved: &saved, onLimit: cancel}, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
+	_, err := importer.Upload(ctx, failingStore{Sqlite: a.store, limit: 200, saved: &saved, onLimit: cancel}, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
 	require.ErrorIs(t, err, context.Canceled)
-	require.EqualValues(t, 12, profileListens(t, a))
+	resolveFixtureHistory(t, a)
+	require.EqualValues(t, 200, profileListens(t, a))
 	result, err := importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", file)
 	require.NoError(t, err)
-	require.Equal(t, 18, result.Imported)
-	require.Equal(t, 12, result.Duplicates)
-	require.EqualValues(t, 30, profileListens(t, a))
+	require.Equal(t, 18, result.Pending)
+	require.Equal(t, 200, result.Duplicates)
+	resolveFixtureHistory(t, a)
+	require.EqualValues(t, 218, profileListens(t, a))
 }
 
 // TestImportTruncatedFileStoresNothing cuts the export at several points; each
@@ -143,5 +148,5 @@ func TestImportTruncatedFileStoresNothing(t *testing.T) {
 	}
 	result, err := importer.Upload(context.Background(), a.store, &mbz.MbzErrorCaller{}, recoveryProfile, "spotify", writeImport(t, full))
 	require.NoError(t, err)
-	require.Equal(t, 10, result.Imported)
+	require.Equal(t, 10, result.Pending)
 }

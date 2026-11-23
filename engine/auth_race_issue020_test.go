@@ -34,7 +34,8 @@ func TestIngestionAuthorizationBoundaryAfterRevocation(t *testing.T) {
 		close(entered)
 		<-release
 		p := middleware.ProfileFromContext(r.Context())
-		done <- a.store.SaveListen(r.Context(), db.SaveListenOpts{ProfileID: p.ID, TrackID: 1, Time: time.Unix(1700000000, 0)})
+		_, err := a.store.SaveManualListen(r.Context(), db.SaveListenOpts{ProfileID: p.ID, TrackID: 1, Time: time.Unix(1700000000, 0)})
+		done <- err
 		w.WriteHeader(204)
 	}))
 	req := httptest.NewRequest("POST", "/", nil)
@@ -80,7 +81,8 @@ func TestDeletedProfileRejectsPreviouslyAuthorizedListen(t *testing.T) {
 		close(entered)
 		<-release
 		profile := middleware.ProfileFromContext(r.Context())
-		done <- a.store.SaveListen(r.Context(), db.SaveListenOpts{ProfileID: profile.ID, TrackID: 1, Time: time.Unix(1700000000, 0)})
+		_, err := a.store.SaveManualListen(r.Context(), db.SaveListenOpts{ProfileID: profile.ID, TrackID: 1, Time: time.Unix(1700000000, 0)})
+		done <- err
 	}))
 	req := httptest.NewRequest("POST", "/", nil)
 	req.Header.Set("Authorization", "Token first-key")
