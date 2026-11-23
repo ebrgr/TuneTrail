@@ -1,0 +1,48 @@
+/* ISSUE-127: server configuration as cards, one per area, in the common administration pattern
+   (account.css): a thin-bordered rounded card on bg-secondary, one column up to 64rem and two after,
+   44px touch targets and labels above the fields. Only theme tokens and shared states are used; the
+   global :focus-visible ring is the single focus style. */
+@layer pages {
+.admin-main .settings-grid { display:grid; gap:var(--space-4); grid-template-columns:minmax(0,1fr); margin-top:var(--space-4); }
+.admin-main .settings-card {
+  margin:0; padding:var(--space-4);
+  background:var(--color-bg-secondary);
+  border:1px solid var(--color-bg-tertiary);
+  border-radius:var(--radius-md);
+}
+.admin-main .settings-card h2 { font-size:1.25rem; margin:0 0 var(--space-2); }
+/* A field inside a card is a row, not another card: a hairline separates it from the previous one. */
+.admin-main .settings-card .server-setting { margin:var(--space-4) 0 0; padding:var(--space-4) 0 0; background:none; border-radius:0;
+  border-top:1px solid var(--color-bg-tertiary); }
+.admin-main .settings-card h2 + .server-setting,
+.admin-main .settings-card .message + .server-setting { border-top:0; padding-top:0; }
+.admin-main .settings-card .server-setting input,
+.admin-main .settings-card .server-setting select { width:100%; max-width:none; min-height:44px; }
+/* A field set by the environment cannot be edited: dashed edge, dimmed control, and the Locked tag. */
+.admin-main .server-setting:has(> .server-setting-override) { border-left:3px dashed var(--color-bg-tertiary); padding-left:var(--space-3); }
+.admin-main .server-setting:has(> .server-setting-override) :is(input,select) { opacity:.6; cursor:not-allowed; }
+/* Origin and restart need stay on one compact line under the field. */
+.admin-main .server-setting-origin { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); margin:var(--space-2) 0 0; font-size:.875rem; }
+.origin-label { color:var(--color-fg-secondary); }
+.origin-tag { padding:2px var(--space-2); border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
+  background:var(--color-bg); color:var(--color-fg); }
+.origin-locked { border-style:dashed; }
+.origin-restart { border-color:var(--color-warning); }
+.admin-main .server-setting-details { margin-top:var(--space-2); padding:0; background:none; }
+.admin-main .server-setting-details summary { min-height:44px; display:flex; align-items:center; font-size:.875rem;
+  color:var(--color-fg-secondary); }
+/* Save and Test stay reachable: the bar sticks to the bottom edge, above the mobile navigation dock. */
+.admin-main .settings-actions {
+  position:sticky; bottom:var(--nav-bottom,0); z-index:5; margin:var(--space-4) 0 0;
+  padding:var(--space-3) var(--space-4) max(var(--space-3),env(safe-area-inset-bottom));
+  background:var(--color-bg-secondary); border:1px solid var(--color-bg-tertiary); border-radius:var(--radius-md);
+}
+.admin-main .settings-actions button { min-height:44px; }
+@media (min-width:40rem) {
+  .admin-main .settings-card { padding:var(--space-5); }
+  .admin-main .settings-actions { bottom:0; }
+}
+@media (min-width:64rem) {
+  .admin-main .settings-grid { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+}
+}

@@ -30,7 +30,7 @@ Koito uses SQLite for all new installations as of `v0.2.1`. If you are running a
 ### How do I get the Subsonic params?
 
 The easiest way is the generator in TuneTrail. Sign in as the administrator, open **Server configuration** (`/admin/settings`),
-enter your Navidrome address in **Subsonic URL** and press **Generate Navidrome credentials…** next to **Subsonic parameters**.
+enter your Navidrome address in **Subsonic URL** and press **Generate Navidrome credentials** next to **Subsonic parameters**.
 Enter the Navidrome username and password and press **Generate parameters**, or **Test connection** to check them first.
 
 The password is used only in your browser to calculate the token (`md5(password + salt)`). It is never saved and is never sent

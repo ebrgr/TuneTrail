@@ -18,6 +18,23 @@ const (
 	RelayAllowPrivateKey = "RELAY_ALLOW_PRIVATE_NETWORK"
 )
 
+// TOMLKey returns the conf.toml location of a managed setting as "section.key", for example "logging.level".
+// It reports false for a name that is not a managed setting (ISSUE-127).
+func TOMLKey(name string) (string, bool) {
+	f, ok := settingFields[name]
+	return f.section + "." + f.key, ok
+}
+
+// ManagedSettingNames lists every setting that the server configuration page can edit, sorted (ISSUE-127).
+func ManagedSettingNames() []string {
+	names := make([]string, 0, len(managedDefaults))
+	for name := range managedDefaults {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
 var settingFields = map[string]settingField{
 	LOG_LEVEL_ENV:                 {"logging", "level", "string"},
 	MUSICBRAINZ_URL_ENV:           {"musicbrainz", "url", "string"},

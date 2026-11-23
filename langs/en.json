@@ -835,7 +835,7 @@
   "admin.profile.delete_item_relay": "Its relay configuration",
   "admin.profile.delete_item_history": "Its listening history",
   "admin.profile.delete_item_catalog": "The shared catalog stays intact",
-  "admin.subsonic.open": "Generate Navidrome credentials…",
+  "admin.subsonic.open": "Generate Navidrome credentials",
   "admin.subsonic.filled": "Parameters generated. Save the configuration to keep them.",
   "admin.subsonic.error_empty": "Enter the username and the password.",
   "admin.subsonic.error_failed": "The test could not be completed. Reload the page and try again.",
@@ -846,5 +846,16 @@
   "admin.subsonic.password": "Navidrome password",
   "admin.subsonic.generate": "Generate parameters",
   "admin.subsonic.test": "Test connection",
-  "admin.subsonic.cancel": "Cancel"
+  "admin.subsonic.cancel": "Cancel",
+  "admin.settings.card.general": "General and log",
+  "admin.settings.card.time": "Time",
+  "admin.settings.card.musicbrainz": "MusicBrainz",
+  "admin.settings.card.images": "Images",
+  "admin.settings.card.subsonic": "Subsonic",
+  "admin.settings.card.network": "Network and relay",
+  "admin.settings.card_restart": "This card has changes that only take effect after a restart.",
+  "admin.settings.origin": "Origin",
+  "admin.settings.locked": "Locked",
+  "admin.settings.restart_tag": "Restart needed",
+  "admin.settings.values": "Saved, effective and running values"
 }

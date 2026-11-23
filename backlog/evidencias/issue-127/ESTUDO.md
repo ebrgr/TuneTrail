@@ -20,7 +20,7 @@ A página funciona sem JavaScript e precisa continuar assim (AC 3 da issue).
 **Entra (cartão Subsonic, junto da 127):**
 
 1. Campos URL e Parâmetros, como hoje, com origem do valor e aviso de reinício no cartão (ACs 1 e 2).
-2. Botão **Gerar parâmetros…** ao lado do campo Parâmetros. Só aparece com JavaScript e `<dialog>`. Fica desabilitado, com a explicação padrão, quando `TUNETRAIL_SUBSONIC_PARAMS` vem do ambiente (campo bloqueado).
+2. Botão **Gerar parâmetros** ao lado do campo Parâmetros. Só aparece com JavaScript e `<dialog>`. Fica desabilitado, com a explicação padrão, quando `TUNETRAIL_SUBSONIC_PARAMS` vem do ambiente (campo bloqueado).
 3. Popup com usuário e senha, aviso fixo, botões **Gerar** e **Cancelar**. O resultado preenche só o campo Parâmetros e devolve o foco a ele. Não salva nada.
 4. **Testar sem salvar** mantido na barra de ações (rodapé alcançável).
 5. Máscara de `t` e `s` nas linhas Salvo/Efetivo/Em execução (ver §5, decisão 2).
@@ -87,30 +87,66 @@ Sem mudança de schema, de rota nem de contrato: o `POST /admin/settings/save` e
    - Recomendação: usar um usuário Navidrome descartável, só leitura, e removê-lo depois. As observações do `ai-memory` registram eventos de ferramenta; uma senha digitada na conversa ou num comando pode ficar no registro da sessão.
 4. Capturas 390/768/1440 em Yuu e Pearl, com o popup aberto e vazio (AC 4).
 
-## 7. Variáveis de ambiente: o que fica na tela e o que sai
+## 7. Variáveis de ambiente: auditoria completa (23/11/2026)
 
-Auditoria de `internal/cfg/cfg.go` (36 variáveis), `managedDefaults` em `internal/cfg/toml.go:61-65` e `settingsFields` em `internal/adminui/settings.go:51-64`. Neste ambiente de desenvolvimento nenhuma variável `TUNETRAIL_*` ou `KOITO_*` está definida.
+Fontes: `internal/cfg/cfg.go` (34 variáveis `KOITO_*`/`TUNETRAIL_*`), `RELAY_ALLOW_HTTP` e `RELAY_ALLOW_PRIVATE_NETWORK` (`settings_edit.go`), `TUNETRAIL_WEB_DIR` e `TUNETRAIL_LANGS_DIR` (lidas fora do pacote `cfg`), mais `TZ` do processo. Cada nome aceita `KOITO_`, `TUNETRAIL_` e o sufixo `_FILE`. Uso real conferido por chamadores dos getters. Neste ambiente não há nenhuma variável `TUNETRAIL_*` definida.
 
-**Na tela hoje (12, as únicas gerenciáveis pelo TOML e pela UI):** log level, MusicBrainz (URL, taxa, desligar), Deezer, Cover Art Archive, Last.fm, Subsonic (URL, parâmetros), fuso, relay HTTP e relay em rede privada. Proposta de cartões da 127: **Geral e log** (nível, fuso), **MusicBrainz** (URL, taxa, desligar), **Imagens** (Deezer, CAA, Last.fm), **Subsonic** (URL, parâmetros, popup), **Rede** (relay HTTP e privada).
+### 7.1 Página × `conf.toml`: 12 de 12
 
-**Fora da tela, e devem continuar fora:**
+Cada campo da página tem uma chave no `conf.toml`, e o contrário também vale. Provado por teste (`TestEveryManagedSettingHasATOMLKey` em `internal/cfg` e `TestSettingsPageMatchesManagedSettings` em `internal/adminui`): o leitor TOML devolve exatamente as 12 configurações gerenciadas e a página mostra exatamente essas 12.
 
-| Grupo | Variáveis | Motivo |
+| Cartão | Campo | Chave no `conf.toml` |
 | --- | --- | --- |
-| Segredos e acesso | `DEFAULT_USERNAME`, `DEFAULT_PASSWORD`, `DATABASE_URL`, `LBZ_RELAY_TOKEN` | Exibir valor seria vazamento; a tela mostra Salvo/Efetivo em texto. |
-| Inicialização | `BIND_ADDR`, `LISTEN_PORT`, `CONFIG_DIR`, `WEB_UI`, `SQLITE_ENABLED`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `LOGIN_GATE`, `DISABLE_RATE_LIMIT` | Mudam como o processo sobe ou a proteção da própria tela de administração; um erro trancaria o acesso. |
-| Importação | `SKIP_IMPORT`, `THROTTLE_IMPORTS_MS`, `IMPORT_BEFORE_UNIX`, `IMPORT_AFTER_UNIX`, `FETCH_IMAGES_DURING_IMPORT` | Valem na primeira carga, não são configuração de servidor. |
-| Legado | `ENABLE_LBZ_RELAY`, `LBZ_RELAY_URL` | O relay é por perfil; a tela já avisa que o legado fica fora. |
-| Outras | `ENABLE_STRUCTURED_LOGGING`, `ENABLE_FULL_IMAGE_CACHE`, `ARTIST_SEPARATORS_REGEX`, `DEFAULT_THEME` | Candidatas futuras. `DEFAULT_THEME` já pertence à 153. |
+| Geral e log | Nível de log | `logging.level` |
+| Horário | Fuso da aplicação | `time.force_tz` |
+| MusicBrainz | URL | `musicbrainz.url` |
+| MusicBrainz | Limite de requisições | `musicbrainz.rate_limit` |
+| MusicBrainz | Desativar | `musicbrainz.disabled` |
+| Imagens | Desativar Deezer | `images.disable_deezer` |
+| Imagens | Desativar Cover Art Archive | `images.disable_cover_art_archive` |
+| Imagens | Chave Last.fm | `images.lastfm_api_key` |
+| Subsonic | URL | `subsonic.url` |
+| Subsonic | Parâmetros | `subsonic.params` |
+| Rede e relay | Relay por HTTP | `relay.allow_http` |
+| Rede e relay | Relay em rede privada | `relay.allow_private_network` |
 
-**Efeito sobre a UI do popup:** a variável `KOITO_SUBSONIC_PARAMS` (ou `TUNETRAIL_SUBSONIC_PARAMS`, ou `_FILE`) bloqueia o campo; nesse caso o botão do popup não é renderizado. Coberto por teste Go.
+Lacuna de documentação: `configuration.md` documenta as chaves TOML do relay, mas não os nomes de variável `RELAY_ALLOW_HTTP` e `RELAY_ALLOW_PRIVATE_NETWORK`.
 
-**Achado para decisão futura:** a chave da Last.fm também aparece em texto na entrada e em Salvo/Efetivo/Em execução. O usuário manteve a exibição sem máscara para o Subsonic; a mesma decisão vale por ora para a Last.fm, mas fica registrada.
+### 7.2 O que retirar da página: nada
+
+Os 12 campos têm efeito real no código (todos têm leitor em tempo de execução) e nenhum é duplicado. Observação, não remoção: a chave Last.fm aparece em texto, como o Subsonic (decisão do usuário: sem máscara).
+
+### 7.3 Variáveis mortas ou legadas (fora da página, candidatas a limpeza de código e documentação)
+
+Isto corrige a tabela anterior do estudo, que as classificava como «inicialização» e «outras».
+
+| Variável | Situação encontrada | Sugestão |
+| --- | --- | --- |
+| `ALLOWED_HOSTS` | O motor só registra «no longer used and can be removed» (`engine/engine.go:225`). Nem consta na referência. | Remover a leitura. |
+| `ENABLE_FULL_IMAGE_CACHE` | Só é citada no mapa de nomes (`env_alias.go`); nenhum código a lê. Também ausente da referência. | Remover. |
+| `LOGIN_GATE` | Lida em `cfg.go:293`, mas `LoginGate()` não tem nenhum chamador. A referência promete «não mostra estatísticas sem login», o que o código não faz hoje (a proteção é por perfil). | Corrigir a documentação ou remover; decisão do usuário. |
+| `ENABLE_LBZ_RELAY`, `LBZ_RELAY_URL`, `LBZ_RELAY_TOKEN` | Legado: associação única a um perfil; o relay é por perfil. | Manter até a 164; não vão para a página. |
+
+Proposta: uma issue própria de limpeza (código e referência). Não pertence à 127.
+
+### 7.4 O que acrescentar à página
+
+| Variável | Proposta | Por quê |
+| --- | --- | --- |
+| `ENABLE_STRUCTURED_LOGGING` | **Acrescentar** ao cartão Geral e log, como `logging.structured` (bool). | Segura, sem segredo, nada de inicialização crítica; segue o padrão dos 12 (reinício para valer). Exige nova chave em `toml.go` e em `settings_edit.go`. |
+| `ARTIST_SEPARATORS_REGEX` | **Depois**, com validação da expressão e um cartão «Catálogo». | Altera como novos artistas são associados; uma regex inválida hoje impede a subida, então precisa ser validada ao salvar. |
+| `DEFAULT_THEME` | Não aqui. | Pertence à ISSUE-153, que persiste as opções do painel de tema. |
+| `FETCH_IMAGES_DURING_IMPORT`, `THROTTLE_IMPORTS_MS`, `IMPORT_BEFORE_UNIX`, `IMPORT_AFTER_UNIX`, `SKIP_IMPORT` | Não. | Valem na carga de importação na subida, não são configuração do servidor em funcionamento. |
+| `DISABLE_RATE_LIMIT`, `CORS_ALLOWED_ORIGINS`, `LOGIN_GATE` | Não. | Mudam a proteção do próprio acesso; um erro se paga com a perda de controle. Ficam em variável de ambiente. |
+| `BIND_ADDR`, `LISTEN_PORT`, `CONFIG_DIR`, `WEB_UI`, `SQLITE_ENABLED`, `DATABASE_URL`, `TUNETRAIL_WEB_DIR`, `TUNETRAIL_LANGS_DIR` | Não. | Definem como o processo sobe ou onde estão os arquivos. |
+| `DEFAULT_USERNAME`, `DEFAULT_PASSWORD`, `LBZ_RELAY_TOKEN` | Não, e jamais exibir. | Segredos. A página mostra o valor salvo em texto. |
+
+Sugestão adicional, sem implementar: mostrar a chave do `conf.toml` (por exemplo `logging.level`) dentro dos «detalhes» de cada campo, já que `cfg.TOMLKey` existe.
 
 ## 8. Verificação feita (23/11/2026)
 
 - Node: 4 testes (`internal/webui/subsonic-credentials.test.mjs`): vetores RFC 1321, fronteiras de preenchimento e UTF-8 contra o `crypto` do Node, composição de `u`/`t`/`s` e ausência da senha na saída.
 - Go: `internal/adminui`, `internal/webassets`, `internal/webui`, `internal/i18n`, `internal/cfg` verdes (com `TUNETRAIL_WEB_DIR=assets`).
-- Instância local isolada (porta 4199, diretório temporário apagado depois) contra `https://musica.bergerlab.com.br` (Navidrome 0.64.2): **Testar conexão** no popup retorna sucesso com usuário descartável; senha errada e campos vazios mostram mensagem dentro do popup; a senha é apagada do campo após cada ação; **Gerar parâmetros** preenche só `u`, `t` e `s`, fecha o popup e devolve o foco ao campo; o botão **Testar Subsonic sem salvar** da página funciona em seguida com os tickets renovados.
+- Instância local isolada (porta 4199, diretório temporário apagado depois) contra `https://musica.bergerlab.com.br` (Navidrome 0.64.2): **Testar conexão** no popup retorna sucesso com usuário descartável; senha errada e campos vazios mostram mensagem dentro do popup; a senha é apagada ao gerar, cancelar ou fechar, e permanece depois de **Testar conexão** para que **Gerar parâmetros** possa vir em seguida; **Gerar parâmetros** preenche só `u`, `t` e `s`, fecha o popup e devolve o foco ao campo; o botão **Testar Subsonic sem salvar** da página funciona em seguida com os tickets renovados.
 - Capturas do popup vazio: `popup-390-yuu.png` e `popup-1440-pearl.png`. As capturas completas 390/768/1440 da página em Yuu e Pearl continuam pendentes para o AC 4.
 - Nenhuma credencial em arquivo da worktree, em captura ou em fixture.

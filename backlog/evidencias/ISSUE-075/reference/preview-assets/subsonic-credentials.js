@@ -103,7 +103,7 @@
     if (!values) return;
     const data = new URLSearchParams(new FormData(form));
     data.set('KOITO_SUBSONIC_PARAMS', buildParams(field.value, values.user, password.value, values.salt));
-    clear();
+    // The password stays in the box after a test, so Generate can follow; it is erased on Generate, Cancel and close.
     request = new AbortController();
     busy(true);
     show(dialog.dataset.testing, 'status');

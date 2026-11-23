@@ -69,9 +69,9 @@ the request/browser preference and then the process timezone (`TZ`). Subsonic
 URL and params must both be set or both be empty. Subsonic is used to fetch
 artwork and metadata, while ListenBrainz relay remains configured per profile
 in SQLite. Sign in as administrator and open **Server configuration** at
-`/admin/settings` to edit these ten global settings. The page shows saved,
-effective and running values. Fields controlled by environment variables are disabled and identify the controlling variable, including the `_FILE` suffix where applicable. Remove the override and restart to edit the field. Restart TuneTrail to
-apply effective changes. The **Generate Navidrome credentials…** button next to the Subsonic parameters builds `u`, `t` and `s` from a Navidrome username and password in the browser; the password is never saved or sent. The Subsonic test uses the entered draft without saving;
+`/admin/settings` to edit these ten global settings. The page groups the settings in cards by area. Each field shows the origin of its effective value, and the saved,
+effective and running values can be expanded; a card tells you when a restart is needed. Fields controlled by environment variables are disabled and identify the controlling variable, including the `_FILE` suffix where applicable. Remove the override and restart to edit the field. Restart TuneTrail to
+apply effective changes. The **Generate Navidrome credentials** button next to the Subsonic parameters builds `u`, `t` and `s` from a Navidrome username and password in the browser; the password is never saved or sent. The Subsonic test uses the entered draft without saving;
 relay settings remain on each profile's administration page.
 
 ### Deployment, upgrades and offline recovery

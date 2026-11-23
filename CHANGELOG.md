@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Server configuration is now organised in cards by area (General and log, Time, MusicBrainz, Images, Subsonic, Network and relay). Each field shows where its value comes from on one line, with the saved, effective and running values one tap away; a card announces when it needs a restart, fields set by the environment are marked Locked, and Save and Test stay reachable in a bar at the bottom (ISSUE-127).
+
 - Server configuration can generate the Navidrome (Subsonic) parameters: a dialog takes the Navidrome username and password, calculates the token in the browser and fills the parameters field, with a connection test in the same dialog. The password is never saved or sent to TuneTrail (ISSUE-127).
 
 ## [0.68] - 2026-11-22

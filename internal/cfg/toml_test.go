@@ -281,3 +281,46 @@ func TestRelayTOMLSettings(t *testing.T) {
 		t.Fatal("unexpected relay environment override")
 	}
 }
+
+// TestEveryManagedSettingHasATOMLKey keeps the page, the TOML reader and the editor in agreement:
+// each managed setting has exactly one conf.toml key, and each key is read back as that setting (ISSUE-127).
+func TestEveryManagedSettingHasATOMLKey(t *testing.T) {
+	doc, err := decodeTOML([]byte(`schema_version = 1
+[logging]
+level = "debug"
+[musicbrainz]
+url = "https://mb.example"
+rate_limit = 2
+disabled = true
+[images]
+disable_deezer = true
+disable_cover_art_archive = true
+lastfm_api_key = "key"
+[subsonic]
+url = "https://nd.example"
+params = "u=a&t=b&s=c"
+[relay]
+allow_http = true
+allow_private_network = true
+[time]
+force_tz = "UTC"
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	read := documentValues(doc)
+	for _, name := range ManagedSettingNames() {
+		if _, ok := read[name]; !ok {
+			t.Errorf("%s has no key in the TOML reader", name)
+		}
+		if _, ok := TOMLKey(name); !ok {
+			t.Errorf("%s has no key in the TOML editor", name)
+		}
+	}
+	if len(read) != len(ManagedSettingNames()) {
+		t.Errorf("the TOML reader returns %d settings, the page manages %d", len(read), len(ManagedSettingNames()))
+	}
+	if key, ok := TOMLKey(SUBSONIC_PARAMS_ENV); !ok || key != "subsonic.params" {
+		t.Errorf("unexpected key %q", key)
+	}
+}

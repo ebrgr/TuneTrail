@@ -18,6 +18,7 @@
     "css/admin/account.css",
     "css/admin/cards.css",
     "css/admin/health.css",
+    "css/admin/settings.css",
     "css/admin/subsonic.css"
   ],
   "public/static/admin.js": "js/admin.js",

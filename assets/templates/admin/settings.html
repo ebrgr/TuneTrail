@@ -29,108 +29,139 @@
               "admin.text.the_effective_configuration_differs_from_the_running_server_restart_to_apply_it"
               "The effective configuration differs from the running server. Restart to apply it."))}}
           {{end}}
-          <p>{{trn
-            "admin.process_zone"
-            "Process time zone: {{.Zone}}. An empty application time zone uses the request or process time zone."
-            "Zone"
-            .LocalTimezone
-          }}</p>
-          <p>{{tr
-            "admin.text.listenbrainz_relay_is_configured_for_each_listening_profile"
-            "ListenBrainz relay is configured for each listening profile."
-          }} <a href="/admin">{{tr "admin.text.manage_profiles_and_relay" "Manage profiles and relay"}}</a>.</p>
           <form method="post" action="/admin/settings/save" class="server-settings-form">
             <input type="hidden" name="csrf_token" value="{{.CSRF}}">
             <input type="hidden" name="submission_token" value="{{.Submission}}">
             <input type="hidden" name="revision" value="{{.Revision}}">
-            {{range .Fields}}
-              {{if eq .Name "RELAY_ALLOW_HTTP"}}
-                <h2>{{tr "admin.relay.title" "Relay"}}</h2>
-                <p>{{tr
-                  "admin.relay.precedence"
-                  "Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions."
-                }}</p>
-                <p>{{tr
-                  "admin.relay.legacy_warning"
-                  "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions."
-                }}</p>
-              {{end}}
-              <section class="server-setting">
-                <label for="setting-{{.Name}}">{{.Label}}</label>
-                {{if .Options}}
-                  <select
-                    id="setting-{{.Name}}"
-                    name="{{.Name}}"{{if .Overridden}}
-                    disabled{{end}}
-                    aria-describedby="hint-{{.Name}}{{if .Overridden}} override-{{.Name}}{{end}}"
-                  >
-                    {{range .Options}}
-                      <option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>
-                    {{end}}
-                  </select>
-                {{else}}
-                  <input
-                    id="setting-{{.Name}}"
-                    name="{{.Name}}"
-                    value="{{.Value}}"{{if .Overridden}}
-                    disabled{{end}}{{if eq .Kind "number"}}
-                    inputmode="numeric"{{end}}
-                    maxlength="4096"
-                    aria-describedby="hint-{{.Name}}{{if .Overridden}} override-{{.Name}}{{end}}"
-                  >
-                {{end}}
-                <p id="hint-{{.Name}}">{{.Description}}</p>
-                {{if and (eq .Name "KOITO_SUBSONIC_PARAMS") (not .Overridden)}}
-                  {{/* ISSUE-127: shown by subsonic-credentials.js only; without it the field is edited by hand. */}}
-                  <p><button type="button" hidden data-subsonic-open>
-                    {{- tr "admin.subsonic.open" "Generate Navidrome credentials…"}}</button></p>
-                  <div hidden data-subsonic-filled>
-                    {{template "admin/message" (msg "success" "subsonic-filled" (tr
-                      "admin.subsonic.filled"
-                      "Parameters generated. Save the configuration to keep them."
+            <div class="settings-grid">
+              {{range .Cards}}
+                {{/* ISSUE-127: one card per area; the restart notice and the fields belong to the card. */}}
+                <section id="settings-{{.ID}}" class="settings-card" aria-labelledby="settings-{{.ID}}-title">
+                  <h2 id="settings-{{.ID}}-title">{{.Title}}</h2>
+                  {{if eq .ID "time"}}
+                    <p>{{trn
+                      "admin.process_zone"
+                      "Process time zone: {{.Zone}}. An empty application time zone uses the request or process time zone."
+                      "Zone"
+                      $.LocalTimezone
+                    }}</p>
+                  {{end}}
+                  {{if eq .ID "network"}}
+                    <p>{{tr
+                      "admin.relay.precedence"
+                      "Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions."
+                    }}</p>
+                    <p>{{tr
+                      "admin.relay.legacy_warning"
+                      "Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions."
+                    }}</p>
+                    <p>{{tr
+                      "admin.text.listenbrainz_relay_is_configured_for_each_listening_profile"
+                      "ListenBrainz relay is configured for each listening profile."
+                    }} <a href="/admin">{{tr "admin.text.manage_profiles_and_relay" "Manage profiles and relay"}}</a>.</p>
+                  {{end}}
+                  {{if .Pending}}
+                    {{template "admin/message" (msg "warning" (printf "settings-restart-%s" .ID) (tr
+                      "admin.settings.card_restart"
+                      "This card has changes that only take effect after a restart."
                     ))}}
-                  </div>
-                {{end}}
-                {{if .Overridden}}
-                  <p
-                    id="override-{{.Name}}"
-                    class="server-setting-override{{if .Deprecated}} server-setting-override-deprecated{{end}}"
-                  >{{tr "admin.env_source" "Set by environment variable"}} <code>{{.OverrideVariable}}</code>
-                    {{- if .Deprecated}} <strong class="setting-deprecated">({{tr "admin.env_deprecated" "DEPRECATED"}})</strong> {{tr "admin.env_rename"
-                    "Rename it to"}} <code>{{.CurrentVariable}}</code>.<br>{{else}}. {{end}}{{tr
-                    "admin.env_locked"
-                    "To edit this field, remove the environment override and restart TuneTrail."
-                  }}</p>
-                {{end}}
-                {{if $.StateAvailable}}
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>{{tr "admin.text.saved" "Saved"}}</dt>
-                      <dd>
-                        {{.Saved}}
-                        <small>({{.SavedSource}})</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>{{tr "admin.text.effective_after_restart" "Effective after restart"}}</dt>
-                      <dd>
-                        {{.Effective}}
-                        <small>({{.Source}})</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>{{tr "admin.text.running" "Running"}}</dt>
-                      <dd>{{.Active}}</dd>
-                    </div>
-                  </dl>
-                {{end}}
-              </section>
-            {{end}}
-            <p>{{tr
-              "admin.text.the_subsonic_test_uses_the_displayed_values_without_saving_including_values_supplied_by_environment_variables"
-              "The Subsonic test uses the displayed values without saving, including values supplied by environment variables."
-            }}</p>
-            <div class="server-settings-actions">
+                  {{end}}
+                  {{range .Fields}}
+                    <section class="server-setting">
+                      <label for="setting-{{.Name}}">{{.Label}}</label>
+                      {{if .Options}}
+                        <select
+                          id="setting-{{.Name}}"
+                          name="{{.Name}}"{{if .Overridden}}
+                          disabled{{end}}
+                          aria-describedby="hint-{{.Name}}{{if .Overridden}} override-{{.Name}}{{end}}"
+                        >
+                          {{range .Options}}
+                            <option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>
+                          {{end}}
+                        </select>
+                      {{else}}
+                        <input
+                          id="setting-{{.Name}}"
+                          name="{{.Name}}"
+                          value="{{.Value}}"{{if .Overridden}}
+                          disabled{{end}}{{if eq .Kind "number"}}
+                          inputmode="numeric"{{end}}
+                          maxlength="4096"
+                          aria-describedby="hint-{{.Name}}{{if .Overridden}} override-{{.Name}}{{end}}"
+                        >
+                      {{end}}
+                      <p id="hint-{{.Name}}">{{.Description}}</p>
+                      {{if and (eq .Name "KOITO_SUBSONIC_PARAMS") (not .Overridden)}}
+                        {{/* ISSUE-127: shown by subsonic-credentials.js only; without it the field is edited by hand. */}}
+                        <p><button type="button" hidden data-subsonic-open>
+                          {{- tr "admin.subsonic.open" "Generate Navidrome credentials"}}</button></p>
+                        <div hidden data-subsonic-filled>
+                          {{template "admin/message" (msg "success" "subsonic-filled" (tr
+                            "admin.subsonic.filled"
+                            "Parameters generated. Save the configuration to keep them."
+                          ))}}
+                        </div>
+                      {{end}}
+                      {{if .Overridden}}
+                        <p
+                          id="override-{{.Name}}"
+                          class="server-setting-override{{if .Deprecated}} server-setting-override-deprecated{{end}}"
+                        >{{tr "admin.env_source" "Set by environment variable"}} <code>{{.OverrideVariable}}</code>
+                          {{- if .Deprecated}} <strong class="setting-deprecated">({{tr "admin.env_deprecated" "DEPRECATED"}})</strong> {{tr "admin.env_rename"
+                          "Rename it to"}} <code>{{.CurrentVariable}}</code>.<br>{{else}}. {{end}}{{tr
+                          "admin.env_locked"
+                          "To edit this field, remove the environment override and restart TuneTrail."
+                        }}</p>
+                      {{end}}
+                      {{if or $.StateAvailable .Overridden}}
+                        {{/* The origin of the effective value stays on one line; the three values are one tap away. */}}
+                        <p class="server-setting-origin">
+                          {{if $.StateAvailable}}
+                            <span class="origin-label">{{tr "admin.settings.origin" "Origin"}}</span>
+                            <span class="origin-tag">{{.Source}}</span>
+                          {{end}}
+                          {{if .Overridden}}<span class="origin-tag origin-locked">{{tr "admin.settings.locked" "Locked"}}</span>{{end}}
+                          {{if .Pending}}<span class="origin-tag origin-restart">{{tr "admin.settings.restart_tag" "Restart needed"}}</span>{{end}}
+                        </p>
+                      {{end}}
+                      {{if $.StateAvailable}}
+                        <details class="server-setting-details">
+                          <summary>{{tr "admin.settings.values" "Saved, effective and running values"}}</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>{{tr "admin.text.saved" "Saved"}}</dt>
+                              <dd>
+                                {{.Saved}}
+                                <small>({{.SavedSource}})</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>{{tr "admin.text.effective_after_restart" "Effective after restart"}}</dt>
+                              <dd>
+                                {{.Effective}}
+                                <small>({{.Source}})</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>{{tr "admin.text.running" "Running"}}</dt>
+                              <dd>{{.Active}}</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      {{end}}
+                    </section>
+                  {{end}}
+                  {{if eq .ID "subsonic"}}
+                    <p>{{tr
+                      "admin.text.the_subsonic_test_uses_the_displayed_values_without_saving_including_values_supplied_by_environment_variables"
+                      "The Subsonic test uses the displayed values without saving, including values supplied by environment variables."
+                    }}</p>
+                  {{end}}
+                </section>
+              {{end}}
+            </div>
+            <div class="settings-actions server-settings-actions">
               <button type="submit">{{tr "admin.text.save_configuration" "Save configuration"}}</button>
               <button type="submit" formaction="/admin/settings/subsonic/test">
                 {{- tr "admin.text.test_subsonic_without_saving" "Test Subsonic without saving"}}</button>

@@ -835,7 +835,7 @@
   "admin.profile.delete_item_relay": "Sua configuração de relay",
   "admin.profile.delete_item_history": "Seu histórico de reproduções",
   "admin.profile.delete_item_catalog": "O catálogo compartilhado permanece intacto",
-  "admin.subsonic.open": "Gerar credenciais do Navidrome…",
+  "admin.subsonic.open": "Gerar credenciais do Navidrome",
   "admin.subsonic.filled": "Parâmetros gerados. Salve a configuração para mantê-los.",
   "admin.subsonic.error_empty": "Informe o usuário e a senha.",
   "admin.subsonic.error_failed": "Não foi possível concluir o teste. Recarregue a página e tente de novo.",
@@ -846,5 +846,16 @@
   "admin.subsonic.password": "Senha do Navidrome",
   "admin.subsonic.generate": "Gerar parâmetros",
   "admin.subsonic.test": "Testar conexão",
-  "admin.subsonic.cancel": "Cancelar"
+  "admin.subsonic.cancel": "Cancelar",
+  "admin.settings.card.general": "Geral e log",
+  "admin.settings.card.time": "Horário",
+  "admin.settings.card.musicbrainz": "MusicBrainz",
+  "admin.settings.card.images": "Imagens",
+  "admin.settings.card.subsonic": "Subsonic",
+  "admin.settings.card.network": "Rede e relay",
+  "admin.settings.card_restart": "Este cartão tem alterações que só valem após reiniciar.",
+  "admin.settings.origin": "Origem",
+  "admin.settings.locked": "Bloqueado",
+  "admin.settings.restart_tag": "Reinício necessário",
+  "admin.settings.values": "Valores salvo, efetivo e em execução"
 }

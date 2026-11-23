@@ -19,7 +19,8 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/webassets"
 )
 
-type settingSpec struct{ Name, Label, Description, Kind string }
+// settingSpec places each field in a card; Group is one of settingGroups (ISSUE-127).
+type settingSpec struct{ Name, Label, Description, Kind, Group string }
 type settingOption struct {
 	Value, Label string
 	Selected     bool
@@ -27,12 +28,21 @@ type settingOption struct {
 type settingField struct {
 	Name, Label, Description, Kind, Value, Saved, Effective, Active, Source, SavedSource string
 	OverrideVariable                                                                     string
-	Options                                                                              []settingOption
-	Overridden                                                                           bool
+	// Pending marks a value whose effective setting differs from the running one: it needs a restart.
+	Pending    bool
+	Options    []settingOption
+	Overridden bool
 	// Deprecated marks a KOITO_* override that has a TUNETRAIL_* name (ISSUE-111);
 	// CurrentVariable is that new name, shown as the rename suggestion.
 	Deprecated      bool
 	CurrentVariable string
+}
+
+// settingCard is one area of the server configuration; Pending is true when any of its fields needs a restart.
+type settingCard struct {
+	ID, Title string
+	Fields    []settingField
+	Pending   bool
 }
 type settingsView struct {
 	Nav                                                      webassets.Nav
@@ -40,25 +50,31 @@ type settingsView struct {
 	User                                                     *models.User
 	Profile                                                  *models.ListeningProfile
 	CSRF, Submission, Revision, Notice, Error, LocalTimezone string
-	Fields                                                   []settingField
+	Cards                                                    []settingCard
 	RelayProfiles                                            []relay.ProfileView
 	RelayGrant                                               relay.Grant
 	RestartRequired, StateAvailable                          bool
 }
 
 var settingsFields = []settingSpec{
-	{cfg.RelayAllowHTTPKey, "Allow relay over HTTP", "Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.", "bool"},
-	{cfg.RelayAllowPrivateKey, "Allow relay on private networks", "Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.", "bool"},
-	{cfg.LOG_LEVEL_ENV, "Log level", "Controls the detail written to the application log.", "level"},
-	{cfg.MUSICBRAINZ_URL_ENV, "MusicBrainz URL", "Base URL of the MusicBrainz server.", "text"},
-	{cfg.MUSICBRAINZ_RATE_LIMIT_ENV, "MusicBrainz rate limit", "Requests per second; the official server requires 1.", "number"},
-	{cfg.DISABLE_MUSICBRAINZ_ENV, "Disable MusicBrainz", "Disables MusicBrainz metadata lookups.", "bool"},
-	{cfg.DISABLE_DEEZER_ENV, "Disable Deezer images", "Disables the Deezer artwork provider.", "bool"},
-	{cfg.DISABLE_COVER_ART_ARCHIVE_ENV, "Disable Cover Art Archive", "Disables the Cover Art Archive provider.", "bool"},
-	{cfg.LASTFM_API_KEY_ENV, "Last.fm API key", "Enables Last.fm artwork lookup when set.", "text"},
-	{cfg.SUBSONIC_URL_ENV, "Subsonic URL", "Server used to find artists, albums and artwork.", "text"},
-	{cfg.SUBSONIC_PARAMS_ENV, "Subsonic parameters", "Query parameters used to access the server, such as u, t and s.", "text"},
-	{cfg.FORCE_TZ, "Application time zone", "IANA time zone, for example America/Sao_Paulo. Leave empty for automatic selection.", "text"},
+	{cfg.RelayAllowHTTPKey, "Allow relay over HTTP", "Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.", "bool", "network"},
+	{cfg.RelayAllowPrivateKey, "Allow relay on private networks", "Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.", "bool", "network"},
+	{cfg.LOG_LEVEL_ENV, "Log level", "Controls the detail written to the application log.", "level", "general"},
+	{cfg.MUSICBRAINZ_URL_ENV, "MusicBrainz URL", "Base URL of the MusicBrainz server.", "text", "musicbrainz"},
+	{cfg.MUSICBRAINZ_RATE_LIMIT_ENV, "MusicBrainz rate limit", "Requests per second; the official server requires 1.", "number", "musicbrainz"},
+	{cfg.DISABLE_MUSICBRAINZ_ENV, "Disable MusicBrainz", "Disables MusicBrainz metadata lookups.", "bool", "musicbrainz"},
+	{cfg.DISABLE_DEEZER_ENV, "Disable Deezer images", "Disables the Deezer artwork provider.", "bool", "images"},
+	{cfg.DISABLE_COVER_ART_ARCHIVE_ENV, "Disable Cover Art Archive", "Disables the Cover Art Archive provider.", "bool", "images"},
+	{cfg.LASTFM_API_KEY_ENV, "Last.fm API key", "Enables Last.fm artwork lookup when set.", "text", "images"},
+	{cfg.SUBSONIC_URL_ENV, "Subsonic URL", "Server used to find artists, albums and artwork.", "text", "subsonic"},
+	{cfg.SUBSONIC_PARAMS_ENV, "Subsonic parameters", "Query parameters used to access the server, such as u, t and s.", "text", "subsonic"},
+	{cfg.FORCE_TZ, "Application time zone", "IANA time zone, for example America/Sao_Paulo. Leave empty for automatic selection.", "text", "time"},
+}
+
+// settingGroups is the order of the cards; titles are translated with admin.settings.card.<id>.
+var settingGroups = []struct{ ID, Title string }{
+	{"general", "General and log"}, {"time", "Time"}, {"musicbrainz", "MusicBrainz"},
+	{"images", "Images"}, {"subsonic", "Subsonic"}, {"network", "Network and relay"},
 }
 
 // originLabel presents where the effective setting was obtained.
@@ -113,6 +129,7 @@ func (h *Handler) renderSettings(r *http.Request, w http.ResponseWriter, id admi
 	zone, _ := now.Zone()
 	local := fmt.Sprintf("%s (%s, UTC%s)", now.Location(), zone, now.Format("-07:00"))
 	v := settingsView{Nav: h.navigation(r, id, profile, "settings"), Locale: i18n.ViewOf(w), User: id.User, Profile: profile, CSRF: token, Submission: ticket, Revision: revision, Notice: notice, Error: message, LocalTimezone: local, RestartRequired: snap.RestartRequired, StateAvailable: len(snap.Revision) == 64}
+	fieldsByGroup := make(map[string][]settingField, len(settingGroups))
 	for _, spec := range settingsFields {
 		value := snap.Saved[spec.Name]
 		if draft != nil {
@@ -172,7 +189,17 @@ func (h *Handler) renderSettings(r *http.Request, w http.ResponseWriter, id admi
 				field.Options = append([]settingOption{{value, adminText(v.Locale, "admin.invalid_option", "Invalid: {{.Value}}", "Value", value), true}}, field.Options...)
 			}
 		}
-		v.Fields = append(v.Fields, field)
+		// A restart is needed when the value that will apply differs from the running one.
+		field.Pending = v.StateAvailable && snap.Effective[spec.Name] != snap.Active[spec.Name]
+		fieldsByGroup[spec.Group] = append(fieldsByGroup[spec.Group], field)
+	}
+	// Cards keep the order of settingGroups and carry the restart notice of their own fields (ISSUE-127).
+	for _, group := range settingGroups {
+		card := settingCard{ID: group.ID, Title: adminText(v.Locale, "admin.settings.card."+group.ID, group.Title), Fields: fieldsByGroup[group.ID]}
+		for _, field := range card.Fields {
+			card.Pending = card.Pending || field.Pending
+		}
+		v.Cards = append(v.Cards, card)
 	}
 	if store, ok := h.store.(relayPanelStore); ok {
 		profiles, err := store.RelayPolicyProfiles(r.Context(), id.SessionID, 0)

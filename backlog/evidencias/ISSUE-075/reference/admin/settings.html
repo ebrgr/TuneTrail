@@ -12,7 +12,7 @@
       <script src="/web-assets/theme.js?v=58f98aa8e221f27ffc8595b8a3141c08dc91f0ea1241bc9e220ff1aa47b0bb01"></script>
       <link rel="stylesheet" href="/web-assets/ui.css?v=56ae004b475a435b72bbcaf03569cb4812e3e726bac5ea4b4c9a90779dc6e838">
       <script defer src="/web-assets/theme-picker.js?v=989ad20253975ee0c6e0c1ab891f18776c22a4bf2c5dbac534b0adc87cada702"></script>
-      <link rel="stylesheet" href="/web-assets/admin.css?v=79f5877c8a2c65ec46ae6d433e724a7fdd4d4bda6ad3511a457fc8a2c174b2a8">
+      <link rel="stylesheet" href="/web-assets/admin.css?v=7543326c87ed9372d46509be76917628606f2e18a7980e51c7034b3f47f50ac5">
       <script defer src="/web-assets/admin.js?v=102f73d3775bd4a2772c9e243df67feffb7538d65eb29a07eadd83cb2b8bed08"></script>
       <script defer src="/web-assets/enhance.js?v=999768334e620ec372a644ab64c3c8474b270e1430da5846e1a47e2403ecafbd"></script>
       
@@ -373,540 +373,759 @@
   
 
           
-          <p>Process time zone: UTC (UTC, UTC&#43;00:00). An empty application time zone uses the request or process time zone.</p>
-          <p>ListenBrainz relay is configured for each listening profile. <a href="/admin">Manage profiles and relay</a>.</p>
           <form method="post" action="/admin/settings/save" class="server-settings-form">
             <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
             <input type="hidden" name="submission_token" value="REFERENCE_TOKEN">
             <input type="hidden" name="revision" value="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
-            
+            <div class="settings-grid">
               
-                <h2>Relay</h2>
-                <p>Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions.</p>
-                <p>Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions.</p>
-              
-              <section class="server-setting">
-                <label for="setting-RELAY_ALLOW_HTTP">Allow relay over HTTP</label>
                 
-                  <select
-                    id="setting-RELAY_ALLOW_HTTP"
-                    name="RELAY_ALLOW_HTTP"
-                    aria-describedby="hint-RELAY_ALLOW_HTTP"
-                  >
-                    
-                      <option value="" selected>Invalid: </option>
-                    
-                      <option value="false">No</option>
-                    
-                      <option value="true">Yes</option>
-                    
-                  </select>
-                
-                <p id="hint-RELAY_ALLOW_HTTP">Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-RELAY_ALLOW_PRIVATE_NETWORK">Allow relay on private networks</label>
-                
-                  <select
-                    id="setting-RELAY_ALLOW_PRIVATE_NETWORK"
-                    name="RELAY_ALLOW_PRIVATE_NETWORK"
-                    aria-describedby="hint-RELAY_ALLOW_PRIVATE_NETWORK"
-                  >
-                    
-                      <option value="" selected>Invalid: </option>
-                    
-                      <option value="false">No</option>
-                    
-                      <option value="true">Yes</option>
-                    
-                  </select>
-                
-                <p id="hint-RELAY_ALLOW_PRIVATE_NETWORK">Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_LOG_LEVEL">Log level</label>
-                
-                  <select
-                    id="setting-KOITO_LOG_LEVEL"
-                    name="KOITO_LOG_LEVEL"
-                    aria-describedby="hint-KOITO_LOG_LEVEL"
-                  >
-                    
-                      <option value="" selected>Invalid: </option>
-                    
-                      <option value="debug">debug</option>
-                    
-                      <option value="info">info</option>
-                    
-                      <option value="warn">warn</option>
-                    
-                      <option value="error">error</option>
-                    
-                      <option value="fatal">fatal</option>
-                    
-                  </select>
-                
-                <p id="hint-KOITO_LOG_LEVEL">Controls the detail written to the application log.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_MUSICBRAINZ_URL">MusicBrainz URL</label>
-                
-                  <input
-                    id="setting-KOITO_MUSICBRAINZ_URL"
-                    name="KOITO_MUSICBRAINZ_URL"
-                    value=""
-                    maxlength="4096"
-                    aria-describedby="hint-KOITO_MUSICBRAINZ_URL"
-                  >
-                
-                <p id="hint-KOITO_MUSICBRAINZ_URL">Base URL of the MusicBrainz server.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_MUSICBRAINZ_RATE_LIMIT">MusicBrainz rate limit</label>
-                
-                  <input
-                    id="setting-KOITO_MUSICBRAINZ_RATE_LIMIT"
-                    name="KOITO_MUSICBRAINZ_RATE_LIMIT"
-                    value=""
-                    inputmode="numeric"
-                    maxlength="4096"
-                    aria-describedby="hint-KOITO_MUSICBRAINZ_RATE_LIMIT"
-                  >
-                
-                <p id="hint-KOITO_MUSICBRAINZ_RATE_LIMIT">Requests per second; the official server requires 1.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_DISABLE_MUSICBRAINZ">Disable MusicBrainz</label>
-                
-                  <select
-                    id="setting-KOITO_DISABLE_MUSICBRAINZ"
-                    name="KOITO_DISABLE_MUSICBRAINZ"
-                    aria-describedby="hint-KOITO_DISABLE_MUSICBRAINZ"
-                  >
-                    
-                      <option value="" selected>Invalid: </option>
-                    
-                      <option value="false">No</option>
-                    
-                      <option value="true">Yes</option>
-                    
-                  </select>
-                
-                <p id="hint-KOITO_DISABLE_MUSICBRAINZ">Disables MusicBrainz metadata lookups.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_DISABLE_DEEZER">Disable Deezer images</label>
-                
-                  <select
-                    id="setting-KOITO_DISABLE_DEEZER"
-                    name="KOITO_DISABLE_DEEZER"
-                    aria-describedby="hint-KOITO_DISABLE_DEEZER"
-                  >
-                    
-                      <option value="" selected>Invalid: </option>
-                    
-                      <option value="false">No</option>
-                    
-                      <option value="true">Yes</option>
-                    
-                  </select>
-                
-                <p id="hint-KOITO_DISABLE_DEEZER">Disables the Deezer artwork provider.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_DISABLE_COVER_ART_ARCHIVE">Disable Cover Art Archive</label>
-                
-                  <select
-                    id="setting-KOITO_DISABLE_COVER_ART_ARCHIVE"
-                    name="KOITO_DISABLE_COVER_ART_ARCHIVE"
-                    aria-describedby="hint-KOITO_DISABLE_COVER_ART_ARCHIVE"
-                  >
-                    
-                      <option value="" selected>Invalid: </option>
-                    
-                      <option value="false">No</option>
-                    
-                      <option value="true">Yes</option>
-                    
-                  </select>
-                
-                <p id="hint-KOITO_DISABLE_COVER_ART_ARCHIVE">Disables the Cover Art Archive provider.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_LASTFM_API_KEY">Last.fm API key</label>
-                
-                  <input
-                    id="setting-KOITO_LASTFM_API_KEY"
-                    name="KOITO_LASTFM_API_KEY"
-                    value=""
-                    maxlength="4096"
-                    aria-describedby="hint-KOITO_LASTFM_API_KEY"
-                  >
-                
-                <p id="hint-KOITO_LASTFM_API_KEY">Enables Last.fm artwork lookup when set.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_SUBSONIC_URL">Subsonic URL</label>
-                
-                  <input
-                    id="setting-KOITO_SUBSONIC_URL"
-                    name="KOITO_SUBSONIC_URL"
-                    value=""
-                    maxlength="4096"
-                    aria-describedby="hint-KOITO_SUBSONIC_URL"
-                  >
-                
-                <p id="hint-KOITO_SUBSONIC_URL">Server used to find artists, albums and artwork.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-              
-              <section class="server-setting">
-                <label for="setting-KOITO_SUBSONIC_PARAMS">Subsonic parameters</label>
-                
-                  <input
-                    id="setting-KOITO_SUBSONIC_PARAMS"
-                    name="KOITO_SUBSONIC_PARAMS"
-                    value=""
-                    maxlength="4096"
-                    aria-describedby="hint-KOITO_SUBSONIC_PARAMS"
-                  >
-                
-                <p id="hint-KOITO_SUBSONIC_PARAMS">Query parameters used to access the server, such as u, t and s.</p>
-                
+                <section id="settings-general" class="settings-card" aria-labelledby="settings-general-title">
+                  <h2 id="settings-general-title">General and log</h2>
                   
-                  <p><button type="button" hidden data-subsonic-open>Generate Navidrome credentials…</button></p>
-                  <div hidden data-subsonic-filled>
-                    
+                  
+                  
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_LOG_LEVEL">Log level</label>
+                      
+                        <select
+                          id="setting-KOITO_LOG_LEVEL"
+                          name="KOITO_LOG_LEVEL"
+                          aria-describedby="hint-KOITO_LOG_LEVEL"
+                        >
+                          
+                            <option value="" selected>Invalid: </option>
+                          
+                            <option value="debug">debug</option>
+                          
+                            <option value="info">info</option>
+                          
+                            <option value="warn">warn</option>
+                          
+                            <option value="error">error</option>
+                          
+                            <option value="fatal">fatal</option>
+                          
+                        </select>
+                      
+                      <p id="hint-KOITO_LOG_LEVEL">Controls the detail written to the application log.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                  
+                </section>
+              
+                
+                <section id="settings-time" class="settings-card" aria-labelledby="settings-time-title">
+                  <h2 id="settings-time-title">Time</h2>
+                  
+                    <p>Process time zone: UTC (UTC, UTC&#43;00:00). An empty application time zone uses the request or process time zone.</p>
+                  
+                  
+                  
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_FORCE_TZ">Application time zone</label>
+                      
+                        <input
+                          id="setting-KOITO_FORCE_TZ"
+                          name="KOITO_FORCE_TZ"
+                          value=""
+                          maxlength="4096"
+                          aria-describedby="hint-KOITO_FORCE_TZ"
+                        >
+                      
+                      <p id="hint-KOITO_FORCE_TZ">IANA time zone, for example America/Sao_Paulo. Leave empty for automatic selection.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                  
+                </section>
+              
+                
+                <section id="settings-musicbrainz" class="settings-card" aria-labelledby="settings-musicbrainz-title">
+                  <h2 id="settings-musicbrainz-title">MusicBrainz</h2>
+                  
+                  
+                  
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_MUSICBRAINZ_URL">MusicBrainz URL</label>
+                      
+                        <input
+                          id="setting-KOITO_MUSICBRAINZ_URL"
+                          name="KOITO_MUSICBRAINZ_URL"
+                          value=""
+                          maxlength="4096"
+                          aria-describedby="hint-KOITO_MUSICBRAINZ_URL"
+                        >
+                      
+                      <p id="hint-KOITO_MUSICBRAINZ_URL">Base URL of the MusicBrainz server.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_MUSICBRAINZ_RATE_LIMIT">MusicBrainz rate limit</label>
+                      
+                        <input
+                          id="setting-KOITO_MUSICBRAINZ_RATE_LIMIT"
+                          name="KOITO_MUSICBRAINZ_RATE_LIMIT"
+                          value=""
+                          inputmode="numeric"
+                          maxlength="4096"
+                          aria-describedby="hint-KOITO_MUSICBRAINZ_RATE_LIMIT"
+                        >
+                      
+                      <p id="hint-KOITO_MUSICBRAINZ_RATE_LIMIT">Requests per second; the official server requires 1.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_DISABLE_MUSICBRAINZ">Disable MusicBrainz</label>
+                      
+                        <select
+                          id="setting-KOITO_DISABLE_MUSICBRAINZ"
+                          name="KOITO_DISABLE_MUSICBRAINZ"
+                          aria-describedby="hint-KOITO_DISABLE_MUSICBRAINZ"
+                        >
+                          
+                            <option value="" selected>Invalid: </option>
+                          
+                            <option value="false">No</option>
+                          
+                            <option value="true">Yes</option>
+                          
+                        </select>
+                      
+                      <p id="hint-KOITO_DISABLE_MUSICBRAINZ">Disables MusicBrainz metadata lookups.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                  
+                </section>
+              
+                
+                <section id="settings-images" class="settings-card" aria-labelledby="settings-images-title">
+                  <h2 id="settings-images-title">Images</h2>
+                  
+                  
+                  
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_DISABLE_DEEZER">Disable Deezer images</label>
+                      
+                        <select
+                          id="setting-KOITO_DISABLE_DEEZER"
+                          name="KOITO_DISABLE_DEEZER"
+                          aria-describedby="hint-KOITO_DISABLE_DEEZER"
+                        >
+                          
+                            <option value="" selected>Invalid: </option>
+                          
+                            <option value="false">No</option>
+                          
+                            <option value="true">Yes</option>
+                          
+                        </select>
+                      
+                      <p id="hint-KOITO_DISABLE_DEEZER">Disables the Deezer artwork provider.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_DISABLE_COVER_ART_ARCHIVE">Disable Cover Art Archive</label>
+                      
+                        <select
+                          id="setting-KOITO_DISABLE_COVER_ART_ARCHIVE"
+                          name="KOITO_DISABLE_COVER_ART_ARCHIVE"
+                          aria-describedby="hint-KOITO_DISABLE_COVER_ART_ARCHIVE"
+                        >
+                          
+                            <option value="" selected>Invalid: </option>
+                          
+                            <option value="false">No</option>
+                          
+                            <option value="true">Yes</option>
+                          
+                        </select>
+                      
+                      <p id="hint-KOITO_DISABLE_COVER_ART_ARCHIVE">Disables the Cover Art Archive provider.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_LASTFM_API_KEY">Last.fm API key</label>
+                      
+                        <input
+                          id="setting-KOITO_LASTFM_API_KEY"
+                          name="KOITO_LASTFM_API_KEY"
+                          value=""
+                          maxlength="4096"
+                          aria-describedby="hint-KOITO_LASTFM_API_KEY"
+                        >
+                      
+                      <p id="hint-KOITO_LASTFM_API_KEY">Enables Last.fm artwork lookup when set.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                  
+                </section>
+              
+                
+                <section id="settings-subsonic" class="settings-card" aria-labelledby="settings-subsonic-title">
+                  <h2 id="settings-subsonic-title">Subsonic</h2>
+                  
+                  
+                  
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_SUBSONIC_URL">Subsonic URL</label>
+                      
+                        <input
+                          id="setting-KOITO_SUBSONIC_URL"
+                          name="KOITO_SUBSONIC_URL"
+                          value=""
+                          maxlength="4096"
+                          aria-describedby="hint-KOITO_SUBSONIC_URL"
+                        >
+                      
+                      <p id="hint-KOITO_SUBSONIC_URL">Server used to find artists, albums and artwork.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                    <section class="server-setting">
+                      <label for="setting-KOITO_SUBSONIC_PARAMS">Subsonic parameters</label>
+                      
+                        <input
+                          id="setting-KOITO_SUBSONIC_PARAMS"
+                          name="KOITO_SUBSONIC_PARAMS"
+                          value=""
+                          maxlength="4096"
+                          aria-describedby="hint-KOITO_SUBSONIC_PARAMS"
+                        >
+                      
+                      <p id="hint-KOITO_SUBSONIC_PARAMS">Query parameters used to access the server, such as u, t and s.</p>
+                      
+                        
+                        <p><button type="button" hidden data-subsonic-open>Generate Navidrome credentials</button></p>
+                        <div hidden data-subsonic-filled>
+                          
   
     <p id="subsonic-filled" class="message message-success" role="status">Parameters generated. Save the configuration to keep them.</p>
   
 
-                  </div>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
+                        </div>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                  
+                    <p>The Subsonic test uses the displayed values without saving, including values supplied by environment variables.</p>
+                  
+                </section>
               
-              <section class="server-setting">
-                <label for="setting-KOITO_FORCE_TZ">Application time zone</label>
                 
-                  <input
-                    id="setting-KOITO_FORCE_TZ"
-                    name="KOITO_FORCE_TZ"
-                    value=""
-                    maxlength="4096"
-                    aria-describedby="hint-KOITO_FORCE_TZ"
-                  >
-                
-                <p id="hint-KOITO_FORCE_TZ">IANA time zone, for example America/Sao_Paulo. Leave empty for automatic selection.</p>
-                
-                
-                
-                  <dl class="server-setting-state">
-                    <div>
-                      <dt>Saved</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Effective after restart</dt>
-                      <dd>
-                        Not set
-                        <small>(Default)</small>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Running</dt>
-                      <dd>Not set</dd>
-                    </div>
-                  </dl>
-                
-              </section>
-            
-            <p>The Subsonic test uses the displayed values without saving, including values supplied by environment variables.</p>
-            <div class="server-settings-actions">
+                <section id="settings-network" class="settings-card" aria-labelledby="settings-network-title">
+                  <h2 id="settings-network-title">Network and relay</h2>
+                  
+                  
+                    <p>Forbidden ranges stay blocked. Globals apply to all profiles. Loopback and link-local always require destination exceptions.</p>
+                    <p>Legacy and shadow forwarding and playing now use the v0.48 default transport, outside these settings and exceptions.</p>
+                    <p>ListenBrainz relay is configured for each listening profile. <a href="/admin">Manage profiles and relay</a>.</p>
+                  
+                  
+                  
+                    <section class="server-setting">
+                      <label for="setting-RELAY_ALLOW_HTTP">Allow relay over HTTP</label>
+                      
+                        <select
+                          id="setting-RELAY_ALLOW_HTTP"
+                          name="RELAY_ALLOW_HTTP"
+                          aria-describedby="hint-RELAY_ALLOW_HTTP"
+                        >
+                          
+                            <option value="" selected>Invalid: </option>
+                          
+                            <option value="false">No</option>
+                          
+                            <option value="true">Yes</option>
+                          
+                        </select>
+                      
+                      <p id="hint-RELAY_ALLOW_HTTP">Allows HTTP for durable relay and validation for every profile, including non-root owners. Prefer destination exceptions. Restart to apply.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                    <section class="server-setting">
+                      <label for="setting-RELAY_ALLOW_PRIVATE_NETWORK">Allow relay on private networks</label>
+                      
+                        <select
+                          id="setting-RELAY_ALLOW_PRIVATE_NETWORK"
+                          name="RELAY_ALLOW_PRIVATE_NETWORK"
+                          aria-describedby="hint-RELAY_ALLOW_PRIVATE_NETWORK"
+                        >
+                          
+                            <option value="" selected>Invalid: </option>
+                          
+                            <option value="false">No</option>
+                          
+                            <option value="true">Yes</option>
+                          
+                        </select>
+                      
+                      <p id="hint-RELAY_ALLOW_PRIVATE_NETWORK">Allows all profile owners to reach the LAN through GET /validate-token and POST /submit-listens. Loopback and link-local require destination exceptions. Prefer exceptions. Restart to apply.</p>
+                      
+                      
+                      
+                        
+                        <p class="server-setting-origin">
+                          
+                            <span class="origin-label">Origin</span>
+                            <span class="origin-tag">Default</span>
+                          
+                          
+                          
+                        </p>
+                      
+                      
+                        <details class="server-setting-details">
+                          <summary>Saved, effective and running values</summary>
+                          <dl class="server-setting-state">
+                            <div>
+                              <dt>Saved</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Effective after restart</dt>
+                              <dd>
+                                Not set
+                                <small>(Default)</small>
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Running</dt>
+                              <dd>Not set</dd>
+                            </div>
+                          </dl>
+                        </details>
+                      
+                    </section>
+                  
+                  
+                </section>
+              
+            </div>
+            <div class="settings-actions server-settings-actions">
               <button type="submit">Save configuration</button>
               <button type="submit" formaction="/admin/settings/subsonic/test">Test Subsonic without saving</button>
             </div>
@@ -942,7 +1161,7 @@
               <button type="button" data-subsonic-cancel>Cancel</button>
             </div>
           </dialog>
-          <script defer src="/web-assets/subsonic-credentials.js?v=e1a08002533fcf72a9ef53aaa3ef27828d303fcaf969bf3af4dca524d8487158"></script>
+          <script defer src="/web-assets/subsonic-credentials.js?v=a0c3d47faa4cd38456db16057c236673e11ffbdd1d626b3885c6fd2681ff7763"></script>
           
   
     <section aria-labelledby="relay-exceptions">
