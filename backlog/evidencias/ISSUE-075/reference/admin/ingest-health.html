@@ -628,7 +628,7 @@
         <summary>Discard all eligible receipts (5)</summary>
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
-          <input type="hidden" name="digest" value="338044de44f53fb028df48864462bc3d3f882f443050b8f68a9fa83209a505e9">
+          <input type="hidden" name="digest" value="d62eef79143a468d1204b948a1d9f4db0a742393a1726b69a337037b06840356">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
 
           <p class="ingestion-discard-warning">If the queue changes, completed batches stay discarded. Reload the page to review the remaining receipts.</p>
@@ -657,7 +657,7 @@
         </form>
       </details>
       <details >
-        <summary>listenbrainz · <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · Received</summary>
+        <summary>listenbrainz · <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · Awaiting identification</summary>
         <dl>
           <dt>Receipt</dt><dd><samp>reference-receipt</samp></dd>
           <dt>Reason code</dt>
@@ -666,7 +666,7 @@
         <form class="ingestion-reprocess" method="post" action="/admin/health/discard?profile=1">
           <input type="hidden" name="csrf_token" value="REFERENCE_TOKEN">
           <input type="hidden" name="receipt" value="reference-receipt">
-          <input type="hidden" name="digest" value="66ede62bd12b4df122b62056c1d0a6ba7187be64197918aa5f6ae00574aa3851">
+          <input type="hidden" name="digest" value="b13c9a431d5ec9315b6c07134d28eb6b4ee4c0124a23ad43d96332bbfa5d8ef8">
   <p class="ingestion-discard-warning">Discarding is permanent. Listens already sent to a relay remain at the destination. Use listen deletion for receipts linked to a listen.</p>
 
   <button type="submit" name="confirm" value="1">Confirm discard</button>
@@ -732,7 +732,7 @@
         <dl>
           <dt>Received</dt><dd><time datetime="2024-06-01T11:35:00Z">2024-06-01 11:35:00 UTC</time></dd>
           <dt>Time precision</dt><dd><samp>second</samp></dd>
-          <dt>Relay delivery</dt><dd>Not tracked</dd>
+          <dt>Relay delivery</dt><dd>Not queued</dd>
         </dl>
       </details>
       <details>
@@ -774,10 +774,10 @@
       </details>
       <details>
         <summary>
-          <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · <samp>review</samp> · <samp>ambiguous_time_candidate</samp> · Shadow mode
+          <time datetime="2024-05-01T12:00:00Z">2024-05-01 12:00:00 UTC</time> · <samp>review</samp> · <samp>ambiguous_time_candidate</samp>
         </summary>
         <dl>
-          <dt>Rule version</dt><dd><samp>shadow-v1</samp></dd>
+          <dt>Rule version</dt><dd><samp>occurrence-v1</samp></dd>
           <dt>Time precision</dt><dd><samp>second</samp></dd><dt>Time difference (seconds)</dt><dd>3</dd><dt>Recording ID matches</dt>
             <dd>Yes</dd>
         </dl>

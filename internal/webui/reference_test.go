@@ -82,9 +82,9 @@ func TestUIReference(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	s := pageStoreWithCatalog(t, "", false)
+	s := pageStoreWithCatalog(t, "")
 	now := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
-	if err := s.Exec(`DELETE FROM listens; INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1714564800,'fixture-1'),(1,2,1714564800,'fixture-2'),(2,1,1714564800,'fixture-3'),(2,3,1714564800,'fixture-4')`); err != nil {
+	if err := s.Exec(`DELETE FROM listens; INSERT INTO listens(profile_id,track_id,listened_at,event_id,origin) VALUES(1,1,1714564800,'fixture-1','listenbrainz_api'),(1,2,1714564800,'fixture-2','legacy'),(2,1,1714564800,'fixture-3','legacy'),(2,3,1714564800,'fixture-4','legacy')`); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.Exec(`UPDATE listening_profiles SET display_name='Fictional Alpha' WHERE id=1`); err != nil {
@@ -189,39 +189,39 @@ func TestUIReference(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := s.Exec(`UPDATE relay_delivery_gate SET policy='durable';
+		UPDATE relay_destinations SET awaiting_approval=0 WHERE profile_id=1;
 		INSERT INTO integrations(id,profile_id,source_type,display_name,created_at)
 		VALUES('reference-source',1,'listenbrainz','Fictional player',0);
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
 			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
-			duplicate_decision,reason_codes,rule_version,evidence)
+			duplicate_decision,reason_codes,rule_version,evidence,mode,resolver_variant,state,delivery_policy)
 		VALUES('reference-receipt',1,'reference-source',1,'listenbrainz','1','reference',0,'single',1714564800,'second','start',
 			'{"client":"Fictional client"}','reference','1','review','["ambiguous_time_candidate"]',
-			'shadow-v1','{"delta_seconds":3,"recording_mbid_match":true}');
+			'occurrence-v1','{"delta_seconds":3,"recording_mbid_match":true}','active','occurrence','pending_identity','durable');
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
 			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
-			mode,state,attempt_count,parked_at,park_reason,delivery_policy)
+			mode,state,attempt_count,parked_at,park_reason,delivery_policy,resolver_variant)
 		VALUES('f0000000-0000-4000-8000-000000000173',1,'reference-source',1,'listenbrainz','1','reference-failed',0,'single',
 			1714564800,'second','start','{"client":"Fictional client"}','reference','1','active','retryable',5,
-			1714565700,'retry_exhausted','durable');
+			1714565700,'retry_exhausted','durable','occurrence');
 		INSERT INTO integrations(id,profile_id,source_type,created_at)
 		VALUES('relay:1',1,'listenbrainz-relay',0);
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
 			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
-			mode,state,duplicate_decision,reason_codes,rule_version,event_id,occurrence_id,recording_id,identity_status,delivery_policy)
+			mode,state,duplicate_decision,reason_codes,rule_version,event_id,occurrence_id,recording_id,identity_status,delivery_policy,resolver_variant)
 		SELECT 'reference-active',l.profile_id,'reference-source',1,'listenbrainz','1','reference-2',0,'single',1714564860,'second','start',
 			'{"client":"Fictional client"}','reference','1','active','accepted','different','["no_candidate"]','active-v1',
-			l.event_id,l.track_id,o.recording_id,'resolved','durable'
+			l.event_id,l.track_id,o.recording_id,'resolved','durable','occurrence'
 		FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=1 AND l.track_id=1;
 		INSERT INTO outbox(id,profile_id,destination_id,event_id,operation,delivery_key,state,created_at,attempt_count,result,format_version)
 		SELECT 'reference-delivery',profile_id,'relay:1',event_id,'listen','reference','failed',1714564860,3,'{"reason":"item_rejected"}',1
 		FROM ingest_events WHERE receipt_id='reference-active';
-		INSERT INTO profile_ingest_flags(profile_id,active,review) VALUES(1,1,1);
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
 			item_ordinal,operation,received_at,listened_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,
-			mode,state,duplicate_decision,reason_codes,rule_version,evidence,resolution_version,identity_status,occurrence_id,recording_id,delivery_policy)
+			mode,state,duplicate_decision,reason_codes,rule_version,evidence,resolution_version,identity_status,occurrence_id,recording_id,delivery_policy,resolver_variant)
 		SELECT 'f0000000-0000-4000-8000-000000000181',profile_id,source_instance_id,1,'listenbrainz','1','reference-review',
 			0,'single',1714564920,'2024-05-01T12:00:00.000000000Z','second','start','{}','reference','1','active','pending_duplicate',
-			'review','["legacy_identity_collision"]','active-v1',json_object('candidate_event_id',event_id),1,'resolved',occurrence_id,recording_id,'durable'
+			'review','["legacy_identity_collision"]','active-v1',json_object('candidate_event_id',event_id),1,'resolved',occurrence_id,recording_id,'durable','occurrence'
 		FROM ingest_events WHERE receipt_id='reference-active'`); err != nil {
 		t.Fatal(err)
 	}
@@ -229,11 +229,11 @@ func TestUIReference(t *testing.T) {
 	if err := s.Exec(`INSERT INTO api_keys(id,key,profile_id,created_at,label)
 		VALUES(1841,'fixture-living-room-token',1,0,'Living room'),(1842,'fixture-phone-token',1,0,'Phone');
 		INSERT INTO ingest_events(receipt_id,profile_id,source_instance_id,schema_version,source_type,adapter_version,batch_id,
-			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,api_key_id,state)
+			item_ordinal,operation,received_at,time_precision,time_semantics,original_snapshot,snapshot_digest,digest_version,api_key_id,state,mode,resolver_variant,delivery_policy)
 		VALUES('inbox-missing',1,'reference-source',1,'listenbrainz','1','inbox-missing',0,'single',1717241400,
-			'second','start','{"title":"Morning radio","client":"Fictional player"}','reference','1',1841,'received'),
+			'second','start','{"title":"Morning radio","client":"Fictional player"}','reference','1',1841,'received','active','occurrence','durable'),
 		      ('inbox-incomplete',1,'reference-source',1,'listenbrainz','1','inbox-incomplete',0,'single',1717241700,
-			'second','start','{"title":"Evening song","artist":"Example artist","client":"Fictional player"}','reference','1',1842,'received')`); err != nil {
+			'second','start','{"title":"Evening song","artist":"Example artist","client":"Fictional player"}','reference','1',1842,'received','active','occurrence','durable')`); err != nil {
 		t.Fatal(err)
 	}
 
