@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-23T00:10:00Z'
-updated_date: '2026-11-23T01:00:00Z'
+updated_date: '2026-11-23T01:20:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -60,6 +60,15 @@ created: 2026-11-23T01:00:00Z
 ---
 
 Verificação concluída. Removi os caminhos pré-21 e portei as fixtures de recibos para o resolvedor por ocorrência. As expectativas retiradas dependiam do escritor v9 ou das regras antigas de ativação e rotação de token, descritas em LIMPEZA.md. As migrações e o backup passaram, make check passou com 13/13 E2E e go test e race passaram. O binário final confirmou playing_now e single na porta 4127, com servidor encerrado. Ensaio isolado com 109 escutas aceitas, paridade de digest e ACK p95 de 5,83 ms. Inventário de colunas registrado para a ISSUE-195. Tarefa segue Em andamento.
+
+---
+
+author: claude
+created: 2026-11-23T01:20:00Z
+
+---
+
+Reviewer: APROVADO, sem BUG. make check 13/13; -race ok em sqlite, importer, ingest, catalog, relay, admin; sem referências remanescentes em produção; escuta ao vivo e carga conferidas.
 
 ---
 <!-- COMMENTS:END -->
