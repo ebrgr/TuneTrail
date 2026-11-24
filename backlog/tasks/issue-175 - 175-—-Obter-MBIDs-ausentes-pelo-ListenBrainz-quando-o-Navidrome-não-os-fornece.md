@@ -1,11 +1,11 @@
 ---
 id: ISSUE-175
 title: 175 — Obter MBIDs ausentes pelo ListenBrainz quando o Navidrome não os fornece
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T18:20:00Z'
+updated_date: '2026-11-24T19:02:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -78,6 +78,15 @@ created: 2026-11-24T18:20:00Z
 ---
 
 Verificação: fallback por perfil e por crédito, posições vazias, precedência, reenvio com digest anterior, relay e arquivo v2 testados. Revisão aprovada e make check passou.
+
+---
+
+author: codex
+created: 2026-11-24T19:02:00Z
+
+---
+
+Aceite: ISSUE-175 aprovada pelo usuário em 24/11/2026, com solicitação de publicação.
 
 ---
 <!-- COMMENTS:END -->
