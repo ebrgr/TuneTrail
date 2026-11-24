@@ -1,11 +1,11 @@
 ---
 id: ISSUE-175
 title: 175 — Obter MBIDs ausentes pelo ListenBrainz quando o Navidrome não os fornece
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T18:03:00Z'
+updated_date: '2026-11-24T18:20:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -15,6 +15,7 @@ dependencies:
 references:
   - backlog/evidencias/issue-134/PLANO.md
   - backlog/evidencias/issue-175/FLUXO.md
+  - backlog/evidencias/issue-175/PARECER.md
 type: feature
 ordinal: 188000
 ---
@@ -68,6 +69,15 @@ created: 2026-11-24T18:03:00Z
 ---
 
 A revisão identificou a compactação prematura dos MBIDs por crédito. O adaptador preserva os slots, a admissão usa digest v3 com projeções compatíveis para repetições v1 e v2 e a exportação mantém a procedência por crédito. A regressão parte do JSON e cobre lacunas no início, no meio e no fim, com Subsonic, ListenBrainz e restauração v2. O make check passou com 13 percursos E2E e a regressão passou com o detector de corrida.
+
+---
+
+author: ebrgr
+created: 2026-11-24T18:20:00Z
+
+---
+
+Verificação: fallback por perfil e por crédito, posições vazias, precedência, reenvio com digest anterior, relay e arquivo v2 testados. Revisão aprovada e make check passou.
 
 ---
 <!-- COMMENTS:END -->
