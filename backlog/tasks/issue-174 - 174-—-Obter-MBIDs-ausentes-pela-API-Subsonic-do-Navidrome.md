@@ -1,11 +1,11 @@
 ---
 id: ISSUE-174
 title: 174 — Obter MBIDs ausentes pela API Subsonic do Navidrome
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T16:50:00Z'
+updated_date: '2026-11-24T16:56:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -16,6 +16,7 @@ references:
   - backlog/evidencias/issue-174/PLANO.md
   - backlog/evidencias/issue-174/FLUXO.md
   - backlog/evidencias/issue-174/ESTUDO-REUSO-BANCO.md
+  - backlog/evidencias/issue-174/PARECER-CONSOLIDACAO.md
 type: feature
 ordinal: 187000
 ---
@@ -114,6 +115,24 @@ created: 2026-11-24T16:50:00Z
 ---
 
 Consolidação solicitada das prévias não publicadas: a 024 sobe diretamente do v23 com metadata_values e vínculo obrigatório, projeção de crédito e fila independente. O ensaio em bancos descartáveis confirmou equivalência dos 177 objetos de schema ativos com a cadeia anterior, além de preservação e backup do v23. As prévias 24 a 28 exigem preservação do banco e recuperação em cópia separada. Procedimento documentado e plano da ISSUE-195 atualizado.
+
+---
+
+author: codex
+created: 2026-11-24T16:53:00Z
+
+---
+
+Revisão da consolidação aprovada. A migração 024 é a única nova migração. Testes focados confirmaram upgrade v23 com backup e preservação de escutas, além de recusa segura dos bancos de prévia.
+
+---
+
+author: codex
+created: 2026-11-24T16:56:00Z
+
+---
+
+Aceite: ISSUE-174 aprovada pelo usuário em 24/11/2026, com solicitação de publicação.
 
 ---
 <!-- COMMENTS:END -->
