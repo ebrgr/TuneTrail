@@ -1,10 +1,11 @@
 ---
 id: ISSUE-174
 title: 174 — Obter MBIDs ausentes pela API Subsonic do Navidrome
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T11:51:00Z'
+updated_date: '2026-11-24T12:41:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -12,6 +13,7 @@ dependencies:
   - ISSUE-134
 references:
   - backlog/evidencias/issue-134/PLANO.md
+  - backlog/evidencias/issue-174/PLANO.md
 type: feature
 ordinal: 187000
 ---
@@ -38,6 +40,33 @@ created: 2026-11-24T11:51:00Z
 ---
 
 Decisão do usuário em 24/11/2026: buscar MBID de gravação e de artista por provedor externo apenas quando o respectivo identificador estiver ausente nos metadados recebidos do Navidrome. Avaliar cada entidade independentemente; preservar o MBID recebido, sem substituí-lo pelo resultado da consulta. A busca de outros metadados segue regras próprias da ISSUE-055.
+
+---
+
+author: ebrgr
+created: 2026-11-24T11:55:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-174` na branch `feat/issue-174-obter-mbids-ausentes-pela-api` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-24T11:55:00Z
+
+---
+
+Plano inicial preservado na worktree Orca; implementação pendente.
+
+---
+
+author: codex
+created: 2026-11-24T12:41:00Z
+
+---
+
+Implementação: fila independente e limitada para escutas novas, consulta Subsonic com correspondência conservadora e declarações datadas por perfil/instância; revalidação após rede preserva snapshot e identidade. Migração v24, cobertura de migração, escopo, falhas e concorrência, make check e testes de corrida dirigidos passaram; histórico permanece para ISSUE-213 e exportação de declarações de artista requer evolução própria. Pendente parecer do Reviewer e aceite do usuário.
 
 ---
 <!-- COMMENTS:END -->

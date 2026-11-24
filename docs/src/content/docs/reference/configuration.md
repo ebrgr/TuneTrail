@@ -74,6 +74,13 @@ effective and running values can be expanded; a card tells you when a restart is
 apply effective changes. The **Generate Navidrome credentials** button next to the Subsonic parameters builds `u`, `t` and `s` from a Navidrome username and password in the browser; the password is never saved or sent. The Subsonic test uses the entered draft without saving;
 relay settings remain on each profile's administration page.
 
+When Subsonic is configured, new ListenBrainz listens can also look up missing
+recording and artist MusicBrainz IDs asynchronously. TuneTrail requires an
+unambiguous song match and keeps these IDs as dated declarations scoped to the
+profile and Subsonic configuration. Existing IDs take precedence; an unavailable
+server or an ambiguous result does not block the listen. Existing history is not
+automatically searched.
+
 ### Deployment, upgrades and offline recovery
 
 With the supplied Docker Compose file, `KOITO_DATA_DIR` is mounted at

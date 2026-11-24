@@ -69,6 +69,21 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 		return nil, fmt.Errorf("getTrackByID: %w", err)
 	}
 	track.MbzID = parseNullableUUID(mbzID)
+	// Only the requesting profile may see an unambiguous external declaration.
+	if track.MbzID == nil && db.ProfileID(ctx) > 0 {
+		var claim sql.NullString
+		err := s.db.QueryRowContext(ctx, `SELECT min(c.mbid) FROM enrichment_recording_claims c
+			WHERE c.profile_id=? AND c.occurrence_id=? AND NOT EXISTS (
+			 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id AND e.occurrence_id=c.occurrence_id
+			 AND (coalesce(json_extract(e.original_snapshot,'$.recording_mbid'),'')<>'' OR coalesce(json_extract(e.original_snapshot,'$.mapped_recording_mbid'),'')<>''))
+			HAVING count(DISTINCT c.mbid)=1`, db.ProfileID(ctx), id).Scan(&claim)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+		if err == nil {
+			track.MbzID = parseNullableUUID(claim)
+		}
+	}
 	track.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
 
 	artists, err := s.artistsForTrack(ctx, id)

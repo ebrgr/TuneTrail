@@ -255,17 +255,17 @@ func Run(
 	claimCtx, stopClaims := context.WithCancel(relayCtx)
 	defer stopClaims()
 	relayDone := relayoutbox.Run(relayCtx, claimCtx, relayStore)
+	// Configure the enrichment gate before the server begins accepting receipts.
+	ingestCtx, stopIngest := context.WithCancel(ctx)
+	defer stopIngest()
+	enrichmentDone := startEnrichment(ingestCtx, store)
+	ingestDone := startIngestRecovery(ingestCtx, store, mbzC)
 	serveErr := make(chan error, 1)
 	go func() {
 		ready.Store(true)
 		l.Info().Msgf("Engine: Listening on %s", cfg.ListenAddr())
 		serveErr <- httpServer.ListenAndServe()
 	}()
-
-	// Drain durable active receipts even after the master admission switch is disabled.
-	ingestCtx, stopIngest := context.WithCancel(ctx)
-	defer stopIngest()
-	ingestDone := startIngestRecovery(ingestCtx, store, mbzC)
 
 	l.Info().Msg("Engine: Beginning startup tasks...")
 
@@ -318,7 +318,7 @@ func Run(
 	for _, worker := range []struct {
 		name string
 		done <-chan struct{}
-	}{{"relay delivery", relayDone}, {"receipt recovery", ingestDone}} {
+	}{{"relay delivery", relayDone}, {"receipt recovery", ingestDone}, {"enrichment", enrichmentDone}} {
 		select {
 		case <-worker.done:
 		case <-workerCtx.Done():

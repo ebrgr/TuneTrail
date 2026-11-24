@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Missing recording and artist MusicBrainz IDs can now be obtained from the configured Subsonic library without delaying listens (ISSUE-174).
+
 ## [0.74] - 2026-11-23
 
 - Listening statistics and Rewind now use the playback time reported by ListenBrainz and Spotify when available, and TuneTrail exports preserve it. A playback time of zero is treated as unknown and counts the whole track (ISSUE-190).

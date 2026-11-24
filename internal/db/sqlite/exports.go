@@ -101,6 +101,24 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 	releases := make(map[int32]*db.ExportItem)
 	for i, item := range items {
 		p := presentations[i]
+		// Profile claims are used only when all recorded provider instances agree.
+		if item.TrackMbid == nil {
+			var mbid, source, observed sql.NullString
+			err := tx.QueryRowContext(ctx, `SELECT min(c.mbid),min(c.source),min(c.observed_at) FROM enrichment_recording_claims c
+				WHERE c.profile_id=? AND c.occurrence_id=? AND NOT EXISTS (
+				 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id AND e.event_id=?
+				 AND (coalesce(json_extract(e.original_snapshot,'$.recording_mbid'),'')<>''
+				 OR coalesce(json_extract(e.original_snapshot,'$.mapped_recording_mbid'),'')<>''))
+				HAVING count(DISTINCT c.mbid)=1`, opts.ProfileID, item.TrackID, item.Cursor).Scan(&mbid, &source, &observed)
+			if err != nil && err != sql.ErrNoRows {
+				return nil, err
+			}
+			if err == nil {
+				item.TrackMbid = parseNullableUUID(mbid)
+				item.MBIDSource = source.String
+				item.MBIDDeclaredAt = observed.String
+			}
+		}
 		if existing := occurrences[item.TrackID]; existing != nil {
 			item.TrackAliases = existing.TrackAliases
 			item.ReleaseAliases = existing.ReleaseAliases

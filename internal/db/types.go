@@ -45,6 +45,7 @@ type ExportItem struct {
 	DiscNumber         int
 	TrackNumber        int
 	MBIDSource         string
+	MBIDDeclaredAt     string
 	Origin             string
 	Provenance         json.RawMessage
 	ListenedAt         time.Time

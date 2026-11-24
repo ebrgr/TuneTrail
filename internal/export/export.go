@@ -196,6 +196,7 @@ func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store 
 				exported.Track.TrackMBID = ""
 				exported.Track.DiscNumber, exported.Track.TrackNumber = 0, 0
 				exported.Track.MBIDSource = ""
+				exported.Track.MBIDDeclaredAt = ""
 				for i := range exported.Artists {
 					exported.Artists[i].ID = 0
 				}
@@ -227,6 +228,7 @@ func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store 
 	return nil
 }
 
+// convertToExportFormat carries scoped recording declarations into the archive.
 func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 	var client string
 	if item.Client != nil {
@@ -242,7 +244,7 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 		ListenedAt: item.ListenedAt.UTC(), DurationPlayed: item.DurationPlayed,
 		Track: KoitoTrack{
 			MBID:      item.TrackMbid,
-			TrackMBID: item.TrackReference, DiscNumber: item.DiscNumber, TrackNumber: item.TrackNumber, MBIDSource: item.MBIDSource,
+			TrackMBID: item.TrackReference, DiscNumber: item.DiscNumber, TrackNumber: item.TrackNumber, MBIDSource: item.MBIDSource, MBIDDeclaredAt: item.MBIDDeclaredAt,
 			Duration: int(item.TrackDuration),
 			Aliases:  item.TrackAliases,
 		},

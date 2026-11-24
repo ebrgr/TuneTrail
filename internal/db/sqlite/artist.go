@@ -62,6 +62,25 @@ func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.
 	if err != nil {
 		return nil, fmt.Errorf("GetArtist: %w", err)
 	}
+	// Only the requesting profile may see an unambiguous external declaration.
+	if !mbzID.Valid && db.ProfileID(ctx) > 0 {
+		var claim sql.NullString
+		err := s.db.QueryRowContext(ctx, `SELECT min(c.mbid) FROM enrichment_artist_claims c
+			WHERE c.profile_id=? AND c.artist_id=? AND NOT EXISTS (
+			 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id
+			 AND (EXISTS (SELECT 1 FROM artist_tracks a WHERE a.track_id=e.occurrence_id AND a.artist_id=c.artist_id)
+			 OR EXISTS (SELECT 1 FROM occurrence_credits a WHERE a.occurrence_id=e.occurrence_id AND a.artist_id=c.artist_id))
+			 AND (coalesce(json_array_length(e.original_snapshot,'$.artist_mbids'),0)>0
+			 OR coalesce(json_array_length(e.original_snapshot,'$.mapped_artist_mbids'),0)>0
+			 OR coalesce(json_array_length(e.original_snapshot,'$.artist_mbid_mappings'),0)>0))
+			HAVING count(DISTINCT c.mbid)=1`, db.ProfileID(ctx), opts.ID).Scan(&claim)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+		if err == nil {
+			mbzID = claim
+		}
+	}
 
 	var aliases []string
 	if aliasesConcat.Valid && aliasesConcat.String != "" {
@@ -572,6 +591,10 @@ func (s *Sqlite) setPrimaryRelation(ctx context.Context, table, target string, i
 		return err
 	}
 	defer tx.Rollback()
+	// Acquire the writer before transactional reads to avoid stale WAL snapshots.
+	if _, err := tx.ExecContext(ctx, `UPDATE `+table+` SET is_primary=is_primary WHERE 0`); err != nil {
+		return err
+	}
 	// An explicit album-primary selection turns existing track participation into an independent credit.
 	if table == "artist_releases" && value {
 		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO artist_releases(artist_id,release_id,is_primary)
@@ -691,6 +714,17 @@ func mergeArtistsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replace
 	if _, err := tx.ExecContext(ctx,
 		`UPDATE artist_releases SET artist_id = ? WHERE artist_id = ?`, toId, fromId); err != nil {
 		return fmt.Errorf("MergeArtists: update releases: %w", err)
+	}
+	// Preserve each profile's provider declarations, including conflicts, across a merge.
+	var hasClaims int
+	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM sqlite_master WHERE type='table' AND name='enrichment_artist_claims'`).Scan(&hasClaims); err != nil {
+		return fmt.Errorf("MergeArtists: inspect enrichment schema: %w", err)
+	}
+	if hasClaims != 0 {
+		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,receipt_id,instance,mbid,source,observed_at)
+			SELECT profile_id,?,receipt_id,instance,mbid,source,observed_at FROM enrichment_artist_claims WHERE artist_id=?`, toId, fromId); err != nil {
+			return fmt.Errorf("MergeArtists: preserve enrichment claims: %w", err)
+		}
 	}
 	if _, err := tx.ExecContext(ctx, `DELETE FROM artists WHERE id = ?`, fromId); err != nil {
 		return fmt.Errorf("MergeArtists: delete from: %w", err)
