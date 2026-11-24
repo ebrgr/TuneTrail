@@ -8,8 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestOccurrenceArtistMBIDFallback170 keeps declared artist IDs first and uses
-// mbid_mapping only when no declared ID is valid.
+// TestOccurrenceArtistMBIDFallback170 prefers the declared artist list when it contains a valid ID.
 func TestOccurrenceArtistMBIDFallback170(t *testing.T) {
 	declared := uuid.NewString()
 	mapped := uuid.NewString()
@@ -24,6 +23,7 @@ func TestOccurrenceArtistMBIDFallback170(t *testing.T) {
 		{"invalid mapped ignored", ingest.Snapshot{MappedArtistMBIDs: []string{"not-a-uuid"}}, nil},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			tc.snapshot.Artist = "A"
 			var got []string
 			for _, id := range occurrenceArtistDeclarations(tc.snapshot) {
 				got = append(got, id.String())

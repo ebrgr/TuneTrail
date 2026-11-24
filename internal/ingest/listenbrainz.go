@@ -27,8 +27,9 @@ func ListenBrainzSnapshot(meta listenbrainz.LbzTrackMeta) Snapshot {
 		s.TrackMBID = id.String()
 	}
 	s.MBIDSource, s.MBIDDeclaredAt = DeclaredMBIDProvenance(info.MBIDSource, info.MBIDDeclaredAt)
-	s.ArtistMBIDs = validMBIDs(info.ArtistMBIDs)
-	s.MappedArtistMBIDs = validMBIDs(meta.MBIDMapping.ArtistMBIDs)
+	// Navidrome sends one slot per named credit, including empty slots.
+	s.ArtistMBIDs = artistMBIDSlots(info.ArtistMBIDs)
+	s.MappedArtistMBIDs = artistMBIDSlots(meta.MBIDMapping.ArtistMBIDs)
 	for _, credit := range meta.MBIDMapping.Artists {
 		if id, err := uuid.Parse(credit.ArtistMBID); err == nil && credit.ArtistName != "" {
 			s.ArtistMbidMappings = append(s.ArtistMbidMappings, ArtistMapping{Name: credit.ArtistName, MBID: id.String()})
@@ -84,12 +85,15 @@ func PlayedSeconds(seconds float64) *int64 {
 	return &value
 }
 
-// validMBIDs retains typed identifiers while dropping arbitrary strings.
-func validMBIDs(values []string) []string {
+// artistMBIDSlots retains identifiers at their original positions and blanks invalid slots.
+func artistMBIDSlots(values []string) []string {
 	var ids []string
-	for _, value := range values {
+	for i, value := range values {
 		if id, err := uuid.Parse(value); err == nil {
-			ids = append(ids, id.String())
+			if ids == nil {
+				ids = make([]string, len(values))
+			}
+			ids[i] = id.String()
 		}
 	}
 	return ids

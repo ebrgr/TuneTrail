@@ -10,6 +10,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -171,7 +172,11 @@ func songMatches(s ingest.Snapshot, song subsonicSong) bool {
 			}
 		}
 	}
-	for _, mapping := range s.ArtistMbidMappings {
+	// Compare named IDs and any IDs with proven positions against the same song credit.
+	knownArtists := slices.Clone(s.ArtistMbidMappings)
+	knownArtists = append(knownArtists, s.PositionalArtistMappings(s.ArtistMBIDs)...)
+	knownArtists = append(knownArtists, s.PositionalArtistMappings(s.MappedArtistMBIDs)...)
+	for _, mapping := range knownArtists {
 		if !validUUID(mapping.MBID) {
 			continue
 		}
@@ -199,10 +204,8 @@ func abs64(v int64) int64 {
 
 // MissingArtistNames avoids inferring positions from partial or invalid ID lists.
 func MissingArtistNames(s ingest.Snapshot) []string {
-	names := s.ArtistNames
-	if len(names) == 0 && strings.TrimSpace(s.Artist) != "" {
-		names = []string{s.Artist}
-	}
+	// Keep holes in an aligned list and avoid reinterpreting compacted historical lists.
+	names := s.ArtistCreditNames()
 	if len(names) == 0 || (len(s.ArtistMBIDs) > 0 && len(s.ArtistMBIDs) != len(names)) || (len(s.MappedArtistMBIDs) > 0 && len(s.MappedArtistMBIDs) != len(names)) {
 		return nil
 	}

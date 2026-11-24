@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ebrgr/TuneTrail/internal/db"
 	"slices"
 	"strconv"
 	"strings"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/google/uuid"
 )
@@ -20,50 +20,42 @@ type identifiedOccurrenceCredit struct {
 	ID   int64  `json:"id"`
 }
 
-// occurrenceArtistDeclarations gives explicit source IDs priority over mapped IDs.
-func occurrenceArtistDeclarations(snapshot ingest.Snapshot) []uuid.UUID {
-	parse := func(raw []string) []uuid.UUID {
-		var ids []uuid.UUID
-		for _, value := range raw {
-			if id, err := uuid.Parse(value); err == nil && id != uuid.Nil {
-				ids = append(ids, id)
+// occurrenceArtistDeclarations keeps slot alignment in the preferred source list.
+func occurrenceArtistDeclarations(snapshot ingest.Snapshot) map[string]uuid.UUID {
+	result := make(map[string]uuid.UUID)
+	for _, ids := range [][]string{snapshot.ArtistMBIDs, snapshot.MappedArtistMBIDs} {
+		if !slices.ContainsFunc(ids, func(id string) bool { return uuidFromSnapshot(id) != uuid.Nil }) {
+			continue
+		}
+		// A compacted historical list cannot establish an artist's position.
+		for _, credit := range snapshot.PositionalArtistMappings(ids) {
+			if id := uuidFromSnapshot(credit.MBID); id != uuid.Nil {
+				result[credit.Name] = id
 			}
 		}
-		return ids
+		break
 	}
-	ids := parse(snapshot.ArtistMBIDs)
-	if len(ids) == 0 {
-		ids = parse(snapshot.MappedArtistMBIDs)
-	}
-	return ids
+	return result
 }
 
 // fileArtistDeclarations keeps named credits usable when only some have an ID.
 func fileArtistDeclarations(snapshot ingest.Snapshot) map[string]uuid.UUID {
-	names, ids := observedCredits(snapshot), occurrenceArtistDeclarations(snapshot)
 	result := make(map[string]uuid.UUID)
 	for _, credit := range snapshot.ArtistMbidMappings {
 		if id := uuidFromSnapshot(credit.MBID); id != uuid.Nil {
 			result[credit.Name] = id
 		}
 	}
-	if len(names) == len(ids) {
-		for i, name := range names {
-			result[name] = ids[i]
-		}
+	for name, id := range occurrenceArtistDeclarations(snapshot) {
+		result[name] = id
 	}
 	return result
 }
 
 // identifyOccurrenceArtists applies ISSUE-170 before falling back to catalog names.
 func identifyOccurrenceArtists(ctx context.Context, tx *sql.Conn, profile int32, snapshot ingest.Snapshot, fileDeclared bool) (map[string]int64, []string, error) {
-	names, ids := observedCredits(snapshot), occurrenceArtistDeclarations(snapshot)
-	declared := make(map[string]uuid.UUID)
-	if len(ids) == len(names) {
-		for i, name := range names {
-			declared[name] = ids[i]
-		}
-	}
+	names := observedCredits(snapshot)
+	declared := occurrenceArtistDeclarations(snapshot)
 	if fileDeclared {
 		declared = fileArtistDeclarations(snapshot)
 	}

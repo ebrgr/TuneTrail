@@ -44,6 +44,16 @@ O v2 exporta e reimporta as declarações e seus conflitos como evidência da
 escuta. Os consumidores selecionam declarações unívocas dentro do próprio
 perfil. O v1 omite valores que exigem a procedência do v2.
 
+O adaptador mantém as posições vazias dos MBIDs de artistas enviados pelo
+Navidrome. Uma lista completa de créditos nomeados permite ligar cada ID
+recebido ao seu crédito e consultar cada posição vazia. Listas compactadas de
+snapshots antigos com comprimento diferente permanecem sem vínculo posicional.
+O digest v3 distingue mudanças de posição. Uma repetição de um recibo v1 ou v2
+continua comparada com a projeção compactada do formato original.
+A serialização do relay mantém as posições no envio. O servidor oficial
+remove entradas vazias ao validar o payload que recebe.
+[Validador de envio do ListenBrainz](https://github.com/metabrainz/listenbrainz-server/blob/master/listenbrainz/webserver/views/api_tools.py)
+
 O gatilho da ISSUE-174 enfileira recibos com Subsonic ativo. Quando Subsonic
 está desligado, a decisão automática ou manual só enfileira o recibo se
 existir relay oficial elegível. A sondagem ociosa usa apenas leitura. O lease e

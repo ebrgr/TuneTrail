@@ -20,7 +20,7 @@ const receiptTime = "2006-01-02T15:04:05.000000000Z"
 
 type preparedReceipt struct {
 	ingest.Item
-	snapshot, digest, legacyDigest string
+	snapshot, digest, v2Digest, legacyDigest string
 }
 
 // AdmitOccurrence stores the entire occurrence batch before returning its acknowledgement.
@@ -29,23 +29,28 @@ func (s *Sqlite) AdmitOccurrence(ctx context.Context, batch ingest.Batch) ([]ing
 	batchID := uuid.NewString()
 	prepared := make([]preparedReceipt, len(batch.Items))
 	digests := make([]string, len(batch.Items))
+	v2Digests := make([]string, len(batch.Items))
 	legacyDigests := make([]string, len(batch.Items))
 	for n, item := range batch.Items {
 		snapshot, digest := item.Encode()
+		digestItem := item
 		if batch.FileDigest != "" && item.Snapshot.MBIDSource == batch.FileFormat {
 			// The admission clock is evidence, not a change to file contents.
-			digestItem := item
 			digestItem.Snapshot.MBIDDeclaredAt = ""
 			_, digest = digestItem.Encode()
 		}
-		prepared[n] = preparedReceipt{Item: item, snapshot: string(snapshot), digest: digest, legacyDigest: item.LegacyDigest(batch.Source, batch.FileFormat)}
+		prepared[n] = preparedReceipt{Item: item, snapshot: string(snapshot), digest: digest,
+			v2Digest: digestItem.DigestV2(batch.Source, batch.FileFormat), legacyDigest: item.LegacyDigest(batch.Source, batch.FileFormat)}
 		digests[n] = digest
+		v2Digests[n] = prepared[n].v2Digest
 		legacyDigests[n] = prepared[n].legacyDigest
 	}
-	var batchDigest, legacyBatchDigest string
+	var batchDigest, v2BatchDigest, legacyBatchDigest string
 	if batch.ClientKey != "" {
 		data, _ := json.Marshal(digests)
 		batchDigest = ingest.Digest(data)
+		v2, _ := json.Marshal(v2Digests)
+		v2BatchDigest = ingest.Digest(v2)
 		legacy, _ := json.Marshal(legacyDigests)
 		legacyBatchDigest = ingest.Digest(legacy)
 	}
@@ -72,13 +77,16 @@ func (s *Sqlite) AdmitOccurrence(ctx context.Context, batch ingest.Batch) ([]ing
 			}
 		}
 		comparableBatchDigest := batchDigest
-		if previousBatchVersion == ingest.LegacyDigestVersion {
+		switch previousBatchVersion {
+		case ingest.LegacyDigestVersion:
 			comparableBatchDigest = legacyBatchDigest
+		case ingest.DigestVersionV2:
+			comparableBatchDigest = v2BatchDigest
 		}
 		batchConflict := previousBatchDigest != "" && previousBatchDigest != comparableBatchDigest
 		for _, item := range prepared {
 			result, err := receiveActiveItem(ctx, tx, batch, item, source, batchID, batchDigest,
-				legacyBatchDigest, batchConflict, policy)
+				v2BatchDigest, legacyBatchDigest, batchConflict, policy)
 			if err != nil {
 				return err
 			}
@@ -199,7 +207,7 @@ func replayIngest(r *dedup.Receipt) ingest.Result {
 }
 
 // receiveActiveItem replays existing keys or inserts a new receipt.
-func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, legacyBatchDigest string, batchConflict bool, policy string) (ingest.Result, error) {
+func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i preparedReceipt, source, batchID, batchDigest, v2BatchDigest, legacyBatchDigest string, batchConflict bool, policy string) (ingest.Result, error) {
 	previous, err := findKey(ctx, tx, b, i.Item, source)
 	if errors.Is(err, errReceiptKeyConflict) {
 		return ingest.Result{Decision: "review", Pending: true}, nil
@@ -214,8 +222,12 @@ func receiveActiveItem(ctx context.Context, tx *sql.Conn, b ingest.Batch, i prep
 	if previous != nil {
 		result := replayIngest(previous)
 		digest, comparableBatchDigest := i.digest, batchDigest
-		if previous.DigestVersion == ingest.LegacyDigestVersion {
+		// Compare each retry using its stored receipt's projection.
+		switch previous.DigestVersion {
+		case ingest.LegacyDigestVersion:
 			digest, comparableBatchDigest = i.legacyDigest, legacyBatchDigest
+		case ingest.DigestVersionV2:
+			digest, comparableBatchDigest = i.v2Digest, v2BatchDigest
 		}
 		if previous.Digest != digest || previous.BatchDigest != comparableBatchDigest {
 			_, err := tx.ExecContext(ctx, `INSERT INTO ingest_observations(id,profile_id,receipt_id,schema_version,snapshot_digest,digest_version,original_snapshot,received_at)

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -12,7 +13,8 @@ import (
 
 const (
 	LegacyDigestVersion = "sha256-json-v1"
-	DigestVersion       = "sha256-json-v2"
+	DigestVersionV2     = "sha256-json-v2"
+	DigestVersion       = "sha256-json-v3"
 )
 
 // These source types own temporary shadow integration identities.
@@ -88,6 +90,35 @@ type ArtistMapping struct {
 	MBID string `json:"mbid"`
 }
 
+// ArtistCreditNames keeps the original slots, including malformed or repeated names.
+func (s Snapshot) ArtistCreditNames() []string {
+	if len(s.ArtistNames) > 0 {
+		return s.ArtistNames
+	}
+	return []string{s.Artist}
+}
+
+// PositionalArtistMappings binds IDs only in complete lists of unique named credits.
+func (s Snapshot) PositionalArtistMappings(ids []string) []ArtistMapping {
+	names := s.ArtistCreditNames()
+	if len(ids) != len(names) {
+		return nil
+	}
+	seen := make(map[string]bool, len(names))
+	var mappings []ArtistMapping
+	for i, name := range names {
+		key := strings.ToLower(strings.TrimSpace(name))
+		if key == "" || seen[key] {
+			return nil
+		}
+		seen[key] = true
+		if ids[i] != "" {
+			mappings = append(mappings, ArtistMapping{Name: name, MBID: ids[i]})
+		}
+	}
+	return mappings
+}
+
 type Item struct {
 	Ordinal                       int
 	Snapshot                      Snapshot
@@ -151,6 +182,18 @@ func (i Item) LegacyDigest(source, fileFormat string) string {
 		i.Snapshot.ArtistMBIDs = nil
 		i.Snapshot.ReleaseMBID = ""
 		i.Snapshot.ReleaseGroupMBID = ""
+	}
+	return i.DigestV2(source, fileFormat)
+}
+
+// DigestV2 emulates the ListenBrainz adapter's earlier compaction for stored v2 keys.
+func (i Item) DigestV2(source, fileFormat string) string {
+	if source == ShadowSourceListenBrainz || (source == ShadowSourceFile && fileFormat == "listenbrainz") {
+		for _, ids := range []*[]string{&i.Snapshot.ArtistMBIDs, &i.Snapshot.MappedArtistMBIDs} {
+			if slices.Contains(*ids, "") {
+				*ids = slices.DeleteFunc(slices.Clone(*ids), func(id string) bool { return id == "" })
+			}
+		}
 	}
 	_, digest := i.Encode()
 	return digest

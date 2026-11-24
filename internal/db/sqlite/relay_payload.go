@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/ingest"
@@ -72,7 +73,8 @@ func encodeRelayItem(version int, s ingest.Snapshot, at int64) ([]byte, error) {
 	if s.TrackNumber > 0 {
 		info["tracknumber"] = s.TrackNumber
 	}
-	if ids := relayUUIDs(s.ArtistMBIDs); len(ids) > 0 {
+	// Forward sparse credit slots without shifting an ID to a different name.
+	if ids := relayArtistMBIDs(s.ArtistMBIDs); len(ids) > 0 {
 		info["artist_mbids"] = ids
 	}
 	for key, id := range map[string]string{
@@ -87,7 +89,7 @@ func encodeRelayItem(version int, s ingest.Snapshot, at int64) ([]byte, error) {
 		metadata["additional_info"] = info
 	}
 	mapping := map[string]any{}
-	if ids := relayUUIDs(s.MappedArtistMBIDs); len(ids) > 0 {
+	if ids := relayArtistMBIDs(s.MappedArtistMBIDs); len(ids) > 0 {
 		mapping["artist_mbids"] = ids
 	}
 	if ids := relayUUIDs([]string{s.MappedRecording}); len(ids) > 0 {
@@ -124,6 +126,21 @@ func encodeRelayItem(version int, s ingest.Snapshot, at int64) ([]byte, error) {
 	default:
 		return nil, errors.New("unsupported relay payload format")
 	}
+}
+
+// relayArtistMBIDs preserves the length of lists already carrying positional blanks.
+func relayArtistMBIDs(values []string) []string {
+	ids := relayUUIDs(values)
+	if len(ids) == 0 || !slices.Contains(values, "") {
+		return ids
+	}
+	slots := make([]string, len(values))
+	for i, value := range values {
+		if id, err := uuid.Parse(value); err == nil && id != uuid.Nil {
+			slots[i] = id.String()
+		}
+	}
+	return slots
 }
 
 // relayUUIDs preserves the order of canonical, nonzero identifiers.

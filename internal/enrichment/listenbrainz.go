@@ -209,16 +209,15 @@ func (m listenBrainzMatch) declarations(request ListenBrainzRequest, at time.Tim
 			return Result{Status: Ambiguous}
 		}
 	}
-	names := s.ArtistNames
-	if len(names) == 0 {
-		names = []string{s.Artist}
-	}
 	for _, ids := range [][]string{s.ArtistMBIDs, s.MappedArtistMBIDs} {
-		for i, id := range ids {
+		for _, id := range ids {
 			if validUUID(id) && !slices.ContainsFunc(m.ArtistIDs, func(candidate string) bool { return sameLookupID(id, candidate) }) {
 				return Result{Status: Ambiguous}
 			}
-			if len(ids) == len(names) && validUUID(id) && !sameLookupID(id, m.artistID(names[i])) {
+		}
+		// The credited name must match an ID with a proven source position.
+		for _, known := range s.PositionalArtistMappings(ids) {
+			if validUUID(known.MBID) && !sameLookupID(known.MBID, m.artistID(known.Name)) {
 				return Result{Status: Ambiguous}
 			}
 		}

@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T17:53:00Z'
+updated_date: '2026-11-24T18:03:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -59,6 +59,15 @@ created: 2026-11-24T17:53:00Z
 ---
 
 Implementado o fallback autenticado do ListenBrainz por gravação e crédito, com autorização do relay oficial no perfil do recibo, proveniência por escuta e reimportação v2. A verificação com servidor simulado cobriu precedência, isolamento, ausência de token, limites, falhas e conflitos concorrentes. O make check passou com 13 percursos E2E, os testes focados passaram com o detector de corrida e o grafo AST foi atualizado. O endpoint fornece um candidato canônico, sem alternativas para distinguir gravações com a mesma combinação textual.
+
+---
+
+author: codex
+created: 2026-11-24T18:03:00Z
+
+---
+
+A revisão identificou a compactação prematura dos MBIDs por crédito. O adaptador preserva os slots, a admissão usa digest v3 com projeções compatíveis para repetições v1 e v2 e a exportação mantém a procedência por crédito. A regressão parte do JSON e cobre lacunas no início, no meio e no fim, com Subsonic, ListenBrainz e restauração v2. O make check passou com 13 percursos E2E e a regressão passou com o detector de corrida.
 
 ---
 <!-- COMMENTS:END -->
