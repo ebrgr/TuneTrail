@@ -709,6 +709,10 @@ func mergeAlbumsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replaceI
 		}
 	}
 
+	// Move profile metadata supported by the destination's listens before removing the source.
+	if err := mergeMetadataRelease(ctx, tx, fromId, toId); err != nil {
+		return fmt.Errorf("MergeAlbums: preserve metadata: %w", err)
+	}
 	// Only the explicit source is removed; unrelated unplayed media is preserved.
 	if _, err := tx.ExecContext(ctx, `DELETE FROM releases WHERE id=?`, fromId); err != nil {
 		return fmt.Errorf("MergeAlbums: delete source: %w", err)

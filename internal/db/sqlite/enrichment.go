@@ -85,9 +85,9 @@ func (s *Sqlite) ResolveNextEnrichment(ctx context.Context, provider enrichment.
 // enrichmentKnownIDs augments only the transient lookup request, never the receipt.
 func (s *Sqlite) enrichmentKnownIDs(ctx context.Context, c *enrichmentClaim, snapshot *ingest.Snapshot, instance string) error {
 	var recording sql.NullString
-	err := s.db.QueryRowContext(ctx, `SELECT coalesce(r.musicbrainz_id,(SELECT min(mbid) FROM enrichment_recording_claims
-		WHERE profile_id=? AND occurrence_id=? AND instance=? HAVING count(DISTINCT mbid)=1))
-		FROM recordings r WHERE r.id=?`, c.profile, c.occurrence, instance, c.recording).Scan(&recording)
+	err := s.db.QueryRowContext(ctx, `SELECT coalesce(r.musicbrainz_id,(SELECT min(value) FROM metadata_values
+		WHERE profile_id=? AND recording_id=? AND kind='mbid' AND instance=? HAVING count(DISTINCT value)=1))
+		FROM recordings r WHERE r.id=?`, c.profile, c.recording, instance, c.recording).Scan(&recording)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil
 	}
@@ -102,7 +102,7 @@ func (s *Sqlite) enrichmentKnownIDs(ctx context.Context, c *enrichmentClaim, sna
 		var mbid sql.NullString
 		var artistID, count int64
 		err := s.db.QueryRowContext(ctx, `SELECT count(DISTINCT a.id),coalesce(min(a.id),0),CASE WHEN count(DISTINCT a.id)=1 THEN min(coalesce(a.musicbrainz_id,
-			(SELECT min(mbid) FROM enrichment_artist_claims WHERE profile_id=? AND artist_id=a.id AND instance=? HAVING count(DISTINCT mbid)=1))) END
+			(SELECT min(value) FROM metadata_values WHERE profile_id=? AND artist_id=a.id AND kind='mbid' AND instance=? HAVING count(DISTINCT value)=1))) END
 			FROM artists a WHERE a.id IN (SELECT artist_id FROM occurrence_credits WHERE occurrence_id=? AND name=? AND artist_id IS NOT NULL
 			UNION SELECT at.artist_id FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id WHERE at.track_id=? AND aa.alias=? COLLATE BINARY)`,
 			c.profile, instance, c.occurrence, name, c.occurrence, name).Scan(&count, &artistID, &mbid)
@@ -161,17 +161,18 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 	}
 	missingArtists := enrichment.MissingArtistNames(original)
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		var count int
-		if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM enrichment_jobs j JOIN ingest_events e USING(receipt_id)
+		var event string
+		err := tx.QueryRowContext(ctx, `SELECT l.event_id FROM enrichment_jobs j JOIN ingest_events e USING(receipt_id)
 			JOIN listens l ON (l.profile_id,l.event_id)=(e.profile_id,e.event_id)
 			JOIN occurrences o ON o.id=l.track_id AND o.id=e.occurrence_id AND o.recording_id=e.recording_id
 			WHERE j.receipt_id=? AND j.state='working' AND j.lease=? AND j.lease_until>? AND e.profile_id=?
 			AND e.resolution_version=? AND e.occurrence_id=? AND e.recording_id=? AND e.original_snapshot=?
-			AND e.state IN ('accepted','duplicate')`, c.receipt, c.lease, time.Now().Unix(), c.profile, c.version, c.occurrence, c.recording, c.snapshot).Scan(&count); err != nil {
+			AND e.state IN ('accepted','duplicate')`, c.receipt, c.lease, time.Now().Unix(), c.profile, c.version, c.occurrence, c.recording, c.snapshot).Scan(&event)
+		if errors.Is(err, sql.ErrNoRows) {
+			_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='failed',lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, c.receipt, c.lease)
 			return err
 		}
-		if count == 0 {
-			_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='failed',lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, c.receipt, c.lease)
+		if err != nil {
 			return err
 		}
 		var catalog string
@@ -193,9 +194,9 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 				if uuidFromSnapshot(original.Recording, original.MappedRecording) != uuid.Nil {
 					continue
 				}
-				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims(profile_id,occurrence_id,instance,mbid,source,observed_at)
-					SELECT ?,o.id,?,?,?,? FROM occurrences o JOIN recordings r ON r.id=o.recording_id
-					WHERE o.id=? AND r.id=? AND r.musicbrainz_id IS NULL`, c.profile, instance, id.String(), declaration.Source, at, c.occurrence, c.recording)
+				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,kind,instance,value,source,observed_at)
+					SELECT ?,r.id,o.id,?,'mbid',?,?,?,? FROM occurrences o JOIN recordings r ON r.id=o.recording_id
+					WHERE o.id=? AND r.id=? AND r.musicbrainz_id IS NULL`, c.profile, event, instance, id.String(), declaration.Source, at, c.occurrence, c.recording)
 			case "artist":
 				if !slices.Contains(missingArtists, declaration.Name) {
 					continue
@@ -205,15 +206,15 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 					continue
 				}
 				// Match only one linked artist with the exact observed credit, never by list position.
-				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,instance,mbid,source,observed_at)
-					SELECT ?,a.id,?,?,?,? FROM artists a WHERE a.musicbrainz_id IS NULL AND a.id=? AND a.id IN (
+				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_values(profile_id,artist_id,event_id,kind,instance,value,source,observed_at)
+					SELECT ?,a.id,?,'mbid',?,?,?,? FROM artists a WHERE a.musicbrainz_id IS NULL AND a.id=? AND a.id IN (
 					 SELECT artist_id FROM occurrence_credits WHERE occurrence_id=? AND name=? AND artist_id IS NOT NULL
 					 UNION SELECT at.artist_id FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id
 					 WHERE at.track_id=? AND aa.alias=? COLLATE BINARY)
 					AND 1=(SELECT count(DISTINCT artist_id) FROM (
 					 SELECT artist_id FROM occurrence_credits WHERE occurrence_id=? AND name=? AND artist_id IS NOT NULL
 					 UNION SELECT at.artist_id FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id
-					WHERE at.track_id=? AND aa.alias=? COLLATE BINARY))`, c.profile, instance, id.String(), declaration.Source, at, expected,
+					WHERE at.track_id=? AND aa.alias=? COLLATE BINARY))`, c.profile, event, instance, id.String(), declaration.Source, at, expected,
 					c.occurrence, declaration.Name, c.occurrence, declaration.Name, c.occurrence, declaration.Name, c.occurrence, declaration.Name)
 			default:
 				continue
@@ -228,7 +229,7 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 		default:
 			status = enrichment.Failed
 		}
-		_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, string(status), instance, c.receipt, c.lease)
+		_, err = tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, string(status), instance, c.receipt, c.lease)
 		return err
 	})
 }

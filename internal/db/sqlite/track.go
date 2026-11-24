@@ -72,11 +72,11 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 	// Only the requesting profile may see an unambiguous external declaration.
 	if track.MbzID == nil && db.ProfileID(ctx) > 0 {
 		var claim sql.NullString
-		err := s.db.QueryRowContext(ctx, `SELECT min(c.mbid) FROM enrichment_recording_claims c
-			WHERE c.profile_id=? AND c.occurrence_id=? AND NOT EXISTS (
-			 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id AND e.occurrence_id=c.occurrence_id
+		err := s.db.QueryRowContext(ctx, `SELECT min(c.value) FROM metadata_values c
+			WHERE c.profile_id=? AND c.recording_id=(SELECT recording_id FROM occurrences WHERE id=?) AND c.kind='mbid' AND NOT EXISTS (
+			 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id AND e.recording_id=c.recording_id AND e.state IN ('accepted','duplicate')
 			 AND (coalesce(json_extract(e.original_snapshot,'$.recording_mbid'),'')<>'' OR coalesce(json_extract(e.original_snapshot,'$.mapped_recording_mbid'),'')<>''))
-			HAVING count(DISTINCT c.mbid)=1`, db.ProfileID(ctx), id).Scan(&claim)
+			HAVING count(DISTINCT c.value)=1`, db.ProfileID(ctx), id).Scan(&claim)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return nil, err
 		}

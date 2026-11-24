@@ -30,7 +30,7 @@ func TestEnrichmentReceivedArtistProjection(t *testing.T) {
 		execSQL(t, s, `INSERT INTO artists(id) VALUES (?)`, artist)
 		execSQL(t, s, `UPDATE occurrence_credits SET artist_id=? WHERE name=?
 			AND occurrence_id=(SELECT occurrence_id FROM ingest_events WHERE receipt_id=?)`, artist, name, old)
-		execSQL(t, s, `INSERT INTO enrichment_artist_claims VALUES(1,?,'test',?,'navidrome-subsonic','2026-01-02T00:00:00Z')`, artist, enrichedArtist174)
+		execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES(1,?,'test',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`, artist, enrichedArtist174)
 	}
 	check := func(artist int, suppressed bool) {
 		t.Helper()
@@ -65,8 +65,7 @@ func TestEnrichmentArtistDeleteScope(t *testing.T) {
 		WITH RECURSIVE ids(n) AS (VALUES(900) UNION ALL SELECT n+1 FROM ids WHERE n<4900)
 		INSERT INTO artists(id) SELECT n FROM ids;
 		INSERT INTO occurrence_credits VALUES(900,0,'Artist',900),(901,0,'Artist',900);
-		INSERT INTO enrichment_artist_claims
-		SELECT 1,id,'fixture','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z'
+		INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) SELECT 1,id,'fixture','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z','mbid'
 		FROM artists WHERE id>=900;
 		WITH RECURSIVE ids(n) AS (VALUES(1) UNION ALL SELECT n+1 FROM ids WHERE n<2000)
 		INSERT INTO listens(profile_id,track_id,listened_at,event_id) SELECT 1,900,n,'scale-'||n FROM ids;
@@ -82,21 +81,20 @@ func TestEnrichmentArtistDeleteScope(t *testing.T) {
 	require.Contains(t, plan, "(profile_id=? AND artist_id=?)")
 	require.Contains(t, plan, "idx_listens_profile_track (profile_id=? AND track_id=?)")
 	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=900`)
-	require.Equal(t, 4001, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims WHERE profile_id=1`))
+	require.Equal(t, 4001, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1`))
 	execSQL(t, s, `DELETE FROM occurrences WHERE id=901`)
-	require.Equal(t, 4000, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims WHERE profile_id=1`))
+	require.Equal(t, 4000, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1`))
 }
 
 // TestEnrichmentArtistBridgeDelete covers the track cascade that removes the
 // artist_tracks rows before the bridged occurrence is deleted.
 func TestEnrichmentArtistBridgeDelete(t *testing.T) {
 	s := mergeFixture(t)
-	execSQL(t, s, `INSERT INTO enrichment_artist_claims
-		SELECT DISTINCT l.profile_id,a.artist_id,'test','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z'
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) SELECT DISTINCT l.profile_id,a.artist_id,'test','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z','mbid'
 		FROM artist_tracks a JOIN listens l ON l.track_id=a.track_id WHERE a.track_id=1`)
-	require.Positive(t, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims`))
+	require.Positive(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL`))
 	execSQL(t, s, `DELETE FROM tracks WHERE id=1`)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims c WHERE NOT EXISTS (
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values c WHERE c.artist_id IS NOT NULL AND NOT EXISTS (
 		SELECT 1 FROM artist_tracks a JOIN listens l ON l.track_id=a.track_id
 		WHERE a.artist_id=c.artist_id AND l.profile_id=c.profile_id)`))
 }

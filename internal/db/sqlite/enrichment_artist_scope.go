@@ -32,10 +32,10 @@ func init() {
 // relationships. The lookup visits catalog occurrences and indexed observations.
 const scopedArtistClaim = `
 	WITH scope(profile_id,artist_id) AS (VALUES (?,?))
-	SELECT min(c.mbid)
-	FROM scope s CROSS JOIN enrichment_artist_claims c
-	WHERE c.profile_id=s.profile_id AND c.artist_id=s.artist_id
-	HAVING count(DISTINCT c.mbid)=1 AND NOT EXISTS (
+	SELECT min(c.value)
+	FROM scope s CROSS JOIN metadata_values c
+	WHERE c.profile_id=s.profile_id AND c.artist_id=s.artist_id AND c.kind='mbid'
+	HAVING count(DISTINCT c.value)=1 AND NOT EXISTS (
 		SELECT 1 FROM artist_tracks a
 		CROSS JOIN artist_aliases n
 		CROSS JOIN enrichment_received_artist_credits r

@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T13:22:00Z'
+updated_date: '2026-11-24T14:28:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -15,6 +15,7 @@ references:
   - backlog/evidencias/issue-134/PLANO.md
   - backlog/evidencias/issue-174/PLANO.md
   - backlog/evidencias/issue-174/FLUXO.md
+  - backlog/evidencias/issue-174/ESTUDO-REUSO-BANCO.md
 type: feature
 ordinal: 187000
 ---
@@ -86,6 +87,15 @@ created: 2026-11-24T13:22:00Z
 ---
 
 Revisão de escala: migração v26 projeta créditos com IDs recebidos por recibo e indexa a precedência por perfil, ocorrência e nome. A limpeza visita somente os artistas da ocorrência afetada e usa buscas indexadas do perfil por ocorrência. Testes de migração, precedência, cascatas e planos passaram, incluindo exclusão de 2 mil escutas com 4 mil declarações alheias, make check e testes de corrida dirigidos.
+
+---
+
+author: codex
+created: 2026-11-24T14:28:00Z
+
+---
+
+Adaptação do modelo: schema 27 reúne declarações em metadata_values, com uma FK de entidade, perfil, proveniência e escuta validada. A fila durável e a projeção de precedência continuam separadas dos valores. Verificados upgrade v23, migração de declarações, restrições e isolamento, conflitos, remoção, fusões e reversão, arquivo v2, plano de exportação em 300 mil eventos, recuperação após reabrir o banco, teste de corrida e make check com 13 percursos E2E. O estudo registra os tipos futuros e as decisões de revisão de conflito ainda abertas.
 
 ---
 <!-- COMMENTS:END -->

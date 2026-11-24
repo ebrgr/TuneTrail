@@ -51,25 +51,25 @@ func uniqueCreditName(credits []models.ArtistWithFullAliases, index int, name st
 }
 
 // exportClaims batches one page of scoped catalog claims and rejects conflicting IDs.
-func exportClaims(ctx context.Context, tx *sql.Tx, profile int32, table, column string, ids []int32) (map[int32]exportDeclaration, map[int32][]models.MBIDDeclaration, error) {
+func exportClaims(ctx context.Context, tx *sql.Tx, profile int32, column string, ids []int64) (map[int64]exportDeclaration, map[int64][]models.MBIDDeclaration, error) {
 	encoded, err := json.Marshal(ids)
 	if err != nil {
 		return nil, nil, err
 	}
-	query := fmt.Sprintf(`SELECT %s,mbid,source,observed_at FROM %s
-		WHERE profile_id=? AND %s IN (SELECT value FROM json_each(?)) ORDER BY %s,observed_at,source,instance,mbid`, column, table, column, column)
+	query := fmt.Sprintf(`SELECT DISTINCT %s,value,source,observed_at,instance FROM metadata_values
+		WHERE profile_id=? AND kind='mbid' AND %s IN (SELECT value FROM json_each(?)) ORDER BY %s,observed_at,source,instance,value`, column, column, column)
 	rows, err := tx.QueryContext(ctx, query, profile, string(encoded))
 	if err != nil {
 		return nil, nil, err
 	}
 	defer rows.Close()
-	result := make(map[int32]exportDeclaration)
-	all := make(map[int32][]models.MBIDDeclaration)
-	conflicts := make(map[int32]bool)
+	result := make(map[int64]exportDeclaration)
+	all := make(map[int64][]models.MBIDDeclaration)
+	conflicts := make(map[int64]bool)
 	for rows.Next() {
-		var key int32
-		var raw, source, at string
-		if err := rows.Scan(&key, &raw, &source, &at); err != nil {
+		var key int64
+		var raw, source, at, instance string
+		if err := rows.Scan(&key, &raw, &source, &at, &instance); err != nil {
 			return nil, nil, err
 		}
 		id, err := uuid.Parse(raw)
@@ -101,22 +101,22 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 	if len(items) == 0 {
 		return nil
 	}
-	var occurrences, artists []int32
+	var recordingsIDs, artists []int64
 	var events []string
 	for _, item := range items {
-		occurrences = append(occurrences, item.TrackID)
+		recordingsIDs = append(recordingsIDs, item.RecordingID)
 		events = append(events, item.Cursor)
 		for _, artist := range item.Artists {
 			if artist.ID > 0 {
-				artists = append(artists, artist.ID)
+				artists = append(artists, int64(artist.ID))
 			}
 		}
 	}
-	recordings, recordingDeclarations, err := exportClaims(ctx, tx, profile, "enrichment_recording_claims", "occurrence_id", occurrences)
+	recordings, recordingDeclarations, err := exportClaims(ctx, tx, profile, "recording_id", recordingsIDs)
 	if err != nil {
 		return err
 	}
-	artistClaims, artistDeclarations, err := exportClaims(ctx, tx, profile, "enrichment_artist_claims", "artist_id", artists)
+	artistClaims, artistDeclarations, err := exportClaims(ctx, tx, profile, "artist_id", artists)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 	}
 	for _, item := range items {
 		snapshots := observed[item.Cursor]
-		item.RecordingDeclarations = append([]models.MBIDDeclaration(nil), recordingDeclarations[item.TrackID]...)
+		item.RecordingDeclarations = append([]models.MBIDDeclaration(nil), recordingDeclarations[item.RecordingID]...)
 		received := make(map[uuid.UUID]int64)
 		for _, observation := range snapshots {
 			for _, raw := range []string{observation.snapshot.Recording, observation.snapshot.MappedRecording} {
@@ -179,7 +179,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 				item.TrackMbid = &id
 				item.MBIDSource = "source-event"
 				item.MBIDDeclaredAt = time.Unix(received[id], 0).UTC().Format(time.RFC3339Nano)
-			} else if claim, ok := recordings[item.TrackID]; ok && len(recordingIDs) == 0 {
+			} else if claim, ok := recordings[item.RecordingID]; ok && len(recordingIDs) == 0 {
 				id := claim.id
 				item.TrackMbid = &id
 				item.MBIDSource = claim.source
@@ -190,7 +190,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 		item.Artists = append([]models.ArtistWithFullAliases(nil), item.Artists...)
 		for i := range item.Artists {
 			artist := &item.Artists[i]
-			artist.MBIDDeclarations = append([]models.MBIDDeclaration(nil), artistDeclarations[artist.ID]...)
+			artist.MBIDDeclarations = append([]models.MBIDDeclaration(nil), artistDeclarations[int64(artist.ID)]...)
 			if artist.ID == 0 {
 				continue
 			}
@@ -246,7 +246,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 			if len(known) > 1 {
 				continue
 			}
-			if claim, ok := artistClaims[artist.ID]; ok {
+			if claim, ok := artistClaims[int64(artist.ID)]; ok {
 				id := claim.id
 				artist.MbzID = &id
 				artist.MBIDSource = claim.source

@@ -60,7 +60,7 @@ func (s *Sqlite) RestoreArchive(ctx context.Context, profile int32, items []*db.
 			item.EventNamespace, item.EventID, eventID, item.Origin, string(item.Provenance)); err != nil {
 			return 0, err
 		}
-		if err := c.restoreDeclarations(ctx, occurrence, item); err != nil {
+		if err := c.restoreDeclarations(ctx, occurrence, eventID, item); err != nil {
 			return 0, err
 		}
 		count++
@@ -237,7 +237,7 @@ func (c archiveCatalog) restoreArtist(ctx context.Context, artist models.ArtistW
 }
 
 // restoreDeclarations keeps imported external claims scoped and never promotes them to catalog proof.
-func (c archiveCatalog) restoreDeclarations(ctx context.Context, occurrence int64, item *db.ExportItem) error {
+func (c archiveCatalog) restoreDeclarations(ctx context.Context, occurrence int64, event string, item *db.ExportItem) error {
 	instance := "archive:" + c.namespace
 	for _, declaration := range item.RecordingDeclarations {
 		source, at := ingest.DeclaredMBIDProvenance(declaration.Source, declaration.DeclaredAt)
@@ -245,7 +245,7 @@ func (c archiveCatalog) restoreDeclarations(ctx context.Context, occurrence int6
 			continue
 		}
 		digest := sha256.Sum256([]byte(source + "\x00" + declaration.MBID.String() + "\x00" + at + "\x00" + declaration.Instance))
-		if _, err := c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims VALUES(?,?,?,?,?,?)`, c.profile, occurrence, instance+":"+hex.EncodeToString(digest[:]), declaration.MBID.String(), source, at); err != nil {
+		if _, err := c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,kind,instance,value,source,observed_at) SELECT ?,recording_id,id,?,'mbid',?,?,?,? FROM occurrences WHERE id=?`, c.profile, event, instance+":"+hex.EncodeToString(digest[:]), declaration.MBID.String(), source, at, occurrence); err != nil {
 			return err
 		}
 	}
@@ -258,7 +258,7 @@ func (c archiveCatalog) restoreDeclarations(ctx context.Context, occurrence int6
 			}
 		}
 		if !found {
-			if _, err := c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims VALUES(?,?,?,?,?,?)`, c.profile, occurrence, instance, item.TrackMbid.String(), source, at); err != nil {
+			if _, err := c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,kind,instance,value,source,observed_at) SELECT ?,recording_id,id,?,'mbid',?,?,?,? FROM occurrences WHERE id=?`, c.profile, event, instance, item.TrackMbid.String(), source, at, occurrence); err != nil {
 				return err
 			}
 		}
@@ -302,9 +302,9 @@ func (c archiveCatalog) restoreDeclarations(ctx context.Context, occurrence int6
 			digest := sha256.Sum256([]byte(source + "\x00" + declaration.MBID.String() + "\x00" + at + "\x00" + declaration.Instance))
 			declarationInstance := instance + ":" + hex.EncodeToString(digest[:])
 			// An archive mapping is usable only when this occurrence still credits that artist.
-			_, err = c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims SELECT ?,a.id,?,?,?,? FROM artists a
+			_, err = c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_values(profile_id,artist_id,event_id,kind,instance,value,source,observed_at) SELECT ?,a.id,?,'mbid',?,?,?,? FROM artists a
 				WHERE a.id=? AND (EXISTS(SELECT 1 FROM artist_tracks WHERE track_id=? AND artist_id=a.id)
-				OR EXISTS(SELECT 1 FROM occurrence_credits WHERE occurrence_id=? AND artist_id=a.id))`, c.profile, declarationInstance, declaration.MBID.String(), source, at, local, occurrence, occurrence)
+				OR EXISTS(SELECT 1 FROM occurrence_credits WHERE occurrence_id=? AND artist_id=a.id))`, c.profile, event, declarationInstance, declaration.MBID.String(), source, at, local, occurrence, occurrence)
 			if err != nil {
 				return err
 			}

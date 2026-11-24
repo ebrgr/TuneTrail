@@ -31,11 +31,23 @@ func TestEnrichmentUpgrade(t *testing.T) {
 	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow' AND event_id IS NULL`)
 	_, err := provider.UpTo(t.Context(), 23)
 	require.NoError(t, err)
-	before := scalar(t, s, `SELECT count(*) FROM listens`)
-	_, err = provider.UpTo(t.Context(), 24)
+	queries := []string{
+		`SELECT * FROM listens ORDER BY event_id`,
+		`SELECT receipt_id,original_snapshot FROM ingest_events ORDER BY receipt_id`,
+		`SELECT id,musicbrainz_id FROM artists ORDER BY id`,
+		`SELECT id,musicbrainz_id,mbid_source FROM recordings ORDER BY id`,
+	}
+	before := make([][32]byte, len(queries))
+	for i, query := range queries {
+		before[i] = queryDigest(t, s.db, query)
+	}
+	_, err = provider.UpTo(t.Context(), currentSchemaVersion)
 	require.NoError(t, err)
-	require.Equal(t, before, scalar(t, s, `SELECT count(*) FROM listens`))
+	for i, query := range queries {
+		require.Equal(t, before[i], queryDigest(t, s.db, query))
+	}
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_jobs`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values`))
 	require.NoError(t, checkDatabase(s.db))
 }
 
@@ -62,9 +74,11 @@ func TestEnrichmentPersistsScopedDeclarations(t *testing.T) {
 	found, err := s.ResolveNextEnrichment(t.Context(), provider)
 	require.NoError(t, err)
 	require.True(t, found)
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_recording_claims WHERE profile_id=1 AND instance='test-instance' AND mbid=?`, fixtureRecording))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims WHERE profile_id=1 AND instance='test-instance'`))
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_recording_claims WHERE profile_id<>1`))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM metadata_values m JOIN ingest_events e
+		ON e.profile_id=m.profile_id AND e.event_id=m.event_id WHERE e.receipt_id=?`, id))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND instance='test-instance' AND value=?`, fixtureRecording))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1 AND instance='test-instance'`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id<>1`))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM recordings WHERE musicbrainz_id=?`, fixtureRecording))
 	var after, state string
 	require.NoError(t, s.db.QueryRow(`SELECT e.original_snapshot,j.state FROM ingest_events e JOIN enrichment_jobs j USING(receipt_id) WHERE e.receipt_id=?`, id).Scan(&after, &state))
@@ -88,7 +102,7 @@ func TestEnrichmentPersistsScopedDeclarations(t *testing.T) {
 	require.NotNil(t, track.MbzID)
 	require.Equal(t, fixtureRecording, track.MbzID.String())
 	var artistID int32
-	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM enrichment_artist_claims WHERE profile_id=1`).Scan(&artistID))
+	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1`).Scan(&artistID))
 	artist, err := s.GetArtist(db.WithProfile(t.Context(), 1), db.GetArtistOpts{ID: artistID})
 	require.NoError(t, err)
 	require.NotNil(t, artist.MbzID)
@@ -126,7 +140,7 @@ func TestEnrichmentDeletionDuringLookup(t *testing.T) {
 	execSQL(t, s, `DELETE FROM listens WHERE event_id=(SELECT event_id FROM ingest_events WHERE receipt_id=?)`, id)
 	close(finish)
 	require.NoError(t, <-done)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_recording_claims`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL`))
 }
 
 // TestEnrichmentArtistReassignmentDuringLookup rejects a replacement identity with the same name.
@@ -153,7 +167,7 @@ func TestEnrichmentArtistReassignmentDuringLookup(t *testing.T) {
 	execSQL(t, s, `UPDATE occurrence_credits SET artist_id=? WHERE occurrence_id=? AND name='Race artist'`, newArtist, occurrence)
 	close(finish)
 	require.NoError(t, <-done)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL`))
 }
 
 // TestEnrichmentCatalogEditDuringLookup rejects a result based on stale metadata.
@@ -174,7 +188,7 @@ func TestEnrichmentCatalogEditDuringLookup(t *testing.T) {
 	execSQL(t, s, `UPDATE occurrences SET presented_title='Edited' WHERE id=(SELECT occurrence_id FROM ingest_events WHERE receipt_id=?)`, id)
 	close(finish)
 	require.NoError(t, <-done)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_recording_claims`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_jobs WHERE receipt_id=? AND state='failed'`, id))
 }
 
@@ -213,8 +227,8 @@ func TestEnrichmentPreservesReceivedIDs(t *testing.T) {
 	found, err := s.ResolveNextEnrichment(t.Context(), provider)
 	require.True(t, found)
 	require.NoError(t, err)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_recording_claims`))
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_jobs WHERE receipt_id=? AND state='found'`, id))
 }
 
@@ -226,10 +240,10 @@ func TestEnrichmentArtistMergePreservesConflictingClaims(t *testing.T) {
 	var from, to int32
 	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM artist_aliases WHERE alias='Merge artist'`).Scan(&from))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO artists DEFAULT VALUES RETURNING id`).Scan(&to))
-	_, err := s.db.Exec(`INSERT INTO enrichment_artist_claims(profile_id,artist_id,instance,mbid,source,observed_at) VALUES
-		(1,?, 'instance','e10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z'),
-		(1,?, 'instance','c10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z')`, from, to)
+	_, err := s.db.Exec(`INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES
+		(1,?, 'instance','e10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z','mbid'),
+		(1,?, 'instance','c10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z','mbid')`, from, to)
 	require.NoError(t, err)
 	require.NoError(t, s.MergeArtists(t.Context(), from, to, false))
-	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims WHERE artist_id=? AND profile_id=1`, to))
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND artist_id=? AND profile_id=1`, to))
 }

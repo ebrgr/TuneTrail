@@ -707,16 +707,9 @@ func mergeArtistsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replace
 		`UPDATE artist_releases SET artist_id = ? WHERE artist_id = ?`, toId, fromId); err != nil {
 		return fmt.Errorf("MergeArtists: update releases: %w", err)
 	}
-	// Preserve each profile's provider declarations, including conflicts, across a merge.
-	var hasClaims int
-	if err := tx.QueryRowContext(ctx, `SELECT count(*) FROM sqlite_master WHERE type='table' AND name='enrichment_artist_claims'`).Scan(&hasClaims); err != nil {
-		return fmt.Errorf("MergeArtists: inspect enrichment schema: %w", err)
-	}
-	if hasClaims != 0 {
-		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,instance,mbid,source,observed_at)
-			SELECT profile_id,?,instance,mbid,source,observed_at FROM enrichment_artist_claims WHERE artist_id=?`, toId, fromId); err != nil {
-			return fmt.Errorf("MergeArtists: preserve enrichment claims: %w", err)
-		}
+	// Preserve scoped values and the supporting occurrence credits across a merge.
+	if err := mergeMetadataArtist(ctx, tx, fromId, toId); err != nil {
+		return fmt.Errorf("MergeArtists: preserve metadata: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, `DELETE FROM artists WHERE id = ?`, fromId); err != nil {
 		return fmt.Errorf("MergeArtists: delete from: %w", err)

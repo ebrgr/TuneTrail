@@ -25,3 +25,7 @@ Plano inicial, 24/11/2026. A implementação e os critérios de aceite permanece
 4. Testar schema novo e atualização do v23, preservação de dados, origem por entidade, isolamento de perfis, provedor indisponível e desligado, repetição e recuperação. Executar `make check` e revisão prevista no projeto.
 
 A data e forma da migração devem ser coordenadas com a ISSUE-195: o plano antigo colocava 174 depois da consolidação, mas o usuário pediu começar por 174. Não alterar dependências automaticamente sem conferir as demais tarefas e o plano de upgrade.
+
+## Adaptação aprovada para a tabela única
+
+A gravação de valores passa a usar `metadata_values` a partir do schema 27. A estratégia mantém uma FK de entidade por observação, valida no banco a origem dentro do perfil e usa índices separados por entidade. A projeção de créditos de entrada e a fila com lease permanecem estruturas de apoio. O vínculo com a escuta é opcional para dados já migrados ou após exclusão da origem. A validação cobre os caminhos de upgrade v23 e de preservação de declarações da branch, a privacidade, a retenção, a reconciliação, a exportação v2 e a recuperação da fila. A política futura de resolução explícita está descrita no estudo de reuso do banco.

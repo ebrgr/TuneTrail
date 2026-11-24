@@ -30,3 +30,7 @@ A migração 026 acrescenta `enrichment_received_artist_credits`, uma projeção
 A limpeza roda para os artistas da ocorrência quando sai a última escuta daquele perfil na ocorrência. Para cada artista afetado, uma busca indexada verifica se ainda há escuta do perfil em outra ocorrência. A exclusão direta de ocorrência ou de faixa legada faz a mesma verificação antes de perder os vínculos aos artistas na cascata do SQLite. A transferência das declarações de gravação continua usando as outras edições da mesma gravação.
 
 O teste de escala exclui 2 mil escutas com 4 mil declarações alheias no mesmo perfil e verifica os índices no plano de execução. Os testes de precedência exercitam o preenchimento de recibos anteriores à migração, novos recibos e a remoção da projeção ao apagar um recibo.
+
+## Schema 27
+
+`metadata_values` substitui `enrichment_recording_claims` e `enrichment_artist_claims`. Cada valor pertence ao perfil e a exatamente um artista, uma gravação ou um lançamento. A ocorrência de apoio permite acompanhar a reconciliação de gravações. A FK opcional para a escuta de origem é apagada separadamente do valor. A projeção de crédito recebido continua indexada e a fila permanece independente. O [estudo de reuso](ESTUDO-REUSO-BANCO.md) detalha a retenção, os tipos reservados e as decisões de conflito ainda abertas.
