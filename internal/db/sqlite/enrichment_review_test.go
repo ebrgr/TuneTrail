@@ -33,8 +33,8 @@ func TestEnrichmentRetentionUpgrade(t *testing.T) {
 	execSQL(t, s, `INSERT INTO enrichment_artist_claims VALUES(1,?,?,'old',?,'navidrome-subsonic','2026-01-02T00:00:00Z')`, artist, receipt, enrichedArtist174)
 	_, err = provider.UpTo(t.Context(), currentSchemaVersion)
 	require.NoError(t, err)
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE profile_id=1 AND occurrence_id=? AND observed_at='2026-01-02T00:00:00Z' AND event_id IS NULL`, occurrence))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE profile_id=1 AND artist_id=? AND observed_at='2026-01-02T00:00:00Z' AND event_id IS NULL`, artist))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE profile_id=1 AND occurrence_id=? AND observed_at='2026-01-02T00:00:00Z' AND reason='missing_event'`, occurrence))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE profile_id=1 AND artist_id=? AND observed_at='2026-01-02T00:00:00Z' AND reason='missing_event'`, artist))
 	require.NoError(t, checkDatabase(s.db))
 	assertForeignKeys(t, s)
 }
@@ -94,10 +94,10 @@ func TestEnrichmentConflictingArtistClaimsArchive(t *testing.T) {
 	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	var artist int64
 	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM artist_aliases WHERE alias='Conflict artist'`).Scan(&artist))
-	execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES
-		(1,?,'server-a',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid'),
-		(1,?,'server-b',?,'navidrome-subsonic','2026-01-03T00:00:00Z','mbid'),
-		(1,?,'server-c',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`, artist, knownArtist174, artist, enrichedArtist174, artist, knownArtist174)
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,event_id,instance,value,source,observed_at,kind) VALUES
+		(1,?,(SELECT event_id FROM ingest_events WHERE receipt_id=?),'server-a',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid'),
+		(1,?,(SELECT event_id FROM ingest_events WHERE receipt_id=?),'server-b',?,'navidrome-subsonic','2026-01-03T00:00:00Z','mbid'),
+		(1,?,(SELECT event_id FROM ingest_events WHERE receipt_id=?),'server-c',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`, artist, receipt, knownArtist174, artist, receipt, enrichedArtist174, artist, receipt, knownArtist174)
 	var event string
 	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM ingest_events WHERE receipt_id=?`, receipt).Scan(&event))
 	page, err := s.GetExportPage(t.Context(), db.GetExportPageOpts{ProfileID: 1, Limit: 100})
@@ -220,7 +220,7 @@ func TestEnrichmentExportPreservesReceivedRecording(t *testing.T) {
 	require.True(t, matched)
 }
 
-// TestEnrichmentRetention removes claims only after the profile's last related listen.
+// TestEnrichmentRetention keeps values after receipt removal and deletes them with their listen.
 func TestEnrichmentRetention(t *testing.T) {
 	s := configuredEnrichmentFixture(t)
 	snapshot := ingest.Snapshot{Title: "Retention", Artist: "Retained artist", Release: "Retained album"}
@@ -238,27 +238,43 @@ func TestEnrichmentRetention(t *testing.T) {
 	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	var occurrence int64
 	require.NoError(t, s.db.QueryRow(`SELECT occurrence_id FROM ingest_events WHERE receipt_id=?`, first).Scan(&occurrence))
+	var originalEvent, laterEvent string
+	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM ingest_events WHERE receipt_id=?`, first).Scan(&originalEvent))
+	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM ingest_events WHERE receipt_id=?`, second).Scan(&laterEvent))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=1 AND track_id=?`, occurrence))
 	execSQL(t, s, `DELETE FROM ingest_events WHERE receipt_id=?`, first)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND occurrence_id=?`, occurrence))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1`))
+	page, err := s.GetExportPage(t.Context(), db.GetExportPageOpts{ProfileID: 1, Limit: 100})
+	require.NoError(t, err)
+	var checked int
+	for _, item := range page {
+		switch item.Cursor {
+		case originalEvent:
+			require.Len(t, item.RecordingDeclarations, 1)
+			require.Len(t, item.Artists[0].MBIDDeclarations, 1)
+			checked++
+		case laterEvent:
+			require.Empty(t, item.RecordingDeclarations)
+			require.Empty(t, item.Artists[0].MBIDDeclarations)
+			checked++
+		}
+	}
+	require.Equal(t, 2, checked)
 	var artist int64
 	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1`).Scan(&artist))
-	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,origin) VALUES(2,?,1700000101,'legacy')`, occurrence)
-	execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES(2,?,'other-instance',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`, artist, enrichedArtist174)
-	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,instance,value,source,observed_at,kind) SELECT 2,recording_id,id,'other-instance',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, occurrence, fixtureRecording)
-	var event string
-	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM ingest_events WHERE receipt_id=?`, second).Scan(&event))
-	require.NoError(t, s.DeleteListenEvent(db.WithProfile(t.Context(), 1), event))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND occurrence_id=?`, occurrence))
-	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=?`, occurrence)
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,origin,event_id) VALUES(2,?,1700000101,'legacy','other-retention')`, occurrence)
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,event_id,instance,value,source,observed_at,kind) VALUES(2,?,'other-retention','other-instance',?,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`, artist, enrichedArtist174)
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,instance,value,source,observed_at,kind) SELECT 2,recording_id,id,'other-retention','other-instance',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, occurrence, fixtureRecording)
+	require.NoError(t, s.DeleteListenEvent(db.WithProfile(t.Context(), 1), originalEvent))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE event_id=?`, laterEvent))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND occurrence_id=?`, occurrence))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=1`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND profile_id=2`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=2`))
 }
 
-// TestEnrichmentRetentionAcrossOccurrences keeps a recording claim while another edition remains.
+// TestEnrichmentRetentionAcrossOccurrences removes a claim with its originating listen.
 func TestEnrichmentRetentionAcrossOccurrences(t *testing.T) {
 	s := configuredEnrichmentFixture(t)
 	receipt := admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Edition one", Artist: "Artist", Release: "Album"}, 1700000500, "edition-one")
@@ -267,24 +283,25 @@ func TestEnrichmentRetentionAcrossOccurrences(t *testing.T) {
 	require.NoError(t, s.db.QueryRow(`SELECT occurrence_id,recording_id FROM ingest_events WHERE receipt_id=?`, receipt).Scan(&occurrence, &recording))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO occurrences(recording_id,presented_title) VALUES(?,'Edition two') RETURNING id`, recording).Scan(&other))
 	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,origin) VALUES(1,?,1700000501,'legacy')`, other)
-	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,instance,value,source,observed_at,kind) SELECT 1,recording_id,id,'server',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, occurrence, fixtureRecording)
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,instance,value,source,observed_at,kind) SELECT 1,recording_id,id,(SELECT event_id FROM listens WHERE track_id=?1 AND profile_id=1),'server',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, occurrence, fixtureRecording)
 	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=?`, occurrence)
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND occurrence_id=? AND value=?`, other, fixtureRecording))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND value=?`, fixtureRecording))
 	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=?`, other)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND value=?`, fixtureRecording))
 }
 
-// TestEnrichmentOccurrenceDeleteRetainsOtherEdition protects claims during catalog deletion.
-func TestEnrichmentOccurrenceDeleteRetainsOtherEdition(t *testing.T) {
+// TestEnrichmentOccurrenceDeleteRemovesOrigin keeps the second edition without borrowing its listen.
+func TestEnrichmentOccurrenceDeleteRemovesOrigin(t *testing.T) {
 	s := convertedOccurrenceFixture(t)
 	var recording, first, second int64
 	require.NoError(t, s.db.QueryRow(`INSERT INTO recordings DEFAULT VALUES RETURNING id`).Scan(&recording))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO occurrences(recording_id,presented_title) VALUES(?,'First') RETURNING id`, recording).Scan(&first))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO occurrences(recording_id,presented_title) VALUES(?,'Second') RETURNING id`, recording).Scan(&second))
 	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,origin) VALUES(1,?,1700000600,'legacy'),(1,?,1700000601,'legacy')`, first, second)
-	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,instance,value,source,observed_at,kind) SELECT 1,recording_id,id,'server',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, first, fixtureRecording)
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,instance,value,source,observed_at,kind) SELECT 1,recording_id,id,(SELECT event_id FROM listens WHERE track_id=?1 AND profile_id=1),'server',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, first, fixtureRecording)
 	execSQL(t, s, `DELETE FROM occurrences WHERE id=?`, first)
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND occurrence_id=? AND value=?`, second, fixtureRecording))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=1 AND value=?`, fixtureRecording))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE track_id=?`, second))
 }
 
 // TestEnrichmentProfileDeletionRemovesClaims verifies privacy during cascading deletion.
@@ -295,7 +312,7 @@ func TestEnrichmentProfileDeletionRemovesClaims(t *testing.T) {
 	require.NoError(t, s.db.QueryRow(`INSERT INTO occurrences(recording_id,presented_title) VALUES(?,'First') RETURNING id`, recording).Scan(&first))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO occurrences(recording_id,presented_title) VALUES(?,'Second') RETURNING id`, recording).Scan(&second))
 	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,origin) VALUES(2,?,1700000700,'legacy'),(2,?,1700000701,'legacy')`, first, second)
-	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,instance,value,source,observed_at,kind) SELECT 2,recording_id,id,'server',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, first, fixtureRecording)
+	execSQL(t, s, `INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,instance,value,source,observed_at,kind) SELECT 2,recording_id,id,(SELECT event_id FROM listens WHERE track_id=?1 AND profile_id=2),'server',?2,'navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=?1`, first, fixtureRecording)
 	execSQL(t, s, `DELETE FROM listening_profiles WHERE id=2`)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL AND profile_id=2`))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM listens WHERE profile_id=2`))

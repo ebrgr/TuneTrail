@@ -79,9 +79,10 @@ recording and artist MusicBrainz IDs asynchronously. TuneTrail requires an
 unambiguous song match and keeps these IDs as dated declarations scoped to the
 profile and Subsonic configuration. Existing IDs take precedence; an unavailable
 server or an ambiguous result does not block the listen. Existing history is not
-automatically searched. Declarations stay with the profile while it has a
-related listen and are removed with the last related listen or the profile.
-Version 2 exports preserve their source and date; version 1 omits external IDs
+automatically searched. Declarations are bound to the specific listen that
+supports them. Deleting that listen or its profile removes its declarations.
+Deleting only the ingestion receipt retains the declarations while the listen exists.
+Version 2 exports preserve their source and date on the supporting listen. Version 1 omits external IDs
 because it cannot preserve their provenance. Older TuneTrail versions that do
 not recognize the declaration fields cannot restore those IDs from the archive.
 

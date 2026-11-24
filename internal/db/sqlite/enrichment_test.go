@@ -235,14 +235,16 @@ func TestEnrichmentPreservesReceivedIDs(t *testing.T) {
 // TestEnrichmentArtistMergePreservesConflictingClaims keeps both scoped assertions for review.
 func TestEnrichmentArtistMergePreservesConflictingClaims(t *testing.T) {
 	s := configuredEnrichmentFixture(t)
-	admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Merge title", Artist: "Merge artist", Release: "Merge album"}, 1700000050, "merge-enrich")
+	receipt := admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Merge title", Artist: "Merge artist", Release: "Merge album"}, 1700000050, "merge-enrich")
 	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	var from, to int32
 	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM artist_aliases WHERE alias='Merge artist'`).Scan(&from))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO artists DEFAULT VALUES RETURNING id`).Scan(&to))
-	_, err := s.db.Exec(`INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES
-		(1,?, 'instance','e10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z','mbid'),
-		(1,?, 'instance','c10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z','mbid')`, from, to)
+	execSQL(t, s, `INSERT INTO artist_tracks(artist_id,track_id,is_primary)
+		SELECT ?,occurrence_id,0 FROM ingest_events WHERE receipt_id=?`, to, receipt)
+	_, err := s.db.Exec(`INSERT INTO metadata_values(profile_id,artist_id,event_id,instance,value,source,observed_at,kind) VALUES
+		(1,?, (SELECT event_id FROM ingest_events WHERE receipt_id=?), 'instance','e10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z','mbid'),
+		(1,?, (SELECT event_id FROM ingest_events WHERE receipt_id=?), 'instance','c10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z','mbid')`, from, receipt, to, receipt)
 	require.NoError(t, err)
 	require.NoError(t, s.MergeArtists(t.Context(), from, to, false))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE artist_id IS NOT NULL AND artist_id=? AND profile_id=1`, to))

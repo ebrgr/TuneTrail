@@ -21,6 +21,13 @@ type enrichmentClaim struct {
 	artists                        map[string]int64
 }
 
+// CountUnverifiedMetadata reports rescued historical values without exposing their contents.
+func (s *Sqlite) CountUnverifiedMetadata(ctx context.Context) (int64, error) {
+	var count int64
+	err := s.db.QueryRowContext(ctx, `SELECT count(*) FROM metadata_unverified_legacy`).Scan(&count)
+	return count, err
+}
+
 // ConfigureEnrichment gates new work and terminates queued work when the provider is disabled.
 func (s *Sqlite) ConfigureEnrichment(ctx context.Context, enabled bool) error {
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {

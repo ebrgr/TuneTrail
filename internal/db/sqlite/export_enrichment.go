@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strconv"
 	"time"
@@ -50,50 +49,51 @@ func uniqueCreditName(credits []models.ArtistWithFullAliases, index int, name st
 	return true
 }
 
-// exportClaims batches one page of scoped catalog claims and rejects conflicting IDs.
-func exportClaims(ctx context.Context, tx *sql.Tx, profile int32, column string, ids []int64) (map[int64]exportDeclaration, map[int64][]models.MBIDDeclaration, error) {
-	encoded, err := json.Marshal(ids)
+type exportClaimKey struct {
+	event  string
+	artist int64 // Zero denotes the event's recording.
+}
+
+// exportClaims reads only declarations supported by an event on this page.
+func exportClaims(ctx context.Context, tx *sql.Tx, profile int32, events string) (map[exportClaimKey][]models.MBIDDeclaration, error) {
+	rows, err := tx.QueryContext(ctx, `SELECT event_id,coalesce(artist_id,0),value,source,observed_at FROM metadata_values
+		WHERE profile_id=? AND kind='mbid' AND release_id IS NULL AND event_id IN (SELECT value FROM json_each(?))
+		ORDER BY event_id,artist_id,observed_at,source,instance,value`, profile, events)
 	if err != nil {
-		return nil, nil, err
-	}
-	query := fmt.Sprintf(`SELECT DISTINCT %s,value,source,observed_at,instance FROM metadata_values
-		WHERE profile_id=? AND kind='mbid' AND %s IN (SELECT value FROM json_each(?)) ORDER BY %s,observed_at,source,instance,value`, column, column, column)
-	rows, err := tx.QueryContext(ctx, query, profile, string(encoded))
-	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	defer rows.Close()
-	result := make(map[int64]exportDeclaration)
-	all := make(map[int64][]models.MBIDDeclaration)
-	conflicts := make(map[int64]bool)
+	result := make(map[exportClaimKey][]models.MBIDDeclaration)
 	for rows.Next() {
-		var key int64
-		var raw, source, at, instance string
-		if err := rows.Scan(&key, &raw, &source, &at, &instance); err != nil {
-			return nil, nil, err
+		var key exportClaimKey
+		var raw, source, at string
+		if err := rows.Scan(&key.event, &key.artist, &raw, &source, &at); err != nil {
+			return nil, err
 		}
 		id, err := uuid.Parse(raw)
 		if err != nil || id == uuid.Nil {
 			continue
 		}
-		// Keep distinct source instances without exposing credential-derived hashes.
-		declaration := models.MBIDDeclaration{MBID: id, Source: source, DeclaredAt: at, Instance: strconv.Itoa(len(all[key]) + 1)}
-		all[key] = append(all[key], declaration)
-		if previous, ok := result[key]; ok {
-			if previous.id != id {
-				conflicts[key] = true
-			}
-		} else {
-			result[key] = exportDeclaration{id: id, source: source, at: at}
+		// Keep source instances distinct without exposing their credential-derived keys.
+		result[key] = append(result[key], models.MBIDDeclaration{
+			MBID: id, Source: source, DeclaredAt: at, Instance: strconv.Itoa(len(result[key]) + 1),
+		})
+	}
+	return result, rows.Err()
+}
+
+// singleExportClaim returns the first observation only if all observations agree.
+func singleExportClaim(values []models.MBIDDeclaration) (exportDeclaration, bool) {
+	if len(values) == 0 {
+		return exportDeclaration{}, false
+	}
+	first := values[0]
+	for _, value := range values[1:] {
+		if value.MBID != first.MBID {
+			return exportDeclaration{}, false
 		}
 	}
-	if err := rows.Err(); err != nil {
-		return nil, nil, err
-	}
-	for key := range conflicts {
-		delete(result, key)
-	}
-	return result, all, nil
+	return exportDeclaration{id: first.MBID, source: first.Source, at: first.DeclaredAt}, true
 }
 
 // applyExportDeclarations reads each page in batches and overlays claims per event.
@@ -101,26 +101,15 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 	if len(items) == 0 {
 		return nil
 	}
-	var recordingsIDs, artists []int64
-	var events []string
+	events := make([]string, 0, len(items))
 	for _, item := range items {
-		recordingsIDs = append(recordingsIDs, item.RecordingID)
 		events = append(events, item.Cursor)
-		for _, artist := range item.Artists {
-			if artist.ID > 0 {
-				artists = append(artists, int64(artist.ID))
-			}
-		}
-	}
-	recordings, recordingDeclarations, err := exportClaims(ctx, tx, profile, "recording_id", recordingsIDs)
-	if err != nil {
-		return err
-	}
-	artistClaims, artistDeclarations, err := exportClaims(ctx, tx, profile, "artist_id", artists)
-	if err != nil {
-		return err
 	}
 	encoded, err := json.Marshal(events)
+	if err != nil {
+		return err
+	}
+	claims, err := exportClaims(ctx, tx, profile, string(encoded))
 	if err != nil {
 		return err
 	}
@@ -152,7 +141,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 	}
 	for _, item := range items {
 		snapshots := observed[item.Cursor]
-		item.RecordingDeclarations = append([]models.MBIDDeclaration(nil), recordingDeclarations[item.RecordingID]...)
+		item.RecordingDeclarations = append([]models.MBIDDeclaration(nil), claims[exportClaimKey{event: item.Cursor}]...)
 		received := make(map[uuid.UUID]int64)
 		for _, observation := range snapshots {
 			for _, raw := range []string{observation.snapshot.Recording, observation.snapshot.MappedRecording} {
@@ -179,7 +168,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 				item.TrackMbid = &id
 				item.MBIDSource = "source-event"
 				item.MBIDDeclaredAt = time.Unix(received[id], 0).UTC().Format(time.RFC3339Nano)
-			} else if claim, ok := recordings[item.RecordingID]; ok && len(recordingIDs) == 0 {
+			} else if claim, ok := singleExportClaim(claims[exportClaimKey{event: item.Cursor}]); ok && len(recordingIDs) == 0 {
 				id := claim.id
 				item.TrackMbid = &id
 				item.MBIDSource = claim.source
@@ -190,7 +179,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 		item.Artists = append([]models.ArtistWithFullAliases(nil), item.Artists...)
 		for i := range item.Artists {
 			artist := &item.Artists[i]
-			artist.MBIDDeclarations = append([]models.MBIDDeclaration(nil), artistDeclarations[int64(artist.ID)]...)
+			artist.MBIDDeclarations = append([]models.MBIDDeclaration(nil), claims[exportClaimKey{event: item.Cursor, artist: int64(artist.ID)}]...)
 			if artist.ID == 0 {
 				continue
 			}
@@ -246,7 +235,7 @@ func applyExportDeclarations(ctx context.Context, tx *sql.Tx, profile int32, ite
 			if len(known) > 1 {
 				continue
 			}
-			if claim, ok := artistClaims[int64(artist.ID)]; ok {
+			if claim, ok := singleExportClaim(claims[exportClaimKey{event: item.Cursor, artist: int64(artist.ID)}]); ok {
 				id := claim.id
 				artist.MbzID = &id
 				artist.MBIDSource = claim.source

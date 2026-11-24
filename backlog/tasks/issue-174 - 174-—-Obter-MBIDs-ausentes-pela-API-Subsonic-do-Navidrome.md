@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T14:28:00Z'
+updated_date: '2026-11-24T14:37:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -96,6 +96,15 @@ created: 2026-11-24T14:28:00Z
 ---
 
 Adaptação do modelo: schema 27 reúne declarações em metadata_values, com uma FK de entidade, perfil, proveniência e escuta validada. A fila durável e a projeção de precedência continuam separadas dos valores. Verificados upgrade v23, migração de declarações, restrições e isolamento, conflitos, remoção, fusões e reversão, arquivo v2, plano de exportação em 300 mil eventos, recuperação após reabrir o banco, teste de corrida e make check com 13 percursos E2E. O estudo registra os tipos futuros e as decisões de revisão de conflito ainda abertas.
+
+---
+
+author: codex
+created: 2026-11-24T14:37:00Z
+
+---
+
+Schema v28 exige escuta válida e imutável em metadata_values. A exclusão da escuta remove suas observações, enquanto a remoção do recibo preserva o vínculo existente. Valores antigos sem comprovação ficam em resguardo com motivo e aviso de contagem. Exportação v2 mantém as declarações no evento correspondente, e fusões só transferem valores sustentados pela mesma escuta. Mantida migração aditiva para preservar a compatibilidade dos bancos de trabalho. Passaram os testes de migração, escopo, fusão, exclusão, arquivo e corrida, além de make check com 13 percursos E2E.
 
 ---
 <!-- COMMENTS:END -->

@@ -8,7 +8,7 @@
 4. O provedor procura pelo título via `search3`, requer correspondência de título, artista e álbum, confronta duração, posição e IDs disponíveis e recusa múltiplos candidatos ou uma página possivelmente truncada. A consulta de artista usa o ID nativo do artista ligado à música, com conferência do nome. O MBID da música requer `mediaType=song`.
 5. As chamadas usam POST, prazo, limite de taxa e cache limitado por perfil e configuração. Credenciais não são registradas nem incluídas nos arquivos de exportação.
 
-## Gravação e consumo
+## Gravação e consumo antes do schema 28
 
 Depois da rede, uma transação curta revalida o recibo, perfil, versão, ocorrência, gravação, créditos e metadados do catálogo. Um resultado antigo é descartado; o snapshot original nunca é reescrito. MBIDs externos são declarações com fonte e instante, sem promoção a `validated` nem substituição de IDs existentes. Valores conflitantes ficam preservados e não se escolhe um deles automaticamente.
 
@@ -31,6 +31,6 @@ A limpeza roda para os artistas da ocorrência quando sai a última escuta daque
 
 O teste de escala exclui 2 mil escutas com 4 mil declarações alheias no mesmo perfil e verifica os índices no plano de execução. Os testes de precedência exercitam o preenchimento de recibos anteriores à migração, novos recibos e a remoção da projeção ao apagar um recibo.
 
-## Schema 27
+## Schema atual
 
-`metadata_values` substitui `enrichment_recording_claims` e `enrichment_artist_claims`. Cada valor pertence ao perfil e a exatamente um artista, uma gravação ou um lançamento. A ocorrência de apoio permite acompanhar a reconciliação de gravações. A FK opcional para a escuta de origem é apagada separadamente do valor. A projeção de crédito recebido continua indexada e a fila permanece independente. O [estudo de reuso](ESTUDO-REUSO-BANCO.md) detalha a retenção, os tipos reservados e as decisões de conflito ainda abertas.
+`metadata_values` substitui `enrichment_recording_claims` e `enrichment_artist_claims`. Cada valor pertence ao perfil e a exatamente um artista, uma gravação ou um lançamento. A ocorrência de apoio permite acompanhar a reconciliação de gravações. A migração 028 torna obrigatória a FK para a escuta de origem. Apagar a escuta elimina suas declarações, enquanto apagar apenas o recibo preserva o vínculo. A exportação v2 leva os valores junto à escuta que os sustenta. Valores antigos sem vínculo comprovado ficam em resguardo local. A projeção de crédito recebido continua indexada e a fila permanece independente. O [estudo de reuso](ESTUDO-REUSO-BANCO.md) detalha a retenção, os tipos reservados e as decisões de conflito ainda abertas.

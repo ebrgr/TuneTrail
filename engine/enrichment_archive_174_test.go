@@ -19,8 +19,8 @@ func TestEnrichmentArchiveRoundTrip(t *testing.T) {
 		INSERT INTO track_aliases VALUES(1,'Song','Canonical',1);
 		INSERT INTO artist_tracks VALUES(1,1,1);
 		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1700000000,'enriched-event'),(2,1,1700000001,'private-other');
-		INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,instance,value,source,observed_at,kind) SELECT 1,recording_id,id,'server-a','11111111-1111-4111-8111-111111111111','navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=1;
-		INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES(1,1,'server-a','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`))
+		INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,instance,value,source,observed_at,kind) SELECT 1,recording_id,id,'enriched-event','server-a','11111111-1111-4111-8111-111111111111','navidrome-subsonic','2026-01-02T00:00:00Z','mbid' FROM occurrences WHERE id=1;
+		INSERT INTO metadata_values(profile_id,artist_id,event_id,instance,value,source,observed_at,kind) VALUES(1,1,'enriched-event','server-a','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z','mbid')`))
 	backup := a.request("GET", "/apis/web/v1/profiles/default/export", "", "", true)
 	require.Equal(t, 200, backup.Code, backup.Body.String())
 	require.NotContains(t, backup.Body.String(), "server-a")
@@ -70,9 +70,9 @@ func TestEnrichmentStandaloneArchive(t *testing.T) {
 		INSERT INTO occurrences(id,recording_id,presented_title) VALUES(1,1,'Standalone song');
 		INSERT INTO occurrence_credits VALUES(1,0,'Standalone artist',1);
 		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,1700000000,'standalone-enriched');
-		INSERT INTO metadata_values(profile_id,artist_id,instance,value,source,observed_at,kind) VALUES
-		(1,1,'server','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z','mbid'),
-		(1,1,'other','33333333-3333-4333-8333-333333333333','navidrome-subsonic','2026-01-03T00:00:00Z','mbid')`))
+		INSERT INTO metadata_values(profile_id,artist_id,event_id,instance,value,source,observed_at,kind) VALUES
+		(1,1,'standalone-enriched','server','22222222-2222-4222-8222-222222222222','navidrome-subsonic','2026-01-02T00:00:00Z','mbid'),
+		(1,1,'standalone-enriched','other','33333333-3333-4333-8333-333333333333','navidrome-subsonic','2026-01-03T00:00:00Z','mbid')`))
 	backup := a.request("GET", "/apis/web/v1/profiles/default/export", "", "", true)
 	require.Equal(t, 200, backup.Code)
 	var doc export.KoitoExport

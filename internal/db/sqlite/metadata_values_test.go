@@ -25,10 +25,11 @@ func TestMetadataValueBindings(t *testing.T) {
 		args []any
 		err  string
 	}{
-		{[]any{1, nil, nil, nil}, "CHECK constraint failed"},
+		{[]any{1, nil, nil, event}, "Metadata event does not support"},
+		{[]any{1, 1, nil, nil}, "NOT NULL constraint failed"},
 		{[]any{1, 1, 1, event}, "CHECK constraint failed"},
-		{[]any{1, 999, nil, nil}, "FOREIGN KEY constraint failed"},
-		{[]any{1, nil, 999, nil}, "FOREIGN KEY constraint failed"},
+		{[]any{1, 999, nil, event}, "Metadata event does not support"},
+		{[]any{1, nil, 999, event}, "Metadata event does not support"},
 		{[]any{2, 1, nil, event}, "Metadata event does not support"},
 		{[]any{1, 2, nil, event}, "Metadata event does not support"},
 		{[]any{1, nil, 2, event}, "Metadata event does not support"},
@@ -39,14 +40,59 @@ func TestMetadataValueBindings(t *testing.T) {
 	execSQL(t, s, insert, 1, nil, 1, event)
 	execSQL(t, s, `INSERT INTO metadata_values(profile_id,artist_id,event_id,kind,value,instance,source,observed_at)
 		VALUES(1,1,?,'genre','Jazz','fixture','source-b','2026-01-02T00:00:00Z')`, event)
-	execSQL(t, s, insert, 2, 1, nil, nil)
-	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,200)`)
+	var otherProfile string
+	require.NoError(t, s.db.QueryRow(`SELECT event_id FROM listens WHERE profile_id=2 AND track_id=1`).Scan(&otherProfile))
+	execSQL(t, s, insert, 2, 1, nil, otherProfile)
+	execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,200,'same-artist')`)
+	for _, replacement := range []any{nil, "same-artist", otherProfile} {
+		require.ErrorContains(t, s.Exec(`UPDATE metadata_values SET event_id=? WHERE event_id=?`, replacement, event), "binding is immutable")
+	}
+	require.ErrorContains(t, s.Exec(`UPDATE metadata_values SET artist_id=2 WHERE event_id=? AND artist_id=1`, event), "binding is immutable")
 	require.NoError(t, s.DeleteListenEvent(db.WithProfile(t.Context(), 1), event))
-	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE profile_id=1 AND event_id IS NULL`))
-	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=1`)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE profile_id=1`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM listens WHERE event_id='same-artist'`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE profile_id=2`))
 	assertForeignKeys(t, s)
+}
+
+// TestMetadataOriginUpgrade preserves a verified binding and quarantines old unproven values.
+func TestMetadataOriginUpgrade(t *testing.T) {
+	s, migration, _ := migrationDB(t, 27)
+	testfixtures.Profile(t, s, 1, "metadata-history", "History", 1)
+	execSQL(t, s, `INSERT INTO artists(id) VALUES(1),(2);
+		INSERT INTO recordings(id) VALUES(1);
+		INSERT INTO occurrences(id,recording_id,presented_title) VALUES(1,1,'Track');
+		INSERT INTO occurrence_credits VALUES(1,0,'A',1),(1,1,'B',2);
+		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,100,'history');
+		INSERT INTO metadata_values(profile_id,artist_id,event_id,kind,value,instance,source,observed_at) VALUES
+		(1,1,'history','genre','Confirmed','given','test','2026-01-02T00:00:00Z'),
+		(1,2,'history','genre','Former credit','given','test','2026-01-02T00:00:00Z'),
+		(1,1,NULL,'genre','No origin','given','test','2026-01-02T00:00:00Z');
+		DELETE FROM occurrence_credits WHERE artist_id=2`)
+	_, err := migration.UpTo(t.Context(), currentSchemaVersion)
+	require.NoError(t, err)
+	require.NoError(t, checkDatabase(s.db))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE event_id='history' AND value='Confirmed'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE value='No origin' AND reason='missing_event'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE value='Former credit' AND reason='unverified_event'`))
+	execSQL(t, s, `DELETE FROM listening_profiles WHERE id=1`)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy`))
+	assertForeignKeys(t, s)
+}
+
+// TestMetadataCreditRemoval deletes only observations tied to the removed credit.
+func TestMetadataCreditRemoval(t *testing.T) {
+	s := mergeFixture(t)
+	execSQL(t, s, `INSERT INTO artist_tracks VALUES(2,1,0);
+		INSERT INTO metadata_values(profile_id,artist_id,event_id,kind,value,instance,source,observed_at)
+		SELECT 1,2,event_id,'genre','Rock','fixture','test','2026-01-02T00:00:00Z'
+		FROM listens WHERE profile_id=1 AND track_id IN (1,2)`)
+	require.NoError(t, s.UpdateTrack(t.Context(), db.UpdateTrackOpts{ID: 1, RemoveArtists: []int32{2}}))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values m JOIN listens l USING(event_id)
+		WHERE m.artist_id=2 AND l.track_id=2`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values m JOIN listens l USING(event_id)
+		WHERE m.artist_id=2 AND l.track_id=1`))
+	require.Equal(t, 4, scalar(t, s, `SELECT count(*) FROM listens`))
 }
 
 // TestMetadataRecordingMerge keeps each declaration on its own occurrence through merge and undo.

@@ -458,6 +458,10 @@ func (s *Sqlite) UpdateTrack(ctx context.Context, opts db.UpdateTrackOpts) error
 				}
 				return db.ErrConflict
 			}
+			// The original listen no longer supports observations for the removed credit.
+			if err := removeUncreditedMetadata(ctx, tx, aid, opts.ID); err != nil {
+				return fmt.Errorf("UpdateTrack: remove metadata for artist: %w", err)
+			}
 		}
 		// A relationship edit must not run the global orphan sweep: it can delete unrelated unplayed media.
 	}
