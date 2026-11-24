@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T19:02:00Z'
+updated_date: '2026-11-24T19:04:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -87,6 +87,15 @@ created: 2026-11-24T19:02:00Z
 ---
 
 Aceite: ISSUE-175 aprovada pelo usuário em 24/11/2026, com solicitação de publicação.
+
+---
+
+author: ebrgr
+created: 2026-11-24T19:04:00Z
+
+---
+
+Publicação: versão 0.76 (tag `v0.76`), branch `feat/issue-175-obter-mbids-ausentes-pelo-listenbrainz` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
