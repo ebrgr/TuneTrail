@@ -4,7 +4,7 @@ title: 175 — Obter MBIDs ausentes pelo ListenBrainz quando o Navidrome não os
 status: Aberta
 assignee: []
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-20T19:04:00Z'
+updated_date: '2026-11-24T11:51:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -29,3 +29,16 @@ Origem: decisão do usuário em 20/11/2026 sobre o plano da ISSUE-134. Última f
 - [ ] #2 Com o serviço desligado, indisponível ou sem o dado, o MBID fica em branco sem pendência e sem retry infinito
 - [ ] #3 Consulta fora do lock de escrita, com timeout, cache, limite de taxa e sem vazar dados além do necessário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: codex
+created: 2026-11-24T11:51:00Z
+
+---
+
+Decisão do usuário em 24/11/2026: buscar MBID de gravação e de artista pelo ListenBrainz apenas quando o respectivo identificador não estiver disponível nos metadados recebidos e continuar ausente após o fallback Navidrome. Preservar identificadores já recebidos; a busca de outros metadados segue regras próprias da ISSUE-055.
+
+---
+<!-- COMMENTS:END -->

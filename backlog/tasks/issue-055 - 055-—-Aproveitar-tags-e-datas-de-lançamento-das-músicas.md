@@ -4,13 +4,15 @@ title: 055 — Aproveitar tags e datas de lançamento das músicas
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-23T01:19:00Z'
+updated_date: '2026-11-24T11:51:00Z'
 labels:
   - catalogo
   - ingestao
 milestone: m-13
 dependencies:
   - ISSUE-079
+references:
+  - backlog/evidencias/issue-055/ESTUDO-COMPLEMENTAR.md
 type: feature
 ordinal: 55000
 ---
@@ -101,6 +103,33 @@ created: 2026-11-23T01:19:00Z
 ---
 
 Novo estudo em backlog/evidencias/issue-055/ESTUDO.md (22/11/2026): cadeia de fontes (escuta, Navidrome, ListenBrainz, MusicBrainz, opcionais Last.fm/Apple/Deezer), enriquecimento assíncrono com cache negativo e disjuntor, modelo aditivo sobre o schema 21, seis cortes e seis decisões do usuário. Não encontrei anúncio de privatização da API do Last.fm; pedida a fonte. Scraping de HTML não recomendado.
+
+---
+
+author: codex
+created: 2026-11-24T11:30:00Z
+
+---
+
+Investigação de 24/11: Navidrome 0.64.2 envia nomes, duração, posição e MBIDs disponíveis, mas não gênero, ano nem ID Subsonic; API testada com amostras sanitizadas e busca com caso sem correspondência. Evidências e correção sobre Last.fm em backlog/evidencias/issue-055/ESTUDO-COMPLEMENTAR.md.
+
+---
+
+author: codex
+created: 2026-11-24T11:42:00Z
+
+---
+
+Decisões do usuário em 24/11/2026: fontes primárias OpenSubsonic configurado e/ou ListenBrainz/MusicBrainz; fallback opcional Last.fm, Apple e Deezer quando faltarem dados, mediante configuração e respeitando termos; sem scraping. Tags populares separadas dos gêneros; incluir artistas. Interface e gráficos em tarefa posterior. Preservar valores conflitantes de bibliotecas por perfil. Enriquecer histórico gradualmente, com limites configuráveis de requisições e informações na central de monitoramento integrada à central de saúde. Subsistema compartilhado começa pelas ISSUE-174 e 175.
+
+---
+
+author: codex
+created: 2026-11-24T11:51:00Z
+
+---
+
+Decisão do usuário em 24/11/2026: consultar provedores para obter MBID de música e artista apenas quando o identificador correspondente não vier nos metadados da escuta do Navidrome; tratar cada entidade independentemente, sem substituir identificadores recebidos. Consultas para gênero, ano e outros dados podem ocorrer mesmo quando o MBID já estiver presente.
 
 ---
 <!-- COMMENTS:END -->

@@ -4,7 +4,7 @@ title: 174 — Obter MBIDs ausentes pela API Subsonic do Navidrome
 status: Aberta
 assignee: []
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-20T19:04:00Z'
+updated_date: '2026-11-24T11:51:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -28,3 +28,16 @@ Origem: decisão do usuário em 20/11/2026 sobre o plano da ISSUE-134 (identidad
 - [ ] #2 Com o serviço desligado, indisponível ou sem o dado, o MBID fica em branco sem pendência, sem retry infinito e sem bloquear a admissão
 - [ ] #3 Consulta fora do lock de escrita, com timeout, cache e limite de taxa; credenciais nunca aparecem em log
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: codex
+created: 2026-11-24T11:51:00Z
+
+---
+
+Decisão do usuário em 24/11/2026: buscar MBID de gravação e de artista por provedor externo apenas quando o respectivo identificador estiver ausente nos metadados recebidos do Navidrome. Avaliar cada entidade independentemente; preservar o MBID recebido, sem substituí-lo pelo resultado da consulta. A busca de outros metadados segue regras próprias da ISSUE-055.
+
+---
+<!-- COMMENTS:END -->
