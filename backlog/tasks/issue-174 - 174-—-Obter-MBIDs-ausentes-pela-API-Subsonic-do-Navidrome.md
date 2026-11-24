@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T16:56:00Z'
+updated_date: '2026-11-24T16:59:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -133,6 +133,15 @@ created: 2026-11-24T16:56:00Z
 ---
 
 Aceite: ISSUE-174 aprovada pelo usuário em 24/11/2026, com solicitação de publicação.
+
+---
+
+author: ebrgr
+created: 2026-11-24T16:59:00Z
+
+---
+
+Publicação: versão 0.75 (tag `v0.75`), branch `feat/issue-174-obter-mbids-ausentes-pela-api` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

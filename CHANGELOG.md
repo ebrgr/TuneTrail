@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.75] - 2026-11-24
+
 - Missing recording and artist MusicBrainz IDs can now be obtained from the configured Subsonic library without delaying listens (ISSUE-174).
 
 ## [0.74] - 2026-11-23
