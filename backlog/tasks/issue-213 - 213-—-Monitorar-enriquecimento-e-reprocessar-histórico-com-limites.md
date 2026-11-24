@@ -4,6 +4,7 @@ title: 213 — Monitorar enriquecimento e reprocessar histórico com limites
 status: Aberta
 assignee: []
 created_date: '2026-11-24T11:43:00Z'
+updated_date: '2026-11-24T19:54:00Z'
 labels:
   - operacao
   - ingestao
@@ -11,6 +12,7 @@ labels:
 milestone: m-13
 dependencies:
   - ISSUE-055
+  - ISSUE-214
 references:
   - backlog/evidencias/issue-055/ESTUDO-COMPLEMENTAR.md
 type: feature

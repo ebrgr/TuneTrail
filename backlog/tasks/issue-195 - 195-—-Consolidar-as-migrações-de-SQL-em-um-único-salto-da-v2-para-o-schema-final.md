@@ -6,19 +6,19 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-23T00:31:00Z'
-updated_date: '2026-11-24T16:49:00Z'
+updated_date: '2026-11-24T19:54:00Z'
 labels:
   - ingestao
 milestone: m-11
 dependencies:
   - ISSUE-194
-  - ISSUE-055
   - ISSUE-190
   - ISSUE-193
   - ISSUE-203
   - ISSUE-204
   - ISSUE-205
   - ISSUE-206
+  - ISSUE-214
 references:
   - >-
     backlog/docs/estudos/doc-046 -
@@ -77,6 +77,15 @@ created: 2026-11-24T16:49:00Z
 ---
 
 A ISSUE-174 consolidou suas prévias em uma única 024 antes da publicação. Usar o layout consolidado na comparação da 195.
+
+---
+
+author: claude
+created: 2026-11-24T19:54:00Z
+
+---
+
+24/11/2026: a dependência da ISSUE-055 foi trocada pela ISSUE-214 (subsistema de enriquecimento), que carrega a migração de metadados que a decisão de 22/11/2026 pedia antes da consolidação. A 055 continua como guarda-chuva dos provedores e da interface e não precisa bloquear a 195, porque metadata_values já existe na 024. Atenção: o schema agora é 24, e a consolidação cobre 003 a 024.
 
 ---
 <!-- COMMENTS:END -->

@@ -1,5 +1,7 @@
 # ISSUE-055 — Novo estudo: enriquecer metadados quando uma escuta chega
 
+> **Atualização de 24/11/2026:** o modelo de dados da seção 4 (tabelas de catálogo compartilhado) foi substituído por `metadata_values` por perfil, criada na migração 024 (ISSUE-174), e os cortes da seção 6 viraram as ISSUE-214 a 223. Ver `backlog/docs/design/doc-048`. As seções 1 a 3 continuam valendo como estudo das fontes.
+
 Estudo de 22/11/2026, refeito sobre o schema 21 (v0.65). A versão anterior da 055 falava em "SQLite v3". Pedido do usuário: ao chegar uma escuta nova, tentar primeiro o servidor Navidrome do usuário, depois o ListenBrainz e, se falhar, Last.fm, Apple ou outra fonte; avaliar o fim anunciado da API do Last.fm e a alternativa de extrair o HTML. Nada foi implementado.
 
 ## 1. O que foi confirmado e o que não foi
