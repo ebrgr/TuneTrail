@@ -11,7 +11,7 @@ import (
 
 type enrichmentResolver interface {
 	ConfigureEnrichment(context.Context, bool) error
-	ResolveNextEnrichment(context.Context, enrichment.Provider) (bool, error)
+	ResolveNextEnrichmentWithFallback(context.Context, enrichment.Provider, *enrichment.ListenBrainz) (bool, error)
 }
 
 // startEnrichment owns a separate worker so external calls never delay admission or receipt recovery.
@@ -31,12 +31,10 @@ func startEnrichment(ctx context.Context, store any) <-chan struct{} {
 			logger.FromContext(ctx).Warn().Msg("Subsonic enrichment configuration unavailable")
 		}
 	}
+	// Relay approval is per receipt and may change without restarting the engine.
+	fallback := enrichment.NewListenBrainz(cfg.UserAgent(), nil)
 	if err := resolver.ConfigureEnrichment(ctx, provider != nil); err != nil {
 		logger.FromContext(ctx).Warn().Msg("Enrichment queue configuration unavailable")
-		close(done)
-		return done
-	}
-	if provider == nil {
 		close(done)
 		return done
 	}
@@ -45,7 +43,7 @@ func startEnrichment(ctx context.Context, store any) <-chan struct{} {
 		timer := time.NewTicker(time.Second)
 		defer timer.Stop()
 		for ctx.Err() == nil {
-			found, err := resolver.ResolveNextEnrichment(ctx, provider)
+			found, err := resolver.ResolveNextEnrichmentWithFallback(ctx, provider, fallback)
 			if err != nil && ctx.Err() == nil {
 				logger.FromContext(ctx).Warn().Msg("Enrichment work could not be stored")
 			}

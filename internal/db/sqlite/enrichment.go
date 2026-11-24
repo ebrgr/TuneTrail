@@ -21,18 +21,25 @@ type enrichmentClaim struct {
 	artists                        map[string]int64
 }
 
-// ConfigureEnrichment gates new work and terminates queued work when the provider is disabled.
+// ConfigureEnrichment gates Subsonic work and preserves any eligible ListenBrainz jobs.
 func (s *Sqlite) ConfigureEnrichment(ctx context.Context, enabled bool) error {
-	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		if _, err := tx.ExecContext(ctx, `UPDATE enrichment_configuration SET enabled=? WHERE singleton=1`, enabled); err != nil {
 			return err
 		}
 		if !enabled {
-			_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='disabled',lease=NULL,lease_until=NULL WHERE state IN ('pending','working')`)
+			_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='disabled',lease=NULL,lease_until=NULL
+				WHERE state IN ('pending','working') AND NOT EXISTS (
+					SELECT 1 `+listenBrainzRelay+` AND e.receipt_id=enrichment_jobs.receipt_id)`, enrichment.ListenBrainzBase)
 			return err
 		}
 		return nil
 	})
+	// Admission only uses the enrichment tables after engine startup has configured them.
+	if err == nil {
+		s.enrichmentReady.Store(true)
+	}
+	return err
 }
 
 // enrichmentCatalogFingerprint captures the catalog fields used to bind a lookup.
@@ -49,6 +56,11 @@ const enrichmentCatalogFingerprint = `SELECT json_object(
 
 // ResolveNextEnrichment makes one independent, bounded attempt outside the writer lock.
 func (s *Sqlite) ResolveNextEnrichment(ctx context.Context, provider enrichment.Provider) (bool, error) {
+	return s.ResolveNextEnrichmentWithFallback(ctx, provider, nil)
+}
+
+// ResolveNextEnrichmentWithFallback shares the receipt lease and writer transaction across sources.
+func (s *Sqlite) ResolveNextEnrichmentWithFallback(ctx context.Context, provider enrichment.Provider, fallback *enrichment.ListenBrainz) (bool, error) {
 	claim, err := s.claimEnrichment(ctx)
 	if err != nil || claim.receipt == "" {
 		return false, err
@@ -58,28 +70,36 @@ func (s *Sqlite) ResolveNextEnrichment(ctx context.Context, provider enrichment.
 	}
 	var snapshot ingest.Snapshot
 	result := enrichment.Result{Status: enrichment.Failed}
+	var lookup listenBrainzRun
+	var instance string
 	if err := json.Unmarshal([]byte(claim.snapshot), &snapshot); err == nil {
-		if provider == nil {
-			result.Status = enrichment.Disabled
-		} else {
+		result.Status = enrichment.Disabled
+		if provider != nil {
+			instance = provider.Instance()
+		}
+		if provider != nil || fallback != nil {
 			// Skip external work for identifiers already known in this profile's catalog.
-			if err := s.enrichmentKnownIDs(ctx, &claim, &snapshot, provider.Instance()); err != nil {
+			if err := s.enrichmentKnownIDs(ctx, &claim, &snapshot, instance); err != nil {
 				return true, err
 			}
+		}
+		if provider != nil {
 			attempt, cancel := context.WithTimeout(ctx, 20*time.Second)
 			result = provider.Lookup(attempt, enrichment.Request{ProfileID: claim.profile, Snapshot: snapshot})
 			cancel()
+		}
+		if fallback != nil {
+			lookup, err = s.lookupListenBrainz(ctx, claim, result, fallback)
+			if err != nil {
+				return true, err
+			}
 		}
 	}
 	// A canceled process leaves a finite lease for recovery rather than writing with a canceled context.
 	if ctx.Err() != nil {
 		return true, ctx.Err()
 	}
-	instance := ""
-	if provider != nil {
-		instance = provider.Instance()
-	}
-	return true, s.finishEnrichment(ctx, claim, instance, result)
+	return true, s.finishEnrichment(ctx, claim, instance, result, lookup)
 }
 
 // enrichmentKnownIDs augments only the transient lookup request, never the receipt.
@@ -123,15 +143,24 @@ func (s *Sqlite) enrichmentKnownIDs(ctx context.Context, c *enrichmentClaim, sna
 func (s *Sqlite) claimEnrichment(ctx context.Context) (enrichmentClaim, error) {
 	var c enrichmentClaim
 	now := time.Now().Unix()
+	const due = `(state='pending' OR (state='working' AND lease_until<=?))`
+	// An idle poll must not compete with application writers for the SQLite lock.
+	var next string
+	err := s.db.QueryRowContext(ctx, `SELECT receipt_id FROM enrichment_jobs WHERE `+due+` ORDER BY rowid LIMIT 1`, now).Scan(&next)
+	if errors.Is(err, sql.ErrNoRows) {
+		return c, nil
+	}
+	if err != nil {
+		return c, err
+	}
 	lease := uuid.NewString()
-	err := s.db.QueryRowContext(ctx, `UPDATE enrichment_jobs SET
+	err = s.db.QueryRowContext(ctx, `UPDATE enrichment_jobs SET
 		state=CASE WHEN attempts>=2 THEN 'failed' ELSE 'working' END,
 		lease=CASE WHEN attempts>=2 THEN NULL ELSE ? END,
 		lease_until=CASE WHEN attempts>=2 THEN NULL ELSE ? END,
 		attempts=attempts+(attempts<2)
-		WHERE receipt_id=(SELECT receipt_id FROM enrichment_jobs WHERE state='pending'
-		OR (state='working' AND lease_until<=?) ORDER BY rowid LIMIT 1)
-		RETURNING receipt_id,coalesce(lease,'')`, lease, now+60, now).Scan(&c.receipt, &c.lease)
+		WHERE receipt_id=? AND `+due+`
+		RETURNING receipt_id,coalesce(lease,'')`, lease, now+60, next, now).Scan(&c.receipt, &c.lease)
 	if errors.Is(err, sql.ErrNoRows) {
 		return c, nil
 	}
@@ -154,7 +183,7 @@ func (s *Sqlite) claimEnrichment(ctx context.Context) (enrichmentClaim, error) {
 }
 
 // finishEnrichment revalidates ownership, links and existing identifiers under the writer lock.
-func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instance string, result enrichment.Result) error {
+func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instance string, result enrichment.Result, lookup listenBrainzRun) error {
 	var original ingest.Snapshot
 	if err := json.Unmarshal([]byte(c.snapshot), &original); err != nil {
 		return err
@@ -183,9 +212,41 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 			_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='failed',lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, c.receipt, c.lease)
 			return err
 		}
-		for _, declaration := range result.Declarations {
+		declarations := result.Declarations
+		status := result.Status
+		if lookup.result.Status != "" {
+			status = combinedEnrichmentStatus(status, lookup.result.Status)
+		}
+		if len(lookup.result.Declarations) > 0 {
+			// A changed relay or catalog observation invalidates in-flight lookup evidence.
+			current, err := prepareListenBrainz(ctx, tx, c, result)
+			if err != nil {
+				return err
+			}
+			if lookup.matches(current) {
+				declarations = append(slices.Clone(declarations), lookup.result.Declarations...)
+			} else {
+				status = combinedEnrichmentStatus(result.Status, enrichment.Ambiguous)
+			}
+		}
+		jobInstance := instance
+		for _, declaration := range declarations {
+			declarationInstance := instance
+			switch declaration.Source {
+			case enrichment.ListenBrainzSource:
+				if !slices.Contains(lookup.result.Declarations, declaration) {
+					continue
+				}
+				declarationInstance = enrichment.ListenBrainzBase
+				if jobInstance == "" {
+					jobInstance = declarationInstance
+				}
+			case "navidrome-subsonic":
+			default:
+				continue
+			}
 			id, err := uuid.Parse(declaration.Value)
-			if err != nil || id == uuid.Nil || declaration.Field != "musicbrainz_id" || declaration.Source != "navidrome-subsonic" || declaration.ObservedAt.IsZero() || instance == "" {
+			if err != nil || id == uuid.Nil || declaration.Field != "musicbrainz_id" || declaration.ObservedAt.IsZero() || declarationInstance == "" {
 				continue
 			}
 			at := declaration.ObservedAt.UTC().Format(time.RFC3339Nano)
@@ -196,7 +257,7 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 				}
 				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,kind,instance,value,source,observed_at)
 					SELECT ?,r.id,o.id,?,'mbid',?,?,?,? FROM occurrences o JOIN recordings r ON r.id=o.recording_id
-					WHERE o.id=? AND r.id=? AND r.musicbrainz_id IS NULL`, c.profile, event, instance, id.String(), declaration.Source, at, c.occurrence, c.recording)
+					WHERE o.id=? AND r.id=? AND r.musicbrainz_id IS NULL`, c.profile, event, declarationInstance, id.String(), declaration.Source, at, c.occurrence, c.recording)
 			case "artist":
 				if !slices.Contains(missingArtists, declaration.Name) {
 					continue
@@ -214,7 +275,7 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 					AND 1=(SELECT count(DISTINCT artist_id) FROM (
 					 SELECT artist_id FROM occurrence_credits WHERE occurrence_id=? AND name=? AND artist_id IS NOT NULL
 					 UNION SELECT at.artist_id FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id
-					WHERE at.track_id=? AND aa.alias=? COLLATE BINARY))`, c.profile, event, instance, id.String(), declaration.Source, at, expected,
+					WHERE at.track_id=? AND aa.alias=? COLLATE BINARY))`, c.profile, event, declarationInstance, id.String(), declaration.Source, at, expected,
 					c.occurrence, declaration.Name, c.occurrence, declaration.Name, c.occurrence, declaration.Name, c.occurrence, declaration.Name)
 			default:
 				continue
@@ -223,13 +284,12 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 				return err
 			}
 		}
-		status := result.Status
 		switch status {
 		case enrichment.Found, enrichment.Absent, enrichment.Ambiguous, enrichment.Disabled, enrichment.Failed:
 		default:
 			status = enrichment.Failed
 		}
-		_, err = tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, string(status), instance, c.receipt, c.lease)
+		_, err = tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, string(status), jobInstance, c.receipt, c.lease)
 		return err
 	})
 }

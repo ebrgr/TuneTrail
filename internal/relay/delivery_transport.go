@@ -164,6 +164,11 @@ func ValidExceptionPrefix(prefix netip.Prefix) bool {
 	return true
 }
 
+// PublicHTTPSTransport dials public HTTPS addresses without proxy or network exceptions.
+func PublicHTTPSTransport() *http.Transport {
+	return newDeliveryTransport(nil, net.DefaultResolver, false)
+}
+
 // newDeliveryTransport checks each resolved address through Control before connect.
 func newDeliveryTransport(allow Allowlist, resolver *net.Resolver, plainHTTP bool) *http.Transport {
 	return &http.Transport{

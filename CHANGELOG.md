@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Profiles with approved forwarding to ListenBrainz can fill in missing recording and artist MusicBrainz IDs after the local catalog and Subsonic checks (ISSUE-175).
+
 ## [0.75] - 2026-11-24
 
 - Missing recording and artist MusicBrainz IDs can now be obtained from the configured Subsonic library without delaying listens (ISSUE-174).

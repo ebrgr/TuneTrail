@@ -53,3 +53,20 @@ The legacy `TUNETRAIL_ENABLE_LBZ_RELAY`, `TUNETRAIL_LBZ_RELAY_URL` and
 once. With multiple profiles, configure destinations explicitly in Administration.
 Changing or disabling these variables does not remove a relay already saved in
 the database. See the [configuration reference](/reference/configuration).
+
+## Fill in missing MusicBrainz IDs
+
+With approved forwarding to `https://api.listenbrainz.org/1`, TuneTrail can look
+up missing MusicBrainz recording and artist IDs for new player submissions.
+It checks the IDs sent by the player, the catalog, and the configured Subsonic
+library before using ListenBrainz. The fallback also works without Subsonic.
+
+The lookup uses the profile's forwarding token and sends the artist credit,
+track title, and album title when available. A missing recording ID requires
+the album title as matching evidence. For tracks with multiple artists,
+TuneTrail matches each missing ID to a named credit.
+
+Lookup happens after TuneTrail accepts the listen. TuneTrail leaves unresolved
+IDs blank and retains matched IDs as ListenBrainz declarations with their
+observation time in v2 exports. Stop forwarding for the profile to disable
+this lookup. Custom forwarding servers do not enable this feature.

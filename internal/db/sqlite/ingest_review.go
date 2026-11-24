@@ -229,6 +229,10 @@ func (s *Sqlite) resolveIngestReview(ctx context.Context, tx *sql.Conn, profile,
 		profile, r.id, r.version, review.Value, reason, evidence, event, actor, rule, now); err != nil {
 		return err
 	}
+	// Manual decisions use the same enrichment admission as automatic decisions.
+	if err := s.enqueueListenBrainzEnrichment(ctx, tx, r.id); err != nil {
+		return err
+	}
 	if finalState == "accepted" {
 		return insertRelayIntent(ctx, tx, r, event, now)
 	}

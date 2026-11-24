@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	migrations_sqlite "github.com/ebrgr/TuneTrail/db/migrations_sqlite"
@@ -26,6 +27,7 @@ type Sqlite struct {
 	ingestClock          func() time.Time
 	ingestAlertMu        sync.Mutex
 	ingestAlerts         map[ingestAlertKey]time.Time
+	enrichmentReady      atomic.Bool
 }
 
 func New() (*Sqlite, error) {

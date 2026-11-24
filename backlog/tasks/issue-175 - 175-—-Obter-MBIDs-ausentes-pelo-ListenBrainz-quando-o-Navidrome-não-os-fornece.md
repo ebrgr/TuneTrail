@@ -1,10 +1,11 @@
 ---
 id: ISSUE-175
 title: 175 — Obter MBIDs ausentes pelo ListenBrainz quando o Navidrome não os fornece
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T11:51:00Z'
+updated_date: '2026-11-24T17:53:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -13,6 +14,7 @@ dependencies:
   - ISSUE-174
 references:
   - backlog/evidencias/issue-134/PLANO.md
+  - backlog/evidencias/issue-175/FLUXO.md
 type: feature
 ordinal: 188000
 ---
@@ -25,9 +27,9 @@ Origem: decisão do usuário em 20/11/2026 sobre o plano da ISSUE-134. Última f
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Com o MBID ausente e o ListenBrainz disponível, a identidade recebe o MBID encontrado como afirmação declarada, com fonte e data, sem sobrescrever MBID existente
-- [ ] #2 Com o serviço desligado, indisponível ou sem o dado, o MBID fica em branco sem pendência e sem retry infinito
-- [ ] #3 Consulta fora do lock de escrita, com timeout, cache, limite de taxa e sem vazar dados além do necessário
+- [x] #1 Com o MBID ausente e o ListenBrainz disponível, a identidade recebe o MBID encontrado como afirmação declarada, com fonte e data, sem sobrescrever MBID existente
+- [x] #2 Com o serviço desligado, indisponível ou sem o dado, o MBID fica em branco sem pendência e sem retry infinito
+- [x] #3 Consulta fora do lock de escrita, com timeout, cache, limite de taxa e sem vazar dados além do necessário
 <!-- AC:END -->
 
 ## Comments
@@ -39,6 +41,24 @@ created: 2026-11-24T11:51:00Z
 ---
 
 Decisão do usuário em 24/11/2026: buscar MBID de gravação e de artista pelo ListenBrainz apenas quando o respectivo identificador não estiver disponível nos metadados recebidos e continuar ausente após o fallback Navidrome. Preservar identificadores já recebidos; a busca de outros metadados segue regras próprias da ISSUE-055.
+
+---
+
+author: ebrgr
+created: 2026-11-24T17:37:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-175` na branch `feat/issue-175-obter-mbids-ausentes-pelo-listenbrainz` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-24T17:53:00Z
+
+---
+
+Implementado o fallback autenticado do ListenBrainz por gravação e crédito, com autorização do relay oficial no perfil do recibo, proveniência por escuta e reimportação v2. A verificação com servidor simulado cobriu precedência, isolamento, ausência de token, limites, falhas e conflitos concorrentes. O make check passou com 13 percursos E2E, os testes focados passaram com o detector de corrida e o grafo AST foi atualizado. O endpoint fornece um candidato canônico, sem alternativas para distinguir gravações com a mesma combinação textual.
 
 ---
 <!-- COMMENTS:END -->

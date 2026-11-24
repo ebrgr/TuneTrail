@@ -259,7 +259,11 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 			}
 			reason = "review_deferred"
 			if exact != "" {
-				return writeOccurrenceDecision(ctx, tx, r, match, "duplicate", reason, precision, candidates, exact, proof.evidence)
+				if err := writeOccurrenceDecision(ctx, tx, r, match, "duplicate", reason, precision, candidates, exact, proof.evidence); err != nil {
+					return err
+				}
+				// A duplicate receipt can contain different source metadata for the same listen.
+				return s.enqueueListenBrainzEnrichment(ctx, tx, r.id)
 			}
 		}
 		if match.id == 0 {
@@ -323,6 +327,10 @@ func (s *Sqlite) finishOccurrence(ctx context.Context, r claimedReceipt, proof o
 		}
 		// Persist the acceptance before creating its relay intent.
 		if err := writeOccurrenceDecision(ctx, tx, r, match, "accepted", reason, precision, candidates, event, proof.evidence); err != nil {
+			return err
+		}
+		// A completed player receipt can need ListenBrainz even with Subsonic disabled.
+		if err := s.enqueueListenBrainzEnrichment(ctx, tx, r.id); err != nil {
 			return err
 		}
 		return insertRelayIntent(ctx, tx, r, event, time.Now().Unix())
