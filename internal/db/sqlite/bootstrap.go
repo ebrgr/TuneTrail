@@ -19,7 +19,7 @@ import (
 )
 
 // currentSchemaVersion is the latest embedded migration understood by bootstrap.
-const currentSchemaVersion = 25
+const currentSchemaVersion = 26
 
 // regularFile rejects links and special files before opening database components.
 func regularFile(path string) (bool, error) {

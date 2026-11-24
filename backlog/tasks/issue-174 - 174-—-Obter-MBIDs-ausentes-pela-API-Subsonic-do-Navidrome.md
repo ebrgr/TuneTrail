@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T13:15:00Z'
+updated_date: '2026-11-24T13:22:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -77,6 +77,15 @@ created: 2026-11-24T13:15:00Z
 ---
 
 Correções após revisão: consulta de artista considera apenas IDs do próprio crédito; migração v25 desvincula declarações do recibo e preserva escutas e isolamento na exclusão. Arquivo v2 preserva declarações conflitantes e procedência sem promover IDs globais; v1 as omite, e as consultas de enriquecimento da exportação são agrupadas por página. Verificados migração v24→v25, exclusões e privacidade, dois artistas, importação em catálogos distintos, formatos v1/v2, teste de corrida e make check (13 percursos E2E); FLUXO.md descreve regras e justificativas. Pendente nova revisão e aceite.
+
+---
+
+author: codex
+created: 2026-11-24T13:22:00Z
+
+---
+
+Revisão de escala: migração v26 projeta créditos com IDs recebidos por recibo e indexa a precedência por perfil, ocorrência e nome. A limpeza visita somente os artistas da ocorrência afetada e usa buscas indexadas do perfil por ocorrência. Testes de migração, precedência, cascatas e planos passaram, incluindo exclusão de 2 mil escutas com 4 mil declarações alheias, make check e testes de corrida dirigidos.
 
 ---
 <!-- COMMENTS:END -->

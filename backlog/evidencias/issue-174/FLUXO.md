@@ -25,4 +25,8 @@ A exportação v2 reúne os dados em três consultas por página (gravações, a
 
 A migração 025 preserva as declarações da 024 e remove a dependência do recibo. As tabelas de declarações permanecem separadas para garantir integridade referencial; a fila é independente para não vincular falhas de rede à recuperação de ingestão. Nenhuma tabela guarda credenciais ou resposta bruta do provedor.
 
-A retenção tem dois gatilhos porque excluir uma escuta e excluir a própria ocorrência seguem caminhos diferentes de cascata no SQLite; a transferência antes da exclusão da ocorrência evita perder a declaração antes de localizar outra edição. Os testes cobrem os dois caminhos e a remoção do perfil.
+A migração 026 acrescenta `enrichment_received_artist_credits`, uma projeção dos nomes de créditos com ID recebido. Ela usa as regras de associação existentes, lê os recibos antigos uma vez na migração e se atualiza com a resolução e exclusão dos recibos. A página do artista percorre apenas suas associações de catálogo e consulta o índice de perfil, ocorrência e nome. A projeção guarda nomes e chaves, sem copiar snapshots ou MBIDs.
+
+A limpeza roda para os artistas da ocorrência quando sai a última escuta daquele perfil na ocorrência. Para cada artista afetado, uma busca indexada verifica se ainda há escuta do perfil em outra ocorrência. A exclusão direta de ocorrência ou de faixa legada faz a mesma verificação antes de perder os vínculos aos artistas na cascata do SQLite. A transferência das declarações de gravação continua usando as outras edições da mesma gravação.
+
+O teste de escala exclui 2 mil escutas com 4 mil declarações alheias no mesmo perfil e verifica os índices no plano de execução. Os testes de precedência exercitam o preenchimento de recibos anteriores à migração, novos recibos e a remoção da projeção ao apagar um recibo.
