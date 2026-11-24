@@ -2,12 +2,16 @@ package sqlite
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/google/uuid"
 )
 
 // RestoreArchive commits the catalog mappings and accepted events together.
@@ -54,6 +58,9 @@ func (s *Sqlite) RestoreArchive(ctx context.Context, profile int32, items []*db.
 		}
 		if _, err := tx.ExecContext(ctx, `INSERT INTO archive_events VALUES(?,?,?,?,?,?)`, profile,
 			item.EventNamespace, item.EventID, eventID, item.Origin, string(item.Provenance)); err != nil {
+			return 0, err
+		}
+		if err := c.restoreDeclarations(ctx, occurrence, item); err != nil {
 			return 0, err
 		}
 		count++
@@ -129,7 +136,8 @@ func (c archiveCatalog) createOccurrence(ctx context.Context, item *db.ExportIte
 			source = "validated"
 		}
 		mbid := nullableUUID(item.TrackMbid)
-		if !trusted {
+		declaredSource, _ := ingest.DeclaredMBIDProvenance(item.MBIDSource, item.MBIDDeclaredAt)
+		if !trusted || declaredSource != "" {
 			mbid = sql.NullString{}
 		}
 		err := c.tx.QueryRowContext(ctx, `INSERT INTO recordings(musicbrainz_id,mbid_source) VALUES(?,?)
@@ -160,7 +168,15 @@ func (c archiveCatalog) createOccurrence(ctx context.Context, item *db.ExportIte
 			return 0, err
 		}
 		for i, artist := range item.Artists {
-			if _, err := c.tx.ExecContext(ctx, `INSERT INTO occurrence_credits(occurrence_id,position,name) VALUES(?,?,?)`, occurrence, i, artist.Name); err != nil {
+			var artistID any
+			if artist.ID > 0 {
+				id, err := c.restoreArtist(ctx, artist)
+				if err != nil {
+					return 0, err
+				}
+				artistID = id
+			}
+			if _, err := c.tx.ExecContext(ctx, `INSERT INTO occurrence_credits(occurrence_id,position,name,artist_id) VALUES(?,?,?,?)`, occurrence, i, artist.Name, artistID); err != nil {
 				return 0, err
 			}
 		}
@@ -211,9 +227,90 @@ func (c archiveCatalog) createOccurrence(ctx context.Context, item *db.ExportIte
 // restoreArtist uses the same namespace for album and track credits.
 func (c archiveCatalog) restoreArtist(ctx context.Context, artist models.ArtistWithFullAliases) (int64, error) {
 	return c.mapID(ctx, "artists", int64(artist.ID), func() (int64, error) {
-		id, _, err := c.createMedia(ctx, "artist", nullableUUID(artist.MbzID), artist.ImageSource, false, artist.Aliases)
+		mbid := nullableUUID(artist.MbzID)
+		if artist.MBIDSource != "" {
+			mbid = sql.NullString{}
+		}
+		id, _, err := c.createMedia(ctx, "artist", mbid, artist.ImageSource, false, artist.Aliases)
 		return id, err
 	})
+}
+
+// restoreDeclarations keeps imported external claims scoped and never promotes them to catalog proof.
+func (c archiveCatalog) restoreDeclarations(ctx context.Context, occurrence int64, item *db.ExportItem) error {
+	instance := "archive:" + c.namespace
+	for _, declaration := range item.RecordingDeclarations {
+		source, at := ingest.DeclaredMBIDProvenance(declaration.Source, declaration.DeclaredAt)
+		if source == "" || at == "" || declaration.MBID == uuid.Nil {
+			continue
+		}
+		digest := sha256.Sum256([]byte(source + "\x00" + declaration.MBID.String() + "\x00" + at + "\x00" + declaration.Instance))
+		if _, err := c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims VALUES(?,?,?,?,?,?)`, c.profile, occurrence, instance+":"+hex.EncodeToString(digest[:]), declaration.MBID.String(), source, at); err != nil {
+			return err
+		}
+	}
+	if source, at := ingest.DeclaredMBIDProvenance(item.MBIDSource, item.MBIDDeclaredAt); source != "" && at != "" && item.TrackMbid != nil && *item.TrackMbid != uuid.Nil {
+		found := false
+		for _, declaration := range item.RecordingDeclarations {
+			if declaration.MBID == *item.TrackMbid && declaration.Source == source && declaration.DeclaredAt == at {
+				found = true
+				break
+			}
+		}
+		if !found {
+			if _, err := c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims VALUES(?,?,?,?,?,?)`, c.profile, occurrence, instance, item.TrackMbid.String(), source, at); err != nil {
+				return err
+			}
+		}
+	}
+	for _, artist := range item.Artists {
+		if artist.ID <= 0 {
+			continue
+		}
+		declarations := append([]models.MBIDDeclaration(nil), artist.MBIDDeclarations...)
+		if source, at := ingest.DeclaredMBIDProvenance(artist.MBIDSource, artist.MBIDDeclaredAt); source != "" && at != "" && artist.MbzID != nil && *artist.MbzID != uuid.Nil {
+			found := false
+			for _, declaration := range declarations {
+				if declaration.MBID == *artist.MbzID && declaration.Source == source && declaration.DeclaredAt == at {
+					found = true
+					break
+				}
+			}
+			if !found {
+				declarations = append(declarations, models.MBIDDeclaration{MBID: *artist.MbzID, Source: source, DeclaredAt: at})
+			}
+		}
+		if len(declarations) == 0 {
+			continue
+		}
+		var local int64
+		err := c.tx.QueryRowContext(ctx, `SELECT local_id FROM archive_catalog WHERE profile_id=? AND namespace=? AND kind='artists' AND source_id=?`, c.profile, c.namespace, artist.ID).Scan(&local)
+		if errors.Is(err, sql.ErrNoRows) && c.namespace == c.localNamespace {
+			err = c.tx.QueryRowContext(ctx, `SELECT id FROM artists WHERE id=?`, artist.ID).Scan(&local)
+		}
+		if errors.Is(err, sql.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		for _, declaration := range declarations {
+			source, at := ingest.DeclaredMBIDProvenance(declaration.Source, declaration.DeclaredAt)
+			if source == "" || at == "" || declaration.MBID == uuid.Nil {
+				continue
+			}
+			digest := sha256.Sum256([]byte(source + "\x00" + declaration.MBID.String() + "\x00" + at + "\x00" + declaration.Instance))
+			declarationInstance := instance + ":" + hex.EncodeToString(digest[:])
+			// An archive mapping is usable only when this occurrence still credits that artist.
+			_, err = c.tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims SELECT ?,a.id,?,?,?,? FROM artists a
+				WHERE a.id=? AND (EXISTS(SELECT 1 FROM artist_tracks WHERE track_id=? AND artist_id=a.id)
+				OR EXISTS(SELECT 1 FROM occurrence_credits WHERE occurrence_id=? AND artist_id=a.id))`, c.profile, declarationInstance, declaration.MBID.String(), source, at, local, occurrence, occurrence)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // createMedia only claims canonical MBIDs for trusted imports.

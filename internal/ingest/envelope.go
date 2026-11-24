@@ -69,10 +69,10 @@ type NativeAliases struct {
 	Track   []string            `json:"track,omitempty"`
 }
 
-// DeclaredMBIDProvenance recognizes only the reserved external lookup sources.
+// DeclaredMBIDProvenance recognizes reserved lookup and source-event declarations.
 func DeclaredMBIDProvenance(source, at string) (string, string) {
 	switch source {
-	case "navidrome-subsonic", "listenbrainz-lookup":
+	case "navidrome-subsonic", "listenbrainz-lookup", "source-event":
 		if _, err := time.Parse(time.RFC3339Nano, at); err != nil {
 			at = ""
 		}

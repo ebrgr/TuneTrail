@@ -87,14 +87,15 @@ func (item *KoitoListen) UnmarshalJSON(data []byte) error {
 }
 
 type KoitoTrack struct {
-	TrackMBID      string         `json:"track_mbid,omitempty"`
-	DiscNumber     int            `json:"disc_number,omitempty"`
-	TrackNumber    int            `json:"track_number,omitempty"`
-	MBIDSource     string         `json:"mbid_source,omitempty"`
-	MBIDDeclaredAt string         `json:"mbid_declared_at,omitempty"`
-	MBID           *uuid.UUID     `json:"mbid"`
-	Duration       int            `json:"duration"`
-	Aliases        []models.Alias `json:"aliases"`
+	TrackMBID        string                   `json:"track_mbid,omitempty"`
+	DiscNumber       int                      `json:"disc_number,omitempty"`
+	TrackNumber      int                      `json:"track_number,omitempty"`
+	MBIDSource       string                   `json:"mbid_source,omitempty"`
+	MBIDDeclaredAt   string                   `json:"mbid_declared_at,omitempty"`
+	MBIDDeclarations []models.MBIDDeclaration `json:"mbid_declarations,omitempty"`
+	MBID             *uuid.UUID               `json:"mbid"`
+	Duration         int                      `json:"duration"`
+	Aliases          []models.Alias           `json:"aliases"`
 }
 type KoitoAlbum struct {
 	Artists        []KoitoArtist  `json:"artists,omitempty"`
@@ -104,11 +105,14 @@ type KoitoAlbum struct {
 	VariousArtists bool           `json:"various_artists"`
 }
 type KoitoArtist struct {
-	ID        int32          `json:"id,omitempty"`
-	ImageUrl  string         `json:"image_url"`
-	MBID      *uuid.UUID     `json:"mbid"`
-	IsPrimary bool           `json:"is_primary"`
-	Aliases   []models.Alias `json:"aliases"`
+	ID               int32                    `json:"id,omitempty"`
+	ImageUrl         string                   `json:"image_url"`
+	MBID             *uuid.UUID               `json:"mbid"`
+	MBIDSource       string                   `json:"mbid_source,omitempty"`
+	MBIDDeclaredAt   string                   `json:"mbid_declared_at,omitempty"`
+	MBIDDeclarations []models.MBIDDeclaration `json:"mbid_declarations,omitempty"`
+	IsPrimary        bool                     `json:"is_primary"`
+	Aliases          []models.Alias           `json:"aliases"`
 }
 
 // checkedWriter converts malformed short writes into an observable stream error.
@@ -193,12 +197,23 @@ func ExportVersion(ctx context.Context, profile *models.ListeningProfile, store 
 			if version == "1" {
 				exported.Identity = nil
 				exported.Album.Artists = nil
+				// Version 1 cannot retain external provenance and must not turn claims into global IDs.
+				if exported.Track.MBIDSource == "navidrome-subsonic" || exported.Track.MBIDSource == "listenbrainz-lookup" || exported.Track.MBIDSource == "source-event" {
+					exported.Track.MBID = nil
+				}
+				exported.Track.MBIDDeclarations = nil
 				exported.Track.TrackMBID = ""
 				exported.Track.DiscNumber, exported.Track.TrackNumber = 0, 0
 				exported.Track.MBIDSource = ""
 				exported.Track.MBIDDeclaredAt = ""
 				for i := range exported.Artists {
 					exported.Artists[i].ID = 0
+					if exported.Artists[i].MBIDSource != "" {
+						exported.Artists[i].MBID = nil
+					}
+					exported.Artists[i].MBIDSource = ""
+					exported.Artists[i].MBIDDeclaredAt = ""
+					exported.Artists[i].MBIDDeclarations = nil
 				}
 			}
 
@@ -244,7 +259,7 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 		ListenedAt: item.ListenedAt.UTC(), DurationPlayed: item.DurationPlayed,
 		Track: KoitoTrack{
 			MBID:      item.TrackMbid,
-			TrackMBID: item.TrackReference, DiscNumber: item.DiscNumber, TrackNumber: item.TrackNumber, MBIDSource: item.MBIDSource, MBIDDeclaredAt: item.MBIDDeclaredAt,
+			TrackMBID: item.TrackReference, DiscNumber: item.DiscNumber, TrackNumber: item.TrackNumber, MBIDSource: item.MBIDSource, MBIDDeclaredAt: item.MBIDDeclaredAt, MBIDDeclarations: item.RecordingDeclarations,
 			Duration: int(item.TrackDuration),
 			Aliases:  item.TrackAliases,
 		},
@@ -255,6 +270,24 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 			VariousArtists: item.VariousArtists,
 			Aliases:        item.ReleaseAliases,
 		},
+	}
+	// Scoped recording IDs remain declarations for archive readers that ignore new fields.
+	if ret.Track.MBIDSource == "navidrome-subsonic" || ret.Track.MBIDSource == "listenbrainz-lookup" || ret.Track.MBIDSource == "source-event" {
+		found := false
+		if ret.Track.MBID != nil {
+			for _, d := range ret.Track.MBIDDeclarations {
+				if d.MBID == *ret.Track.MBID && d.Source == ret.Track.MBIDSource && d.DeclaredAt == ret.Track.MBIDDeclaredAt {
+					found = true
+					break
+				}
+			}
+		}
+		if !found && ret.Track.MBID != nil {
+			ret.Track.MBIDDeclarations = append(append([]models.MBIDDeclaration(nil), ret.Track.MBIDDeclarations...), models.MBIDDeclaration{MBID: *ret.Track.MBID, Source: ret.Track.MBIDSource, DeclaredAt: ret.Track.MBIDDeclaredAt, Instance: "selected"})
+		}
+		ret.Track.MBID = nil
+		ret.Track.MBIDSource = ""
+		ret.Track.MBIDDeclaredAt = ""
 	}
 	if item.ReleaseID != 0 {
 		ret.Identity.ReleaseID = &item.ReleaseID
@@ -268,10 +301,29 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 func exportCredits(artists []models.ArtistWithFullAliases) []KoitoArtist {
 	var credits []KoitoArtist
 	for _, artist := range artists {
-		credits = append(credits, KoitoArtist{
-			ID: artist.ID, IsPrimary: artist.IsPrimary, MBID: artist.MbzID,
+		credit := KoitoArtist{
+			ID: artist.ID, IsPrimary: artist.IsPrimary, MBID: artist.MbzID, MBIDSource: artist.MBIDSource, MBIDDeclaredAt: artist.MBIDDeclaredAt, MBIDDeclarations: artist.MBIDDeclarations,
 			Aliases: artist.Aliases, ImageUrl: artist.ImageSource,
-		})
+		}
+		// Older archive readers do not understand artist provenance; keep scoped IDs out of their global field.
+		if artist.MBIDSource != "" {
+			found := false
+			if artist.MbzID != nil {
+				for _, declaration := range credit.MBIDDeclarations {
+					if declaration.MBID == *artist.MbzID && declaration.Source == artist.MBIDSource && declaration.DeclaredAt == artist.MBIDDeclaredAt {
+						found = true
+						break
+					}
+				}
+			}
+			if !found && artist.MbzID != nil {
+				credit.MBIDDeclarations = append(append([]models.MBIDDeclaration(nil), credit.MBIDDeclarations...), models.MBIDDeclaration{MBID: *artist.MbzID, Source: artist.MBIDSource, DeclaredAt: artist.MBIDDeclaredAt, Instance: "selected"})
+			}
+			credit.MBID = nil
+			credit.MBIDSource = ""
+			credit.MBIDDeclaredAt = ""
+		}
+		credits = append(credits, credit)
 	}
 	return credits
 }

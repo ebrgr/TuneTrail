@@ -3,12 +3,14 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
@@ -65,20 +67,19 @@ func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.
 	// Only the requesting profile may see an unambiguous external declaration.
 	if !mbzID.Valid && db.ProfileID(ctx) > 0 {
 		var claim sql.NullString
-		err := s.db.QueryRowContext(ctx, `SELECT min(c.mbid) FROM enrichment_artist_claims c
-			WHERE c.profile_id=? AND c.artist_id=? AND NOT EXISTS (
-			 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id
-			 AND (EXISTS (SELECT 1 FROM artist_tracks a WHERE a.track_id=e.occurrence_id AND a.artist_id=c.artist_id)
-			 OR EXISTS (SELECT 1 FROM occurrence_credits a WHERE a.occurrence_id=e.occurrence_id AND a.artist_id=c.artist_id))
-			 AND (coalesce(json_array_length(e.original_snapshot,'$.artist_mbids'),0)>0
-			 OR coalesce(json_array_length(e.original_snapshot,'$.mapped_artist_mbids'),0)>0
-			 OR coalesce(json_array_length(e.original_snapshot,'$.artist_mbid_mappings'),0)>0))
-			HAVING count(DISTINCT c.mbid)=1`, db.ProfileID(ctx), opts.ID).Scan(&claim)
+		err := s.db.QueryRowContext(ctx, `SELECT min(mbid) FROM enrichment_artist_claims
+			WHERE profile_id=? AND artist_id=? HAVING count(DISTINCT mbid)=1`, db.ProfileID(ctx), opts.ID).Scan(&claim)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return nil, err
 		}
-		if err == nil {
-			mbzID = claim
+		if err == nil && claim.Valid {
+			hasReceived, err := s.artistHasReceivedMBID(ctx, db.ProfileID(ctx), opts.ID)
+			if err != nil {
+				return nil, err
+			}
+			if !hasReceived {
+				mbzID = claim
+			}
 		}
 	}
 
@@ -139,6 +140,32 @@ func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.
 		FirstListen:  firstListenUnix,
 		AllTimeRank:  rank,
 	}, nil
+}
+
+// artistHasReceivedMBID checks only names linked to this artist, never another credit.
+func (s *Sqlite) artistHasReceivedMBID(ctx context.Context, profile, artist int32) (bool, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT DISTINCT e.original_snapshot,n.name FROM ingest_events e JOIN (
+		SELECT at.track_id,aa.alias AS name FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id WHERE at.artist_id=?
+		UNION SELECT occurrence_id,name FROM occurrence_credits WHERE artist_id=?
+	) n ON n.track_id=e.occurrence_id WHERE e.profile_id=? AND e.state IN ('accepted','duplicate')`, artist, artist, profile)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var raw, name string
+		if err := rows.Scan(&raw, &name); err != nil {
+			return false, err
+		}
+		var snapshot ingest.Snapshot
+		if err := json.Unmarshal([]byte(raw), &snapshot); err != nil {
+			return false, err
+		}
+		if fileArtistDeclarations(snapshot)[name] != uuid.Nil {
+			return true, nil
+		}
+	}
+	return false, rows.Err()
 }
 
 // SaveArtist keeps owner-import identities out of the global MBID namespace.
@@ -721,8 +748,8 @@ func mergeArtistsIn(ctx context.Context, tx *sql.Tx, fromId, toId int32, replace
 		return fmt.Errorf("MergeArtists: inspect enrichment schema: %w", err)
 	}
 	if hasClaims != 0 {
-		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,receipt_id,instance,mbid,source,observed_at)
-			SELECT profile_id,?,receipt_id,instance,mbid,source,observed_at FROM enrichment_artist_claims WHERE artist_id=?`, toId, fromId); err != nil {
+		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,instance,mbid,source,observed_at)
+			SELECT profile_id,?,instance,mbid,source,observed_at FROM enrichment_artist_claims WHERE artist_id=?`, toId, fromId); err != nil {
 			return fmt.Errorf("MergeArtists: preserve enrichment claims: %w", err)
 		}
 	}

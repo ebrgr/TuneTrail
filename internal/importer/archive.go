@@ -9,7 +9,9 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/export"
 	"github.com/ebrgr/TuneTrail/internal/imagefetch"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
 	"github.com/ebrgr/TuneTrail/internal/models"
+	"github.com/google/uuid"
 )
 
 type archiveRestorer interface {
@@ -39,13 +41,27 @@ func importArchive(ctx context.Context, store importStore, profileID int32, data
 			(releaseID > 0 && getPrimaryAliasFromAliasSlice(l.Album.Aliases) == "") {
 			return invalidFile(fmt.Errorf("invalid TuneTrail archive item"))
 		}
+		if l.Track.MBIDSource != "" && l.Track.MBIDSource != "validated" && l.Track.MBIDSource != "legacy_declared" {
+			source, at := ingest.DeclaredMBIDProvenance(l.Track.MBIDSource, l.Track.MBIDDeclaredAt)
+			if source == "" || at == "" || l.Track.MBID == nil {
+				return invalidFile(fmt.Errorf("invalid recording MBID provenance"))
+			}
+		}
+		for _, declaration := range l.Track.MBIDDeclarations {
+			source, at := ingest.DeclaredMBIDProvenance(declaration.Source, declaration.DeclaredAt)
+			if source == "" || at == "" || declaration.MBID == uuid.Nil || len(declaration.Instance) > 1024 {
+				return invalidFile(fmt.Errorf("invalid recording MBID declaration"))
+			}
+		}
 		item := &db.ExportItem{
 			EventID: id.EventID, EventNamespace: id.EventNamespace, CatalogNamespace: id.CatalogNamespace,
 			TrackID: id.OccurrenceID, RecordingID: id.RecordingID, ReleaseID: releaseID,
 			Origin: id.Origin, Provenance: id.Provenance, ListenedAt: l.ListenedAt, Client: &l.Client,
 			TrackMbid: l.Track.MBID, TrackReference: l.Track.TrackMBID, DiscNumber: l.Track.DiscNumber,
 			TrackNumber: l.Track.TrackNumber, MBIDSource: l.Track.MBIDSource,
-			DurationPlayed: l.DurationPlayed, TrackDuration: int32(l.Track.Duration), TrackAliases: l.Track.Aliases,
+			MBIDDeclaredAt:        l.Track.MBIDDeclaredAt,
+			RecordingDeclarations: l.Track.MBIDDeclarations,
+			DurationPlayed:        l.DurationPlayed, TrackDuration: int32(l.Track.Duration), TrackAliases: l.Track.Aliases,
 			ReleaseMbid: l.Album.MBID, VariousArtists: l.Album.VariousArtists, ReleaseAliases: l.Album.Aliases,
 			ReleaseImageSource: imagefetch.PublicSource(l.Album.ImageUrl),
 		}
@@ -80,9 +96,21 @@ func archiveCredits(artists []export.KoitoArtist, identified bool) ([]models.Art
 		if name == "" || (identified && a.ID <= 0) {
 			return nil, invalidFile(fmt.Errorf("invalid TuneTrail archive artist"))
 		}
+		source, at := ingest.DeclaredMBIDProvenance(a.MBIDSource, a.MBIDDeclaredAt)
+		if (a.MBIDSource != "" && (source == "" || at == "" || a.MBID == nil)) || (a.MBIDSource == "" && a.MBIDDeclaredAt != "") {
+			return nil, invalidFile(fmt.Errorf("invalid artist MBID provenance"))
+		}
+		for _, declaration := range a.MBIDDeclarations {
+			source, at := ingest.DeclaredMBIDProvenance(declaration.Source, declaration.DeclaredAt)
+			if source == "" || at == "" || declaration.MBID == uuid.Nil || len(declaration.Instance) > 1024 {
+				return nil, invalidFile(fmt.Errorf("invalid artist MBID declaration"))
+			}
+		}
 		credits = append(credits, models.ArtistWithFullAliases{
 			ID: a.ID, Name: name, MbzID: a.MBID, Aliases: a.Aliases, IsPrimary: a.IsPrimary,
-			ImageSource: imagefetch.PublicSource(a.ImageUrl),
+			MBIDSource: source, MBIDDeclaredAt: at,
+			MBIDDeclarations: a.MBIDDeclarations,
+			ImageSource:      imagefetch.PublicSource(a.ImageUrl),
 		})
 	}
 	return credits, nil

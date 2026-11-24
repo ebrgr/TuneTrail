@@ -39,4 +39,16 @@ type ArtistWithFullAliases struct {
 	TimeListened int64      `json:"time_listened"`
 	FirstListen  int64      `json:"first_listen"`
 	IsPrimary    bool       `json:"is_primary,omitempty"`
+
+	MBIDSource       string            `json:"mbid_source,omitempty"`
+	MBIDDeclaredAt   string            `json:"mbid_declared_at,omitempty"`
+	MBIDDeclarations []MBIDDeclaration `json:"mbid_declarations,omitempty"`
+}
+
+// MBIDDeclaration carries a scoped claim without promoting it to catalog identity.
+type MBIDDeclaration struct {
+	MBID       uuid.UUID `json:"mbid"`
+	Source     string    `json:"source"`
+	DeclaredAt string    `json:"declared_at"`
+	Instance   string    `json:"instance,omitempty"`
 }

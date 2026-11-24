@@ -221,14 +221,14 @@ func TestEnrichmentPreservesReceivedIDs(t *testing.T) {
 // TestEnrichmentArtistMergePreservesConflictingClaims keeps both scoped assertions for review.
 func TestEnrichmentArtistMergePreservesConflictingClaims(t *testing.T) {
 	s := configuredEnrichmentFixture(t)
-	id := admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Merge title", Artist: "Merge artist", Release: "Merge album"}, 1700000050, "merge-enrich")
+	admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Merge title", Artist: "Merge artist", Release: "Merge album"}, 1700000050, "merge-enrich")
 	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
 	var from, to int32
 	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM artist_aliases WHERE alias='Merge artist'`).Scan(&from))
 	require.NoError(t, s.db.QueryRow(`INSERT INTO artists DEFAULT VALUES RETURNING id`).Scan(&to))
-	_, err := s.db.Exec(`INSERT INTO enrichment_artist_claims(profile_id,artist_id,receipt_id,instance,mbid,source,observed_at) VALUES
-		(1,?,?, 'instance','e10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z'),
-		(1,?,?, 'instance','c10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z')`, from, id, to, id)
+	_, err := s.db.Exec(`INSERT INTO enrichment_artist_claims(profile_id,artist_id,instance,mbid,source,observed_at) VALUES
+		(1,?, 'instance','e10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z'),
+		(1,?, 'instance','c10c78f5-5ad3-4ba2-bd43-f4ac12c62f59','navidrome-subsonic','2026-01-01T00:00:00Z')`, from, to)
 	require.NoError(t, err)
 	require.NoError(t, s.MergeArtists(t.Context(), from, to, false))
 	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM enrichment_artist_claims WHERE artist_id=? AND profile_id=1`, to))

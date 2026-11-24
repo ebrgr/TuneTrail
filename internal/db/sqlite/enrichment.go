@@ -193,9 +193,9 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 				if uuidFromSnapshot(original.Recording, original.MappedRecording) != uuid.Nil {
 					continue
 				}
-				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims(profile_id,occurrence_id,receipt_id,instance,mbid,source,observed_at)
-					SELECT ?,o.id,?,?,?,?,? FROM occurrences o JOIN recordings r ON r.id=o.recording_id
-					WHERE o.id=? AND r.id=? AND r.musicbrainz_id IS NULL`, c.profile, c.receipt, instance, id.String(), declaration.Source, at, c.occurrence, c.recording)
+				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_recording_claims(profile_id,occurrence_id,instance,mbid,source,observed_at)
+					SELECT ?,o.id,?,?,?,? FROM occurrences o JOIN recordings r ON r.id=o.recording_id
+					WHERE o.id=? AND r.id=? AND r.musicbrainz_id IS NULL`, c.profile, instance, id.String(), declaration.Source, at, c.occurrence, c.recording)
 			case "artist":
 				if !slices.Contains(missingArtists, declaration.Name) {
 					continue
@@ -205,15 +205,15 @@ func (s *Sqlite) finishEnrichment(ctx context.Context, c enrichmentClaim, instan
 					continue
 				}
 				// Match only one linked artist with the exact observed credit, never by list position.
-				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,receipt_id,instance,mbid,source,observed_at)
-					SELECT ?,a.id,?,?,?,?,? FROM artists a WHERE a.musicbrainz_id IS NULL AND a.id=? AND a.id IN (
+				_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_artist_claims(profile_id,artist_id,instance,mbid,source,observed_at)
+					SELECT ?,a.id,?,?,?,? FROM artists a WHERE a.musicbrainz_id IS NULL AND a.id=? AND a.id IN (
 					 SELECT artist_id FROM occurrence_credits WHERE occurrence_id=? AND name=? AND artist_id IS NOT NULL
 					 UNION SELECT at.artist_id FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id
 					 WHERE at.track_id=? AND aa.alias=? COLLATE BINARY)
 					AND 1=(SELECT count(DISTINCT artist_id) FROM (
 					 SELECT artist_id FROM occurrence_credits WHERE occurrence_id=? AND name=? AND artist_id IS NOT NULL
 					 UNION SELECT at.artist_id FROM artist_tracks at JOIN artist_aliases aa ON aa.artist_id=at.artist_id
-					WHERE at.track_id=? AND aa.alias=? COLLATE BINARY))`, c.profile, c.receipt, instance, id.String(), declaration.Source, at, expected,
+					WHERE at.track_id=? AND aa.alias=? COLLATE BINARY))`, c.profile, instance, id.String(), declaration.Source, at, expected,
 					c.occurrence, declaration.Name, c.occurrence, declaration.Name, c.occurrence, declaration.Name, c.occurrence, declaration.Name)
 			default:
 				continue

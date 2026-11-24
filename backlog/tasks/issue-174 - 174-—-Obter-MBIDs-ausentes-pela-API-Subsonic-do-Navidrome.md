@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T12:41:00Z'
+updated_date: '2026-11-24T13:15:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -14,6 +14,7 @@ dependencies:
 references:
   - backlog/evidencias/issue-134/PLANO.md
   - backlog/evidencias/issue-174/PLANO.md
+  - backlog/evidencias/issue-174/FLUXO.md
 type: feature
 ordinal: 187000
 ---
@@ -67,6 +68,15 @@ created: 2026-11-24T12:41:00Z
 ---
 
 Implementação: fila independente e limitada para escutas novas, consulta Subsonic com correspondência conservadora e declarações datadas por perfil/instância; revalidação após rede preserva snapshot e identidade. Migração v24, cobertura de migração, escopo, falhas e concorrência, make check e testes de corrida dirigidos passaram; histórico permanece para ISSUE-213 e exportação de declarações de artista requer evolução própria. Pendente parecer do Reviewer e aceite do usuário.
+
+---
+
+author: codex
+created: 2026-11-24T13:15:00Z
+
+---
+
+Correções após revisão: consulta de artista considera apenas IDs do próprio crédito; migração v25 desvincula declarações do recibo e preserva escutas e isolamento na exclusão. Arquivo v2 preserva declarações conflitantes e procedência sem promover IDs globais; v1 as omite, e as consultas de enriquecimento da exportação são agrupadas por página. Verificados migração v24→v25, exclusões e privacidade, dois artistas, importação em catálogos distintos, formatos v1/v2, teste de corrida e make check (13 percursos E2E); FLUXO.md descreve regras e justificativas. Pendente nova revisão e aceite.
 
 ---
 <!-- COMMENTS:END -->

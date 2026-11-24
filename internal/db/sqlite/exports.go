@@ -101,24 +101,6 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 	releases := make(map[int32]*db.ExportItem)
 	for i, item := range items {
 		p := presentations[i]
-		// Profile claims are used only when all recorded provider instances agree.
-		if item.TrackMbid == nil {
-			var mbid, source, observed sql.NullString
-			err := tx.QueryRowContext(ctx, `SELECT min(c.mbid),min(c.source),min(c.observed_at) FROM enrichment_recording_claims c
-				WHERE c.profile_id=? AND c.occurrence_id=? AND NOT EXISTS (
-				 SELECT 1 FROM ingest_events e WHERE e.profile_id=c.profile_id AND e.event_id=?
-				 AND (coalesce(json_extract(e.original_snapshot,'$.recording_mbid'),'')<>''
-				 OR coalesce(json_extract(e.original_snapshot,'$.mapped_recording_mbid'),'')<>''))
-				HAVING count(DISTINCT c.mbid)=1`, opts.ProfileID, item.TrackID, item.Cursor).Scan(&mbid, &source, &observed)
-			if err != nil && err != sql.ErrNoRows {
-				return nil, err
-			}
-			if err == nil {
-				item.TrackMbid = parseNullableUUID(mbid)
-				item.MBIDSource = source.String
-				item.MBIDDeclaredAt = observed.String
-			}
-		}
 		if existing := occurrences[item.TrackID]; existing != nil {
 			item.TrackAliases = existing.TrackAliases
 			item.ReleaseAliases = existing.ReleaseAliases
@@ -160,17 +142,19 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 			}
 		}
 		if !p.legacy.Valid {
-			credits, err := tx.QueryContext(ctx, `SELECT name FROM occurrence_credits WHERE occurrence_id=? ORDER BY position`, item.TrackID)
+			credits, err := tx.QueryContext(ctx, `SELECT c.name,coalesce(c.artist_id,0),a.musicbrainz_id FROM occurrence_credits c LEFT JOIN artists a ON a.id=c.artist_id WHERE c.occurrence_id=? ORDER BY c.position`, item.TrackID)
 			if err != nil {
 				return nil, err
 			}
 			for credits.Next() {
 				var name string
-				if err := credits.Scan(&name); err != nil {
+				var artistID int32
+				var mbid sql.NullString
+				if err := credits.Scan(&name, &artistID, &mbid); err != nil {
 					credits.Close()
 					return nil, err
 				}
-				item.Artists = append(item.Artists, models.ArtistWithFullAliases{Name: name, IsPrimary: len(item.Artists) == 0, Aliases: []models.Alias{{Alias: name, Primary: true}}})
+				item.Artists = append(item.Artists, models.ArtistWithFullAliases{ID: artistID, MbzID: parseNullableUUID(mbid), Name: name, IsPrimary: len(item.Artists) == 0, Aliases: []models.Alias{{Alias: name, Primary: true}}})
 			}
 			if err := credits.Err(); err != nil {
 				credits.Close()
@@ -178,6 +162,9 @@ func (s *Sqlite) GetExportPage(ctx context.Context, opts db.GetExportPageOpts) (
 			}
 			credits.Close()
 		}
+	}
+	if err := applyExportDeclarations(ctx, tx, opts.ProfileID, items); err != nil {
+		return nil, err
 	}
 	return items, tx.Commit()
 }

@@ -64,6 +64,8 @@ type ExportItem struct {
 	ReleaseAliases     []models.Alias
 	ReleaseArtists     []models.ArtistWithFullAliases
 	Artists            []models.ArtistWithFullAliases
+
+	RecordingDeclarations []models.MBIDDeclaration
 }
 
 type InterestBucket struct {
