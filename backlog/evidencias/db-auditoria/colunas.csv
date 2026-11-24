@@ -1,0 +1,284 @@
+tabela,coluna,tipo,classe,leituras_go,escritas_go,usada_pelo_banco,linhas_nao_nulas,valores_distintos,tamanho_medio_bytes,repete_outra_coluna,veredito,motivo
+account_tokens,user_id,INTEGER,chave,5,1,fk,,,,,manter,Chave primária ou estrangeira.
+account_tokens,token_hash,BLOB,ativa,2,1,,,,,,manter,"Lida e escrita, com valores variados."
+account_tokens,purpose,TEXT,ativa,2,1,,,,,,manter,"Lida e escrita, com valores variados."
+account_tokens,expires_at,INTEGER,ativa,4,2,,,,,,manter,"Lida e escrita, com valores variados."
+api_keys,id,INTEGER,chave,11,0,,1,1,,,manter,Chave primária ou estrangeira.
+api_keys,key,TEXT,ativa,5,3,,1,1,48.0,,manter,"Lida e escrita, com valores variados."
+api_keys,user_id,INTEGER,ativa,6,2,index,1,1,,,manter,"Lida e escrita, com valores variados."
+api_keys,profile_id,INTEGER,chave,7,3,fk index trigger,1,1,,,manter,Chave primária ou estrangeira.
+api_keys,created_at,INTEGER,ativa,2,3,,1,1,,,manter,"Lida e escrita, com valores variados."
+api_keys,label,TEXT,ativa,3,5,,1,1,7.0,,manter,"Lida e escrita, com valores variados."
+archive_catalog,profile_id,INTEGER,chave,1,1,fk,,,,,manter,Chave primária ou estrangeira.
+archive_catalog,namespace,TEXT,chave,1,1,index,,,,,manter,Chave primária ou estrangeira.
+archive_catalog,kind,TEXT,chave,1,1,index trigger,,,,,manter,Chave primária ou estrangeira.
+archive_catalog,source_id,INTEGER,chave,1,1,index,,,,,manter,Chave primária ou estrangeira.
+archive_catalog,local_id,INTEGER,ativa,2,1,index trigger,,,,,manter,"Lida e escrita, com valores variados."
+archive_catalog,trusted,INTEGER,ativa,1,1,index,,,,,manter,"Lida e escrita, com valores variados."
+archive_events,profile_id,INTEGER,chave,3,1,fk,,,,,manter,Chave primária ou estrangeira.
+archive_events,namespace,TEXT,chave,2,1,,,,,,manter,Chave primária ou estrangeira.
+archive_events,source_event_id,TEXT,chave,2,1,,,,,,manter,Chave primária ou estrangeira.
+archive_events,event_id,TEXT,chave,2,1,fk,,,,,manter,Chave primária ou estrangeira.
+archive_events,origin,TEXT,ativa,1,1,,,,,,manter,"Lida e escrita, com valores variados."
+archive_events,provenance,TEXT,ativa,1,1,,,,,,manter,"Lida e escrita, com valores variados."
+archive_identity,singleton,INTEGER,chave,1,0,,1,1,,,manter,Chave primária ou estrangeira.
+archive_identity,namespace,TEXT,"lida, nunca escrita",3,0,,1,1,32.0,,manter,"Preenchida por padrão, por gatilho ou por migração."
+artist_aliases,artist_id,INTEGER,chave,40,5,fk index view,327,327,,,manter,Chave primária ou estrangeira.
+artist_aliases,alias,TEXT,chave,29,5,index view,327,327,9.7,,manter,Chave primária ou estrangeira.
+artist_aliases,source,TEXT,"ativa, constante",17,5,,327,1,9.0,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+artist_aliases,is_primary,INTEGER,"ativa, constante",17,7,view,327,1,,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+artist_releases,artist_id,INTEGER,chave,16,8,fk,676,327,,,manter,Chave primária ou estrangeira.
+artist_releases,release_id,INTEGER,chave,18,7,fk index trigger,676,676,,,manter,Chave primária ou estrangeira.
+artist_releases,is_primary,INTEGER,"ativa, constante",3,7,,676,1,,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+artist_tracks,artist_id,INTEGER,chave,60,7,fk index,2435,327,,,manter,Chave primária ou estrangeira.
+artist_tracks,track_id,INTEGER,chave,40,6,fk index,2435,2435,,,manter,Chave primária ou estrangeira.
+artist_tracks,is_primary,INTEGER,"ativa, constante",12,6,,2435,1,,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+artists,id,INTEGER,chave,38,1,fk-alvo trigger view,327,327,,,manter,Chave primária ou estrangeira.
+artists,musicbrainz_id,TEXT,"ativa, vazia",8,4,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+artists,image,TEXT,"ativa, vazia",14,4,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+artists,image_source,TEXT,"ativa, vazia",8,5,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+event_origins,origin,TEXT,chave,1,1,fk-alvo trigger,9,9,12.8,,simplificar,Tabela de 9 valores vira CHECK em listens.origin.
+event_origins,description,TEXT,só escrita,0,1,,9,9,26.2,,simplificar,Tabela de 9 valores vira CHECK em listens.origin.
+ingest_discards,id,INTEGER,chave,5,0,index,,,,,manter,Chave primária ou estrangeira.
+ingest_discards,profile_id,INTEGER,chave,5,1,fk index,,,,,manter,Chave primária ou estrangeira.
+ingest_discards,receipt_id,TEXT,ativa,4,1,index,,,,,manter,"Lida e escrita, com valores variados."
+ingest_discards,actor_id,INTEGER,só escrita,0,1,,,,,,revisar,Recebe dados e nenhuma consulta lê.
+ingest_discards,discarded_at,INTEGER,ativa,2,1,index,,,,,manter,"Lida e escrita, com valores variados."
+ingest_discards,origin_state,TEXT,só escrita,0,1,,,,,,revisar,Recebe dados e nenhuma consulta lê.
+ingest_discards,park_reason,TEXT,ativa,1,1,,,,,,manter,"Lida e escrita, com valores variados."
+ingest_discards,reason_codes,TEXT,ativa,1,1,,,,,,manter,"Lida e escrita, com valores variados."
+ingest_event_details,id,INTEGER,chave,0,0,index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,profile_id,INTEGER,chave,0,0,fk index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,receipt_id,TEXT,chave,0,0,fk index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,resolution_version,INTEGER,revisar,0,0,,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,kind,TEXT,revisar,0,0,,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,payload,TEXT,revisar,0,0,,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,closed_at,INTEGER,revisar,0,0,index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_event_details,protected,INTEGER,revisar,0,0,index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+ingest_events,receipt_id,TEXT,chave,43,2,fk-alvo index trigger,5000,5000,36.0,,manter,Chave primária ou estrangeira.
+ingest_events,profile_id,INTEGER,chave,49,2,fk fk-alvo index trigger,5000,1,,,manter,Chave primária ou estrangeira.
+ingest_events,source_instance_id,TEXT,chave,6,2,fk index trigger,5000,1,14.0,,manter,Chave primária ou estrangeira.
+ingest_events,schema_version,INTEGER,"ativa, constante",1,2,trigger,5000,1,,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,source_type,TEXT,"ativa, constante",6,2,trigger,5000,1,12.0,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,adapter_version,TEXT,"ativa, constante",1,2,,5000,1,1.0,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,batch_id,TEXT,só escrita,0,2,,5000,20,36.0,,revisar,Só escrita (36 B por recibo): expor no recibo ou remover.
+ingest_events,item_ordinal,INTEGER,ativa,7,2,index,5000,250,,,manter,"Lida e escrita, com valores variados."
+ingest_events,operation,TEXT,"ativa, constante",2,2,index,5000,1,6.0,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,received_at,INTEGER,ativa,14,2,index trigger,5000,3,,,manter,"Lida e escrita, com valores variados."
+ingest_events,external_namespace,TEXT,"ativa, vazia",6,2,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,external_event_id,TEXT,"ativa, vazia",6,2,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,external_id_trusted,INTEGER,"ativa, constante",4,1,index,5000,1,,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,client_idempotency_key,TEXT,"ativa, vazia",1,1,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,batch_digest,TEXT,"ativa, vazia",1,1,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,file_digest,TEXT,"ativa, vazia",3,1,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,file_format,TEXT,"ativa, vazia",7,1,index trigger,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,format_version,TEXT,"ativa, vazia",3,1,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,listened_at,TEXT,ativa,9,2,index,5000,5000,30.0,,simplificar,Texto RFC3339 de 30 B que repete listens.listened_at (inteiro): guardar como inteiro.
+ingest_events,original_time,TEXT,ativa,3,2,,5000,5000,10.0,,manter,"Lida e escrita, com valores variados."
+ingest_events,time_precision,TEXT,"ativa, constante",7,2,,5000,1,6.0,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,time_semantics,TEXT,"ativa, constante",1,2,,5000,1,7.0,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,original_offset,TEXT,"ativa, vazia",1,2,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,uncertainty_ms,INTEGER,morta,0,0,,0,0,,,remover,"Nenhuma referência no Go de produção nem em índice, gatilho ou view."
+ingest_events,client_name,TEXT,morta,0,0,,0,0,,,remover,"Nenhuma referência no Go de produção nem em índice, gatilho ou view."
+ingest_events,client_version,TEXT,revisar,0,0,,0,0,,,remover,"Nenhuma referência no Go de produção nem em índice, gatilho ou view."
+ingest_events,original_snapshot,TEXT,ativa,18,2,trigger,5000,5000,277.1,,manter,"Lida e escrita, com valores variados."
+ingest_events,normalized_snapshot,TEXT,morta,0,0,,0,0,,,remover,"Nenhuma referência no Go de produção nem em índice, gatilho ou view."
+ingest_events,normalizer_version,TEXT,morta,0,0,,0,0,,,remover,"Nenhuma referência no Go de produção nem em índice, gatilho ou view."
+ingest_events,snapshot_digest,TEXT,ativa,1,2,trigger,5000,5000,64.0,,manter,"Lida e escrita, com valores variados."
+ingest_events,digest_version,TEXT,"ativa, constante",2,2,trigger,5000,1,14.0,,manter,"Constante hoje, mas reservada para outras fontes (ISSUE-086 a 091)."
+ingest_events,state,TEXT,"ativa, constante",22,7,index trigger,5000,1,8.0,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,identity_status,TEXT,"ativa, constante",3,4,trigger,5000,1,8.0,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,duplicate_decision,TEXT,"ativa, constante",8,4,index trigger,5000,1,9.0,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,reason_codes,TEXT,"ativa, constante",11,5,trigger,5000,1,29.0,,simplificar,Resultado padrão do caminho normal (idêntico em todos os recibos): gravar só quando fugir do padrão.
+ingest_events,evidence,TEXT,"ativa, constante",20,2,trigger,5000,1,22.0,,simplificar,Resultado padrão do caminho normal (idêntico em todos os recibos): gravar só quando fugir do padrão.
+ingest_events,rule_version,TEXT,"ativa, constante",8,4,trigger,5000,1,13.0,,simplificar,Resultado padrão do caminho normal (idêntico em todos os recibos): gravar só quando fugir do padrão.
+ingest_events,resolution_version,INTEGER,"ativa, constante",22,5,trigger,5000,1,,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,resolved_at,INTEGER,ativa,6,4,index,5000,157,,closed_at,manter,"Lida e escrita, com valores variados."
+ingest_events,event_id,TEXT,chave,10,2,fk index trigger,5000,5000,36.0,,manter,Chave primária ou estrangeira.
+ingest_events,occurrence_id,INTEGER,chave,7,3,fk index trigger,5000,2435,,recording_id,manter,Chave primária ou estrangeira.
+ingest_events,recording_id,INTEGER,chave,3,3,fk index trigger,5000,2435,,occurrence_id,manter,Chave primária ou estrangeira.
+ingest_events,attempt_count,INTEGER,"ativa, constante",9,1,,5000,1,,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,next_attempt_at,INTEGER,"ativa, vazia",8,6,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,lease_owner,TEXT,"ativa, vazia",10,5,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,lease_until,INTEGER,"ativa, vazia",11,5,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,work_version,INTEGER,"ativa, constante",13,3,,5000,1,,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,closed_at,INTEGER,ativa,10,3,index trigger,5000,157,,resolved_at,simplificar,Igual a resolved_at em todos os recibos aceitos: uma coluna de tempo basta (conferir os demais estados).
+ingest_events,mode,TEXT,"ativa, constante",12,2,index trigger,5000,1,6.0,,remover,Constante legada: padrão da época da sombra; todo recibo entra com um único valor.
+ingest_events,resolver_variant,TEXT,"ativa, constante",4,2,trigger,5000,1,10.0,,remover,Constante legada: padrão da época da sombra; todo recibo entra com um único valor.
+ingest_events,delivery_policy,TEXT,"ativa, constante",4,2,trigger,5000,1,7.0,,remover,Constante legada: padrão da época da sombra; todo recibo entra com um único valor.
+ingest_events,parked_at,INTEGER,"ativa, vazia",10,3,index,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,park_reason,TEXT,"ativa, vazia",7,3,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,retry_attempt_base,INTEGER,"ativa, constante",5,2,,5000,1,,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,health_source,TEXT,gerada,0,0,gerada index trigger,5000,1,12.0,,manter,Coluna gerada que sustenta índice ou contagem.
+ingest_events,health_client,TEXT,gerada,4,0,gerada index trigger,5000,1,9.0,,manter,Coluna gerada que sustenta índice ou contagem.
+ingest_events,claim_attempt_base,INTEGER,"ativa, constante",2,1,,5000,1,,,manter,"Máquina de estados do recibo: constante enquanto nada falha, varia nos demais casos."
+ingest_events,reprocessed_at,INTEGER,"ativa, vazia",1,1,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,reprocessed_by,INTEGER,"ativa, vazia",1,1,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+ingest_events,api_key_id,INTEGER,só escrita,0,2,,5000,1,,,manter,Atribuição; sustenta a coluna gerada inbox_key.
+ingest_events,inbox_key,INTEGER,gerada,5,0,gerada index trigger,5000,1,,,manter,Coluna gerada que sustenta índice ou contagem.
+ingest_events,inbox_metadata,INTEGER,gerada,4,0,gerada index trigger,5000,2,,,manter,Coluna gerada que sustenta índice ou contagem.
+ingest_events,relay_admission_generation,INTEGER,"lida, nunca escrita",1,0,trigger,0,0,,,manter,"Preenchida por padrão, por gatilho ou por migração."
+ingest_inbox_daily,profile_id,INTEGER,chave,3,0,fk trigger,2,1,,,manter,Chave primária ou estrangeira.
+ingest_inbox_daily,day,INTEGER,chave,2,0,trigger,2,1,,,manter,Chave primária ou estrangeira.
+ingest_inbox_daily,key_id,INTEGER,chave,6,0,trigger,2,1,,,manter,Chave primária ou estrangeira.
+ingest_inbox_daily,client,TEXT,chave,5,0,trigger,2,1,9.0,,manter,Chave primária ou estrangeira.
+ingest_inbox_daily,state,TEXT,chave,8,0,trigger,2,1,8.0,,manter,Chave primária ou estrangeira.
+ingest_inbox_daily,metadata,INTEGER,chave,4,0,trigger,2,2,,,manter,Chave primária ou estrangeira.
+ingest_inbox_daily,total,INTEGER,"lida, nunca escrita",9,0,trigger,2,2,,,manter,"Preenchida por padrão, por gatilho ou por migração."
+ingest_observations,id,TEXT,chave,0,1,index trigger,,,,,manter,Chave primária ou estrangeira.
+ingest_observations,profile_id,INTEGER,chave,3,1,fk trigger,,,,,manter,Chave primária ou estrangeira.
+ingest_observations,receipt_id,TEXT,chave,5,1,fk trigger,,,,,manter,Chave primária ou estrangeira.
+ingest_observations,schema_version,INTEGER,só escrita,0,1,trigger,,,,,revisar,Recebe dados e nenhuma consulta lê.
+ingest_observations,snapshot_digest,TEXT,ativa,1,1,trigger,,,,,manter,"Lida e escrita, com valores variados."
+ingest_observations,digest_version,TEXT,ativa,1,1,trigger,,,,,manter,"Lida e escrita, com valores variados."
+ingest_observations,original_snapshot,TEXT,ativa,5,1,trigger,,,,,manter,"Lida e escrita, com valores variados."
+ingest_observations,received_at,INTEGER,só escrita,0,1,trigger,,,,,revisar,Recebe dados e nenhuma consulta lê.
+ingest_observations,closed_at,INTEGER,revisar,0,0,index,,,,,revisar,Referenciada só por constantes de Go; conferir à mão.
+ingest_observations,protected,INTEGER,revisar,0,0,index,,,,,revisar,Referenciada só por constantes de Go; conferir à mão.
+ingest_revisions,profile_id,INTEGER,chave,3,5,fk trigger,5000,1,,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,receipt_id,TEXT,chave,3,5,fk trigger,5000,5000,36.0,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,resolution_version,INTEGER,chave,2,5,trigger,5000,1,,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,author,TEXT,só escrita,0,5,trigger,5000,1,9.0,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,decision,TEXT,só escrita,0,5,trigger,5000,1,9.0,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,reason_codes,TEXT,"ativa, constante",1,5,trigger,5000,1,29.0,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,evidence,TEXT,"ativa, constante",1,5,trigger,5000,1,22.0,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,rule_version,TEXT,"ativa, constante",1,5,trigger,5000,1,13.0,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_revisions,created_at,INTEGER,só escrita,0,5,trigger,5000,157,,,simplificar,Repete 100% a decisão do recibo e ninguém lê: gravar só decisões de usuário e de fusões.
+ingest_source_summary,profile_id,INTEGER,chave,0,0,fk index trigger,1,1,,,manter,Chave primária ou estrangeira.
+ingest_source_summary,source_instance_id,TEXT,chave,0,0,fk trigger,1,1,14.0,,manter,Chave primária ou estrangeira.
+ingest_source_summary,source,TEXT,chave,0,0,trigger,1,1,12.0,,manter,Chave primária ou estrangeira.
+ingest_source_summary,client,TEXT,chave,0,0,trigger,1,1,9.0,,manter,Chave primária ou estrangeira.
+ingest_source_summary,received_at,INTEGER,revisar,0,0,index trigger,1,1,,,revisar,Referenciada só por constantes de Go; conferir à mão.
+ingest_source_summary,receipt_id,TEXT,revisar,0,0,index trigger,1,1,36.0,,revisar,Referenciada só por constantes de Go; conferir à mão.
+integrations,id,TEXT,chave,6,2,fk-alvo,1,1,14.0,,manter,Chave primária ou estrangeira.
+integrations,profile_id,INTEGER,chave,6,2,fk fk-alvo,1,1,,,manter,Chave primária ou estrangeira.
+integrations,source_type,TEXT,só escrita,0,2,,1,1,12.0,,revisar,Recebe dados e nenhuma consulta lê.
+integrations,display_name,TEXT,revisar,0,0,,1,1,,,revisar,Referenciada só por constantes de Go; conferir à mão.
+integrations,token_ref,TEXT,morta,0,0,,0,0,,,revisar,Sem uso hoje; pode estar reservada para as ISSUE-086 a 091.
+integrations,revoked_at,INTEGER,morta,0,0,,0,0,,,revisar,Sem uso hoje; pode estar reservada para as ISSUE-086 a 091.
+integrations,created_at,INTEGER,só escrita,0,2,,1,1,,,revisar,Recebe dados e nenhuma consulta lê.
+integrations,details_retention_days,INTEGER,"lida, nunca escrita",1,0,,1,1,,,remover,"Só serve às tabelas de detalhes, que não têm escritor."
+integrations,diagnostic_enabled,INTEGER,morta,0,0,,1,1,,,revisar,Sem uso hoje; pode estar reservada para as ISSUE-086 a 091.
+legacy_relay_binding,id,INTEGER,chave,0,1,,,,,,remover,Marca a associação única do relay legado por variável de ambiente; sai com esse bootstrap (decisão do usuário).
+legacy_relay_binding,profile_id,INTEGER,chave,0,1,fk,,,,,remover,Marca a associação única do relay legado por variável de ambiente; sai com esse bootstrap (decisão do usuário).
+listen_export_order,sequence,INTEGER,chave,2,0,,5000,5000,,,simplificar,Uma linha por escuta repetindo event_id (94 B por escuta): trocar por coluna de sequência.
+listen_export_order,event_id,TEXT,chave,1,0,fk trigger,5000,5000,36.0,,simplificar,Uma linha por escuta repetindo event_id (94 B por escuta): trocar por coluna de sequência.
+listening_profiles,id,INTEGER,chave,30,2,fk-alvo trigger,1,1,,,manter,Chave primária ou estrangeira.
+listening_profiles,slug,TEXT,ativa,5,5,,1,1,7.0,,manter,"Lida e escrita, com valores variados."
+listening_profiles,display_name,TEXT,ativa,6,5,,1,1,5.0,,manter,"Lida e escrita, com valores variados."
+listening_profiles,avatar_image_id,TEXT,ativa,3,1,,0,0,,,manter,"Lida e escrita, com valores variados."
+listening_profiles,avatar_icon,TEXT,ativa,2,2,,0,0,,,manter,"Lida e escrita, com valores variados."
+listening_profiles,created_at,INTEGER,ativa,2,4,,1,1,,,manter,"Lida e escrita, com valores variados."
+listening_profiles,user_id,INTEGER,chave,11,3,fk index trigger,1,1,,,manter,Chave primária ou estrangeira.
+listening_profiles,require_login,INTEGER,ativa,4,1,,1,1,,,manter,"Lida e escrita, com valores variados."
+listening_profiles,avatar_color,TEXT,ativa,2,1,,0,0,,,manter,"Lida e escrita, com valores variados."
+listens,profile_id,INTEGER,chave,25,5,fk fk-alvo index trigger,5000,1,,,manter,Chave primária ou estrangeira.
+listens,track_id,INTEGER,chave,70,5,fk index trigger,5000,2435,,,manter,Chave primária ou estrangeira.
+listens,listened_at,INTEGER,ativa,80,5,index,5000,5000,,,manter,"Lida e escrita, com valores variados."
+listens,user_id,INTEGER,"lida, nunca escrita",1,0,index,0,0,,,remover,"Repete o dono já guardado em profile_id; vazia nas escutas novas. Só tem valor no histórico migrado do v2, onde profile_id já guarda o mesmo dono."
+listens,client,TEXT,"ativa, constante",4,4,,5000,1,9.0,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+listens,event_id,TEXT,chave,22,3,fk-alvo index trigger,5000,5000,36.0,,manter,Chave primária ou estrangeira.
+listens,origin,TEXT,chave,2,4,fk trigger,5000,1,16.0,,manter,Chave primária ou estrangeira.
+listens,review_distinct,INTEGER,morta,0,0,,5000,1,,,remover,Era a exceção do escritor v9; sem leitura nem escrita desde a ISSUE-194.
+listens,duration_played,INTEGER,"ativa, vazia",8,3,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+occurrence_credits,occurrence_id,INTEGER,chave,7,2,fk,,,,,manter,Chave primária ou estrangeira.
+occurrence_credits,position,INTEGER,chave,3,2,,,,,,manter,Chave primária ou estrangeira.
+occurrence_credits,name,TEXT,ativa,8,2,,,,,,manter,"Lida e escrita, com valores variados."
+occurrence_credits,artist_id,INTEGER,chave,15,1,fk index,,,,,manter,Chave primária ou estrangeira.
+occurrences,id,INTEGER,chave,71,0,fk-alvo trigger,2435,2435,,recording_id legacy_track_id,manter,Chave primária ou estrangeira.
+occurrences,recording_id,INTEGER,chave,29,5,fk index trigger,2435,2435,,id legacy_track_id,manter,Chave primária ou estrangeira.
+occurrences,release_id,INTEGER,chave,25,0,fk index trigger,2435,676,,,manter,Chave primária ou estrangeira.
+occurrences,legacy_track_id,INTEGER,"lida, nunca escrita",10,0,trigger,2435,2435,,id recording_id,manter,"Preenchida por padrão, por gatilho ou por migração."
+occurrences,track_mbid,TEXT,"ativa, vazia",4,3,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+occurrences,disc_number,INTEGER,"ativa, vazia",4,3,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+occurrences,track_number,INTEGER,ativa,4,3,,2435,14,,,manter,"Lida e escrita, com valores variados."
+occurrences,presented_title,TEXT,"ativa, vazia",9,2,trigger,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+outbox,id,TEXT,chave,16,1,fk-alvo index trigger,,,,,manter,Chave primária ou estrangeira.
+outbox,profile_id,INTEGER,chave,23,1,fk fk-alvo index trigger,,,,,manter,Chave primária ou estrangeira.
+outbox,destination_id,TEXT,chave,9,1,fk index trigger,,,,,manter,Chave primária ou estrangeira.
+outbox,event_id,TEXT,chave,1,1,fk index trigger,,,,,manter,Chave primária ou estrangeira.
+outbox,operation,TEXT,só escrita,0,1,,,,,,revisar,Recebe dados e nenhuma consulta lê.
+outbox,delivery_key,TEXT,só escrita,0,1,,,,,,revisar,Recebe dados e nenhuma consulta lê.
+outbox,state,TEXT,ativa,1,9,index trigger,,,,,manter,"Lida e escrita, com valores variados."
+outbox,created_at,INTEGER,ativa,3,1,index,,,,,manter,"Lida e escrita, com valores variados."
+outbox,next_attempt_at,INTEGER,ativa,9,9,index,,,,,manter,"Lida e escrita, com valores variados."
+outbox,attempt_count,INTEGER,ativa,3,1,,,,,,manter,"Lida e escrita, com valores variados."
+outbox,lease_owner,TEXT,ativa,12,7,,,,,,manter,"Lida e escrita, com valores variados."
+outbox,lease_until,INTEGER,ativa,9,8,,,,,,manter,"Lida e escrita, com valores variados."
+outbox,work_version,INTEGER,ativa,13,3,,,,,,manter,"Lida e escrita, com valores variados."
+outbox,closed_at,INTEGER,ativa,1,1,index trigger,,,,,manter,"Lida e escrita, com valores variados."
+outbox,result,TEXT,ativa,7,9,index,,,,,manter,"Lida e escrita, com valores variados."
+outbox,format_version,INTEGER,ativa,2,1,index trigger,,,,,manter,"Lida e escrita, com valores variados."
+outbox,last_attempt_at,INTEGER,ativa,2,2,,,,,,manter,"Lida e escrita, com valores variados."
+outbox,relay_generation,INTEGER,ativa,14,2,index trigger,,,,,manter,"Lida e escrita, com valores variados."
+outbox_details,id,INTEGER,chave,0,0,index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+outbox_details,profile_id,INTEGER,chave,0,0,fk index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+outbox_details,outbox_id,TEXT,chave,0,0,fk index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+outbox_details,payload,TEXT,revisar,0,0,,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+outbox_details,closed_at,INTEGER,revisar,0,0,index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+outbox_details,protected,INTEGER,revisar,0,0,index,,,,,remover,Tabela sem nenhum escritor no código de produção (só a rotina de retenção a cita).
+profile_ingest_review,profile_id,INTEGER,chave,2,1,fk,,,,,simplificar,Vira uma coluna de listening_profiles.
+profile_ingest_review,review,INTEGER,ativa,1,1,,,,,,simplificar,Vira uma coluna de listening_profiles.
+profile_relays,profile_id,INTEGER,chave,27,2,fk trigger,,,,,simplificar,Relação 1:1 com relay_destinations: fundir as duas e eliminar 5 gatilhos de sincronia.
+profile_relays,url,TEXT,ativa,11,3,trigger,,,,,simplificar,Relação 1:1 com relay_destinations: fundir as duas e eliminar 5 gatilhos de sincronia.
+profile_relays,token,TEXT,ativa,8,2,trigger,,,,,simplificar,Relação 1:1 com relay_destinations: fundir as duas e eliminar 5 gatilhos de sincronia.
+recording_moves,source_track,INTEGER,chave,5,1,,,,,,manter,Chave primária ou estrangeira.
+recording_moves,destination_track,INTEGER,chave,5,1,,,,,,manter,Chave primária ou estrangeira.
+recording_moves,occurrence_id,INTEGER,chave,2,1,fk index trigger,,,,,manter,Chave primária ou estrangeira.
+recording_moves,original_recording,INTEGER,ativa,2,1,trigger,,,,,manter,"Lida e escrita, com valores variados."
+recording_moves,merged_recording,INTEGER,ativa,1,1,trigger,,,,,manter,"Lida e escrita, com valores variados."
+recording_moves,stage,INTEGER,ativa,3,3,index trigger,,,,,manter,"Lida e escrita, com valores variados."
+recording_moves,expires_at,INTEGER,ativa,2,1,index,,,,,manter,"Lida e escrita, com valores variados."
+recordings,id,INTEGER,chave,28,0,fk-alvo trigger,2435,2435,,,manter,Chave primária ou estrangeira.
+recordings,musicbrainz_id,TEXT,"ativa, vazia",18,3,trigger,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+recordings,mbid_source,TEXT,"ativa, constante",4,3,trigger,2435,1,15.0,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+relay_allowlist,profile_id,INTEGER,chave,6,5,fk,,,,,manter,Chave primária ou estrangeira.
+relay_allowlist,host_port,TEXT,chave,7,5,,,,,,manter,Chave primária ou estrangeira.
+relay_allowlist,cidr,TEXT,chave,7,5,,,,,,manter,Chave primária ou estrangeira.
+relay_allowlist,allow_http,INTEGER,ativa,3,5,,,,,,manter,"Lida e escrita, com valores variados."
+relay_allowlist,allow_private,INTEGER,ativa,4,5,,,,,,manter,"Lida e escrita, com valores variados."
+relay_allowlist,origin,TEXT,chave,5,5,,,,,,manter,Chave primária ou estrangeira.
+relay_delivery_gate,id,INTEGER,chave,2,0,trigger,1,1,,,remover,Constante: vale durable em todo banco após o primeiro start.
+relay_delivery_gate,policy,TEXT,ativa,1,1,trigger,1,1,7.0,,remover,Constante: vale durable em todo banco após o primeiro start.
+relay_destinations,profile_id,INTEGER,chave,46,1,fk trigger,,,,,manter,Chave primária ou estrangeira.
+relay_destinations,generation,INTEGER,"lida, nunca escrita",16,0,trigger,,,,,manter,"Preenchida por padrão, por gatilho ou por migração."
+relay_destinations,config_version,INTEGER,ativa,14,7,trigger,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,open_count,INTEGER,"lida, nunca escrita",6,0,trigger,,,,,manter,"Preenchida por padrão, por gatilho ou por migração."
+relay_destinations,paused_until,INTEGER,ativa,17,13,trigger,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,pause_class,TEXT,ativa,24,13,trigger,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,backoff_count,INTEGER,ativa,8,7,trigger,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,lease_owner,TEXT,ativa,6,2,,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,lease_until,INTEGER,ativa,5,3,,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,work_version,INTEGER,ativa,11,1,,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,last_claim_at,INTEGER,ativa,2,1,,,,,,manter,"Lida e escrita, com valores variados."
+relay_destinations,awaiting_approval,INTEGER,ativa,5,1,trigger,,,,,manter,"Lida e escrita, com valores variados."
+relay_sent_archive,profile_id,INTEGER,chave,1,0,fk trigger,,,,,manter,Chave primária ou estrangeira.
+relay_sent_archive,sent_day,INTEGER,chave,1,0,trigger,,,,,manter,Chave primária ou estrangeira.
+relay_sent_archive,sent_count,INTEGER,só no banco,0,0,trigger,,,,,revisar,Só escrita por gatilho; ninguém lê. Mostrar a contagem ou remover.
+release_aliases,release_id,INTEGER,chave,16,4,fk view,676,676,,,manter,Chave primária ou estrangeira.
+release_aliases,alias,TEXT,chave,18,4,index view,676,676,8.8,,manter,Chave primária ou estrangeira.
+release_aliases,source,TEXT,"ativa, constante",9,4,,676,1,9.0,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+release_aliases,is_primary,INTEGER,"ativa, constante",9,6,view,676,1,,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+releases,id,INTEGER,chave,33,1,fk-alvo trigger view,676,676,,,manter,Chave primária ou estrangeira.
+releases,musicbrainz_id,TEXT,"ativa, vazia",7,5,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+releases,image,TEXT,"ativa, vazia",15,5,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+releases,image_source,TEXT,"ativa, vazia",9,6,,0,0,,,manter,Vazia nestes dados; depende do cliente ou da importação.
+releases,various_artists,INTEGER,"ativa, constante",2,5,,676,1,,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+sessions,id,TEXT,chave,9,2,,,,,,manter,Chave primária ou estrangeira.
+sessions,user_id,INTEGER,chave,5,2,fk,,,,,manter,Chave primária ou estrangeira.
+sessions,created_at,INTEGER,só escrita,0,2,,,,,,revisar,Só escrita no Go; confirmar se alguma tela a usa.
+sessions,expires_at,INTEGER,ativa,3,3,index,,,,,manter,"Lida e escrita, com valores variados."
+sessions,persistent,INTEGER,só escrita,0,2,,,,,,revisar,Só escrita no Go; confirmar se alguma tela a usa.
+track_aliases,track_id,INTEGER,chave,22,4,fk view,2435,2435,,,manter,Chave primária ou estrangeira.
+track_aliases,alias,TEXT,chave,24,4,index view,2435,2435,9.6,,manter,Chave primária ou estrangeira.
+track_aliases,source,TEXT,"ativa, constante",8,4,,2435,1,9.0,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+track_aliases,is_primary,INTEGER,"ativa, constante",14,6,view,2435,1,,,manter,"Constante nestes dados, mas faz parte do contrato da tabela."
+tracks,id,INTEGER,chave,54,2,fk-alvo trigger view,2435,2435,,,simplificar,"Ponte legada do Koito v2, repetida em occurrences e recordings (pacote C)."
+tracks,musicbrainz_id,TEXT,"ativa, vazia",5,2,trigger,0,0,,,simplificar,"Ponte legada do Koito v2, repetida em occurrences e recordings (pacote C)."
+tracks,release_id,INTEGER,chave,33,3,fk index trigger,2435,676,,,simplificar,"Ponte legada do Koito v2, repetida em occurrences e recordings (pacote C)."
+tracks,duration,INTEGER,ativa,11,3,,2435,280,,,simplificar,"Ponte legada do Koito v2, repetida em occurrences e recordings (pacote C)."
+users,id,INTEGER,chave,25,1,fk-alvo,1,1,,,manter,Chave primária ou estrangeira.
+users,username,TEXT,ativa,9,6,,1,1,5.0,,manter,"Lida e escrita, com valores variados."
+users,role,TEXT,ativa,15,4,trigger,1,1,5.0,,manter,"Lida e escrita, com valores variados."
+users,password,BLOB,ativa,7,6,,1,1,60.0,,manter,"Lida e escrita, com valores variados."
+users,status,TEXT,ativa,17,6,trigger,1,1,6.0,,manter,"Lida e escrita, com valores variados."
