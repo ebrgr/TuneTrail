@@ -9,6 +9,8 @@ created_date: '2026-11-24T00:45:00Z'
 ---
 # Auditoria de uso e repetição dos dados do banco (schema 23)
 
+**Complemento de 24/11/2026.** O usuário concordou com a avaliação da Central de Saúde na v0.75 (schema 24). A [revisão de Health, Inbox, ingestão e Outbox](../../evidencias/db-auditoria/REVISAO-HEALTH.md) registra os fluxos, o ensaio corrigido de 300 mil recibos, as medições e a ordem de execução. Os números históricos abaixo continuam sendo os do schema 23.
+
 Estudo de 23/11/2026, sobre a `main` na v0.74. Pedido do usuário: **saber e filtrar o que é útil e o que não é dentro do banco**, porque ele parece ter dados demais e repetidos. Complementa o doc-046 (modelo, schema, migrações e plano de atualização). Nada foi alterado no código nem no banco do usuário: o estudo mede e propõe.
 
 ## 0. Resposta curta
