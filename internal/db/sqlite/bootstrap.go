@@ -19,7 +19,9 @@ import (
 )
 
 // currentSchemaVersion is the latest embedded migration understood by bootstrap.
-const currentSchemaVersion = 28
+const currentSchemaVersion = 24
+
+const enrichmentPreviewRecovery = "preserve the database and its sidecars, then use a backup or an export from the matching development revision"
 
 // regularFile rejects links and special files before opening database components.
 func regularFile(path string) (bool, error) {
@@ -123,6 +125,19 @@ func schemaVersion(db *sql.DB) (int, error) {
 	var version int
 	if err := db.QueryRow(`SELECT COALESCE(MAX(version_id),0) FROM goose_db_version WHERE is_applied=1`).Scan(&version); err != nil {
 		return 0, fmt.Errorf("invalid migration history: %w", err)
+	}
+	// Preview builds used 24–28. Supported versions still undergo layout validation.
+	if version > currentSchemaVersion && version >= 25 && version <= 28 {
+		return 0, fmt.Errorf("unsupported schema version %d (ISSUE-174 development preview): %s", version, enrichmentPreviewRecovery)
+	}
+	if version == 24 {
+		var preview bool
+		if err := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enrichment_recording_claims')`).Scan(&preview); err != nil {
+			return 0, fmt.Errorf("check enrichment schema: %w", err)
+		}
+		if preview {
+			return 0, fmt.Errorf("unsupported schema version %d (ISSUE-174 development preview): %s", version, enrichmentPreviewRecovery)
+		}
 	}
 	if version < 1 || version > currentSchemaVersion {
 		return 0, fmt.Errorf("unsupported schema version %d", version)

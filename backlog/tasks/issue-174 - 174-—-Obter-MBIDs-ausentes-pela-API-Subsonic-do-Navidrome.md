@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-20T19:04:00Z'
-updated_date: '2026-11-24T14:37:00Z'
+updated_date: '2026-11-24T16:50:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -105,6 +105,15 @@ created: 2026-11-24T14:37:00Z
 ---
 
 Schema v28 exige escuta válida e imutável em metadata_values. A exclusão da escuta remove suas observações, enquanto a remoção do recibo preserva o vínculo existente. Valores antigos sem comprovação ficam em resguardo com motivo e aviso de contagem. Exportação v2 mantém as declarações no evento correspondente, e fusões só transferem valores sustentados pela mesma escuta. Mantida migração aditiva para preservar a compatibilidade dos bancos de trabalho. Passaram os testes de migração, escopo, fusão, exclusão, arquivo e corrida, além de make check com 13 percursos E2E.
+
+---
+
+author: codex
+created: 2026-11-24T16:50:00Z
+
+---
+
+Consolidação solicitada das prévias não publicadas: a 024 sobe diretamente do v23 com metadata_values e vínculo obrigatório, projeção de crédito e fila independente. O ensaio em bancos descartáveis confirmou equivalência dos 177 objetos de schema ativos com a cadeia anterior, além de preservação e backup do v23. As prévias 24 a 28 exigem preservação do banco e recuperação em cópia separada. Procedimento documentado e plano da ISSUE-195 atualizado.
 
 ---
 <!-- COMMENTS:END -->

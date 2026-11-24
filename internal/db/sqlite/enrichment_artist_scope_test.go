@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestEnrichmentReceivedArtistProjection checks the v25 backfill, live writes,
+// TestEnrichmentReceivedArtistProjection checks the v23 backfill, live writes,
 // precedence by credit, and receipt deletion on the indexed lookup.
 func TestEnrichmentReceivedArtistProjection(t *testing.T) {
 	s, migration, _ := migrationDB(t, 20)
 	seedIdentityHistory(t, s)
 	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow' AND event_id IS NULL`)
-	_, err := migration.UpTo(t.Context(), 25)
+	_, err := migration.UpTo(t.Context(), 23)
 	require.NoError(t, err)
 	require.NoError(t, s.SetIngestReview(t.Context(), 1, false))
 	duet := ingest.Snapshot{Title: "Projected duet", Artist: "A & B", ArtistNames: []string{"A", "B"}, ArtistMbidMappings: []ingest.ArtistMapping{{Name: "A", MBID: knownArtist174}}}

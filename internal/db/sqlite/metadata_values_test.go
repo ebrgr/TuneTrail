@@ -55,31 +55,6 @@ func TestMetadataValueBindings(t *testing.T) {
 	assertForeignKeys(t, s)
 }
 
-// TestMetadataOriginUpgrade preserves a verified binding and quarantines old unproven values.
-func TestMetadataOriginUpgrade(t *testing.T) {
-	s, migration, _ := migrationDB(t, 27)
-	testfixtures.Profile(t, s, 1, "metadata-history", "History", 1)
-	execSQL(t, s, `INSERT INTO artists(id) VALUES(1),(2);
-		INSERT INTO recordings(id) VALUES(1);
-		INSERT INTO occurrences(id,recording_id,presented_title) VALUES(1,1,'Track');
-		INSERT INTO occurrence_credits VALUES(1,0,'A',1),(1,1,'B',2);
-		INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,100,'history');
-		INSERT INTO metadata_values(profile_id,artist_id,event_id,kind,value,instance,source,observed_at) VALUES
-		(1,1,'history','genre','Confirmed','given','test','2026-01-02T00:00:00Z'),
-		(1,2,'history','genre','Former credit','given','test','2026-01-02T00:00:00Z'),
-		(1,1,NULL,'genre','No origin','given','test','2026-01-02T00:00:00Z');
-		DELETE FROM occurrence_credits WHERE artist_id=2`)
-	_, err := migration.UpTo(t.Context(), currentSchemaVersion)
-	require.NoError(t, err)
-	require.NoError(t, checkDatabase(s.db))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE event_id='history' AND value='Confirmed'`))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE value='No origin' AND reason='missing_event'`))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE value='Former credit' AND reason='unverified_event'`))
-	execSQL(t, s, `DELETE FROM listening_profiles WHERE id=1`)
-	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy`))
-	assertForeignKeys(t, s)
-}
-
 // TestMetadataCreditRemoval deletes only observations tied to the removed credit.
 func TestMetadataCreditRemoval(t *testing.T) {
 	s := mergeFixture(t)

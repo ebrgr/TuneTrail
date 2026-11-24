@@ -10,7 +10,6 @@ import (
 )
 
 type enrichmentResolver interface {
-	CountUnverifiedMetadata(context.Context) (int64, error)
 	ConfigureEnrichment(context.Context, bool) error
 	ResolveNextEnrichment(context.Context, enrichment.Provider) (bool, error)
 }
@@ -22,12 +21,6 @@ func startEnrichment(ctx context.Context, store any) <-chan struct{} {
 	if !ok {
 		close(done)
 		return done
-	}
-	// Surface the migration result even while provider enrichment is disabled.
-	if count, err := resolver.CountUnverifiedMetadata(ctx); err != nil {
-		logger.FromContext(ctx).Warn().Msg("Could not check archived metadata provenance")
-	} else if count > 0 {
-		logger.FromContext(ctx).Warn().Int64("count", count).Msg("Historical metadata without a verified listen is retained outside the active catalog")
 	}
 	var provider enrichment.Provider
 	if cfg.SubsonicEnabled() {

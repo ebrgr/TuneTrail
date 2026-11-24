@@ -109,6 +109,21 @@ restores environment/default behavior; it does not reset or delete the database.
 Fix invalid environment or `_FILE` values as well. Preserve the original file for
 inspection and verify the active values in Administration after recovery.
 
+### Databases from ISSUE-174 development builds
+
+The consolidated migration upgrades schema 23 directly to schema 24. Earlier
+development builds of ISSUE-174 used a different schema 24 and preview schemas
+25 through 28. Startup rejects those layouts. Keep the original database and
+its WAL and SHM files together, with writers stopped, or make a consistent
+SQLite backup. Keep that backup before attempting recovery and leave the Goose
+version entries intact.
+
+For data created in a preview, open a working copy with the matching development
+revision and export a v2 archive where available. Restore a schema 23 backup or
+initialize a fresh database in a separate directory with the consolidated build,
+then import and verify the archive before switching directories. Preview data
+that the archive cannot represent remains in the preserved copy.
+
 ### Interface language files
 
 TuneTrail loads the English and Brazilian Portuguese catalogs from the external

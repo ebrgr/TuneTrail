@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-23T00:31:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-24T16:49:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -38,11 +38,17 @@ Origem: pergunta do usuário em 22/11/2026 sobre simplificar as migrações. Pro
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Um único arquivo 003 leva um Koito v2 ao schema final, que já nasce sem as estruturas aprovadas nas ISSUE-203 a 206, e o teste de equivalência compara o sqlite_master normalizado com o de 001 a 023 aplicadas em ordem
+- [ ] #1 Um único arquivo 003 leva um Koito v2 ao schema final, que já nasce sem as estruturas aprovadas nas ISSUE-203 a 206, e o teste de equivalência compara o sqlite_master normalizado com o de 001 a 024 aplicadas em ordem
 - [ ] #2 Salto v2 → final com digest e contagens por perfil iguais, a partir do v2 sintético e da cópia real
 - [ ] #3 Ensaio em escala com 300 mil e 1 milhão de escutas, com backup, restauração e quick_check, e o tempo e o disco medidos (referência: 11,5 s e 5,5 vezes o tamanho para 300 mil)
-- [ ] #4 Migrações 022 e 023 e as decisões das ISSUE-207 e 208 incorporadas; documentação de operação atualizada para o schema final
+- [ ] #4 Migrações 022, 023 e 024 e as decisões das ISSUE-207 e 208 incorporadas; documentação de operação atualizada para o schema final
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+Usar a cadeia 001 a 024, com a 024 consolidada da ISSUE-174, como referência da comparação normalizada do futuro salto 003. Incorporar as estruturas ativas de metadados, projeção e fila e validar o vínculo obrigatório à escuta. Repetir a comparação após as simplificações aprovadas, verificando integridade referencial, digests, backup e restauração. Preservar os bancos de prévia 24 a 28 em backups separados e distinguir a prévia 24 do layout consolidado antes de qualquer operação.
+<!-- SECTION:PLAN:END -->
 
 ## Comments
 
@@ -62,6 +68,15 @@ created: 2026-11-24T00:51:00Z
 ---
 
 Plano do doc-046 §7.7 (23/11/2026): decidir, consolidar e subir uma vez. A 195 passa a depender das ISSUE-203 a 206 (pacotes A e B de simplificação), para que o arquivo único já nasça enxuto e a produção nunca veja o legado. As ISSUE-207 (índices) e 208 (retenção do recibo) são decisões que também devem entrar antes de fechar o esquema, sem bloquear a abertura. A ISSUE-210 (tracks em occurrences) fica depois da 195 e do upgrade de produção. Medições de referência: Koito v2 de 300 mil escutas (35 MB) chega ao schema 23 em 11,5 s e vira 125 MB; backup de 35 MB.
+
+---
+
+author: codex
+created: 2026-11-24T16:49:00Z
+
+---
+
+A ISSUE-174 consolidou suas prévias em uma única 024 antes da publicação. Usar o layout consolidado na comparação da 195.
 
 ---
 <!-- COMMENTS:END -->

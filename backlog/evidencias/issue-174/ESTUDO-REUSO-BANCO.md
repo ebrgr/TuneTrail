@@ -1,6 +1,6 @@
 # ISSUE-174 — estudo de reaproveitamento das tabelas existentes
 
-Estudo de 24/11/2026. Nenhuma migração ou alteração de comportamento é proposta como já aprovada. Base de comparação: `main` no schema 23; implementação em revisão na branch da 174 chega ao schema 26.
+Estudo iniciado em 24/11/2026, com a `main` no schema 23 e a prévia da ISSUE-174 então no schema 26. A seção de decisão aplicada registra o modelo consolidado da branch.
 
 ## O que existe
 
@@ -56,15 +56,13 @@ Ensaios antes de reestruturar: restrições e unicidade para NULLs no SQLite (í
 
 ## Decisão aplicada na branch
 
-A migração 027 reúne as duas tabelas de declarações em `metadata_values`. Há três FKs opcionais de catálogo e um CHECK que exige exatamente uma delas. Cada linha tem perfil obrigatório, tipo, valor, fonte, instância e instante. Não há escopo público implícito. A 174 só produz e consome MBIDs. O schema reserva gêneros, tags, ano de gravação, data de lançamento e país de origem do artista como valores individuais. Os próximos provedores ainda precisam definir validação, precisão e representação na exportação de cada tipo.
+A migração 024 cria `metadata_values` diretamente a partir do schema 23. Há três FKs opcionais de catálogo e um CHECK que exige exatamente uma delas. Cada linha tem perfil obrigatório, tipo, valor, fonte, instância e instante. Não há escopo público implícito. A 174 só produz e consome MBIDs. O schema reserva gêneros, tags, ano de gravação, data de lançamento e país de origem do artista como valores individuais. Os próximos provedores ainda precisam definir validação, precisão e representação na exportação de cada tipo.
 
 Cada valor ativo tem FK obrigatória e imutável para a escuta de origem. O banco verifica perfil e associação à entidade. Para artista, o provedor precisa encontrar um crédito inequívoco antes e depois da rede. O arquivo v2 inclui a declaração somente na entrada da escuta correspondente. Ao importar, a entrada declarada no arquivo sustenta uma vinculação local se a entidade realmente pertence à escuta restaurada. Isso registra evidência do arquivo recebido, sem afirmar que um arquivo antigo com declarações repetidas identifica o evento original do provedor.
 
 Apagar o recibo elimina sua projeção de precedência e seu trabalho pendente. A escuta e as declarações continuam vinculadas. Apagar a escuta de origem elimina seus valores por FK, mesmo se há outras escutas relacionadas. Essa política dispensa transferências heurísticas e impede que uma escuta vizinha se torne origem de uma observação histórica. A associação também sai ao remover o crédito que a sustentava. Fusões só transferem valores quando a mesma escuta continua sustentando a entidade de destino. A âncora de ocorrência preserva o vínculo das gravações durante fusão e reversão.
 
-O schema 28 mantém as linhas v27 cuja escuta ainda comprova perfil e entidade. Linhas cuja origem foi perdida por uma migração anterior ou cuja associação não pode ser confirmada são guardadas em `metadata_unverified_legacy`, com motivo, perfil e IDs de entidade. A tabela fica fora das leituras, exportações pessoais e decisões de identidade. O servidor registra apenas a contagem ao iniciar. A inspeção administrativa é local e depende de acesso ao banco. Registros de resguardo saem com o respectivo perfil ou entidade. A migração preserva os valores sem usar outras escutas para reconstruir origens.
-
-Mesmo sem publicação, as versões 24 a 27 já têm caminhos de teste e bancos de trabalho com dados. Uma migração aditiva preserva esses caminhos e permite verificar v23 e v27 com a mesma cadeia. A consolidação fica para a ISSUE-195, quando a compatibilidade poderá ser discutida explicitamente.
+A cadeia de prévias 024 a 028 foi consolidada antes da publicação. O esquema v23 não tinha declarações de enriquecimento para migrar. O bootstrap recusa a abertura das prévias e preserva seus arquivos. Para recuperar dados das prévias, mantenha uma cópia consistente intacta, use a revisão correspondente em uma cópia de trabalho e exporte os dados compatíveis antes de recriar o banco ou migrar a partir de um backup v23. Valores sem origem comprovada permanecem disponíveis para inspeção na cópia da prévia e não viram declarações ativas no novo banco.
 
 O catálogo mantém a precedência do ID já salvo e o snapshot conserva o que foi recebido. IDs presentes no recibo suprimem sugestões externas da mesma entidade. Valores contraditórios ficam no escopo do perfil e não são promovidos a IDs de catálogo. A exportação v2 preserva as declarações e suas fontes e datas, inclusive conflitos. Arquivos v1 omitem essas declarações.
 
@@ -72,4 +70,4 @@ A projeção de nomes por recibo foi mantida porque registra evidência de prece
 
 ### Decisões pendentes
 
-Conflitos permanecem armazenados e não criam pendência de ingestão. Uma futura revisão pode reunir candidatos por perfil, entidade e tipo, apresentar as evidências e gravar uma escolha explícita e auditável. Ainda é necessário decidir quem pode resolver conflitos, se uma escolha é privada ou global e como a escolha aparece nos consumidores. Nenhuma interface, promoção automática ou política pública foi definida nesta etapa. A integração de metadados adicionais e eventual consolidação das migrações ficam com as issues correspondentes.
+Conflitos permanecem armazenados e não criam pendência de ingestão. Uma futura revisão pode reunir candidatos por perfil, entidade e tipo, apresentar as evidências e gravar uma escolha explícita e auditável. Ainda é necessário decidir quem pode resolver conflitos, se uma escolha é privada ou global e como a escolha aparece nos consumidores. Nenhuma interface, promoção automática ou política pública foi definida nesta etapa. A integração de metadados adicionais e a consolidação futura do salto do Koito v2 ficam com as issues correspondentes.

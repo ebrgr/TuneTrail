@@ -16,29 +16,6 @@ import (
 const knownArtist174 = "11111111-1111-4111-8111-111111111111"
 const enrichedArtist174 = "22222222-2222-4222-8222-222222222222"
 
-// TestEnrichmentRetentionUpgrade retains existing v24 declarations and their dates.
-func TestEnrichmentRetentionUpgrade(t *testing.T) {
-	s, provider, _ := migrationDB(t, 20)
-	seedIdentityHistory(t, s)
-	execSQL(t, s, `DELETE FROM ingest_events WHERE mode='shadow' AND event_id IS NULL`)
-	_, err := provider.UpTo(t.Context(), 24)
-	require.NoError(t, err)
-	require.NoError(t, s.SetIngestReview(t.Context(), 1, false))
-	receipt := admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Upgrade claim", Artist: "Upgrade artist", Release: "Upgrade album"}, 1700000300, "upgrade-claim")
-	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
-	var occurrence, artist int64
-	require.NoError(t, s.db.QueryRow(`SELECT occurrence_id FROM ingest_events WHERE receipt_id=?`, receipt).Scan(&occurrence))
-	require.NoError(t, s.db.QueryRow(`SELECT artist_id FROM artist_aliases WHERE alias='Upgrade artist'`).Scan(&artist))
-	execSQL(t, s, `INSERT INTO enrichment_recording_claims VALUES(1,?,?,'old',?,'navidrome-subsonic','2026-01-02T00:00:00Z')`, occurrence, receipt, fixtureRecording)
-	execSQL(t, s, `INSERT INTO enrichment_artist_claims VALUES(1,?,?,'old',?,'navidrome-subsonic','2026-01-02T00:00:00Z')`, artist, receipt, enrichedArtist174)
-	_, err = provider.UpTo(t.Context(), currentSchemaVersion)
-	require.NoError(t, err)
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE profile_id=1 AND occurrence_id=? AND observed_at='2026-01-02T00:00:00Z' AND reason='missing_event'`, occurrence))
-	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_unverified_legacy WHERE profile_id=1 AND artist_id=? AND observed_at='2026-01-02T00:00:00Z' AND reason='missing_event'`, artist))
-	require.NoError(t, checkDatabase(s.db))
-	assertForeignKeys(t, s)
-}
-
 // TestEnrichmentArchiveForeignCatalog restores claims without promoting them to global identity.
 func TestEnrichmentArchiveForeignCatalog(t *testing.T) {
 	s := configuredEnrichmentFixture(t)
