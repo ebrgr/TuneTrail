@@ -24,7 +24,10 @@ import (
 func migrationDB(t *testing.T, version int64) (*Sqlite, *goose.Provider, string) {
 	t.Helper()
 	filename := filepath.Join(t.TempDir(), "koito.db")
-	conn, err := sql.Open("sqlite", filename+"?_pragma=foreign_keys(ON)&_pragma=journal_mode(WAL)")
+	// Match the production DSN (sqlite.go): without busy_timeout a second connection fails
+	// BEGIN IMMEDIATE at once with SQLITE_BUSY instead of waiting, which made tests that run
+	// concurrent workers (TestOccurrenceResolverAB) flaky on slow 2-vCPU CI runners.
+	conn, err := sql.Open("sqlite", filename+"?_pragma=foreign_keys(ON)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)")
 	require.NoError(t, err)
 	conn.SetMaxOpenConns(1)
 	t.Cleanup(func() { conn.Close() })
