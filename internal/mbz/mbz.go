@@ -70,27 +70,37 @@ func (c *MusicBrainzClient) getEntity(ctx context.Context, fmtStr string, id uui
 	return nil
 }
 
+// Do runs one request under the MusicBrainz rate. The receipt resolver and every enrichment
+// provider go through this one queue, so together they never exceed the single request budget
+// the service allows (ISSUE-214). It satisfies enrichment.Budget structurally.
+func (c *MusicBrainzClient) Do(ctx context.Context, job func(context.Context, *http.Client) ([]byte, error)) ([]byte, error) {
+	result := <-c.requestQueue.EnqueueContext(ctx, func(jobCtx context.Context, client *http.Client) queue.RequestResult {
+		body, err := job(jobCtx, client)
+		return queue.RequestResult{Body: body, Err: err}
+	})
+	return result.Body, result.Err
+}
+
 // queue propagates caller and shutdown cancellation through the HTTP request.
 func (c *MusicBrainzClient) queue(ctx context.Context, req *http.Request) ([]byte, error) {
 	req.Header.Set("User-Agent", c.userAgent)
 	req.Header.Set("Accept", "application/json")
-	result := <-c.requestQueue.EnqueueContext(ctx, func(jobCtx context.Context, client *http.Client) queue.RequestResult {
+	return c.Do(ctx, func(jobCtx context.Context, client *http.Client) ([]byte, error) {
 		resp, err := client.Do(req.WithContext(jobCtx))
 		if err != nil {
 			if jobCtx.Err() != nil {
-				return queue.RequestResult{Err: jobCtx.Err()}
+				return nil, jobCtx.Err()
 			}
-			return queue.RequestResult{Err: fmt.Errorf("upstream request failed")}
+			return nil, fmt.Errorf("upstream request failed")
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			return queue.RequestResult{Err: fmt.Errorf("MusicBrainz returned HTTP %d", resp.StatusCode)}
+			return nil, fmt.Errorf("MusicBrainz returned HTTP %d", resp.StatusCode)
 		}
 		body, err := io.ReadAll(io.LimitReader(resp.Body, (8<<20)+1))
 		if err == nil && len(body) > 8<<20 {
 			err = fmt.Errorf("MusicBrainz response exceeds 8 MiB")
 		}
-		return queue.RequestResult{Body: body, Err: err}
+		return body, err
 	})
-	return result.Body, result.Err
 }

@@ -30,9 +30,21 @@ type Declaration struct {
 }
 
 // Request is scoped to the owner and provider instance for caching and storage.
+// The fields after Snapshot are filled by the chain runner (ISSUE-214); they are excluded from
+// JSON so providers that hash the request for their cache keep the same keys.
 type Request struct {
 	ProfileID int32
 	Snapshot  ingest.Snapshot
+	// Chain names the question being asked.
+	Chain Chain `json:"-"`
+	// Credential and Generation bind a token-bound provider to the approved credential of the
+	// profile that owns the receipt. The credential is never logged or stored.
+	Credential string `json:"-"`
+	Generation int64  `json:"-"`
+	// Recording and Artists list the fields a token-bound provider must still resolve, computed
+	// from local evidence before the call.
+	Recording bool     `json:"-"`
+	Artists   []string `json:"-"`
 }
 
 // Result carries field-level claims; this provider returns only missing identifiers.
