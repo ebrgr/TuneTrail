@@ -7,7 +7,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T18:26:00Z'
+updated_date: '2026-11-26T19:01:00Z'
 labels:
   - ingestao
   - validacao
@@ -65,6 +65,15 @@ created: 2026-11-26T18:26:00Z
 ---
 
 Parecer do Reviewer (26/11/2026), em backlog/evidencias/issue-215/PARECER-REVIEWER.md: três itens obrigatórios e três riscos. O principal: o script lê submission_client no nível errado, então o relatório diz que nenhuma escuta veio do Navidrome, quando 166 das 1.299 vieram e as 39 com MBID do cliente são todas dele. Também há um caminho local com o usuário do macOS em arquivo versionado, e a regra proposta foi escolhida na mesma amostra em que foi avaliada. Não aceitar antes de corrigir os itens 1 a 3.
+
+---
+
+author: dsh
+created: 2026-11-26T19:01:00Z
+
+---
+
+Correção após o parecer do Reviewer (itens 1-3 e riscos 4-6): (1) submission_client agora é lido em track_metadata.additional_info; a contagem por cliente bate com a conferência independente (navidrome 166, listenbrainz 1133, 39 com recording_mbid — todas do Navidrome); a medição foi reexecutada com a mesma semente e o relatório reescrito: amostra 35/35 do Navidrome; MusicBrainz com a regra proposta (score >= 95, ±5 s, álbum e créditos): 27 acertos (77,1%), 0 falsos, 6 ambíguas, 2 ausentes; ListenBrainz lookup 35/35; 6 escutas separam a tolerância de 2 s da de 5 s, e 1 delas é a que vira ambígua em vez de falso positivo. (2) O caminho do token agora é ~/.cache/tunetrail-215/lb_token, expandido com expanduser. (3) A seção 9 registra explicitamente que a regra foi escolhida pelo máximo de precisão na mesma amostra e trata os números como ordem de grandeza e direção. Riscos 4-6 registrados na seção 11: viés de seleção (127 das 166 escutas do Navidrome, 76,5%, não têm recording_mbid e são a população-alvo da ISSUE-216); tautologia das linhas de 100% do ISRC (métrica válida: 47 de 49 ISRCs com destino único, 95,9%); e a ordem recomendada segue a decisão de abertos antes de contas do doc-048, não os números. O parecer PARECER-REVIEWER.md não foi alterado.
 
 ---
 <!-- COMMENTS:END -->
