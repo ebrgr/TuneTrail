@@ -7,7 +7,7 @@ status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T18:23:00Z'
+updated_date: '2026-11-26T18:26:00Z'
 labels:
   - ingestao
   - validacao
@@ -56,6 +56,15 @@ created: 2026-11-26T18:23:00Z
 ---
 
 Verificação: medição executada em 26/11/2026 com o script backlog/evidencias/issue-215/medir_issue_215.py. Amostra: 35 combinações distintas (histórico inteiro da conta: 1299 escutas, 39 com recording_mbid do cliente; nenhuma do Navidrome) — o alvo de 300 não foi possível por falta de dados, não por tempo. MusicBrainz por nome com a regra proposta (score >= 95, duração ±5 s, álbum e créditos conferidos): 28 acertos (80,0%), 0 falsos positivos, 6 ambíguas, 1 ausente, 0 erros HTTP; sem regra, o 1º resultado por score acerta só 31,4%. ListenBrainz lookup: 35/35 (100%), sem falsos positivos, e recuperou as 7 que o MusicBrainz não resolveu. Ponte por ISRC medida com ISRCs do próprio MusicBrainz (ISRC do Navidrome indisponível nesta rodada): 35/35 gravações com ISRC; 95,9% dos ISRCs levam a uma única gravação; 35/35 ganham MBID sem ambiguidade. Ordem recomendada: Navidrome → MusicBrainz por nome → ListenBrainz. Limites de taxa e User-Agent respeitados; 503 intermitentes do MusicBrainz contornados com espera e re-tentativas.
+
+---
+
+author: claude
+created: 2026-11-26T18:26:00Z
+
+---
+
+Parecer do Reviewer (26/11/2026), em backlog/evidencias/issue-215/PARECER-REVIEWER.md: três itens obrigatórios e três riscos. O principal: o script lê submission_client no nível errado, então o relatório diz que nenhuma escuta veio do Navidrome, quando 166 das 1.299 vieram e as 39 com MBID do cliente são todas dele. Também há um caminho local com o usuário do macOS em arquivo versionado, e a regra proposta foi escolhida na mesma amostra em que foi avaliada. Não aceitar antes de corrigir os itens 1 a 3.
 
 ---
 <!-- COMMENTS:END -->
