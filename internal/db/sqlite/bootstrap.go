@@ -19,7 +19,7 @@ import (
 )
 
 // currentSchemaVersion is the latest embedded migration understood by bootstrap.
-const currentSchemaVersion = 24
+const currentSchemaVersion = 25
 
 const enrichmentPreviewRecovery = "preserve the database and its sidecars, then use a backup or an export from the matching development revision"
 
@@ -126,13 +126,20 @@ func schemaVersion(db *sql.DB) (int, error) {
 	if err := db.QueryRow(`SELECT COALESCE(MAX(version_id),0) FROM goose_db_version WHERE is_applied=1`).Scan(&version); err != nil {
 		return 0, fmt.Errorf("invalid migration history: %w", err)
 	}
-	// Preview builds used 24–28. Supported versions still undergo layout validation.
-	if version > currentSchemaVersion && version >= 25 && version <= 28 {
+	// Preview builds used 24–28 with another layout. Version 24 is the released enrichment schema
+	// and 25 its provider registry (ISSUE-214); each is told apart from a preview by a table that
+	// only the final layout has (or, for 24, only the preview has). Supported versions still
+	// undergo layout validation.
+	if version > currentSchemaVersion && version >= 26 && version <= 28 {
 		return 0, fmt.Errorf("unsupported schema version %d (ISSUE-174 development preview): %s", version, enrichmentPreviewRecovery)
 	}
-	if version == 24 {
+	if version == 24 || version == 25 {
 		var preview bool
-		if err := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enrichment_recording_claims')`).Scan(&preview); err != nil {
+		query := `SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enrichment_recording_claims')`
+		if version == 25 {
+			query = `SELECT NOT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enrichment_providers')`
+		}
+		if err := db.QueryRow(query).Scan(&preview); err != nil {
 			return 0, fmt.Errorf("check enrichment schema: %w", err)
 		}
 		if preview {

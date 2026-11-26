@@ -258,7 +258,7 @@ func Run(
 	// Configure the enrichment gate before the server begins accepting receipts.
 	ingestCtx, stopIngest := context.WithCancel(ctx)
 	defer stopIngest()
-	enrichmentDone := startEnrichment(ingestCtx, store)
+	enrichmentDone := startEnrichment(ingestCtx, store, mbzC)
 	ingestDone := startIngestRecovery(ingestCtx, store, mbzC)
 	serveErr := make(chan error, 1)
 	go func() {

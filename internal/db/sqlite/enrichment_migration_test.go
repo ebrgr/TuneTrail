@@ -34,7 +34,7 @@ func TestBootstrapEnrichmentFromV23(t *testing.T) {
 	require.NoError(t, checkDatabase(db))
 	version, err := schemaVersion(db)
 	require.NoError(t, err)
-	require.Equal(t, 24, version)
+	require.Equal(t, currentSchemaVersion, version)
 	require.Equal(t, before, queryDigest(t, db, `SELECT * FROM listens ORDER BY event_id`))
 	require.Zero(t, scalar(t, &Sqlite{db: db}, `SELECT count(*) FROM metadata_values`))
 	backups, err := filepath.Glob(path + ".pre-ingest-*.bak")
@@ -48,6 +48,45 @@ func TestBootstrapEnrichmentFromV23(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 23, version)
 	require.Equal(t, before, queryDigest(t, backup, `SELECT * FROM listens ORDER BY event_id`))
+}
+
+// TestBootstrapEnrichmentRegistryFromV24 upgrades a released v0.75/v0.76 database (ISSUE-214).
+func TestBootstrapEnrichmentRegistryFromV24(t *testing.T) {
+	for _, configured := range []bool{true, false} {
+		t.Run(fmt.Sprint("subsonic configured ", configured), func(t *testing.T) {
+			dir := t.TempDir()
+			path, err := bootstrapAtVersion(dir, true, 24)
+			require.NoError(t, err)
+			db, err := openExisting(path)
+			require.NoError(t, err)
+			s := &Sqlite{db: db}
+			execSQL(t, s, `UPDATE enrichment_configuration SET enabled=?`, configured)
+			require.NoError(t, db.Close())
+
+			upgraded, err := bootstrap(dir, false)
+			require.NoError(t, err)
+			db, err = openExisting(upgraded)
+			require.NoError(t, err)
+			defer db.Close()
+			s = &Sqlite{db: db}
+			require.NoError(t, checkDatabase(db))
+			version, err := schemaVersion(db)
+			require.NoError(t, err)
+			require.Equal(t, 25, version)
+
+			// The old switch became the availability of the Subsonic provider, and the table is gone.
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_providers WHERE id='navidrome-subsonic'
+				AND enabled=1 AND priority=100 AND identity=1 AND metadata=0 AND eligibility='configured' AND available=?`, configured))
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_providers WHERE id='listenbrainz'
+				AND enabled=1 AND available=1 AND priority=200 AND eligibility='profile-relay'`))
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM sqlite_schema WHERE name='enrichment_configuration'`))
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM sqlite_schema WHERE type='trigger' AND name='trg_enrichment_enqueue'`))
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_provider_runs`))
+			backups, err := filepath.Glob(path + ".pre-ingest-*.bak")
+			require.NoError(t, err)
+			require.NotEmpty(t, backups, "the upgrade keeps a verified copy of the v24 database")
+		})
+	}
 }
 
 // TestBootstrapRejectsEnrichmentPreview protects databases with reused or retired version numbers.

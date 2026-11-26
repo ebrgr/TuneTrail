@@ -45,6 +45,11 @@ type Request struct {
 	// from local evidence before the call.
 	Recording bool     `json:"-"`
 	Artists   []string `json:"-"`
+	// Prior holds the MusicBrainz IDs that other sources already stored for this listen's
+	// recording and artists (Entity, Name, Field, Value and Source only). A provider reads it to
+	// leave alone the fields that are already resolved: the chain stops per field, not per receipt.
+	// A provider returns Absent without network use when nothing it provides is still open.
+	Prior []Declaration `json:"-"`
 }
 
 // Result carries field-level claims; this provider returns only missing identifiers.

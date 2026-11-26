@@ -53,7 +53,7 @@ func TestListenBrainzSparseArtistSlots(t *testing.T) {
 				FROM ingest_events WHERE receipt_id=?`, receipt).Scan(&claim.profile, &claim.snapshot, &claim.occurrence, &claim.recording, &event))
 			claim.receipt = receipt
 			require.NoError(t, s.enrichmentKnownIDs(t.Context(), &claim, &snapshot, ""))
-			target, err := prepareListenBrainz(t.Context(), s.db, claim, enrichment.Result{})
+			target, err := prepareListenBrainz(t.Context(), s.db, claim)
 			require.NoError(t, err)
 			require.Equal(t, []string{names[scenario.hole]}, target.request.Artists)
 			require.False(t, target.request.Recording)

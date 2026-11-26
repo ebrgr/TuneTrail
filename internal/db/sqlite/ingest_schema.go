@@ -18,7 +18,7 @@ func validateSchemaLayout(db *sql.DB, version int) error {
 	defer reference.Close()
 	reference.SetMaxOpenConns(1)
 	// Build the reference through the requested version, including the ingestion source summary.
-	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql", "006_active_admin_guards.sql", "007_account_tokens.sql", "008_recording_identity.sql", "009_ingest_activation.sql", "010_occurrence_ingest.sql", "011_occurrence_writer_guards.sql", relayMigration, "013_ingest_retry.sql", "014_occurrence_archive.sql", "015_archive_export_boundary.sql", "016_ingest_review.sql", "017_ingest_source_summary.sql", "018_ingest_reprocess.sql", "019_ingest_inbox.sql", "020_ingest_discards.sql", "021_occurrence_only.sql", "022_avatar_color.sql", "023_duration_played.sql", "024_enrichment.sql"}[:version] {
+	for _, name := range []string{"001_initial_schema.sql", "002_unique_mbid.sql", "003_listening_profiles.sql", "004_ingest_infrastructure.sql", "005_accounts_profiles.sql", "006_active_admin_guards.sql", "007_account_tokens.sql", "008_recording_identity.sql", "009_ingest_activation.sql", "010_occurrence_ingest.sql", "011_occurrence_writer_guards.sql", relayMigration, "013_ingest_retry.sql", "014_occurrence_archive.sql", "015_archive_export_boundary.sql", "016_ingest_review.sql", "017_ingest_source_summary.sql", "018_ingest_reprocess.sql", "019_ingest_inbox.sql", "020_ingest_discards.sql", "021_occurrence_only.sql", "022_avatar_color.sql", "023_duration_played.sql", "024_enrichment.sql", "025_enrichment_registry.sql"}[:version] {
 		ddl, err := migrations.Files.ReadFile(name)
 		if err != nil {
 			return fmt.Errorf("read schema reference: %w", err)

@@ -17,12 +17,6 @@ type enrichmentReader interface {
 	QueryRowContext(context.Context, string, ...any) *sql.Row
 }
 
-type listenBrainzRun struct {
-	request enrichment.ListenBrainzRequest
-	version int64
-	result  enrichment.Result
-}
-
 type listenBrainzTarget struct {
 	request enrichment.ListenBrainzRequest
 	version int64
@@ -35,38 +29,66 @@ const listenBrainzRelay = `
 	WHERE d.awaiting_approval=0 AND p.url=? AND p.token<>''
 	AND (d.pause_class IS NULL OR d.paused_until<=unixepoch())`
 
-// enqueueListenBrainzEnrichment queues only receipts with an eligible profile relay.
-// The schema 24 trigger already covers the same receipt when Subsonic is active.
+// enqueueListenBrainzEnrichment queues only receipts with an eligible profile relay, and only when
+// the profile-relay source is enabled and available. A source that needs just the process
+// configuration is queued by the schema trigger, which covers the same receipt.
 func (s *Sqlite) enqueueListenBrainzEnrichment(ctx context.Context, tx *sql.Conn, receipt string) error {
 	if !s.enrichmentReady.Load() {
 		return nil
 	}
 	_, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO enrichment_jobs(receipt_id) SELECT e.receipt_id
 		`+listenBrainzRelay+` AND e.receipt_id=? AND e.mode='active' AND e.source_type='listenbrainz'
-		AND e.file_format IS NULL AND NOT (SELECT enabled FROM enrichment_configuration WHERE singleton=1)`,
+		AND e.file_format IS NULL
+		AND NOT EXISTS (SELECT 1 FROM enrichment_providers WHERE enabled=1 AND available=1 AND eligibility='configured')
+		AND EXISTS (SELECT 1 FROM enrichment_providers WHERE enabled=1 AND available=1 AND eligibility='profile-relay')`,
 		enrichment.ListenBrainzBase, receipt)
 	return err
 }
 
-// matches fences credential changes and all evidence used to select the fallback fields.
-func (r listenBrainzRun) matches(target listenBrainzTarget) bool {
-	return target.token != "" && r.version == target.version && reflect.DeepEqual(r.request, target.request)
+// sameEvidence fences credential changes and all evidence used to select the fallback fields.
+func (t listenBrainzTarget) sameEvidence(current listenBrainzTarget) bool {
+	return current.token != "" && t.version == current.version && reflect.DeepEqual(t.request, current.request)
 }
 
-// lookupListenBrainz reads credentials immediately before the bounded network call.
-func (s *Sqlite) lookupListenBrainz(ctx context.Context, c enrichmentClaim, primary enrichment.Result, client *enrichment.ListenBrainz) (listenBrainzRun, error) {
-	target, err := prepareListenBrainz(ctx, s.db, c, primary)
-	if err != nil {
-		return listenBrainzRun{}, err
+// listenBrainzBinding sends the profile's approved relay credential with the fields that earlier
+// sources and the catalog left open.
+type listenBrainzBinding struct{ s *Sqlite }
+
+// prepare reads credentials immediately before the bounded network call.
+func (b listenBrainzBinding) prepare(ctx context.Context, c *enrichmentClaim, _ enrichment.Descriptor, _ enrichment.Provider, chain enrichment.Chain) (enrichmentTarget, error) {
+	// Resolve the linked artists the same way as every other source, so the credit map is ready.
+	var scratch ingest.Snapshot
+	if err := json.Unmarshal([]byte(c.snapshot), &scratch); err != nil {
+		return enrichmentTarget{}, err
 	}
-	attempt, cancel := context.WithTimeout(ctx, 7*time.Second)
-	defer cancel()
-	return listenBrainzRun{request: target.request, version: target.version, result: client.Lookup(attempt, target.token, target.request)}, nil
+	if err := b.s.enrichmentKnownIDs(ctx, c, &scratch, ""); err != nil {
+		return enrichmentTarget{}, err
+	}
+	target, err := prepareListenBrainz(ctx, b.s.db, *c)
+	if err != nil {
+		return enrichmentTarget{}, err
+	}
+	return enrichmentTarget{
+		timeout:      7 * time.Second,
+		listenBrainz: target,
+		request: enrichment.Request{ProfileID: c.profile, Chain: chain, Generation: target.request.Generation,
+			Snapshot: target.request.Snapshot, Recording: target.request.Recording, Artists: target.request.Artists, Credential: target.token},
+	}, nil
+}
+
+// current rereads the relay and the catalog observations under the writer lock.
+func (listenBrainzBinding) current(ctx context.Context, q enrichmentReader, c enrichmentClaim, t enrichmentTarget) (bool, error) {
+	current, err := prepareListenBrainz(ctx, q, c)
+	if err != nil {
+		return false, err
+	}
+	return t.listenBrainz.sameEvidence(current), nil
 }
 
 // prepareListenBrainz uses the approved relay generation captured by this receipt.
-// The exact base URL binds the credential to the official HTTPS API.
-func prepareListenBrainz(ctx context.Context, q enrichmentReader, c enrichmentClaim, primary enrichment.Result) (listenBrainzTarget, error) {
+// The exact base URL binds the credential to the official HTTPS API. Answers that earlier sources
+// already stored count as local evidence, so only the fields still open are requested.
+func prepareListenBrainz(ctx context.Context, q enrichmentReader, c enrichmentClaim) (listenBrainzTarget, error) {
 	var target listenBrainzTarget
 	err := q.QueryRowContext(ctx, `SELECT d.generation,d.config_version,p.token `+listenBrainzRelay+
 		` AND e.receipt_id=? AND e.profile_id=?`, enrichment.ListenBrainzBase, c.receipt, c.profile).
@@ -117,17 +139,6 @@ func prepareListenBrainz(ctx context.Context, q enrichmentReader, c enrichmentCl
 		s.Recording = declared.String
 	}
 	req.Recording = !received && !recording.Valid && count == 0 && uuidFromSnapshot(s.Recording, s.MappedRecording) == uuid.Nil
-	for _, observation := range primary.Declarations {
-		id := uuidFromSnapshot(observation.Value)
-		if observation.Source != "navidrome-subsonic" || observation.Entity != "recording" || id == uuid.Nil {
-			continue
-		}
-		if known := uuidFromSnapshot(s.Recording, s.MappedRecording); known != uuid.Nil && known != id {
-			return listenBrainzTarget{}, nil
-		}
-		s.Recording = observation.Value
-		req.Recording = false
-	}
 
 	for _, name := range enrichment.MissingArtistNames(*s) {
 		id := c.artists[name]
@@ -143,21 +154,13 @@ func prepareListenBrainz(ctx context.Context, q enrichmentReader, c enrichmentCl
 		if err != nil {
 			return target, err
 		}
-		primaryID := subsonicArtistID(primary, name)
 		if occupied {
 			if known.Valid {
-				if primaryID != "" && uuidFromSnapshot(primaryID) != uuidFromSnapshot(known.String) {
-					return listenBrainzTarget{}, nil
-				}
 				s.ArtistMbidMappings = append(s.ArtistMbidMappings, ingest.ArtistMapping{Name: name, MBID: known.String})
 			}
 			continue
 		}
-		if primaryID != "" {
-			s.ArtistMbidMappings = append(s.ArtistMbidMappings, ingest.ArtistMapping{Name: name, MBID: primaryID})
-		} else {
-			req.Artists = append(req.Artists, name)
-		}
+		req.Artists = append(req.Artists, name)
 	}
 	return target, nil
 }
@@ -176,17 +179,6 @@ const scopedEnrichmentArtist = `
 		SELECT 1 FROM scope s CROSS JOIN occurrence_credits a CROSS JOIN enrichment_received_artist_credits r
 		WHERE a.artist_id=s.artist_id AND r.profile_id=s.profile_id AND r.occurrence_id=a.occurrence_id AND r.name=a.name
 	) FROM evidence`
-
-// subsonicArtistID reads only the declaration for this exact artist credit.
-func subsonicArtistID(primary enrichment.Result, name string) string {
-	for _, observation := range primary.Declarations {
-		if observation.Source == "navidrome-subsonic" && observation.Entity == "artist" && observation.Name == name &&
-			uuidFromSnapshot(observation.Value) != uuid.Nil {
-			return observation.Value
-		}
-	}
-	return ""
-}
 
 // combinedEnrichmentStatus folds the providers' terminal states into the shared job.
 func combinedEnrichmentStatus(first, second enrichment.Status) enrichment.Status {
