@@ -265,6 +265,7 @@ streaks use local calendar days. Weekly activity begins on Monday.
 ##### TUNETRAIL_DISABLE_MUSICBRAINZ
 
 - Default: `false`
+- Description: Disables MusicBrainz lookups, including asynchronous searches for missing recording and artist IDs.
 
 ##### TUNETRAIL_SUBSONIC_URL
 

@@ -29,7 +29,7 @@ func enrichmentRegistry(ctx context.Context, mbzc mbz.MusicBrainzCaller) *enrich
 			logger.FromContext(ctx).Warn().Msg("Subsonic enrichment configuration unavailable")
 		}
 	}
-	// Both descriptors are constants and valid, so registration cannot fail.
+	// The descriptors are constants and valid, so registration cannot fail.
 	_ = registry.Register(enrichment.SubsonicDescriptor, subsonic)
 	// Relay approval is per receipt and may change without restarting the engine.
 	_ = registry.Register(enrichment.ListenBrainzDescriptor, enrichment.NewListenBrainzProvider(enrichment.NewListenBrainz(cfg.UserAgent(), nil)))
@@ -37,6 +37,12 @@ func enrichmentRegistry(ctx context.Context, mbzc mbz.MusicBrainzCaller) *enrich
 	if budget, ok := mbzc.(enrichment.Budget); ok {
 		registry.SetBudget(enrichment.BudgetMusicBrainz, budget)
 	}
+	// A missing budget leaves the provider visible but unavailable.
+	var musicBrainz enrichment.Provider
+	if budget, ok := registry.Budget(enrichment.BudgetMusicBrainz); ok {
+		musicBrainz = enrichment.NewMusicBrainz(cfg.MusicBrainzUrl(), cfg.UserAgent(), budget)
+	}
+	_ = registry.Register(enrichment.MusicBrainzDescriptor, musicBrainz)
 	return registry
 }
 

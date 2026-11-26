@@ -56,12 +56,15 @@ the database. See the [configuration reference](/reference/configuration).
 
 ## Fill in missing MusicBrainz IDs
 
-With approved forwarding to `https://api.listenbrainz.org/1`, TuneTrail can look
-up missing MusicBrainz recording and artist IDs for new player submissions.
-It checks the IDs sent by the player, the catalog, and the configured Subsonic
-library before using ListenBrainz. The fallback also works without Subsonic.
+TuneTrail can look up missing recording and artist IDs for new player submissions.
+After the player, catalog and configured Subsonic library, it searches MusicBrainz
+for an unambiguous recording matching the artist, album and available duration.
+This search works without a forwarding account and can be disabled with
+`TUNETRAIL_DISABLE_MUSICBRAINZ`. It sends only artist, track and album names to
+MusicBrainz; duration is checked locally. If an ID is still missing, approved
+forwarding to `https://api.listenbrainz.org/1` enables a ListenBrainz lookup.
 
-The lookup uses the profile's forwarding token and sends the artist credit,
+The ListenBrainz lookup uses the profile's forwarding token and sends the artist credit,
 track title, and album title when available. A missing recording ID requires
 the album title as matching evidence. For tracks with multiple artists,
 TuneTrail matches each missing ID to a named credit.

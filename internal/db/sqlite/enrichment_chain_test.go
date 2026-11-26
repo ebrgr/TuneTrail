@@ -3,6 +3,8 @@ package sqlite
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -397,4 +399,46 @@ func TestEnrichmentChainProviderCannotWriteUnderAnotherSource(t *testing.T) {
 	require.True(t, found)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values`))
 	require.Equal(t, []string{"honest/identity=found"}, chainRuns(t, s, id))
+}
+
+// TestMusicBrainzIdentityChain persists the middle provider's result before ListenBrainz decides.
+func TestMusicBrainzIdentityChain(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	approveListenBrainz175(t, s, 1, enrichment.ListenBrainzBase, "profile-one")
+	var order []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		order = append(order, "musicbrainz")
+		fmt.Fprintf(w, `{"recordings":[{"id":%q,"score":100,"length":200000,"artist-credit":[{"name":"Chain artist","artist":{"name":"Chain artist","id":%q}}],"releases":[{"title":"Chain album"}]}]}`, fixtureRecording, "33333333-3333-4333-8333-333333333333")
+	}))
+	defer server.Close()
+	registry := enrichment.NewRegistry()
+	budget := chainMusicBrainzBudget{client: server.Client()}
+	registry.SetBudget(enrichment.BudgetMusicBrainz, budget)
+	shared, ok := registry.Budget(enrichment.BudgetMusicBrainz)
+	require.True(t, ok)
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, chainProvider{"subsonic", func(context.Context, enrichment.Request) enrichment.Result {
+		order = append(order, "navidrome")
+		return enrichment.Result{Status: enrichment.Absent}
+	}}))
+	require.NoError(t, registry.Register(enrichment.MusicBrainzDescriptor, enrichment.NewMusicBrainz(server.URL, "test", shared)))
+	fallback := listenBrainz175Fixture(t, func(http.ResponseWriter, *http.Request) {
+		t.Error("ListenBrainz network requested after MusicBrainz resolved all fields")
+	})
+	require.NoError(t, registry.Register(enrichment.ListenBrainzDescriptor, enrichment.NewListenBrainzProvider(fallback)))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	id := chainReceipt(t, s, "Chain", 1700003300)
+	found, err := s.ResolveNextEnrichmentChain(t.Context(), registry)
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Equal(t, []string{"navidrome", "musicbrainz"}, order)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE source='musicbrainz-search' AND recording_id IS NOT NULL`))
+	require.Contains(t, chainRuns(t, s, id), "musicbrainz/identity=found")
+}
+
+// chainMusicBrainzBudget routes the fixture through its local server client.
+type chainMusicBrainzBudget struct{ client *http.Client }
+
+// Do invokes the job with the fixture client.
+func (b chainMusicBrainzBudget) Do(ctx context.Context, job func(context.Context, *http.Client) ([]byte, error)) ([]byte, error) {
+	return job(ctx, b.client)
 }

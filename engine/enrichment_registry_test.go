@@ -17,7 +17,7 @@ func TestEnrichmentRegistryKnowsEverySource(t *testing.T) {
 	for _, d := range registry.Descriptors() {
 		ids = append(ids, d.ID)
 	}
-	require.Equal(t, []string{enrichment.SubsonicDescriptor.ID, enrichment.ListenBrainzDescriptor.ID}, ids)
+	require.Equal(t, []string{enrichment.SubsonicDescriptor.ID, enrichment.MusicBrainzDescriptor.ID, enrichment.ListenBrainzDescriptor.ID}, ids)
 	require.True(t, registry.Available(enrichment.ListenBrainzDescriptor.ID), "each receipt still needs an approved relay")
 	if !cfg.SubsonicEnabled() {
 		require.False(t, registry.Available(enrichment.SubsonicDescriptor.ID))
@@ -29,10 +29,13 @@ func TestEnrichmentRegistryKnowsEverySource(t *testing.T) {
 func TestEnrichmentRegistrySharesTheMusicBrainzQueue(t *testing.T) {
 	_, ok := enrichmentRegistry(t.Context(), &mbz.MbzErrorCaller{}).Budget(enrichment.BudgetMusicBrainz)
 	require.False(t, ok, "a disabled MusicBrainz has no budget to share")
+	require.False(t, enrichmentRegistry(t.Context(), &mbz.MbzErrorCaller{}).Available(enrichment.MusicBrainzDescriptor.ID))
 
 	client := mbz.NewMusicBrainzClient()
 	defer client.Shutdown()
-	budget, ok := enrichmentRegistry(t.Context(), client).Budget(enrichment.BudgetMusicBrainz)
+	enabled := enrichmentRegistry(t.Context(), client)
+	require.True(t, enabled.Available(enrichment.MusicBrainzDescriptor.ID))
+	budget, ok := enabled.Budget(enrichment.BudgetMusicBrainz)
 	require.True(t, ok)
 	require.Same(t, client, budget, "the resolver and the providers draw from the same queue")
 }
