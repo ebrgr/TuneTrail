@@ -3,11 +3,11 @@ id: ISSUE-215
 title: >-
   215 — Estudo: medir MusicBrainz por nome e ListenBrainz para achar MBIDs
   (regra de aceitação e ordem)
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T19:17:00Z'
+updated_date: '2026-11-26T19:53:00Z'
 labels:
   - ingestao
   - validacao
@@ -83,6 +83,15 @@ created: 2026-11-26T19:17:00Z
 ---
 
 Reauditoria do Reviewer (26/11/2026): os três itens obrigatórios e os três riscos foram corrigidos (leitura de submission_client, caminho do token sem o usuário do macOS, regra escolhida na mesma amostra, limitações registradas). A medição foi reexecutada e os números mudaram um pouco (27 acertos, 6 ambíguas e 2 ausentes no MusicBrainz). Restam dois pontos menores no relatório: um trecho sobre 503 que parece da primeira rodada e a frase de que o ListenBrainz é favorecido por construção, que é hipótese. Detalhes em PARECER-REVIEWER.md.
+
+---
+
+author: ebrgr
+created: 2026-11-26T19:53:00Z
+
+---
+
+Aceite do usuário (26/11/2026): aceita a ISSUE-215 depois de corrigidos os dois pontos menores do relatório (trecho sobre 503 do MusicBrainz, que o script não permite provar, e a hipótese de que o ListenBrainz é favorecido por construção, agora escrita como possibilidade). Ficam registrados o viés de seleção da amostra (só escutas que já trazem MBID do cliente, 35 combinações) e que a regra proposta foi escolhida na mesma amostra em que foi avaliada; a ISSUE-216 deve tratar os números como ordem de grandeza e direção.
 
 ---
 <!-- COMMENTS:END -->
