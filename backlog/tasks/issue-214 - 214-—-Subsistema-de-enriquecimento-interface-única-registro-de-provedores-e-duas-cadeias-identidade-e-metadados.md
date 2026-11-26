@@ -3,11 +3,11 @@ id: ISSUE-214
 title: >-
   214 — Subsistema de enriquecimento: interface única, registro de provedores e
   duas cadeias (identidade e metadados)
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T16:45:00Z'
+updated_date: '2026-11-26T17:21:00Z'
 labels:
   - ingestao
   - banco
@@ -30,11 +30,11 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Navidrome e ListenBrainz funcionam como provedores registrados, e os testes das ISSUE-174 e 175 passam sem mudança de comportamento
-- [ ] #2 Habilitação e ordem dos provedores vêm do registro, e mudar a ordem não exige alterar código
-- [ ] #3 Duas cadeias (identidade e metadados) com parada por campo; resultado ambíguo não é aceito e segue para a próxima fonte
+- [x] #1 Navidrome e ListenBrainz funcionam como provedores registrados, e os testes das ISSUE-174 e 175 passam sem mudança de comportamento
+- [x] #2 Habilitação e ordem dos provedores vêm do registro, e mudar a ordem não exige alterar código
+- [x] #3 Duas cadeias (identidade e metadados) com parada por campo; resultado ambíguo não é aceito e segue para a próxima fonte
 - [ ] #4 Uma linha de job por recibo e provedor, com recuperação após reinício e sem retry infinito (cache negativo separado de falha transitória)
-- [ ] #5 Um orçamento único de requisições do MusicBrainz, compartilhado entre o resolvedor e o enriquecimento
+- [x] #5 Um orçamento único de requisições do MusicBrainz, compartilhado entre o resolvedor e o enriquecimento
 - [ ] #6 Reconciliação em um módulo: nunca sobrescreve MBID recebido nem edição manual, e conflitos entre bibliotecas ficam separados por perfil
 - [ ] #7 Parecer do Advisor e do Reviewer registrados; ajuste de tabelas combinado com a ISSUE-195
 <!-- AC:END -->
@@ -48,6 +48,15 @@ created: 2026-11-26T16:45:00Z
 ---
 
 Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-214` na branch `chore/issue-214-subsistema-de-enriquecimento-interface-unica` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-26T17:21:00Z
+
+---
+
+Verificação: registro de provedores (migração 025), cadeias de identidade e de metadados em ordem armazenada com gravação protegida por fence a cada etapa, resposta ambígua nunca gravada, Request.Prior para parada por campo, recuperação sem repetir respostas gravadas e fila do MusicBrainz exposta como orçamento compartilhado. Os testes das ISSUE-174 e 175 passam sem alteração de comportamento. Critérios 1, 2, 3 e 5 verificados; make check com 13/13 percursos; go test -race limpo; verificação por mutação. DESVIO NO CRITÉRIO 4: só se grava a resposta que mudou algo (encontrada, ambígua ou falha), porque uma linha por recibo e provedor custaria cerca de 260 B por escuta (11% dos 2.382 B), quase toda de nada a acrescentar; por isso o critério fica desmarcado para decisão do usuário. NÃO FEITO: critério 6 (gêneros e datas chegam com as ISSUE-217 e 218) e critério 7 (o Advisor é acionado pelo usuário; autorrevisão em backlog/evidencias/issue-214/PARECER.md, que não é independente). A 195 deve dobrar a 025 no arquivo único.
 
 ---
 <!-- COMMENTS:END -->
