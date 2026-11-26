@@ -3,11 +3,11 @@ id: ISSUE-214
 title: >-
   214 — Subsistema de enriquecimento: interface única, registro de provedores e
   duas cadeias (identidade e metadados)
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T17:21:00Z'
+updated_date: '2026-11-26T17:28:00Z'
 labels:
   - ingestao
   - banco
@@ -57,6 +57,15 @@ created: 2026-11-26T17:21:00Z
 ---
 
 Verificação: registro de provedores (migração 025), cadeias de identidade e de metadados em ordem armazenada com gravação protegida por fence a cada etapa, resposta ambígua nunca gravada, Request.Prior para parada por campo, recuperação sem repetir respostas gravadas e fila do MusicBrainz exposta como orçamento compartilhado. Os testes das ISSUE-174 e 175 passam sem alteração de comportamento. Critérios 1, 2, 3 e 5 verificados; make check com 13/13 percursos; go test -race limpo; verificação por mutação. DESVIO NO CRITÉRIO 4: só se grava a resposta que mudou algo (encontrada, ambígua ou falha), porque uma linha por recibo e provedor custaria cerca de 260 B por escuta (11% dos 2.382 B), quase toda de nada a acrescentar; por isso o critério fica desmarcado para decisão do usuário. NÃO FEITO: critério 6 (gêneros e datas chegam com as ISSUE-217 e 218) e critério 7 (o Advisor é acionado pelo usuário; autorrevisão em backlog/evidencias/issue-214/PARECER.md, que não é independente). A 195 deve dobrar a 025 no arquivo único.
+
+---
+
+author: ebrgr
+created: 2026-11-26T17:28:00Z
+
+---
+
+Aceite do usuário (26/11/2026): aceita a ISSUE-214 como entregue. Ficam registrados, com o conhecimento do usuário, o desvio do critério 4 (só se grava a resposta que mudou algo, para evitar cerca de 260 B por escuta), o critério 6 (reconciliação de gêneros e datas, a cargo das ISSUE-217 e 218) e o critério 7 (parecer do Advisor não solicitado; a autorrevisão está em backlog/evidencias/issue-214/PARECER.md e não é independente). A 195 deve dobrar a migração 025 no arquivo único.
 
 ---
 <!-- COMMENTS:END -->
