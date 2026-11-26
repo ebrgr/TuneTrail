@@ -59,12 +59,11 @@ Sem nenhuma regra (apenas o 1º resultado do MusicBrainz por score), o acerto
 cai para 10/35 (28,6%) — o score sozinho não distingue versões, como já
 suspeitava o doc-048. O acerto de 100% do ListenBrainz vem do mapeador do
 próprio ListenBrainz (o endpoint consultado é o lookup do serviço), o que
-favorece essa fonte por construção; não é evidência de superioridade.
+possivelmente favorece essa fonte; não é evidência de superioridade.
 
-Durante a janela da medição o MusicBrainz respondeu 503 de forma intermitente;
-2 consultas falharam na primeira passada e foram repetidas com espera até
-obter resposta. Na base final, as 35 consultas do MusicBrainz foram
-respondidas (0 erros HTTP).
+As 35 consultas do MusicBrainz foram respondidas (0 erros HTTP). O script repete
+a consulta em 429 e 503, mas não registra quantas tentativas cada uma precisou,
+então não há dado sobre repetições internas.
 
 ## 4. Varredura de regras do MusicBrainz (álbum e créditos ligados, n = 35)
 
@@ -231,12 +230,12 @@ próprio serviço, e o MusicBrainz, com a regra, errou zero.
 - **Ordem das fontes não é conclusão dos dados (Risco 6):** a ordem
   recomendada segue a decisão do doc-048 (abertos antes de contas), não os
   números; o lookup do ListenBrainz devolve o MBID do mapeador do próprio
-  serviço, o que favorece essa fonte por construção.
-- **Instabilidade do MusicBrainz durante a janela:** 503 intermitentes;
-  2 consultas falharam na primeira passada e foram repetidas até obter
-  resposta (nenhum erro HTTP na base final).
-- Nenhum 429/503 do ListenBrainz ocorreu nesta rodada; os cabeçalhos
-  `X-RateLimit-*` foram respeitados mesmo assim.
+  serviço, o que possivelmente favorece essa fonte.
+- **Tentativas não registradas:** o script repete a consulta em 429 e 503, mas
+  não registra quantas tentativas cada consulta precisou. A rodada terminou com
+  0 erros HTTP nas 35 buscas do MusicBrainz e nas 35 do ListenBrainz, e a
+  latência do MusicBrainz não mostra cauda lenta; o script lê os cabeçalhos
+  `X-RateLimit-*` do ListenBrainz.
 - Percentuais sobre n = 35 têm intervalo de confiança largo; os números valem
   como ordem de grandeza e direção, não como estimativa fina.
 

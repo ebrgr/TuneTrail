@@ -45,3 +45,7 @@ Reauditado só o que mudou depois do parecer.
 **Não verificado:** não reexecutei a medição nem conferi o «6 escutas mudam de desfecho», porque os dados brutos foram apagados, como pedido.
 
 **Resultado: sem itens obrigatórios abertos. Aceitável com os dois pontos acima registrados, ou com uma correção de uma linha.**
+
+## Fechamento (26/11/2026)
+
+Por decisão do usuário, os dois pontos menores foram corrigidos pelo Reviewer, e não pelo agente: o trecho sobre 503 do MusicBrainz foi trocado por uma nota de que o script não registra tentativas por consulta (também a afirmação de que o ListenBrainz não teve 429 ou 503, que o script não permite provar), e «por construção» virou «possivelmente». Os números não foram tocados. Sem itens abertos.
