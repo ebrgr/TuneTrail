@@ -3,10 +3,11 @@ id: ISSUE-214
 title: >-
   214 — Subsistema de enriquecimento: interface única, registro de provedores e
   duas cadeias (identidade e metadados)
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-26T16:45:00Z'
 labels:
   - ingestao
   - banco
@@ -37,3 +38,16 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 - [ ] #6 Reconciliação em um módulo: nunca sobrescreve MBID recebido nem edição manual, e conflitos entre bibliotecas ficam separados por perfil
 - [ ] #7 Parecer do Advisor e do Reviewer registrados; ajuste de tabelas combinado com a ISSUE-195
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-26T16:45:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-214` na branch `chore/issue-214-subsistema-de-enriquecimento-interface-unica` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->
