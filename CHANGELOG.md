@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.77] - 2026-11-26
+
+- No user-visible changes (ISSUE-214).
+
 ## [0.76] - 2026-11-24
 
 - Profiles with approved forwarding to ListenBrainz can fill in missing recording and artist MusicBrainz IDs after the local catalog and Subsonic checks (ISSUE-175).

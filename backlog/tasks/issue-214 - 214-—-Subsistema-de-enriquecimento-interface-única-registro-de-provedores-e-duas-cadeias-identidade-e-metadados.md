@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T17:28:00Z'
+updated_date: '2026-11-26T17:31:00Z'
 labels:
   - ingestao
   - banco
@@ -66,6 +66,15 @@ created: 2026-11-26T17:28:00Z
 ---
 
 Aceite do usuário (26/11/2026): aceita a ISSUE-214 como entregue. Ficam registrados, com o conhecimento do usuário, o desvio do critério 4 (só se grava a resposta que mudou algo, para evitar cerca de 260 B por escuta), o critério 6 (reconciliação de gêneros e datas, a cargo das ISSUE-217 e 218) e o critério 7 (parecer do Advisor não solicitado; a autorrevisão está em backlog/evidencias/issue-214/PARECER.md e não é independente). A 195 deve dobrar a migração 025 no arquivo único.
+
+---
+
+author: ebrgr
+created: 2026-11-26T17:31:00Z
+
+---
+
+Publicação: versão 0.77 (tag `v0.77`), branch `chore/issue-214-subsistema-de-enriquecimento-interface-unica` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
