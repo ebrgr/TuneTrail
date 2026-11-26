@@ -3,10 +3,11 @@ id: ISSUE-216
 title: >-
   216 — MusicBrainz como provedor de identidade: busca por nome e por ISRC com
   verificação
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-26T20:09:00Z'
 labels:
   - ingestao
   - catalogo
@@ -37,3 +38,25 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 - [ ] #4 Fila compartilhada com o resolvedor, prioridade baixa em importações e funcionamento com o MusicBrainz desligado
 - [ ] #5 Testes com respostas simuladas: versões ao vivo e de estúdio, título repetido, duração divergente, 503 e limite de taxa
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-26T20:09:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-216` na branch `feat/issue-216-musicbrainz-como-provedor-de-identidade` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-26T20:09:00Z
+
+---
+
+Despacho (26/11/2026): implementação delegada ao Codex (modelo gpt-6.1-terra, effort medium) nesta worktree, com a regra de aceitação medida na ISSUE-215 (score >= 95, duração ±5 s, álbum e créditos, exatamente um candidato; ambíguo nunca é gravado). Ficam fora desta issue: cache negativo persistente (só proposta) e a ligação da consulta por ISRC ao fluxo, porque o Snapshot ainda não carrega ISRC (ISSUE-218 e 219). Depois do retorno: Advisor (Opus, effort high) sobre contrato, ambiguidade, uso do orçamento compartilhado e escape Lucene; depois o Reviewer; só então o aceite.
+
+---
+<!-- COMMENTS:END -->
