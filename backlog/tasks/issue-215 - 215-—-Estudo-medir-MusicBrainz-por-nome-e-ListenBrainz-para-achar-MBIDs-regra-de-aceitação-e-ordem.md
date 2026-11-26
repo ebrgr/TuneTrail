@@ -3,10 +3,11 @@ id: ISSUE-215
 title: >-
   215 — Estudo: medir MusicBrainz por nome e ListenBrainz para achar MBIDs
   (regra de aceitação e ordem)
-status: Aberta
-assignee: []
+status: Aguardando aceite
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-26T18:23:00Z'
 labels:
   - ingestao
   - validacao
@@ -14,6 +15,8 @@ milestone: m-11
 dependencies: []
 references:
   - backlog/evidencias/issue-055/ESTUDO-COMPLEMENTAR.md
+  - backlog/evidencias/issue-215/RELATORIO.md
+  - backlog/evidencias/issue-215/medir_issue_215.py
 documentation:
   - doc-048
 priority: medium
@@ -29,8 +32,30 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Relatório com acerto, falso positivo, ambíguo, ausente e tempo por fonte, medidos com MBID de referência que não veio do mapeador do ListenBrainz
-- [ ] #2 Regra de aceitação proposta (campos conferidos, tolerância de duração, limiar de score) e ordem recomendada das fontes
-- [ ] #3 Ponte por ISRC medida: quantas escutas ganham MBID sem ambiguidade
-- [ ] #4 Relatório sem dados pessoais, tokens ou URLs autenticadas
+- [x] #1 Relatório com acerto, falso positivo, ambíguo, ausente e tempo por fonte, medidos com MBID de referência que não veio do mapeador do ListenBrainz
+- [x] #2 Regra de aceitação proposta (campos conferidos, tolerância de duração, limiar de score) e ordem recomendada das fontes
+- [x] #3 Ponte por ISRC medida: quantas escutas ganham MBID sem ambiguidade
+- [x] #4 Relatório sem dados pessoais, tokens ou URLs autenticadas
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-26T16:44:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-215` na branch `spike/issue-215-estudo-medir-musicbrainz-por-nome` criada a partir de `main`.
+
+---
+
+author: dsh
+created: 2026-11-26T18:23:00Z
+
+---
+
+Verificação: medição executada em 26/11/2026 com o script backlog/evidencias/issue-215/medir_issue_215.py. Amostra: 35 combinações distintas (histórico inteiro da conta: 1299 escutas, 39 com recording_mbid do cliente; nenhuma do Navidrome) — o alvo de 300 não foi possível por falta de dados, não por tempo. MusicBrainz por nome com a regra proposta (score >= 95, duração ±5 s, álbum e créditos conferidos): 28 acertos (80,0%), 0 falsos positivos, 6 ambíguas, 1 ausente, 0 erros HTTP; sem regra, o 1º resultado por score acerta só 31,4%. ListenBrainz lookup: 35/35 (100%), sem falsos positivos, e recuperou as 7 que o MusicBrainz não resolveu. Ponte por ISRC medida com ISRCs do próprio MusicBrainz (ISRC do Navidrome indisponível nesta rodada): 35/35 gravações com ISRC; 95,9% dos ISRCs levam a uma única gravação; 35/35 ganham MBID sem ambiguidade. Ordem recomendada: Navidrome → MusicBrainz por nome → ListenBrainz. Limites de taxa e User-Agent respeitados; 503 intermitentes do MusicBrainz contornados com espera e re-tentativas.
+
+---
+<!-- COMMENTS:END -->
