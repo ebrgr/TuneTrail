@@ -4,7 +4,7 @@ title: 213 — Monitorar enriquecimento e reprocessar histórico com limites
 status: Aberta
 assignee: []
 created_date: '2026-11-24T11:43:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-26T20:20:00Z'
 labels:
   - operacao
   - ingestao
@@ -30,4 +30,18 @@ Permitir enriquecer gradualmente o histórico existente com limites configuráve
 - [ ] #1 Processar histórico de forma gradual e retomável, sem gerar trabalho duplicado, respeitando limites configuráveis por provedor.
 - [ ] #2 Mostrar progresso, provedor, resultados, falhas e estado de espera na central de monitoramento, com acesso pela central de saúde.
 - [ ] #3 Respeitar permissões e isolamento de perfis; indisponibilidade de provedor não impede registrar escutas.
+- [ ] #4 O orçamento compartilhado do MusicBrainz ganha classe de prioridade, de modo que o enriquecimento em lote do histórico fique abaixo do trabalho de escutas novas e do resolvedor, e um teto por minuto configurável por provedor (requisito que saiu da ISSUE-216 por decisão do usuário em 26/11/2026; hoje o orçamento é uma fila FIFO com um limite global em queue/queue.go)
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-26T20:20:00Z
+
+---
+
+26/11/2026: acrescentado o critério de prioridade e teto por minuto no orçamento compartilhado, que saiu da ISSUE-216. Não há importação de arquivo na fila de enriquecimento hoje (só escutas novas pela API); este é o ponto em que o trabalho em lote do histórico passa a competir com as escutas novas pela mesma taxa de 1 requisição por segundo do MusicBrainz.
+
+---
+<!-- COMMENTS:END -->
