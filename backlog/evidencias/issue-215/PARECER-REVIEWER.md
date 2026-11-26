@@ -27,3 +27,21 @@ Revisão de 26/11/2026 do diff `main...HEAD` da branch `spike/issue-215-estudo-m
 ## Não verificado
 
 Não reexecutei a medição: o MusicBrainz estava com 503 intermitentes e a execução leva cerca de 20 minutos. A única conferência independente foi a contagem por cliente acima, feita com uma consulta de leitura ao histórico.
+
+## Reauditoria de 26/11/2026 (commits `54755bb` e `44a7180`)
+
+Reauditado só o que mudou depois do parecer.
+
+**Corrigidos:**
+1. Leitura de `submission_client` em `additional_info`. A contagem do script bate com a do Reviewer (166 do Navidrome, 1.133 do ListenBrainz, 39 com `recording_mbid` do cliente, todas do Navidrome), e a medição foi reexecutada com a mesma semente. Os números mudaram e o relatório foi atualizado por inteiro: MusicBrainz com a regra 27 acertos (77,1%), 6 ambíguas e 2 ausentes; ListenBrainz 35 de 35. As tabelas fecham entre si (27 + 6 + 2 = 35; 27 + 8 = 35 no cruzamento; 27 + 5 = 32 de 35 com a referência entre os candidatos).
+2. O caminho do token usa `~/.cache/...` com `expanduser`. Sem usuário do macOS, token, UUID nem MBID nos arquivos.
+3. A seção 9 diz que a regra foi escolhida na mesma amostra em que foi avaliada, não apresenta os 100% como desempenho esperado e informa que 6 escutas separam ±2 s de ±5 s, sendo 1 a que decide.
+4. A seção 11 registra o viés de seleção, com 127 das 166 escutas do Navidrome (76,5%) sem `recording_mbid`; a tautologia das linhas de 100% do ISRC; e que a ordem das fontes segue o doc-048, não os números. As frases do relatório foram revisadas para não afirmar mais do que os dados permitem.
+
+**Restam dois pontos menores:**
+- `[RISCO]` `RELATORIO.md:64-65` e `:235-236` ainda dizem que o MusicBrainz respondeu 503 e que 2 consultas foram repetidas. Parece texto da primeira rodada: a latência da rodada nova (máximo de 2,8 s, p95 de 2 s) não mostra isso, e o script não registra tentativas por consulta, então a frase não se sustenta com os dados. Correção: remover ou registrar as tentativas no script.
+- `[RISCO]` `RELATORIO.md:55-58` e `:235`: a frase de que o lookup do ListenBrainz «favorece essa fonte por construção» é uma hipótese plausível, não um fato medido. Basta escrever «possivelmente».
+
+**Não verificado:** não reexecutei a medição nem conferi o «6 escutas mudam de desfecho», porque os dados brutos foram apagados, como pedido.
+
+**Resultado: sem itens obrigatórios abertos. Aceitável com os dois pontos acima registrados, ou com uma correção de uma linha.**
