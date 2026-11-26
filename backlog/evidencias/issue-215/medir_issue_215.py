@@ -39,7 +39,7 @@ from pathlib import Path
 USER_AGENT = "TuneTrail/0.76 ( https://github.com/ebrgr/TuneTrail )"
 MB_BASE = "https://musicbrainz.org/ws/2"
 LB_BASE = "https://api.listenbrainz.org/1"
-DEFAULT_TOKEN_FILE = "/Users/evertonberger/.cache/tunetrail-215/lb_token"
+DEFAULT_TOKEN_FILE = "~/.cache/tunetrail-215/lb_token"
 DEFAULT_RAW_DIR = "/tmp/issue215-raw"
 
 # Acceptance-rule sweep grid (duration tolerance seconds, score threshold,
@@ -67,7 +67,7 @@ def lucene_escape(text: str) -> str:
 
 def read_token(token_file: str) -> str:
     """Read the ListenBrainz token from the token file (never printed)."""
-    return Path(token_file).read_text().strip()
+    return Path(token_file).expanduser().read_text().strip()
 
 
 def http_get(url: str, headers: dict, timeout: int = 30):
@@ -172,7 +172,9 @@ def phase_collect(args) -> None:
     pages = 0
     scanned = 0
     with_mbid = 0
-    navidrome_seen = 0
+    client_counts = Counter()  # submission_client -> number of listens
+    nav_total = 0
+    nav_with_ref = 0
     max_ts = None
     stop_reason = "pages exhausted"
 
@@ -193,12 +195,18 @@ def phase_collect(args) -> None:
         pages += 1
         for ls in listens:
             tm = ls.get("track_metadata") or {}
-            if tm.get("submission_client") == "navidrome":
-                navidrome_seen += 1
             ai = tm.get("additional_info") or {}
+            # The submission client lives in additional_info, not in
+            # track_metadata directly.
+            client = ai.get("submission_client") or "(unknown)"
+            client_counts[client] += 1
+            if client == "navidrome":
+                nav_total += 1
             ref = ai.get("recording_mbid")
             if not ref:
                 continue
+            if client == "navidrome":
+                nav_with_ref += 1
             artist = tm.get("artist_name")
             track = tm.get("track_name")
             if not artist or not track:
@@ -211,7 +219,7 @@ def phase_collect(args) -> None:
                 "artist": artist, "track": track, "album": release,
             })
             entry["mbids"][ref] += 1
-            if tm.get("submission_client") == "navidrome":
+            if client == "navidrome":
                 entry["nav"] = True
             dur = ai.get("duration_ms")
             if dur is not None:
@@ -266,7 +274,9 @@ def phase_collect(args) -> None:
         "stop_reason": stop_reason,
         "listens_scanned": scanned,
         "listens_with_recording_mbid": with_mbid,
-        "listens_navidrome_seen": navidrome_seen,
+        "listens_by_client": dict(client_counts),
+        "navidrome_total": nav_total,
+        "navidrome_with_ref": nav_with_ref,
         "combos_total": len(combo_refs),
         "combos_conflict_excluded": conflicts,
         "nav_pool": len(nav_pool),
@@ -603,6 +613,21 @@ def phase_summarize(args) -> None:
             if rec["candidates"][0].get("id") == it["ref"]:
                 mb_top1_hits += 1
 
+    # ---- How many listens actually separate the 2 s from the 5 s tolerance
+    # (both at score 95 with album and credits on). Used to show how thin the
+    # in-sample rule selection is.
+    rule2 = {"tol": 2, "thr": 95, "album": True, "artist": True}
+    rule5 = {"tol": 5, "thr": 95, "album": True, "artist": True}
+    tol_diff = 0
+    wrong2_to_amb5 = 0
+    for idx, it in enumerate(items):
+        o2 = mb_outcome_for(idx, it, rule2)
+        o5 = mb_outcome_for(idx, it, rule5)
+        if o2 != o5:
+            tol_diff += 1
+            if o2 == "wrong" and o5 == "ambiguous":
+                wrong2_to_amb5 += 1
+
     # ---- ISRC bridge ----
     isrc_recs = {r["idx"]: r for r in read_jsonl(raw / "isrc_recs.jsonl")}
     isrc_maps = read_jsonl(raw / "isrc_map.jsonl")
@@ -680,6 +705,10 @@ def phase_summarize(args) -> None:
         },
         "lb": {"counts": dict(lb_counts), "timing_ms": _timing(lb_times)},
         "cross": {f"{k[0]}|{k[1]}": v for k, v in cross.items()},
+        "tol_2s_vs_5s": {
+            "diff_outcomes": tol_diff,
+            "wrong2_to_amb5": wrong2_to_amb5,
+        },
         "isrc": {
             "subsample_n": n_sub,
             "with_isrc": sub_with_isrc,
@@ -712,6 +741,11 @@ def phase_summarize(args) -> None:
     lines.append(f"| Escutas varridas do histórico | {meta['listens_scanned']} |")
     lines.append(f"| Páginas do histórico lidas | {meta['pages_scanned']} ({meta['stop_reason']}) |")
     lines.append(f"| Escutas com recording_mbid do cliente | {meta['listens_with_recording_mbid']} |")
+    clients = ", ".join(f"{name} {count}" for name, count in
+                         sorted(meta["listens_by_client"].items(), key=lambda kv: -kv[1]))
+    lines.append(f"| Escutas por cliente (submission_client) | {clients} |")
+    lines.append(f"| Escutas do Navidrome com recording_mbid | {meta['navidrome_with_ref']} de {meta['navidrome_total']} |")
+    lines.append(f"| Escutas do Navidrome sem recording_mbid | {meta['navidrome_total'] - meta['navidrome_with_ref']} de {meta['navidrome_total']} |")
     lines.append(f"| Combinações distintas (artista, faixa, álbum) | {meta['combos_total']} |")
     lines.append(f"| Combinações excluídas (MBIDs de referência conflitantes) | {meta['combos_conflict_excluded']} |")
     lines.append(f"| Amostra vinda do Navidrome | {meta['picked_nav']} ({_pct(meta['picked_nav'], n)}%) |")
@@ -745,6 +779,12 @@ def phase_summarize(args) -> None:
                          f"{g['hit'] + g['wrong']} | {g['hit']} | {g['wrong']} | "
                          f"{g['ambiguous']} | {g['ambiguous_with_ref']} | {g['absent']} | "
                          f"{g['precision']} | {g['coverage']} |")
+    lines.append("")
+
+    lines.append("## Diferença entre tolerâncias 2 s e 5 s (limiar 95, álbum e créditos ligados)\n")
+    td = summary["tol_2s_vs_5s"]
+    lines.append(f"| Escutas com desfecho diferente entre as duas tolerâncias | {td['diff_outcomes']} |")
+    lines.append(f"| Destas, as que viram ambíguas em vez de falso positivo | {td['wrong2_to_amb5']} |")
     lines.append("")
 
     lines.append("## Efeito de desligar álbum e créditos (na regra proposta)\n")
