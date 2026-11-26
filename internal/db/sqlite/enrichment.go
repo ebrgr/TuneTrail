@@ -75,6 +75,7 @@ func (s *Sqlite) ResolveNextEnrichmentChain(ctx context.Context, registry *enric
 	if err := json.Unmarshal([]byte(claim.snapshot), &original); err != nil {
 		return true, err
 	}
+	var answers []enrichmentAnswer
 	for _, chain := range enrichment.Chains {
 		order, err := s.enrichmentOrder(ctx, registry, chain)
 		if err != nil {
@@ -82,17 +83,24 @@ func (s *Sqlite) ResolveNextEnrichmentChain(ctx context.Context, registry *enric
 		}
 		for _, descriptor := range order {
 			provider, _ := registry.Provider(descriptor.ID)
-			closed, err := s.runEnrichmentStep(ctx, &claim, descriptor, provider, chain)
+			answer, closed, err := s.runEnrichmentStep(ctx, &claim, descriptor, provider, chain)
 			if err != nil || closed {
 				return true, err
 			}
+			answers = append(answers, answer)
 		}
 	}
 	// A canceled process leaves a finite lease for recovery rather than writing with a canceled context.
 	if ctx.Err() != nil {
 		return true, ctx.Err()
 	}
-	return true, s.closeEnrichment(ctx, claim)
+	return true, s.closeEnrichment(ctx, claim, answers)
+}
+
+// enrichmentAnswer is what one provider said about a receipt in this pass.
+type enrichmentAnswer struct {
+	status   enrichment.Status
+	instance string
 }
 
 // enrichmentBinding prepares one provider's request from local evidence and rechecks that evidence
@@ -110,6 +118,9 @@ type enrichmentTarget struct {
 	listenBrainz listenBrainzTarget
 }
 
+// bindingFor picks how a provider's request is prepared. Today the only source that needs a profile
+// relay credential is ListenBrainz, so that eligibility selects its binding; a second relay-bound
+// source needs its own binding before it can reuse the eligibility.
 func (s *Sqlite) bindingFor(d enrichment.Descriptor) enrichmentBinding {
 	if d.Eligibility == enrichment.EligibleProfileRelay {
 		return listenBrainzBinding{s}
@@ -142,26 +153,27 @@ func (snapshotBinding) current(context.Context, enrichmentReader, enrichmentClai
 
 // runEnrichmentStep asks one provider and stores its answer. It reports closed when the receipt
 // can no longer be worked, so the caller stops the chain.
-func (s *Sqlite) runEnrichmentStep(ctx context.Context, c *enrichmentClaim, d enrichment.Descriptor, p enrichment.Provider, chain enrichment.Chain) (bool, error) {
-	var state string
-	err := s.db.QueryRowContext(ctx, `SELECT state FROM enrichment_provider_runs WHERE receipt_id=? AND provider=? AND chain=?`, c.receipt, d.ID, string(chain)).Scan(&state)
+func (s *Sqlite) runEnrichmentStep(ctx context.Context, c *enrichmentClaim, d enrichment.Descriptor, p enrichment.Provider, chain enrichment.Chain) (enrichmentAnswer, bool, error) {
+	var state, instance string
+	err := s.db.QueryRowContext(ctx, `SELECT state,coalesce(instance,'') FROM enrichment_provider_runs WHERE receipt_id=? AND provider=? AND chain=?`,
+		c.receipt, d.ID, string(chain)).Scan(&state, &instance)
 	if err == nil && state != string(enrichment.Failed) {
 		// A recovered job keeps the answers that were already final instead of repeating their calls.
-		return false, nil
+		return enrichmentAnswer{enrichment.Status(state), instance}, false, nil
 	}
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return false, err
+		return enrichmentAnswer{}, false, err
 	}
 	binding := s.bindingFor(d)
 	target, err := binding.prepare(ctx, c, d, p, chain)
 	if err != nil {
-		return false, err
+		return enrichmentAnswer{}, false, err
 	}
 	attempt, cancel := context.WithTimeout(ctx, target.timeout)
 	result := p.Lookup(attempt, target.request)
 	cancel()
 	if ctx.Err() != nil {
-		return false, ctx.Err()
+		return enrichmentAnswer{}, false, ctx.Err()
 	}
 	return s.finishEnrichmentStep(ctx, *c, d, p, binding, target, chain, result)
 }
@@ -286,14 +298,19 @@ func (s *Sqlite) claimEnrichment(ctx context.Context) (enrichmentClaim, error) {
 // finishEnrichmentStep revalidates ownership, links and existing identifiers under the writer lock,
 // stores one provider's answer and renews the lease for the next step. It reports closed when the
 // receipt changed underneath the lookup and the job was failed instead.
+//
+// Only an answer that changed something is stored (found, ambiguous or failed). "Nothing to add" is
+// by far the most common answer for a listen that already carries its IDs, and keeping a row for it
+// would cost roughly 260 bytes on every listen; a recovered job simply asks such a source again.
 func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d enrichment.Descriptor, p enrichment.Provider, binding enrichmentBinding,
-	target enrichmentTarget, chain enrichment.Chain, result enrichment.Result) (bool, error) {
+	target enrichmentTarget, chain enrichment.Chain, result enrichment.Result) (enrichmentAnswer, bool, error) {
 	var original ingest.Snapshot
 	if err := json.Unmarshal([]byte(c.snapshot), &original); err != nil {
-		return false, err
+		return enrichmentAnswer{}, false, err
 	}
 	missingArtists := enrichment.MissingArtistNames(original)
 	closed := false
+	answer := enrichmentAnswer{status: enrichment.Failed}
 	failJob := func(tx *sql.Conn) error {
 		closed = true
 		_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='failed',lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, c.receipt, c.lease)
@@ -353,7 +370,14 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 		if d.Eligibility == enrichment.EligibleConfigured || wrote {
 			instance = p.Instance()
 		}
-		if _, err := tx.ExecContext(ctx, `INSERT INTO enrichment_provider_runs(receipt_id,provider,chain,state,instance,finished_at)
+		answer = enrichmentAnswer{status: status, instance: instance}
+		if status == enrichment.Absent || status == enrichment.Disabled {
+			// Drop a failure stored by an earlier pass, so the answer on file is always the latest.
+			if _, err := tx.ExecContext(ctx, `DELETE FROM enrichment_provider_runs WHERE receipt_id=? AND provider=? AND chain=?`,
+				c.receipt, d.ID, string(chain)); err != nil {
+				return err
+			}
+		} else if _, err := tx.ExecContext(ctx, `INSERT INTO enrichment_provider_runs(receipt_id,provider,chain,state,instance,finished_at)
 			VALUES(?,?,?,?,nullif(?,''),?) ON CONFLICT(receipt_id,provider,chain)
 			DO UPDATE SET state=excluded.state,instance=excluded.instance,finished_at=excluded.finished_at`,
 			c.receipt, d.ID, string(chain), string(status), instance, time.Now().Unix()); err != nil {
@@ -369,7 +393,7 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 		}
 		return err
 	})
-	return closed, err
+	return answer, closed, err
 }
 
 // writeMBIDDeclaration stores one declared MusicBrainz ID for the recording or for exactly one
@@ -412,31 +436,18 @@ func writeMBIDDeclaration(ctx context.Context, tx *sql.Conn, c enrichmentClaim, 
 	return err
 }
 
-// closeEnrichment folds the answers of every provider into the receipt job.
-func (s *Sqlite) closeEnrichment(ctx context.Context, c enrichmentClaim) error {
+// closeEnrichment folds the answers of this pass into the receipt job. The first recorded instance
+// wins, as it did when a single provider owned the job.
+func (s *Sqlite) closeEnrichment(ctx context.Context, c enrichmentClaim, answers []enrichmentAnswer) error {
+	status, instance := enrichment.Disabled, ""
+	for _, answer := range answers {
+		status = combinedEnrichmentStatus(status, answer.status)
+		if instance == "" {
+			instance = answer.instance
+		}
+	}
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		rows, err := tx.QueryContext(ctx, `SELECT r.state,coalesce(r.instance,'') FROM enrichment_provider_runs r
-			JOIN enrichment_providers p ON p.id=r.provider WHERE r.receipt_id=?
-			ORDER BY CASE r.chain WHEN 'identity' THEN 0 ELSE 1 END,p.priority,p.id`, c.receipt)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-		status, instance := enrichment.Disabled, ""
-		for rows.Next() {
-			var state, runInstance string
-			if err := rows.Scan(&state, &runInstance); err != nil {
-				return err
-			}
-			status = combinedEnrichmentStatus(status, enrichment.Status(state))
-			if instance == "" {
-				instance = runInstance
-			}
-		}
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		_, err = tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`,
+		_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`,
 			string(status), instance, c.receipt, c.lease)
 		return err
 	})

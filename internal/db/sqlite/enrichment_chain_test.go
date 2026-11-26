@@ -86,7 +86,7 @@ func TestEnrichmentChainRunsProvidersInStoredOrder(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"a", "b"}, calls)
-	require.Equal(t, []string{"source-a/identity=absent", "source-b/identity=found"}, chainRuns(t, s, first))
+	require.Equal(t, []string{"source-b/identity=found"}, chainRuns(t, s, first), "only the answer that changed something is stored")
 	require.Equal(t, "found", jobState(t, s, first))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE source='source-b' AND instance='b-instance' AND value=?`, fixtureRecording))
 	// The job keeps the first recorded instance, as the ISSUE-174 single-provider job did.
@@ -99,7 +99,7 @@ func TestEnrichmentChainRunsProvidersInStoredOrder(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"b", "a"}, calls, "the lower stored priority runs first")
-	require.Equal(t, []string{"source-a/identity=absent", "source-b/identity=found"}, chainRuns(t, s, second))
+	require.Equal(t, []string{"source-b/identity=found"}, chainRuns(t, s, second))
 }
 
 // TestEnrichmentChainSkipsDisabledAndUnavailableProviders covers the owner's switch and the process state.
@@ -124,7 +124,8 @@ func TestEnrichmentChainSkipsDisabledAndUnavailableProviders(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"on"}, calls)
-	require.Equal(t, []string{"on/identity=absent"}, chainRuns(t, s, id))
+	require.Empty(t, chainRuns(t, s, id), "an answer with nothing to add leaves no row")
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_provider_runs`))
 	require.Equal(t, "absent", jobState(t, s, id))
 }
 
@@ -164,7 +165,7 @@ func TestEnrichmentChainPassesPriorDeclarationsToLaterProviders(t *testing.T) {
 	require.Equal(t, fixtureRecording, seen[0].Value)
 	require.False(t, laterCalledWithNetwork)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL`))
-	require.Equal(t, []string{"source-a/identity=found", "source-b/identity=absent"}, chainRuns(t, s, id))
+	require.Equal(t, []string{"source-a/identity=found"}, chainRuns(t, s, id))
 }
 
 // TestEnrichmentChainAmbiguousAnswerContinuesAndNeverWrites keeps an unclear match out of the catalog.
@@ -174,9 +175,10 @@ func TestEnrichmentChainAmbiguousAnswerContinuesAndNeverWrites(t *testing.T) {
 		second       enrichment.Status
 		wantJob      string
 		wantMetadata int
+		wantRuns     []string
 	}{
-		{"a later source resolves it", enrichment.Found, "found", 1},
-		{"nobody resolves it", enrichment.Absent, "ambiguous", 0},
+		{"a later source resolves it", enrichment.Found, "found", 1, []string{"clear/identity=found", "unclear/identity=ambiguous"}},
+		{"nobody resolves it", enrichment.Absent, "ambiguous", 0, []string{"unclear/identity=ambiguous"}},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			s := convertedOccurrenceFixture(t)
@@ -204,6 +206,7 @@ func TestEnrichmentChainAmbiguousAnswerContinuesAndNeverWrites(t *testing.T) {
 			require.Equal(t, []string{"unclear", "clear"}, calls, "an ambiguous answer is not accepted and the chain goes on")
 			require.Equal(t, scenario.wantJob, jobState(t, s, id))
 			require.Equal(t, scenario.wantMetadata, scalar(t, s, `SELECT count(*) FROM metadata_values`))
+			require.Equal(t, scenario.wantRuns, chainRuns(t, s, id))
 		})
 	}
 }
@@ -231,7 +234,7 @@ func TestEnrichmentChainMetadataChainFollowsIdentity(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"ids:identity", "both:identity", "genres:metadata", "both:metadata"}, calls)
-	require.Equal(t, []string{"both/identity=absent", "both/metadata=absent", "genres/metadata=found", "ids/identity=absent"}, chainRuns(t, s, id))
+	require.Equal(t, []string{"genres/metadata=found"}, chainRuns(t, s, id))
 	require.Equal(t, "found", jobState(t, s, id))
 	// Only MusicBrainz IDs are stored by this issue; genres arrive with their providers (ISSUE-217 and 218).
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values`))
@@ -280,8 +283,10 @@ func TestEnrichmentChainRecoveryKeepsFinalAnswers(t *testing.T) {
 	require.Equal(t, []string{"source-a/identity=found", "source-b/identity=failed"}, chainRuns(t, s, id))
 }
 
-// TestEnrichmentChainTransientFailureIsRetriedNotFinal separates a failed call from a final negative.
-func TestEnrichmentChainTransientFailureIsRetriedNotFinal(t *testing.T) {
+// TestEnrichmentChainStoresOnlyAnswersThatChangeSomething separates a failed call, which is stored
+// and retried, from "nothing to add", which is not stored so listens that already carry their IDs
+// cost no extra bytes.
+func TestEnrichmentChainStoresOnlyAnswersThatChangeSomething(t *testing.T) {
 	s := convertedOccurrenceFixture(t)
 	status := enrichment.Failed
 	var calls int
@@ -293,21 +298,27 @@ func TestEnrichmentChainTransientFailureIsRetriedNotFinal(t *testing.T) {
 		}}))
 	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
 	id := chainReceipt(t, s, "Flaky", 1700001700)
+	again := func() {
+		execSQL(t, s, `UPDATE enrichment_jobs SET state='pending',lease=NULL,lease_until=NULL,attempts=0 WHERE receipt_id=?`, id)
+		_, err := s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+	}
 	_, err := s.ResolveNextEnrichmentChain(t.Context(), registry)
 	require.NoError(t, err)
 	require.Equal(t, "failed", jobState(t, s, id))
+	require.Equal(t, []string{"flaky/identity=failed"}, chainRuns(t, s, id), "a failure is stored")
 
-	// A final negative stays final: a second pass over the same job would not ask again.
+	// The failure is asked again, and the later answer replaces it.
 	status = enrichment.Absent
-	execSQL(t, s, `UPDATE enrichment_jobs SET state='pending',lease=NULL,lease_until=NULL,attempts=0 WHERE receipt_id=?`, id)
-	_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
-	require.NoError(t, err)
+	again()
 	require.Equal(t, 2, calls, "the failed run was asked again")
 	require.Equal(t, "absent", jobState(t, s, id))
-	execSQL(t, s, `UPDATE enrichment_jobs SET state='pending',lease=NULL,lease_until=NULL,attempts=0 WHERE receipt_id=?`, id)
-	_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
-	require.NoError(t, err)
-	require.Equal(t, 2, calls, "an absent answer is final")
+	require.Empty(t, chainRuns(t, s, id), "the stale failure is dropped and nothing is stored for 'nothing to add'")
+
+	// Nothing stored means the source is simply asked again if the job is ever recovered.
+	again()
+	require.Equal(t, 3, calls)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM enrichment_provider_runs`))
 }
 
 // TestEnrichmentProviderRegistryKeepsOwnerChoices checks the stored rows across restarts.

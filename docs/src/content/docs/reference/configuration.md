@@ -111,9 +111,10 @@ inspection and verify the active values in Administration after recovery.
 
 ### Databases from ISSUE-174 development builds
 
-The consolidated migration upgrades schema 23 directly to schema 24. Earlier
-development builds of ISSUE-174 used a different schema 24 and preview schemas
-25 through 28. Startup rejects those layouts. Keep the original database and
+The consolidated migrations upgrade schema 23 to schema 25: version 24 adds
+metadata enrichment and version 25 its provider registry. Earlier development
+builds of ISSUE-174 used different layouts under versions 24 through 28.
+Startup rejects those layouts. Keep the original database and
 its WAL and SHM files together, with writers stopped, or make a consistent
 SQLite backup. Keep that backup before attempting recovery and leave the Goose
 version entries intact.

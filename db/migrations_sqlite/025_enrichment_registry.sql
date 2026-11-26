@@ -37,9 +37,11 @@ BEGIN
 END;
 -- +goose StatementEnd
 
--- One row per receipt, provider and chain records what each source answered. The job row keeps the
--- lease, the attempts and the combined state; a recovered job skips the providers that already
--- gave a final answer instead of repeating their network calls.
+-- One row per receipt, provider and chain records an answer that changed something: found,
+-- ambiguous or failed. "Nothing to add" is the usual answer for a listen that already carries its
+-- IDs and is not stored, because a row for it would cost roughly 260 bytes on every listen. The job
+-- row keeps the lease, the attempts and the combined state; a recovered job skips the providers
+-- that already gave a stored final answer instead of repeating their network calls.
 CREATE TABLE enrichment_provider_runs (
     receipt_id TEXT NOT NULL REFERENCES enrichment_jobs(receipt_id) ON DELETE CASCADE,
     provider TEXT NOT NULL REFERENCES enrichment_providers(id),
