@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T14:37:00Z'
+updated_date: '2026-11-27T14:49:00Z'
 labels:
   - ingestao
   - catalogo
@@ -103,6 +103,15 @@ created: 2026-11-27T14:37:00Z
 ---
 
 Parecer do Advisor (Opus, effort medium, Modo A, 27/11/2026) sobre 74b60ee: APROVADO, sem falha crítica. Quatro melhorias: (1) quatro testes de ramos explícitos que hoje não pegam mutação (mesmo MBID em caixas diferentes, truncamento só por 100 resultados, Snapshot.Recording divergente, Failed não entra no cache); (2) normalizedMetadata remove pontuação e ficou mais frouxo que a regra medida na 215; (3) título só de pontuação vira busca só por artista e álbum; (4) opcional, ambiguidade por truncamento só se o último resultado tem score >= 95. A consulta com release na frase procede e invalida a comparação direta com os números da 215. A fila cheia virando Failed pertence à ISSUE-213. Texto completo em backlog/evidencias/issue-216/PARECER-ADVISOR.md.
+
+---
+
+author: claude
+created: 2026-11-27T14:49:00Z
+
+---
+
+Parecer do Reviewer (27/11/2026) sobre o diff final 3d6c9f3: nenhum item obrigatório. Recomendado corrigir antes do aceite: (1) Instance() devolve a URL crua do MusicBrainz e NewMusicBrainz não valida, ao contrário do Subsonic, então uma URL de espelho com credencial seria gravada em metadata_values.instance e nos backups; (2) créditos de artista comparados só com EqualFold, enquanto o álbum usa a normalização medida na 215. Riscos menores: escuta de vários artistas sem artist_names não casa; o teste de integração não confere duração, estado do job nem instância; consulta com release sem medição; lookupISRC sem chamador. Detalhes em backlog/evidencias/issue-216/PARECER-REVIEWER.md. Revisão feita por quem aplicou as melhorias do Advisor, portanto não independente.
 
 ---
 <!-- COMMENTS:END -->
