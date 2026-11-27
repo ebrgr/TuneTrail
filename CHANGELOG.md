@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.81] - 2026-11-27
+
+- No user-visible changes (ISSUE-231).
+
 ## [0.80] - 2026-11-27
 
 - No user-visible changes (ISSUE-230).

@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T21:06:00Z'
+updated_date: '2026-11-27T21:09:00Z'
 labels:
   - banco
   - processo
@@ -110,6 +110,15 @@ created: 2026-11-27T21:06:00Z
 ---
 
 Aceite do usuário em 27/11/2026: «aceito e publique após e me mostre após as proximas tarefas».
+
+---
+
+author: ebrgr
+created: 2026-11-27T21:09:00Z
+
+---
+
+Publicação: versão 0.81 (tag `v0.81`), branch `chore/issue-231-arquitetura-passo-2-tirar-buildimagelist` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
