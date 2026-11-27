@@ -1,16 +1,19 @@
 ---
 id: ISSUE-230
 title: '230 — Arquitetura, passo 1: teste que proíbe imports entre camadas'
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T19:57:00Z'
+updated_date: '2026-11-27T20:04:00Z'
 labels:
   - validacao
   - processo
 milestone: m-15
 dependencies: []
+references:
+  - backlog/evidencias/issue-230/MUTACOES.md
+  - backlog/evidencias/issue-230/PARECER-REVIEWER.md
 priority: medium
 type: chore
 ordinal: 243000
@@ -24,11 +27,11 @@ Origem: pergunta do usuário em 27/11/2026 sobre a separação dos subsistemas e
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Teste em Go que lê os imports de produção e falha em qualquer import proibido, rodado pelo make check
-- [ ] #2 Lista de exceções explícita, com motivo por item, e o teste falha também quando uma exceção deixa de existir e continua listada
-- [ ] #3 Regra de que não há SQL fora de internal/db/sqlite verificada pelo teste
-- [ ] #4 Teste comprovado por mutação: um import proibido acrescentado de propósito faz o teste falhar
-- [ ] #5 Regras e como acrescentar uma exceção documentadas
+- [x] #1 Teste em Go que lê os imports de produção e falha em qualquer import proibido, rodado pelo make check
+- [x] #2 Lista de exceções explícita, com motivo por item, e o teste falha também quando uma exceção deixa de existir e continua listada
+- [x] #3 Regra de que não há SQL fora de internal/db/sqlite verificada pelo teste
+- [x] #4 Teste comprovado por mutação: um import proibido acrescentado de propósito faz o teste falhar
+- [x] #5 Regras e como acrescentar uma exceção documentadas
 <!-- AC:END -->
 
 ## Comments
@@ -40,6 +43,24 @@ created: 2026-11-27T19:57:00Z
 ---
 
 Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-230` na branch `chore/issue-230-arquitetura-passo-1-teste-que` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-27T20:04:00Z
+
+---
+
+Verificação: make check completo; TestArchitecture passa na árvore atual; 9 mutações no código real reprovadas (backlog/evidencias/issue-230/MUTACOES.md); go test -race no pacote; regras e exceções documentadas em DEVELOPMENT.md; parecer do Reviewer sem item obrigatório. Nenhum código de produção alterado.
+
+---
+
+author: claude
+created: 2026-11-27T20:04:00Z
+
+---
+
+Parecer do Reviewer (mesmo agente, sem delegação): APROVADO sem itens obrigatórios. Achado fora do texto da issue: além das exceções previstas, webui, summary e relayoutbox importam database/sql só para sql.ErrNoRows, e testfixtures e scripts/issue133_fault têm SQL; todos listados como exceção com motivo.
 
 ---
 <!-- COMMENTS:END -->
