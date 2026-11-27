@@ -18,11 +18,14 @@ Cada alteração foi aplicada sozinha e desfeita depois.
 | Rewind falha com histórico vazio | detectada: `TestEmptyHistoryIsNotAFirstActivityError`, `TestRewindSQLiteAndSummaryAPI` |
 | Resumo falha com histórico vazio | detectada: `TestSummaryGenericAndAllTimeIntervals` |
 | Ordem do lote invertida | detectada: `TestRelayClaimOrder` |
-| Lote sem ordenação por vencimento | detectada: `TestRelayClaimOrder` |
+| Comparação por vencimento anulada, restando só o desempate por ID | detectada: `TestRelayClaimOrder` |
+| Ordenação do lote removida por inteiro | **não detectada** (apontada pelo Advisor e confirmada depois) |
 | Empate sem desempate por ID | detectada: `TestRelayClaimOrder` |
 | URL de imagem sem perfil | detectada: `TestList` |
 
 Na primeira rodada, as duas mutações de ordem do lote **não** eram detectadas: nenhum teste conferia a ordem. `TestRelayClaimOrder` foi criado para isso. Duas outras mutações da primeira rodada apenas quebravam a compilação e foram refeitas.
+
+`TestRelayClaimOrder` protege a ordem final e reprova um comparador errado, mas passa sem o `slices.SortFunc`: com o plano de consulta atual, o SQLite já devolve o `RETURNING` na ordem da subconsulta. Essa ordem não é garantida pelo SQLite, por isso a ordenação continua no código.
 
 ## Detector de corridas
 
