@@ -1,11 +1,11 @@
 ---
 id: ISSUE-230
 title: '230 — Arquitetura, passo 1: teste que proíbe imports entre camadas'
-status: Aguardando aceite
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T20:04:00Z'
+updated_date: '2026-11-27T20:07:00Z'
 labels:
   - validacao
   - processo
@@ -61,6 +61,15 @@ created: 2026-11-27T20:04:00Z
 ---
 
 Parecer do Reviewer (mesmo agente, sem delegação): APROVADO sem itens obrigatórios. Achado fora do texto da issue: além das exceções previstas, webui, summary e relayoutbox importam database/sql só para sql.ErrNoRows, e testfixtures e scripts/issue133_fault têm SQL; todos listados como exceção com motivo.
+
+---
+
+author: claude
+created: 2026-11-27T20:07:00Z
+
+---
+
+Aceite do usuário em 27/11/2026: «Aceito as alterações e as sugestões».
 
 ---
 <!-- COMMENTS:END -->
