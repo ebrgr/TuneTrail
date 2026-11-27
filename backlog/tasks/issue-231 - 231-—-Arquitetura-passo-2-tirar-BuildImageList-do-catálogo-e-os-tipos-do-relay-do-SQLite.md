@@ -3,17 +3,20 @@ id: ISSUE-231
 title: >-
   231 — Arquitetura, passo 2: tirar BuildImageList do catálogo e os tipos do
   relay do SQLite
-status: Em andamento
+status: Aguardando aceite
 assignee:
   - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T20:11:00Z'
+updated_date: '2026-11-27T20:53:00Z'
 labels:
   - banco
   - processo
 milestone: m-15
 dependencies:
   - ISSUE-230
+references:
+  - backlog/evidencias/issue-231/VERIFICACAO.md
+  - backlog/evidencias/issue-231/PARECER-REVIEWER.md
 priority: low
 type: chore
 ordinal: 244000
@@ -27,11 +30,11 @@ Origem: pergunta do usuário em 27/11/2026 sobre a separação dos subsistemas e
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 internal/db/sqlite não importa mais internal/catalog, e as URLs de imagem geradas são idênticas, com teste
-- [ ] #2 internal/relayoutbox não importa internal/db/sqlite e depende de interface própria
-- [ ] #3 Exceções removidas do teste de arquitetura do passo 1
-- [ ] #4 Nenhuma mudança de comportamento: make check e testes de relay e de imagens passam, com go test -race nos pacotes tocados
-- [ ] #5 internal/webui, internal/summary e internal/relayoutbox não importam database/sql: linha ausente é reconhecida por db.ErrNotFound, com teste
+- [x] #1 internal/db/sqlite não importa mais internal/catalog, e as URLs de imagem geradas são idênticas, com teste
+- [x] #2 internal/relayoutbox não importa internal/db/sqlite e depende de interface própria
+- [x] #3 Exceções removidas do teste de arquitetura do passo 1
+- [x] #4 Nenhuma mudança de comportamento: make check e testes de relay e de imagens passam, com go test -race nos pacotes tocados
+- [x] #5 internal/webui, internal/summary e internal/relayoutbox não importam database/sql: linha ausente é reconhecida por db.ErrNotFound, com teste
 <!-- AC:END -->
 
 ## Comments
@@ -52,6 +55,24 @@ created: 2026-11-27T20:11:00Z
 ---
 
 Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-231` na branch `chore/issue-231-arquitetura-passo-2-tirar-buildimagelist` criada a partir de `main`.
+
+---
+
+author: ebrgr
+created: 2026-11-27T20:53:00Z
+
+---
+
+Verificação: make check completo; URLs de imagem idênticas às da função original; go test -race nos pacotes tocados; mutações em backlog/evidencias/issue-231/VERIFICACAO.md; exceções de arquitetura de 13 para 8; parecer do Reviewer sem item obrigatório, com recomendação de Advisor por tocar a fila do relay.
+
+---
+
+author: claude
+created: 2026-11-27T20:53:00Z
+
+---
+
+Parecer do Reviewer (mesmo agente, sem delegação): APROVADO sem item obrigatório. Advisor recomendado ao usuário por tocar a fila do relay; não acionado.
 
 ---
 <!-- COMMENTS:END -->
