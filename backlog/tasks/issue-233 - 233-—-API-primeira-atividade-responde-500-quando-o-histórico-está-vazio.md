@@ -4,7 +4,7 @@ title: '233 — API: primeira atividade responde 500 quando o histórico está v
 status: Aberta
 assignee: []
 created_date: '2026-11-27T21:22:00Z'
-updated_date: '2026-11-27T21:22:00Z'
+updated_date: '2026-11-27T21:23:00Z'
 labels:
   - api
 milestone: m-13
@@ -22,7 +22,20 @@ Origem: achado registrado na revisão da ISSUE-231 (27/11/2026) e pedido do usu�
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 A resposta para histórico vazio está decidida pelo usuário e registrada na tarefa
+- [x] #1 A resposta para histórico vazio está decidida pelo usuário e registrada na tarefa
 - [ ] #2 Perfil sem escutas recebe a resposta decidida, sem 500, com teste pela rota
 - [ ] #3 Falha real do armazenamento continua respondendo 500, com teste, e é registrada no log
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-27T21:23:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: «aceito a opção a». Histórico vazio responde 200 com time nulo ({"time": null}); qualquer outro erro continua 500.
+
+---
+<!-- COMMENTS:END -->
