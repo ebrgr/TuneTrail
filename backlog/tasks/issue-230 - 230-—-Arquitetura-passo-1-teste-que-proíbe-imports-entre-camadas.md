@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T20:07:00Z'
+updated_date: '2026-11-27T20:09:00Z'
 labels:
   - validacao
   - processo
@@ -70,6 +70,15 @@ created: 2026-11-27T20:07:00Z
 ---
 
 Aceite do usuário em 27/11/2026: «Aceito as alterações e as sugestões».
+
+---
+
+author: ebrgr
+created: 2026-11-27T20:09:00Z
+
+---
+
+Publicação: versão 0.80 (tag `v0.80`), branch `chore/issue-230-arquitetura-passo-1-teste-que` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->
