@@ -64,7 +64,7 @@ func (m *MusicBrainz) Instance() string { return m.endpoint }
 func luceneEscape(s string) string {
 	var b strings.Builder
 	for _, r := range s {
-		if strings.ContainsRune(`+ -&|!(){}[]^"~*?:\/`, r) && r != ' ' {
+		if strings.ContainsRune(`+-&|!(){}[]^"~*?:\/`, r) {
 			b.WriteByte('\\')
 		}
 		b.WriteRune(r)
@@ -72,21 +72,22 @@ func luceneEscape(s string) string {
 	return b.String()
 }
 
-// normalizedMetadata compares case, whitespace and punctuation consistently.
+// normalizedMetadata follows the comparison measured in ISSUE-215: case fold, trim and collapsed
+// spaces. It deliberately keeps punctuation, so "Help!" and "Help" stay different albums.
 func normalizedMetadata(s string) string {
-	var words []string
-	for _, word := range strings.Fields(strings.ToLower(s)) {
-		var b strings.Builder
-		for _, r := range word {
-			if unicode.IsLetter(r) || unicode.IsNumber(r) {
-				b.WriteRune(r)
-			}
-		}
-		if b.Len() > 0 {
-			words = append(words, b.String())
+	return strings.Join(strings.Fields(strings.ToLower(s)), " ")
+}
+
+// hasWordCharacter reports whether a phrase has a letter or digit. The search analyzer drops a
+// phrase made only of punctuation, and the title is not rechecked locally, so such a title would
+// silently widen the query to every recording of the artist on the album.
+func hasWordCharacter(s string) bool {
+	for _, r := range s {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			return true
 		}
 	}
-	return strings.Join(words, " ")
+	return false
 }
 
 // call bounds responses and uses only the HTTP client supplied by the budget.
@@ -199,7 +200,7 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 			names = filtered
 		}
 	}
-	if (!missingRecording && len(names) == 0) || strings.TrimSpace(s.Title) == "" || strings.TrimSpace(s.Artist) == "" || strings.TrimSpace(s.Release) == "" || s.TruncatedFields > 0 {
+	if (!missingRecording && len(names) == 0) || !hasWordCharacter(s.Title) || strings.TrimSpace(s.Artist) == "" || strings.TrimSpace(s.Release) == "" || s.TruncatedFields > 0 {
 		return Result{Status: Absent}
 	}
 	keyBytes, err := json.Marshal(struct {

@@ -28,6 +28,9 @@ const recordingA = "11111111-1111-4111-8111-111111111111"
 const recordingB = "22222222-2222-4222-8222-222222222222"
 const mbArtistID = "33333333-3333-4333-8333-333333333333"
 
+// recordingLetters has hex letters, so its upper and lower case spellings really differ.
+const recordingLetters = "abcdefab-cdef-4abc-8def-abcdefabcdef"
+
 // candidate builds a MusicBrainz search fixture.
 func candidate(id string, length any, album, artist string, score int) map[string]any {
 	return map[string]any{"id": id, "score": score, "length": length, "releases": []any{map[string]any{"title": album}}, "artist-credit": []any{map[string]any{"name": artist, "artist": map[string]any{"id": mbArtistID, "name": artist}}}}
@@ -164,7 +167,9 @@ func TestMusicBrainzConservativeEvidence(t *testing.T) {
 		})
 	}
 	require.NotEqual(t, normalizedMetadata("ab c"), normalizedMetadata("a bc"))
-	require.Equal(t, normalizedMetadata("THE  Album!"), normalizedMetadata("the album"))
+	// The comparison is the one measured in ISSUE-215: case and spaces only, punctuation stays.
+	require.Equal(t, normalizedMetadata("  THE   Album "), normalizedMetadata("the album"))
+	require.NotEqual(t, normalizedMetadata("Help!"), normalizedMetadata("Help"))
 }
 
 // TestMusicBrainzRedirectDoesNotBypassBudget rejects automatic follow-up requests.
@@ -197,4 +202,107 @@ func TestMusicBrainzCreditNameRequiresTheObservedCredit(t *testing.T) {
 	budget := &mbCountingBudget{client: server.Client()}
 	got := NewMusicBrainz(server.URL, "test", budget).Lookup(t.Context(), Request{Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album", DurationMS: 200000}})
 	require.Equal(t, Absent, got.Status)
+}
+
+// searchProvider serves the given pages in order and counts the use of the budget.
+func searchProvider(t *testing.T, pages ...func(http.ResponseWriter)) (*MusicBrainz, *mbCountingBudget) {
+	t.Helper()
+	call := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		page := pages[min(call, len(pages)-1)]
+		call++
+		page(w)
+	}))
+	t.Cleanup(server.Close)
+	budget := &mbCountingBudget{client: server.Client()}
+	return NewMusicBrainz(server.URL, "test", budget), budget
+}
+
+func page(count int, recordings ...any) func(http.ResponseWriter) {
+	return func(w http.ResponseWriter) {
+		_ = json.NewEncoder(w).Encode(map[string]any{"count": count, "recordings": recordings})
+	}
+}
+
+var searchSnapshot = ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album", DurationMS: 200000}
+
+// TestMusicBrainzSameRecordingInDifferentCaseIsNotAmbiguous dedupes by the canonical UUID.
+func TestMusicBrainzSameRecordingInDifferentCaseIsNotAmbiguous(t *testing.T) {
+	require.NotEqual(t, recordingLetters, strings.ToUpper(recordingLetters))
+	provider, _ := searchProvider(t, page(0, candidate(strings.ToUpper(recordingLetters), 200000, "Album", "Artist", 100), candidate(recordingLetters, 200001, "Album", "Artist", 100)))
+	got := provider.Lookup(t.Context(), Request{Snapshot: searchSnapshot})
+	require.Equal(t, Found, got.Status)
+	require.Equal(t, recordingLetters, got.Declarations[0].Value, "the declared ID is the lowercase canonical form")
+}
+
+// TestMusicBrainzFullPageWithoutCountIsAmbiguous treats a full page as possibly truncated even when
+// the response carries no count, and accepts one recording below the page size.
+func TestMusicBrainzFullPageWithoutCountIsAmbiguous(t *testing.T) {
+	filler := func(n int) []any {
+		out := make([]any, n)
+		for i := range out {
+			out[i] = candidate(recordingB, 90000, "Other", "Other", 10)
+		}
+		return out
+	}
+	for _, tc := range []struct {
+		name   string
+		fill   int
+		status Status
+	}{{"99 results", 98, Found}, {"100 results", 99, Ambiguous}} {
+		t.Run(tc.name, func(t *testing.T) {
+			recordings := append([]any{candidate(recordingA, 200000, "Album", "Artist", 100)}, filler(tc.fill)...)
+			provider, _ := searchProvider(t, page(0, recordings...))
+			got := provider.Lookup(t.Context(), Request{Snapshot: searchSnapshot})
+			require.Equal(t, tc.status, got.Status)
+			if tc.status == Ambiguous {
+				require.Empty(t, got.Declarations)
+			}
+		})
+	}
+}
+
+// TestMusicBrainzKnownRecordingMustMatchTheCandidate rejects a candidate that disagrees with the
+// recording ID the listen already carries.
+func TestMusicBrainzKnownRecordingMustMatchTheCandidate(t *testing.T) {
+	provider, _ := searchProvider(t, page(0, candidate(recordingA, 200000, "Album", "Artist", 100)))
+	s := searchSnapshot
+	s.Recording = recordingB
+	got := provider.Lookup(t.Context(), Request{Snapshot: s})
+	require.Equal(t, Absent, got.Status)
+	require.Empty(t, got.Declarations)
+}
+
+// TestMusicBrainzFailureIsNotCached repeats a failed search and caches only the answers it can trust.
+func TestMusicBrainzFailureIsNotCached(t *testing.T) {
+	provider, budget := searchProvider(t,
+		func(w http.ResponseWriter) { w.WriteHeader(http.StatusServiceUnavailable) },
+		page(0, candidate(recordingA, 200000, "Album", "Artist", 100)))
+	require.Equal(t, Failed, provider.Lookup(t.Context(), Request{Snapshot: searchSnapshot}).Status)
+	require.Equal(t, Found, provider.Lookup(t.Context(), Request{Snapshot: searchSnapshot}).Status)
+	require.Equal(t, 2, budget.calls, "the failure was asked again")
+	require.Equal(t, Found, provider.Lookup(t.Context(), Request{Snapshot: searchSnapshot}).Status)
+	require.Equal(t, 2, budget.calls, "the found answer is cached")
+}
+
+// TestMusicBrainzPunctuationOnlyTitleIsNotSearched keeps a title the analyzer would drop from
+// widening the query to the whole album.
+func TestMusicBrainzPunctuationOnlyTitleIsNotSearched(t *testing.T) {
+	provider, budget := searchProvider(t, page(0, candidate(recordingA, 200000, "Album", "Artist", 100)))
+	for _, title := range []string{"?", "...", " ! "} {
+		s := searchSnapshot
+		s.Title = title
+		require.Equal(t, Absent, provider.Lookup(t.Context(), Request{Snapshot: s}).Status, title)
+	}
+	require.Zero(t, budget.calls, "no request was made")
+	require.True(t, hasWordCharacter("Ünïcode 1"))
+	require.False(t, hasWordCharacter("?!…"))
+}
+
+// TestMusicBrainzAlbumPunctuationMatters follows the comparison measured in ISSUE-215.
+func TestMusicBrainzAlbumPunctuationMatters(t *testing.T) {
+	provider, _ := searchProvider(t, page(0, candidate(recordingA, 200000, "Help", "Artist", 100)))
+	s := searchSnapshot
+	s.Release = "Help!"
+	require.Equal(t, Absent, provider.Lookup(t.Context(), Request{Snapshot: s}).Status)
 }
