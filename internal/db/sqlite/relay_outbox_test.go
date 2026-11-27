@@ -215,7 +215,7 @@ func TestRelayOutboxClaims(t *testing.T) {
 		wrong := first
 		wrong.Profile = 2
 		_, err = s.RelayPayload(ctx, wrong, item)
-		require.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, db.ErrNotFound)
 	}
 	late := now.Add(3 * time.Minute)
 	execSQL(t, s, "UPDATE relay_destinations SET pause_class='server',paused_until=1,backoff_count=3 WHERE profile_id=1")
@@ -239,6 +239,35 @@ func TestRelayOutboxClaims(t *testing.T) {
 	require.Zero(t, scalar(t, s, "SELECT open_count FROM relay_destinations WHERE profile_id=1"))
 	require.EqualValues(t, late.Add(time.Minute).Unix(), scalar(t, s, "SELECT paused_until FROM relay_destinations WHERE profile_id=1"))
 	require.Zero(t, scalar(t, s, "SELECT backoff_count FROM relay_destinations WHERE profile_id=1"))
+}
+
+// TestRelayClaimOrder sends the longest waiting items first and breaks ties by
+// ID. The due times are set against the ID order so neither can pass by chance.
+func TestRelayClaimOrder(t *testing.T) {
+	s, _ := relayStoreFixture(t)
+	now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)
+	for i, id := range []string{"first", "second", "third"} {
+		relayReceipt(t, s, 1, id, now.Add(time.Duration(i)*time.Hour))
+		resolveOccurrenceFixture(t, s, nil)
+	}
+	for event, row := range map[string]struct {
+		id  string
+		due int64
+	}{
+		"first":  {"item-c", now.Unix() - 30},
+		"second": {"item-a", now.Unix() - 10},
+		"third":  {"item-b", now.Unix() - 10},
+	} {
+		execSQL(t, s, `UPDATE outbox SET id=?,next_attempt_at=?
+			WHERE event_id=(SELECT event_id FROM ingest_events WHERE receipt_id=?)`, row.id, row.due, event)
+	}
+	batch, err := s.ClaimRelayBatch(t.Context(), now)
+	require.NoError(t, err)
+	var order []string
+	for _, item := range batch.Items {
+		order = append(order, item.ID)
+	}
+	require.Equal(t, []string{"item-c", "item-a", "item-b"}, order)
 }
 
 // TestRelayBatchWritesUseIDs leaves an unrelated row untouched even if it has the same lease owner.
@@ -395,7 +424,7 @@ func TestRelayHistoryDeletion(t *testing.T) {
 			batch, err := s.ClaimRelayBatch(ctx, now)
 			require.NoError(t, err)
 			require.Len(t, batch.Items, 2)
-			var sent, open RelayItem
+			var sent, open relay.Item
 			for _, item := range batch.Items {
 				if scalar(t, s, `SELECT count(*) FROM outbox o JOIN ingest_events e ON e.event_id=o.event_id
 					WHERE o.id=? AND e.receipt_id='sent-source'`, item.ID) == 1 {
@@ -404,7 +433,7 @@ func TestRelayHistoryDeletion(t *testing.T) {
 					open = item
 				}
 			}
-			_, err = s.FinishRelayBatch(ctx, batch, []RelayItem{sent}, relay.Result{Class: relay.Success, Status: 200}, now, false)
+			_, err = s.FinishRelayBatch(ctx, batch, []relay.Item{sent}, relay.Result{Class: relay.Success, Status: 200}, now, false)
 			require.NoError(t, err)
 			switch operation {
 			case "single":
@@ -427,11 +456,11 @@ func TestRelayHistoryDeletion(t *testing.T) {
 			require.Equal(t, want, scalar(t, s, "SELECT coalesce(sum(sent_count),0) FROM relay_sent_archive WHERE sent_day=?", now.Unix()/86400))
 			require.Zero(t, scalar(t, s, "SELECT count(*) FROM pragma_table_info('relay_sent_archive') WHERE name IN ('id','event_id','sent_at')"))
 			_, err = s.RelayPayload(ctx, batch, open)
-			require.ErrorIs(t, err, sql.ErrNoRows)
+			require.ErrorIs(t, err, db.ErrNotFound)
 			renewed, err := s.RenewRelayBatch(ctx, batch, now)
 			require.NoError(t, err)
 			require.False(t, renewed)
-			_, err = s.FinishRelayBatch(ctx, batch, []RelayItem{open}, relay.Result{Class: relay.Success, Status: 200}, now, true)
+			_, err = s.FinishRelayBatch(ctx, batch, []relay.Item{open}, relay.Result{Class: relay.Success, Status: 200}, now, true)
 			require.NoError(t, err)
 			require.Equal(t, want, scalar(t, s, "SELECT count(*) FROM relay_sent_archive"))
 			_, err = s.ExpireRelayWork(ctx, 1, now.Add(30*24*time.Hour))
@@ -875,7 +904,7 @@ func TestRelayInvalidSourceRetiresItem(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, batch.Items, 1)
 	_, err = s.RelayPayload(t.Context(), batch, batch.Items[0])
-	require.ErrorIs(t, err, ErrRelaySourceInvalid)
+	require.ErrorIs(t, err, relay.ErrSourceInvalid)
 	require.NoError(t, s.FailRelaySource(t.Context(), batch, batch.Items[0], err))
 	_, err = s.FinishRelayBatch(t.Context(), batch, nil, relay.Result{}, now, true)
 	require.NoError(t, err)
@@ -896,7 +925,7 @@ func TestRelayInvalidStoredPermissionsPausesDestination(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, batch.Items, 1)
 	_, _, _, err = s.RelayTarget(t.Context(), batch)
-	require.ErrorIs(t, err, ErrRelayConfigInvalid)
+	require.ErrorIs(t, err, relay.ErrConfigInvalid)
 	_, err = s.FinishRelayBatch(t.Context(), batch, nil, relay.Result{Class: relay.ConfigInvalid}, now, true)
 	require.NoError(t, err)
 	empty, err := s.ClaimRelayBatch(t.Context(), now)

@@ -3,10 +3,11 @@ id: ISSUE-231
 title: >-
   231 — Arquitetura, passo 2: tirar BuildImageList do catálogo e os tipos do
   relay do SQLite
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T20:09:00Z'
+updated_date: '2026-11-27T20:11:00Z'
 labels:
   - banco
   - processo
@@ -42,6 +43,15 @@ created: 2026-11-27T20:09:00Z
 ---
 
 Escopo ampliado em 27/11/2026: o usuário aceitou a sugestão de incluir a troca de sql.ErrNoRows nos três pacotes (achado da ISSUE-230).
+
+---
+
+author: ebrgr
+created: 2026-11-27T20:11:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-231` na branch `chore/issue-231-arquitetura-passo-2-tirar-buildimagelist` criada a partir de `main`.
 
 ---
 <!-- COMMENTS:END -->

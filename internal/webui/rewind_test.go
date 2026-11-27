@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/testfixtures"
+	"log"
 	"math"
 	"net/http/httptest"
 	"net/url"
@@ -100,6 +101,31 @@ func TestRewindFirstListenError(t *testing.T) {
 	w := pageRequest(h, "/alpha/rewind?year=2026&month=1&tz=UTC")
 	if w.Code != 500 || strings.Contains(w.Body.String(), "private SQL detail") {
 		t.Fatalf("unexpected error response: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// An empty history reaches the pages as db.ErrNotFound from the real store: it
+// must render normally and must not be logged as a failure (ISSUE-231).
+func TestEmptyHistoryIsNotAFirstActivityError(t *testing.T) {
+	s := pageStore(t)
+	if _, err := s.GetFirstListenUnix(db.WithProfile(context.Background(), 3)); !errors.Is(err, db.ErrNotFound) {
+		t.Fatalf("empty history error = %v, want db.ErrNotFound", err)
+	}
+	h, err := NewHandler(s, Options{Now: func() time.Time { return time.Date(2026, 11, 5, 0, 0, 0, 0, time.UTC) }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var logged strings.Builder
+	previous := log.Writer()
+	log.SetOutput(&logged)
+	defer log.SetOutput(previous)
+	for _, path := range []string{"/empty/rewind?year=2026&month=1&tz=UTC", "/empty/chart/top/tracks?period=all_time&tz=UTC"} {
+		if w := pageRequest(h, path); w.Code != 200 {
+			t.Fatalf("%s: %d %s", path, w.Code, w.Body.String())
+		}
+	}
+	if strings.Contains(logged.String(), "first activity failed") {
+		t.Fatalf("empty history logged as a failure: %s", logged.String())
 	}
 }
 

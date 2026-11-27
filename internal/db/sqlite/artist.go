@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/imageurl"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
@@ -125,7 +125,7 @@ func (s *Sqlite) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.
 		MbzID:        parseNullableUUID(mbzID),
 		Name:         name.String,
 		Aliases:      aliases,
-		Image:        catalog.BuildImageList(ctx, parseNullableUUID(image)),
+		Image:        imageurl.List(ctx, parseNullableUUID(image)),
 		ListenCount:  listenCount,
 		TimeListened: timeListened,
 		FirstListen:  firstListenUnix,
@@ -438,7 +438,7 @@ func (s *Sqlite) GetArtistsForAlbum(ctx context.Context, id int32) ([]*models.Ar
 			return nil, err
 		}
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		a.Image = imageurl.List(ctx, parseNullableUUID(image))
 		a.IsPrimary = isPrimary == 1
 		artists = append(artists, &a)
 	}
@@ -471,7 +471,7 @@ func (s *Sqlite) GetArtistsForTrack(ctx context.Context, id int32) ([]*models.Ar
 			return nil, err
 		}
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		a.Image = imageurl.List(ctx, parseNullableUUID(image))
 		a.IsPrimary = isPrimary == 1
 		artists = append(artists, &a)
 	}
@@ -530,7 +530,7 @@ func (s *Sqlite) GetTopArtistsPaginated(ctx context.Context, opts db.GetItemsOpt
 		}
 
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		a.Image = imageurl.List(ctx, parseNullableUUID(image))
 		item.Item = &a
 		artists = append(artists, item)
 	}
@@ -567,7 +567,7 @@ func (s *Sqlite) ArtistsWithoutImages(ctx context.Context, from int32) ([]*model
 			return nil, err
 		}
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		a.Image = imageurl.List(ctx, parseNullableUUID(image))
 		artists = append(artists, &a)
 	}
 	return artists, rows.Err()

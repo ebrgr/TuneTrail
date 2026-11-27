@@ -1,7 +1,6 @@
 package webui
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -11,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/summary"
 	"github.com/ebrgr/TuneTrail/internal/webquery"
 )
@@ -41,7 +41,7 @@ func (h *Pages) serveRewind(w http.ResponseWriter, r *http.Request, p LivePage) 
 		return
 	}
 	firstUnix, firstErr := h.store.GetFirstListenUnix(r.Context())
-	if firstErr != nil && !errors.Is(firstErr, sql.ErrNoRows) {
+	if firstErr != nil && !errors.Is(firstErr, db.ErrNotFound) {
 		log.Printf("HTML rewind first activity failed: %v", firstErr)
 		h.fail(w, p, http.StatusInternalServerError)
 		return

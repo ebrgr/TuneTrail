@@ -12,7 +12,6 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/images"
 	"github.com/ebrgr/TuneTrail/internal/logger"
-	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
 )
@@ -189,25 +188,6 @@ func FetchMissingAlbumImages(ctx context.Context, store db.AlbumStore) error {
 					Msg("FetchMissingAlbumImages: Failed to fetch album image")
 			}
 		}
-	}
-}
-
-// BuildImageList adds a stable profile scope to listening-derived image URLs.
-func BuildImageList(ctx context.Context, imageid *uuid.UUID) models.ImageList {
-	if imageid == nil {
-		imageid = &uuid.Nil
-	}
-	base := "/image/"
-	if id := db.ProfileID(ctx); id > 0 {
-		base = fmt.Sprintf("/image/profile/%d/", id)
-	}
-	base += imageid.String() + "/"
-	return models.ImageList{
-		XS:     base + imagecache.ImageSizeXS.String() + ".webp",
-		Small:  base + imagecache.ImageSizeSmall.String() + ".webp",
-		Medium: base + imagecache.ImageSizeMedium.String() + ".webp",
-		Large:  base + imagecache.ImageSizeLarge.String() + ".webp",
-		XL:     base + imagecache.ImageSizeXL.String() + ".webp",
 	}
 }
 

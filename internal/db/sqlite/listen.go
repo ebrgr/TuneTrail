@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/imageurl"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/google/uuid"
 )
@@ -209,7 +209,7 @@ func (s *Sqlite) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		if err != nil {
 			return nil, err
 		}
-		l.Track.Image = catalog.BuildImageList(ctx, imgid)
+		l.Track.Image = imageurl.List(ctx, imgid)
 		listens = append(listens, l)
 	}
 
@@ -247,6 +247,10 @@ func (s *Sqlite) GetFirstListenUnix(ctx context.Context) (int64, error) {
 		SELECT listened_at FROM listens ORDER BY listened_at ASC LIMIT 1;`)
 	var unix int64
 	err := row.Scan(&unix)
+	// An empty history is reported with the error of the store contract.
+	if errors.Is(err, sql.ErrNoRows) {
+		err = db.ErrNotFound
+	}
 	if err != nil {
 		return 0, fmt.Errorf("GetFirstListenUnix: %w", err)
 	}

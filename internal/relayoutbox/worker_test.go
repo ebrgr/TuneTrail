@@ -2,7 +2,6 @@ package relayoutbox
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -12,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +23,7 @@ type fixtureStore struct {
 	releases, missing int
 }
 
-func (s *fixtureStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.NetworkPolicy, error) {
+func (s *fixtureStore) RelayTarget(context.Context, relay.Batch) (string, string, relay.NetworkPolicy, error) {
 	host := strings.TrimPrefix(s.base, "http://")
 	return s.base, "fictional-token", relay.NetworkPolicy{Permissions: relay.Permissions{
 		{HostPort: host, HTTP: true},
@@ -32,21 +31,21 @@ func (s *fixtureStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, 
 	}}, nil
 }
 
-func (*fixtureStore) RelayPayload(_ context.Context, _ sqlite.RelayBatch, item sqlite.RelayItem) ([]byte, error) {
+func (*fixtureStore) RelayPayload(_ context.Context, _ relay.Batch, item relay.Item) ([]byte, error) {
 	if item.ID == "deleted" {
-		return nil, sql.ErrNoRows
+		return nil, db.ErrNotFound
 	}
 	return []byte(`{"track_metadata":{"track_name":"` + item.ID + `"}}`), nil
 }
 
-func (s *fixtureStore) FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem, error) error {
+func (s *fixtureStore) FailRelaySource(context.Context, relay.Batch, relay.Item, error) error {
 	s.missing++
 	return nil
 }
-func (*fixtureStore) RenewRelayBatch(context.Context, sqlite.RelayBatch, time.Time, ...sqlite.RelayItem) (bool, error) {
+func (*fixtureStore) RenewRelayBatch(context.Context, relay.Batch, time.Time, ...relay.Item) (bool, error) {
 	return true, nil
 }
-func (s *fixtureStore) FinishRelayBatch(ctx context.Context, _ sqlite.RelayBatch, items []sqlite.RelayItem, result relay.Result, _ time.Time, release bool) (bool, error) {
+func (s *fixtureStore) FinishRelayBatch(ctx context.Context, _ relay.Batch, items []relay.Item, result relay.Result, _ time.Time, release bool) (bool, error) {
 	if err := ctx.Err(); err != nil && !release {
 		return false, err
 	}
@@ -84,7 +83,7 @@ func TestWorkerBisectsAndSettles(t *testing.T) {
 	}))
 	defer server.Close()
 	store := &fixtureStore{base: server.URL, outcomes: map[string]relay.Class{}}
-	process(t.Context(), store, sqlite.RelayBatch{PostBudget: 6, Items: []sqlite.RelayItem{{ID: "a"}, {ID: "bad"}, {ID: "b"}, {ID: "deleted"}}}, time.Now)
+	process(t.Context(), store, relay.Batch{PostBudget: 6, Items: []relay.Item{{ID: "a"}, {ID: "bad"}, {ID: "b"}, {ID: "deleted"}}}, time.Now)
 	require.Equal(t, map[string]relay.Class{"a": relay.Success, "bad": relay.BadRequest, "b": relay.Success}, store.outcomes)
 	require.Equal(t, 1, store.missing)
 	require.Equal(t, 1, store.releases)
@@ -102,7 +101,7 @@ func TestWorkerCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 	store := &fixtureStore{base: server.URL, outcomes: map[string]relay.Class{}}
-	process(ctx, store, sqlite.RelayBatch{PostBudget: 2, Items: []sqlite.RelayItem{{ID: "a"}}}, time.Now)
+	process(ctx, store, relay.Batch{PostBudget: 2, Items: []relay.Item{{ID: "a"}}}, time.Now)
 	require.Empty(t, store.outcomes)
 	require.Equal(t, 1, store.releases)
 }
@@ -114,16 +113,16 @@ type failingClaimStore struct {
 	paused              chan relay.Class
 }
 
-func (s *failingClaimStore) ClaimRelayBatch(_ context.Context, at time.Time) (sqlite.RelayBatch, error) {
+func (s *failingClaimStore) ClaimRelayBatch(_ context.Context, at time.Time) (relay.Batch, error) {
 	s.calls <- at
-	return sqlite.RelayBatch{Items: []sqlite.RelayItem{{ID: "fixture"}}}, s.claimErr
+	return relay.Batch{Items: []relay.Item{{ID: "fixture"}}}, s.claimErr
 }
 
-func (s *failingClaimStore) RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.NetworkPolicy, error) {
+func (s *failingClaimStore) RelayTarget(context.Context, relay.Batch) (string, string, relay.NetworkPolicy, error) {
 	return "", "", relay.NetworkPolicy{}, s.targetErr
 }
 
-func (s *failingClaimStore) FinishRelayBatch(_ context.Context, _ sqlite.RelayBatch, _ []sqlite.RelayItem, result relay.Result, _ time.Time, _ bool) (bool, error) {
+func (s *failingClaimStore) FinishRelayBatch(_ context.Context, _ relay.Batch, _ []relay.Item, result relay.Result, _ time.Time, _ bool) (bool, error) {
 	if result.Class != "" {
 		s.paused <- result.Class
 	}
@@ -138,7 +137,7 @@ func TestWorkerPacesFailedClaims(t *testing.T) {
 	}{
 		{"busy", errors.New("SQLITE_BUSY"), nil},
 		{"target read", nil, errors.New("target lookup failed")},
-		{"invalid config", nil, sqlite.ErrRelayConfigInvalid},
+		{"invalid config", nil, relay.ErrConfigInvalid},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(t.Context())
@@ -149,7 +148,7 @@ func TestWorkerPacesFailedClaims(t *testing.T) {
 			go func() { defer close(done); poll(ctx, ctx, store, func() time.Time { return now }, ticks) }()
 			defer func() { cancel(); <-done }()
 			require.Equal(t, now, <-store.calls)
-			if errors.Is(tc.targetErr, sqlite.ErrRelayConfigInvalid) {
+			if errors.Is(tc.targetErr, relay.ErrConfigInvalid) {
 				require.Equal(t, relay.ConfigInvalid, <-store.paused)
 			}
 			select {
@@ -168,8 +167,8 @@ func TestWorkerSettlesSuccessAfterCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	cancel()
 	store := &fixtureStore{outcomes: map[string]relay.Class{}}
-	items := []sqlite.RelayItem{{ID: "accepted"}}
-	ok, err := finishAttempt(ctx, store, sqlite.RelayBatch{}, items, relay.Result{Class: relay.Success}, time.Now())
+	items := []relay.Item{{ID: "accepted"}}
+	ok, err := finishAttempt(ctx, store, relay.Batch{}, items, relay.Result{Class: relay.Success}, time.Now())
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, relay.Success, store.outcomes["accepted"])

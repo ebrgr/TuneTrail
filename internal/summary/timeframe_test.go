@@ -2,7 +2,6 @@ package summary
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"testing"
@@ -81,7 +80,7 @@ func TestSummaryGenericAndAllTimeIntervals(t *testing.T) {
 		first int64
 		err   error
 		days  int64
-	}{{0, fmt.Errorf("wrapped: %w", sql.ErrNoRows), 1}, {now.Unix(), nil, 1}, {now.AddDate(0, 0, -4).Unix(), nil, 5}, {now.AddDate(0, 0, 1).Unix(), nil, 1}} {
+	}{{0, fmt.Errorf("wrapped: %w", db.ErrNotFound), 1}, {now.Unix(), nil, 1}, {now.AddDate(0, 0, -4).Unix(), nil, 5}, {now.AddDate(0, 0, 1).Unix(), nil, 1}} {
 		reader := &firstReader{unix: tc.first, err: tc.err}
 		ctx := db.WithProfile(context.Background(), 7)
 		tf, days, err := resolveInterval(ctx, reader, db.Timeframe{Period: db.PeriodAllTime, Timezone: time.UTC}, now)

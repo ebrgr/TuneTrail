@@ -11,11 +11,8 @@ import (
 	"github.com/ebrgr/TuneTrail/internal/relay"
 )
 
-// ErrRelayConfigInvalid identifies non-retryable configuration or permission data.
-var ErrRelayConfigInvalid = errors.New("invalid stored relay configuration")
-
 // RelayTarget checks that the credential and permission snapshot still belongs to the claim.
-func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, string, relay.NetworkPolicy, error) {
+func (s *Sqlite) RelayTarget(ctx context.Context, batch relay.Batch) (string, string, relay.NetworkPolicy, error) {
 	var endpoint, token string
 	err := s.db.QueryRowContext(ctx, `SELECT p.url,p.token FROM profile_relays p JOIN relay_destinations d USING(profile_id)
 		WHERE p.profile_id=? AND d.generation=? AND d.config_version=? AND d.work_version=? AND d.lease_owner=?`,
@@ -28,7 +25,7 @@ func (s *Sqlite) RelayTarget(ctx context.Context, batch RelayBatch) (string, str
 		diagnostic = relay.Describe(endpoint, "url_invalid", "")
 	}
 	if diagnostic.Code != "" {
-		return "", "", relay.NetworkPolicy{}, errors.Join(ErrRelayConfigInvalid, &relay.ValidationError{Class: relay.ConfigInvalid, Diagnostic: diagnostic})
+		return "", "", relay.NetworkPolicy{}, errors.Join(relay.ErrConfigInvalid, &relay.ValidationError{Class: relay.ConfigInvalid, Diagnostic: diagnostic})
 	}
 	policy, err := s.RelayNetworkPolicyForProfile(ctx, batch.Profile)
 	// Renewal rechecks config_version after these reads, fencing concurrent configuration changes.
@@ -61,9 +58,9 @@ func (s *Sqlite) RelayProfiles(ctx context.Context) ([]int32, error) {
 }
 
 // FailRelaySource retires a retained item whose accepted receipt cannot produce a payload.
-func (s *Sqlite) FailRelaySource(ctx context.Context, batch RelayBatch, item RelayItem, cause error) error {
+func (s *Sqlite) FailRelaySource(ctx context.Context, batch relay.Batch, item relay.Item, cause error) error {
 	reason := "source_missing"
-	if errors.Is(cause, ErrRelaySourceInvalid) {
+	if errors.Is(cause, relay.ErrSourceInvalid) {
 		reason = "source_invalid"
 	}
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {

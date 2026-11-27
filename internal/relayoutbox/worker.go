@@ -4,23 +4,22 @@ package relayoutbox
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"errors"
 	"sync"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/db/sqlite"
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/relay"
 )
 
 // Store exposes only transactional claims and sanitized delivery state.
 type Store interface {
-	ClaimRelayBatch(context.Context, time.Time) (sqlite.RelayBatch, error)
-	RelayTarget(context.Context, sqlite.RelayBatch) (string, string, relay.NetworkPolicy, error)
-	RelayPayload(context.Context, sqlite.RelayBatch, sqlite.RelayItem) ([]byte, error)
-	FailRelaySource(context.Context, sqlite.RelayBatch, sqlite.RelayItem, error) error
-	RenewRelayBatch(context.Context, sqlite.RelayBatch, time.Time, ...sqlite.RelayItem) (bool, error)
-	FinishRelayBatch(context.Context, sqlite.RelayBatch, []sqlite.RelayItem, relay.Result, time.Time, bool) (bool, error)
+	ClaimRelayBatch(context.Context, time.Time) (relay.Batch, error)
+	RelayTarget(context.Context, relay.Batch) (string, string, relay.NetworkPolicy, error)
+	RelayPayload(context.Context, relay.Batch, relay.Item) ([]byte, error)
+	FailRelaySource(context.Context, relay.Batch, relay.Item, error) error
+	RenewRelayBatch(context.Context, relay.Batch, time.Time, ...relay.Item) (bool, error)
+	FinishRelayBatch(context.Context, relay.Batch, []relay.Item, relay.Result, time.Time, bool) (bool, error)
 	RelayProfiles(context.Context) ([]int32, error)
 	ExpireRelayWork(context.Context, int32, time.Time) (int64, error)
 }
@@ -84,7 +83,7 @@ func poll(ctx, claims context.Context, store Store, now func() time.Time, ticks 
 }
 
 // process persists each sub-lot before starting another POST and always releases the claim.
-func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func() time.Time) (progress bool) {
+func process(ctx context.Context, store Store, batch relay.Batch, now func() time.Time) (progress bool) {
 	defer func() {
 		// A failed final write leaves the lease available for crash recovery.
 		_, _ = store.FinishRelayBatch(ctx, batch, nil, relay.Result{}, now(), true)
@@ -94,7 +93,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 	}
 	base, token, permissions, err := store.RelayTarget(ctx, batch)
 	if err != nil {
-		if ctx.Err() == nil && errors.Is(err, sqlite.ErrRelayConfigInvalid) {
+		if ctx.Err() == nil && errors.Is(err, relay.ErrConfigInvalid) {
 			diagnostic := relay.Describe(base, "config_invalid", "")
 			var validation *relay.ValidationError
 			if errors.As(err, &validation) {
@@ -106,15 +105,15 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		return false
 	}
 	sender := relay.NewDeliverer(permissions, now)
-	queue := [][]sqlite.RelayItem{batch.Items}
+	queue := [][]relay.Item{batch.Items}
 	for posts := 0; len(queue) > 0 && posts < batch.PostBudget && ctx.Err() == nil; {
 		part := queue[0]
 		queue = queue[1:]
-		items := make([]sqlite.RelayItem, 0, len(part))
+		items := make([]relay.Item, 0, len(part))
 		payload := make([][]byte, 0, len(part))
 		for _, item := range part {
 			raw, err := store.RelayPayload(ctx, batch, item)
-			if errors.Is(err, sql.ErrNoRows) || errors.Is(err, sqlite.ErrRelaySourceInvalid) {
+			if errors.Is(err, db.ErrNotFound) || errors.Is(err, relay.ErrSourceInvalid) {
 				if err := store.FailRelaySource(ctx, batch, item, err); err != nil {
 					return
 				}
@@ -171,7 +170,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 		case relay.BadRequest:
 			if len(items) > 1 {
 				middle := len(items) / 2
-				queue = append([][]sqlite.RelayItem{items[:middle], items[middle:]}, queue...)
+				queue = append([][]relay.Item{items[:middle], items[middle:]}, queue...)
 			}
 		default:
 			return
@@ -181,7 +180,7 @@ func process(ctx context.Context, store Store, batch sqlite.RelayBatch, now func
 }
 
 // Record an acknowledged response even when shutdown canceled the request context.
-func finishAttempt(ctx context.Context, store Store, batch sqlite.RelayBatch, items []sqlite.RelayItem, result relay.Result, at time.Time) (bool, error) {
+func finishAttempt(ctx context.Context, store Store, batch relay.Batch, items []relay.Item, result relay.Result, at time.Time) (bool, error) {
 	if result.Class == relay.Success {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(context.WithoutCancel(ctx), time.Second)

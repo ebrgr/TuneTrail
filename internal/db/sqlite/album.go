@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/imageurl"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
@@ -75,7 +75,7 @@ func (s *Sqlite) getAlbumByID(ctx context.Context, id int32) (*models.Album, err
 		return nil, fmt.Errorf("getAlbumByID: %w", err)
 	}
 	ret.MbzID = parseNullableUUID(mbzID)
-	ret.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+	ret.Image = imageurl.List(ctx, parseNullableUUID(image))
 	ret.VariousArtists = variousArtists == 1
 
 	artists, err := s.artistsForRelease(ctx, id)
@@ -239,7 +239,7 @@ func (s *Sqlite) SaveAlbum(ctx context.Context, opts db.SaveAlbumOpts) (*models.
 	}
 	if opts.Image != uuid.Nil {
 		u := opts.Image
-		ret.Image = catalog.BuildImageList(ctx, &u)
+		ret.Image = imageurl.List(ctx, &u)
 	}
 	return ret, nil
 }
@@ -578,7 +578,7 @@ func (s *Sqlite) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts
 		}
 
 		a.MbzID = parseNullableUUID(mbzID)
-		a.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		a.Image = imageurl.List(ctx, parseNullableUUID(image))
 		a.VariousArtists = variousArtists == 1
 
 		item.Item = &a
@@ -631,7 +631,7 @@ func (s *Sqlite) AlbumsWithoutImages(ctx context.Context, from int32) ([]*models
 			return nil, err
 		}
 		r.album.MbzID = parseNullableUUID(mbzID)
-		r.album.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		r.album.Image = imageurl.List(ctx, parseNullableUUID(image))
 		raw = append(raw, r)
 	}
 	if err := rows.Close(); err != nil {

@@ -59,25 +59,9 @@ func insertRelayIntent(ctx context.Context, tx *sql.Conn, r claimedReceipt, even
 	return err
 }
 
-// RelayBatch fences a destination and its items without carrying credentials.
-type RelayBatch struct {
-	Profile                            int32
-	Generation, ConfigVersion, Version int64
-	Owner                              string
-	Items                              []RelayItem
-	PostBudget                         int
-}
-
-// RelayItem identifies a versioned outbox claim.
-type RelayItem struct {
-	ID      string
-	Version int64
-	due     int64
-}
-
 // ClaimRelayBatch reserves one destination and at most 100 of its due items.
-func (s *Sqlite) ClaimRelayBatch(ctx context.Context, now time.Time) (RelayBatch, error) {
-	var batch RelayBatch
+func (s *Sqlite) ClaimRelayBatch(ctx context.Context, now time.Time) (relay.Batch, error) {
+	var batch relay.Batch
 	at := now.Unix()
 	// The read-only probe keeps idle polls out of the writer queue.
 	var candidate int32
@@ -114,33 +98,43 @@ func (s *Sqlite) ClaimRelayBatch(ctx context.Context, now time.Time) (RelayBatch
 		if err != nil {
 			return err
 		}
+		// The due time only orders the claim, so it stays out of relay.Item.
+		type claimed struct {
+			item relay.Item
+			due  int64
+		}
+		var claims []claimed
 		for rows.Next() {
-			var item RelayItem
-			if err := rows.Scan(&item.ID, &item.Version, &item.due); err != nil {
+			var c claimed
+			if err := rows.Scan(&c.item.ID, &c.item.Version, &c.due); err != nil {
 				rows.Close()
 				return err
 			}
-			batch.Items = append(batch.Items, item)
+			claims = append(claims, c)
 		}
 		err = rows.Err()
 		rows.Close()
 		if err != nil {
 			return err
 		}
-		if len(batch.Items) == 0 {
+		if len(claims) == 0 {
 			return releaseRelayDestination(ctx, tx, batch)
 		}
-		slices.SortFunc(batch.Items, func(a, b RelayItem) int {
+		// RETURNING has no order: send the longest waiting items first.
+		slices.SortFunc(claims, func(a, b claimed) int {
 			if c := cmp.Compare(a.due, b.due); c != 0 {
 				return c
 			}
-			return cmp.Compare(a.ID, b.ID)
+			return cmp.Compare(a.item.ID, b.item.ID)
 		})
+		for _, c := range claims {
+			batch.Items = append(batch.Items, c.item)
+		}
 		batch.PostBudget = 2*bits.Len(uint(len(batch.Items)-1)) + 2
 		return nil
 	})
 	if err != nil {
-		return RelayBatch{}, err
+		return relay.Batch{}, err
 	}
 	return batch, nil
 }
@@ -260,7 +254,7 @@ const renewRelayItems = `UPDATE outbox INDEXED BY sqlite_autoindex_outbox_1 SET 
 const releaseRelayItems = `UPDATE outbox INDEXED BY sqlite_autoindex_outbox_1 SET state='retryable',next_attempt_at=?,lease_owner=NULL,lease_until=NULL` + relayBatchScope
 
 // relayBatchIDs encodes the finite primary-key set for bounded writes under the lease.
-func relayBatchIDs(batch RelayBatch) (string, error) {
+func relayBatchIDs(batch relay.Batch) (string, error) {
 	ids := make([]string, len(batch.Items))
 	for i, item := range batch.Items {
 		ids[i] = item.ID
@@ -270,7 +264,7 @@ func relayBatchIDs(batch RelayBatch) (string, error) {
 }
 
 // invalidateRelayBatch marks only claimed rows when the destination generation has changed.
-func invalidateRelayBatch(ctx context.Context, tx *sql.Conn, batch RelayBatch, ids string) error {
+func invalidateRelayBatch(ctx context.Context, tx *sql.Conn, batch relay.Batch, ids string) error {
 	_, err := tx.ExecContext(ctx, staleRelayUpdate+
 		`id IN (SELECT value FROM json_each(?)) AND profile_id=? AND destination_id='relay:'||?
 		AND relay_generation=? AND lease_owner=? AND `+relayDue+
@@ -280,7 +274,7 @@ func invalidateRelayBatch(ctx context.Context, tx *sql.Conn, batch RelayBatch, i
 }
 
 // RenewRelayBatch extends ownership before a POST. Changed credentials require a new claim.
-func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time.Time, sending ...RelayItem) (bool, error) {
+func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch relay.Batch, now time.Time, sending ...relay.Item) (bool, error) {
 	ids, err := relayBatchIDs(batch)
 	if err != nil {
 		return false, err
@@ -327,7 +321,7 @@ func (s *Sqlite) RenewRelayBatch(ctx context.Context, batch RelayBatch, now time
 }
 
 // FinishRelayBatch records results for a sub-batch or releases the claim on interruption.
-func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items []RelayItem, result relay.Result, now time.Time, release bool) (bool, error) {
+func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch relay.Batch, items []relay.Item, result relay.Result, now time.Time, release bool) (bool, error) {
 	canceled := ctx.Err() != nil
 	if canceled {
 		// The caller's cancellation must not prevent releasing durable ownership.
@@ -393,7 +387,7 @@ func (s *Sqlite) FinishRelayBatch(ctx context.Context, batch RelayBatch, items [
 }
 
 // finishRelayItem applies the claim fence even if the lease has expired.
-func finishRelayItem(ctx context.Context, tx *sql.Conn, batch RelayBatch, item RelayItem, result relay.Result, terminal bool, at int64) error {
+func finishRelayItem(ctx context.Context, tx *sql.Conn, batch relay.Batch, item relay.Item, result relay.Result, terminal bool, at int64) error {
 	reason := ""
 	if terminal && result.Class == relay.BadRequest {
 		reason = "item_rejected"
@@ -428,14 +422,14 @@ func finishRelayItem(ctx context.Context, tx *sql.Conn, batch RelayBatch, item R
 }
 
 // releaseRelayDestination uses the physical claim fence without comparing its expiry.
-func releaseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch) error {
+func releaseRelayDestination(ctx context.Context, tx *sql.Conn, batch relay.Batch) error {
 	_, err := tx.ExecContext(ctx, `UPDATE relay_destinations SET lease_owner=NULL,lease_until=NULL
 		WHERE profile_id=? AND work_version=? AND lease_owner=?`, batch.Profile, batch.Version, batch.Owner)
 	return err
 }
 
 // pauseRelayDestination applies server waits and per-destination backoff.
-func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch RelayBatch, result relay.Result, now time.Time, failures int64) (bool, error) {
+func (s *Sqlite) pauseRelayDestination(ctx context.Context, tx *sql.Conn, batch relay.Batch, result relay.Result, now time.Time, failures int64) (bool, error) {
 	sample := s.relayJitter
 	if sample == nil {
 		sample = rand.Int64N

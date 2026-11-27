@@ -64,6 +64,7 @@ var sqliteBase = []string{
 	"db/migrations_sqlite",
 	"internal/cfg",
 	pkgDB,
+	"internal/imageurl",
 	pkgIngest,
 	"internal/logger",
 	pkgModels,
@@ -83,15 +84,6 @@ type exception struct {
 // (the test fails while a stale entry remains). A new entry needs a reason and
 // the approval of the user in the task that introduces it.
 var exceptions = []exception{
-	{ruleSQLiteOwner, "internal/relayoutbox", pkgSQLite,
-		"the relay worker uses sqlite.RelayBatch, RelayItem and two sqlite errors (ISSUE-231)"},
-
-	{ruleSQL, "internal/relayoutbox", "database/sql",
-		"compares RelayPayload errors with sql.ErrNoRows"},
-	{ruleSQL, "internal/summary", "database/sql",
-		"compares the first listen lookup with sql.ErrNoRows"},
-	{ruleSQL, "internal/webui", "database/sql",
-		"compares store errors with sql.ErrNoRows"},
 	{ruleSQL, "internal/testfixtures", sqlStatement,
 		"test support only: inserts and counts fixture rows through the store"},
 	{ruleSQL, "scripts/issue133_fault", "database/sql",
@@ -101,8 +93,6 @@ var exceptions = []exception{
 	{ruleSQL, "scripts/issue133_fault", sqlStatement,
 		"development tool that injects a migration failure, not part of the program"},
 
-	{ruleSQLiteImport, pkgSQLite, "internal/catalog",
-		"builds image URLs with catalog.BuildImageList (ISSUE-231)"},
 	{ruleSQLiteImport, pkgSQLite, "internal/dedup",
 		"stores deduplication receipts and normalizes names with dedup"},
 	{ruleSQLiteImport, pkgSQLite, "internal/enrichment",

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ebrgr/TuneTrail/internal/catalog"
 	"github.com/ebrgr/TuneTrail/internal/db"
+	"github.com/ebrgr/TuneTrail/internal/imageurl"
 	"github.com/ebrgr/TuneTrail/internal/models"
 	"github.com/ebrgr/TuneTrail/internal/utils"
 	"github.com/google/uuid"
@@ -84,7 +84,7 @@ func (s *Sqlite) getTrackByID(ctx context.Context, id int32, allowUnplayed bool)
 			track.MbzID = parseNullableUUID(claim)
 		}
 	}
-	track.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+	track.Image = imageurl.List(ctx, parseNullableUUID(image))
 
 	artists, err := s.artistsForTrack(ctx, id)
 	if err != nil {
@@ -670,7 +670,7 @@ func (s *Sqlite) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts
 		}
 
 		t.MbzID = parseNullableUUID(mbzID)
-		t.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		t.Image = imageurl.List(ctx, parseNullableUUID(image))
 
 		item.Item = &t
 		tracks = append(tracks, item)
@@ -913,7 +913,7 @@ func (s *Sqlite) SearchTracks(ctx context.Context, q string) ([]*models.Track, e
 			return nil, err
 		}
 		t.MbzID = parseNullableUUID(mbzID)
-		t.Image = catalog.BuildImageList(ctx, parseNullableUUID(image))
+		t.Image = imageurl.List(ctx, parseNullableUUID(image))
 		score := fuzzyScore(q, t.Title)
 		if prev, ok := seen[t.ID]; !ok || score > prev {
 			seen[t.ID] = score

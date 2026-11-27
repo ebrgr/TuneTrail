@@ -2,7 +2,6 @@ package summary
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -39,7 +38,7 @@ func resolveInterval(ctx context.Context, store firstListenReader, tf db.Timefra
 	}
 	if allTime {
 		first, err := store.GetFirstListenUnix(ctx)
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, db.ErrNotFound) {
 			return tf, 1, nil
 		}
 		if err != nil {

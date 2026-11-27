@@ -9,15 +9,15 @@ import (
 	"slices"
 	"time"
 
+	"github.com/ebrgr/TuneTrail/internal/db"
 	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/relay"
 	"github.com/google/uuid"
 )
 
-// ErrRelaySourceInvalid identifies persisted source data that cannot be encoded.
-var ErrRelaySourceInvalid = errors.New("invalid relay source")
-
 // RelayPayload reconstructs a claimed item from its immutable accepted receipt.
-func (s *Sqlite) RelayPayload(ctx context.Context, batch RelayBatch, item RelayItem) ([]byte, error) {
+// It returns db.ErrNotFound when the claim no longer has a source to send.
+func (s *Sqlite) RelayPayload(ctx context.Context, batch relay.Batch, item relay.Item) ([]byte, error) {
 	var version int
 	var snapshot string
 	var listenedAt sql.NullString
@@ -29,20 +29,23 @@ func (s *Sqlite) RelayPayload(ctx context.Context, batch RelayBatch, item RelayI
 		  AND e.mode='active' AND e.state='accepted' AND e.delivery_policy='durable'`,
 		batch.Profile, item.ID, item.Version, batch.Owner, batch.Generation, batch.Version, batch.Owner).
 		Scan(&version, &snapshot, &listenedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, db.ErrNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
 	var original ingest.Snapshot
 	if err := json.Unmarshal([]byte(snapshot), &original); err != nil {
-		return nil, ErrRelaySourceInvalid
+		return nil, relay.ErrSourceInvalid
 	}
 	at, err := time.Parse(receiptTime, listenedAt.String)
 	if err != nil {
-		return nil, ErrRelaySourceInvalid
+		return nil, relay.ErrSourceInvalid
 	}
 	body, err := encodeRelayItem(version, original, at.Unix())
 	if err != nil {
-		return nil, ErrRelaySourceInvalid
+		return nil, relay.ErrSourceInvalid
 	}
 	return body, nil
 }

@@ -3,7 +3,6 @@ package webui
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/ebrgr/TuneTrail/internal/admin"
@@ -247,7 +246,7 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	p.DateRange = webquery.RangeLabel(p.Options.Timeframe)
 	first, firstErr := h.store.GetFirstListenUnix(ctx)
-	if firstErr != nil && !errors.Is(firstErr, sql.ErrNoRows) {
+	if firstErr != nil && !errors.Is(firstErr, db.ErrNotFound) {
 		log.Printf("HTML first activity failed: %v", firstErr)
 	}
 	now := h.options.Now().In(p.Options.Timeframe.Timezone)
