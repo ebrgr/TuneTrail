@@ -4,7 +4,7 @@ title: 213 — Monitorar enriquecimento e reprocessar histórico com limites
 status: Aberta
 assignee: []
 created_date: '2026-11-24T11:43:00Z'
-updated_date: '2026-11-26T20:20:00Z'
+updated_date: '2026-11-27T14:37:00Z'
 labels:
   - operacao
   - ingestao
@@ -42,6 +42,15 @@ created: 2026-11-26T20:20:00Z
 ---
 
 26/11/2026: acrescentado o critério de prioridade e teto por minuto no orçamento compartilhado, que saiu da ISSUE-216. Não há importação de arquivo na fila de enriquecimento hoje (só escutas novas pela API); este é o ponto em que o trabalho em lote do histórico passa a competir com as escutas novas pela mesma taxa de 1 requisição por segundo do MusicBrainz.
+
+---
+
+author: claude
+created: 2026-11-27T14:37:00Z
+
+---
+
+27/11/2026, do parecer do Advisor da ISSUE-216: com a fila compartilhada do MusicBrainz cheia por uma rajada do resolvedor (a fila tem limite), a espera de um Lookup passa do timeout de 20 s e a etapa devolve Failed; na cadeia da ISSUE-214 um job com Failed fecha como terminal. O enriquecimento em lote do histórico precisa tratar esse caso: reprocessar jobs 'failed' e dar prioridade ao trabalho de escutas novas. Deve entrar nos critérios de prioridade e de reprocessamento desta issue.
 
 ---
 <!-- COMMENTS:END -->
