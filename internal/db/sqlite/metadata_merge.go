@@ -20,6 +20,17 @@ func mergeMetadataArtist(ctx context.Context, tx *sql.Tx, from, to int32) error 
 		WHERE m.artist_id=? AND (
 			EXISTS (SELECT 1 FROM artist_tracks WHERE track_id=l.track_id AND artist_id=?)
 			OR EXISTS (SELECT 1 FROM occurrence_credits WHERE occurrence_id=l.track_id AND artist_id=?))`, to, from, to, to)
+	if err != nil {
+		return err
+	}
+	var present bool
+	if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='descriptive_metadata')`).Scan(&present); err != nil || !present {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO descriptive_metadata(profile_id,artist_id,source_id,kind,value,observed_at)
+ SELECT m.profile_id,?,m.source_id,m.kind,m.value,m.observed_at FROM descriptive_metadata m
+ WHERE m.artist_id=? AND EXISTS (SELECT 1 FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=m.profile_id AND
+ (EXISTS (SELECT 1 FROM artist_tracks a WHERE a.track_id=o.id AND a.artist_id=?) OR EXISTS (SELECT 1 FROM occurrence_credits c WHERE c.occurrence_id=o.id AND c.artist_id=?)))`, to, from, to, to)
 	return err
 }
 
@@ -35,6 +46,16 @@ func mergeMetadataRelease(ctx context.Context, tx *sql.Tx, from, to int32) error
 		JOIN listens l ON l.event_id=m.event_id AND l.profile_id=m.profile_id
 		JOIN occurrences o ON o.id=l.track_id
 		WHERE m.release_id=? AND o.release_id=?`, to, from, to)
+	if err != nil {
+		return err
+	}
+	var present bool
+	if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='descriptive_metadata')`).Scan(&present); err != nil || !present {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT OR IGNORE INTO descriptive_metadata(profile_id,release_id,source_id,kind,value,observed_at)
+ SELECT m.profile_id,?,m.source_id,m.kind,m.value,m.observed_at FROM descriptive_metadata m
+ WHERE m.release_id=? AND EXISTS (SELECT 1 FROM listens l JOIN occurrences o ON o.id=l.track_id WHERE l.profile_id=m.profile_id AND o.release_id=?)`, to, from, to)
 	return err
 }
 
@@ -55,5 +76,16 @@ func removeUncreditedMetadata(ctx context.Context, tx *sql.Tx, artist, occurrenc
 		WHERE artist_id=? AND event_id IN (SELECT event_id FROM listens WHERE track_id=?)
 		AND NOT EXISTS (SELECT 1 FROM occurrence_credits WHERE occurrence_id=? AND artist_id=?)`,
 		artist, occurrence, occurrence, artist)
+	if err != nil {
+		return err
+	}
+	var present bool
+	if err = tx.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='descriptive_metadata')`).Scan(&present); err != nil || !present {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `DELETE FROM descriptive_metadata WHERE artist_id=? AND NOT EXISTS (
+ SELECT 1 FROM listens l WHERE l.profile_id=descriptive_metadata.profile_id AND (
+ EXISTS (SELECT 1 FROM artist_tracks a WHERE a.track_id=l.track_id AND a.artist_id=descriptive_metadata.artist_id) OR
+ EXISTS (SELECT 1 FROM occurrence_credits c WHERE c.occurrence_id=l.track_id AND c.artist_id=descriptive_metadata.artist_id)))`, artist)
 	return err
 }

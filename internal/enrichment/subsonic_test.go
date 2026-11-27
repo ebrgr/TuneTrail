@@ -96,3 +96,63 @@ func TestSubsonicCancellation(t *testing.T) {
 	defer cancel()
 	require.Equal(t, Failed, c.Lookup(ctx, Request{ProfileID: 1, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}}).Status)
 }
+
+// TestSubsonicDescriptiveMetadata follows only a unique server-local match.
+func TestSubsonicDescriptiveMetadata(t *testing.T) {
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/search3"):
+			_, _ = w.Write([]byte(`{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song-1","title":"Title","artist":"Artist","album":"Album","duration":200}]}}}`))
+		case strings.HasSuffix(r.URL.Path, "/getSong"):
+			_, _ = w.Write([]byte(`{"subsonic-response":{"status":"ok","song":{"id":"song-1","albumId":"album-1","title":"Title","artist":"Artist","album":"Album","duration":200,"genres":[{"name":"Rock"}],"year":2005,"isrc":["USABC0500001"],"bpm":120}}}`))
+		case strings.HasSuffix(r.URL.Path, "/getAlbum"):
+			_, _ = w.Write([]byte(`{"subsonic-response":{"status":"ok","album":{"id":"album-1","name":"Album","genres":[{"name":"Indie"}],"releaseDate":{"year":2005,"month":2},"originalReleaseDate":{"year":2004}}}}`))
+		default:
+			t.Errorf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+	c, err := NewSubsonic(server.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	req := Request{ProfileID: 1, Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album", DurationMS: 200000}}
+	result := c.Lookup(t.Context(), req)
+	require.Equal(t, Found, result.Status)
+	fields := map[string]string{}
+	for _, d := range result.Declarations {
+		fields[d.Entity+"/"+d.Field] = d.Value
+	}
+	require.Equal(t, map[string]string{"recording/genre": "Rock", "recording/recording_year": "2005", "recording/isrc": "USABC0500001", "recording/bpm": "120", "release/genre": "Indie", "release/release_date": "2005-02", "release/first_release_date": "2004"}, fields)
+	req.Chain = ChainMetadata
+	require.Equal(t, Found, c.Lookup(t.Context(), req).Status)
+	require.EqualValues(t, 3, calls.Load())
+}
+
+// TestSubsonicRejectsChangedSongOrAlbum refuses details that no longer match the safe search.
+func TestSubsonicRejectsChangedSongOrAlbum(t *testing.T) {
+	for _, bad := range []string{"song", "album"} {
+		t.Run(bad, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch {
+				case strings.HasSuffix(r.URL.Path, "/search3"):
+					_, _ = w.Write([]byte(`{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song-1","title":"Title","artist":"Artist","album":"Album"}]}}}`))
+				case strings.HasSuffix(r.URL.Path, "/getSong"):
+					id := "song-1"
+					if bad == "song" {
+						id = "other"
+					}
+					require.NoError(t, json.NewEncoder(w).Encode(map[string]any{"subsonic-response": map[string]any{"status": "ok", "song": map[string]any{"id": id, "albumId": "album-1", "title": "Title", "artist": "Artist", "album": "Album", "isrc": []string{"USABC0500001"}}}}))
+				case strings.HasSuffix(r.URL.Path, "/getAlbum"):
+					_, _ = w.Write([]byte(`{"subsonic-response":{"status":"ok","album":{"id":"other","name":"Album","releaseDate":{"year":2005}}}}`))
+				}
+			}))
+			defer server.Close()
+			c, err := NewSubsonic(server.URL, "", "test", time.Second, time.Nanosecond)
+			require.NoError(t, err)
+			result := c.Lookup(t.Context(), Request{Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}})
+			require.Equal(t, Ambiguous, result.Status)
+			require.Empty(t, result.Declarations)
+		})
+	}
+}

@@ -221,6 +221,24 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 	if ok && time.Now().Before(cached.until) {
 		return cached.result
 	}
+	// ISRC evidence is queried through the same shared request budget before a name search.
+	if missingRecording {
+		isrcs := map[string]bool{}
+		for _, p := range req.Prior {
+			if p.Entity == "recording" && p.Field == "isrc" && strings.TrimSpace(p.Value) != "" {
+				isrcs[strings.TrimSpace(p.Value)] = true
+			}
+		}
+		if len(isrcs) > 1 {
+			return Result{Status: Ambiguous}
+		}
+		for isrc := range isrcs {
+			result := m.lookupISRC(ctx, isrc)
+			if result.Status != Absent {
+				return result
+			}
+		}
+	}
 	query := `recording:"` + luceneEscape(s.Title) + `" AND artist:"` + luceneEscape(s.Artist) + `" AND release:"` + luceneEscape(s.Release) + `"`
 	response, err := m.call(ctx, "/ws/2/recording", url.Values{"query": {query}, "fmt": {"json"}, "limit": {"100"}})
 	if err != nil {
@@ -278,7 +296,7 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 	return result
 }
 
-// lookupISRC is deliberately disconnected until snapshots carry ISRC (ISSUE-219).
+// lookupISRC resolves ISRC evidence supplied by an earlier identity provider.
 // It accepts only one distinct recording ID and treats multiple IDs as ambiguous.
 func (m *MusicBrainz) lookupISRC(ctx context.Context, isrc string) Result {
 	if strings.TrimSpace(isrc) == "" || strings.ContainsAny(isrc, "/\\") {

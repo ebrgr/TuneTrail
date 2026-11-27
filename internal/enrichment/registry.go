@@ -77,7 +77,7 @@ func (d Descriptor) Validate() error {
 
 // SubsonicDescriptor and ListenBrainzDescriptor are the providers that exist today.
 var (
-	SubsonicDescriptor = Descriptor{ID: "navidrome-subsonic", Source: sourceSubsonic, Chains: []Chain{ChainIdentity},
+	SubsonicDescriptor = Descriptor{ID: "navidrome-subsonic", Source: sourceSubsonic, Chains: []Chain{ChainIdentity, ChainMetadata},
 		Priority: 100, Eligibility: EligibleConfigured}
 	ListenBrainzDescriptor = Descriptor{ID: "listenbrainz", Source: ListenBrainzSource, Chains: []Chain{ChainIdentity},
 		Priority: 200, Eligibility: EligibleProfileRelay}

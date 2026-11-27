@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/ebrgr/TuneTrail/internal/enrichment"
@@ -46,7 +47,9 @@ func (s *Sqlite) ResolveNextEnrichment(ctx context.Context, provider enrichment.
 // ListenBrainz. It builds the two-provider registry those callers implied and runs the chain.
 func (s *Sqlite) ResolveNextEnrichmentWithFallback(ctx context.Context, provider enrichment.Provider, fallback *enrichment.ListenBrainz) (bool, error) {
 	registry := enrichment.NewRegistry()
-	if err := registry.Register(enrichment.SubsonicDescriptor, provider); err != nil {
+	descriptor := enrichment.SubsonicDescriptor
+	descriptor.Chains = []enrichment.Chain{enrichment.ChainIdentity} // The legacy entry point retains its original contract.
+	if err := registry.Register(descriptor, provider); err != nil {
 		return false, err
 	}
 	var listenBrainz enrichment.Provider
@@ -76,6 +79,7 @@ func (s *Sqlite) ResolveNextEnrichmentChain(ctx context.Context, registry *enric
 		return true, err
 	}
 	var answers []enrichmentAnswer
+	metadataCollected := make(map[string]bool)
 	for _, chain := range enrichment.Chains {
 		order, err := s.enrichmentOrder(ctx, registry, chain)
 		if err != nil {
@@ -83,11 +87,20 @@ func (s *Sqlite) ResolveNextEnrichmentChain(ctx context.Context, registry *enric
 		}
 		for _, descriptor := range order {
 			provider, _ := registry.Provider(descriptor.ID)
+			// Subsonic obtains the same metadata while resolving identity, so avoid a second
+			// network lookup in this pass. Recovered legacy runs must still get a metadata pass.
+			_, subsonic := provider.(*enrichment.Subsonic)
+			if chain == enrichment.ChainMetadata && subsonic && metadataCollected[descriptor.ID] {
+				continue
+			}
 			answer, closed, err := s.runEnrichmentStep(ctx, &claim, descriptor, provider, chain)
 			if err != nil || closed {
 				return true, err
 			}
 			answers = append(answers, answer)
+			if chain == enrichment.ChainIdentity && subsonic && !answer.recovered && answer.status != enrichment.Failed {
+				metadataCollected[descriptor.ID] = true
+			}
 		}
 	}
 	// A canceled process leaves a finite lease for recovery rather than writing with a canceled context.
@@ -99,8 +112,9 @@ func (s *Sqlite) ResolveNextEnrichmentChain(ctx context.Context, registry *enric
 
 // enrichmentAnswer is what one provider said about a receipt in this pass.
 type enrichmentAnswer struct {
-	status   enrichment.Status
-	instance string
+	status    enrichment.Status
+	instance  string
+	recovered bool
 }
 
 // enrichmentBinding prepares one provider's request from local evidence and rechecks that evidence
@@ -159,7 +173,7 @@ func (s *Sqlite) runEnrichmentStep(ctx context.Context, c *enrichmentClaim, d en
 		c.receipt, d.ID, string(chain)).Scan(&state, &instance)
 	if err == nil && state != string(enrichment.Failed) {
 		// A recovered job keeps the answers that were already final instead of repeating their calls.
-		return enrichmentAnswer{enrichment.Status(state), instance}, false, nil
+		return enrichmentAnswer{status: enrichment.Status(state), instance: instance, recovered: true}, false, nil
 	}
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return enrichmentAnswer{}, false, err
@@ -194,7 +208,8 @@ func (s *Sqlite) enrichmentKnownIDs(ctx context.Context, c *enrichmentClaim, sna
 		snapshot.Recording = recording.String
 	}
 	c.artists = make(map[string]int64)
-	for _, name := range enrichment.MissingArtistNames(*snapshot) {
+	missing := enrichment.MissingArtistNames(*snapshot)
+	for _, name := range snapshot.ArtistCreditNames() {
 		var mbid sql.NullString
 		var artistID, count int64
 		err := s.db.QueryRowContext(ctx, `SELECT count(DISTINCT a.id),coalesce(min(a.id),0),CASE WHEN count(DISTINCT a.id)=1 THEN min(coalesce(a.musicbrainz_id,
@@ -208,7 +223,7 @@ func (s *Sqlite) enrichmentKnownIDs(ctx context.Context, c *enrichmentClaim, sna
 		if count == 1 {
 			c.artists[name] = artistID
 		}
-		if mbid.Valid {
+		if mbid.Valid && slices.Contains(missing, name) {
 			snapshot.ArtistMbidMappings = append(snapshot.ArtistMbidMappings, ingest.ArtistMapping{Name: name, MBID: mbid.String})
 		}
 	}
@@ -249,6 +264,22 @@ func (s *Sqlite) enrichmentPrior(ctx context.Context, c enrichmentClaim, exceptS
 			return nil, err
 		}
 	}
+	rows, err := s.db.QueryContext(ctx, `SELECT m.value,s.source FROM descriptive_metadata m
+ JOIN metadata_sources s ON s.id=m.source_id WHERE m.profile_id=? AND m.occurrence_id=? AND m.kind='isrc' AND s.source<>? ORDER BY m.value`, c.profile, c.occurrence, exceptSource)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var value, source string
+		if err := rows.Scan(&value, &source); err != nil {
+			return nil, err
+		}
+		prior = append(prior, enrichment.Declaration{Entity: "recording", Field: "isrc", Value: value, Source: source})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return prior, nil
 }
 
@@ -267,13 +298,22 @@ func (s *Sqlite) claimEnrichment(ctx context.Context) (enrichmentClaim, error) {
 		return c, err
 	}
 	lease := uuid.NewString()
-	err = s.db.QueryRowContext(ctx, `UPDATE enrichment_jobs SET
-		state=CASE WHEN attempts>=2 THEN 'failed' ELSE 'working' END,
-		lease=CASE WHEN attempts>=2 THEN NULL ELSE ? END,
-		lease_until=CASE WHEN attempts>=2 THEN NULL ELSE ? END,
-		attempts=attempts+(attempts<2)
-		WHERE receipt_id=? AND `+due+`
-		RETURNING receipt_id,coalesce(lease,'')`, lease, now+enrichmentLease, next, now).Scan(&c.receipt, &c.lease)
+	err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+		err := tx.QueryRowContext(ctx, `UPDATE enrichment_jobs SET
+        state=CASE WHEN attempts>=2 THEN 'failed' ELSE 'working' END,
+        lease=CASE WHEN attempts>=2 THEN NULL ELSE ? END,
+        lease_until=CASE WHEN attempts>=2 THEN NULL ELSE ? END,
+        attempts=attempts+(attempts<2)
+        WHERE receipt_id=? AND `+due+`
+        RETURNING receipt_id,coalesce(lease,'')`, lease, now+enrichmentLease, next, now).Scan(&c.receipt, &c.lease)
+		if err != nil {
+			return err
+		}
+		if c.lease == "" {
+			return deleteSuccessfulRuns(ctx, tx, c.receipt)
+		}
+		return nil
+	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return c, nil
 	}
@@ -286,7 +326,9 @@ func (s *Sqlite) claimEnrichment(ctx context.Context) (enrichmentClaim, error) {
 		WHERE e.receipt_id=? AND e.state IN ('accepted','duplicate')`, c.receipt).
 		Scan(&c.profile, &c.snapshot, &c.version, &c.occurrence, &c.recording)
 	if errors.Is(err, sql.ErrNoRows) {
-		_, err = s.db.ExecContext(ctx, `UPDATE enrichment_jobs SET state='failed',lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, c.receipt, c.lease)
+		err = s.withIngestWriter(ctx, func(tx *sql.Conn) error {
+			return finishClaimedEnrichment(ctx, tx, c, "failed", "")
+		})
 		c.lease = ""
 	}
 	if err == nil && c.lease != "" {
@@ -313,8 +355,7 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 	answer := enrichmentAnswer{status: enrichment.Failed}
 	failJob := func(tx *sql.Conn) error {
 		closed = true
-		_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='failed',lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`, c.receipt, c.lease)
-		return err
+		return finishClaimedEnrichment(ctx, tx, c, "failed", "")
 	}
 	err := s.withIngestWriter(ctx, func(tx *sql.Conn) error {
 		var event string
@@ -356,6 +397,9 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 				continue
 			}
 			wrote = true
+			if err := writeDescriptiveDeclaration(ctx, tx, c, p.Instance(), declaration); err != nil {
+				return err
+			}
 			if err := writeMBIDDeclaration(ctx, tx, c, event, original, missingArtists, p.Instance(), declaration); err != nil {
 				return err
 			}
@@ -396,8 +440,51 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 	return answer, closed, err
 }
 
+// writeDescriptiveDeclaration retains one observation per profile, entity, source and value.
+// observed_at is the time the value was first observed; repeated observations do not overwrite it.
+func writeDescriptiveDeclaration(ctx context.Context, tx *sql.Conn, c enrichmentClaim, instance string, d enrichment.Declaration) error {
+	if instance == "" || d.Source == "" || strings.TrimSpace(d.Value) == "" || d.ObservedAt.IsZero() {
+		return nil
+	}
+	allowed := false
+	switch d.Entity {
+	case "recording":
+		allowed = slices.Contains([]string{"genre", "tag", "recording_year", "isrc", "bpm", "first_recording_date"}, d.Field)
+	case "release":
+		allowed = slices.Contains([]string{"genre", "tag", "release_date", "first_release_date"}, d.Field)
+	case "artist":
+		allowed = slices.Contains([]string{"genre", "tag", "artist_origin_country"}, d.Field) && c.artists[d.Name] != 0
+	}
+	if !allowed {
+		return nil
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_sources(source,instance) VALUES(?,?)`, d.Source, instance); err != nil {
+		return err
+	}
+	var artist, occurrence, release any
+	switch d.Entity {
+	case "recording":
+		occurrence = c.occurrence
+	case "release":
+		var id sql.NullInt64
+		if err := tx.QueryRowContext(ctx, `SELECT release_id FROM occurrences WHERE id=?`, c.occurrence).Scan(&id); err != nil {
+			return err
+		}
+		if !id.Valid {
+			return nil
+		}
+		release = id.Int64
+	case "artist":
+		artist = c.artists[d.Name]
+	}
+	_, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO descriptive_metadata(profile_id,artist_id,occurrence_id,release_id,source_id,kind,value,observed_at)
+ SELECT ?,?,?,?,id,?,?,? FROM metadata_sources WHERE source=? AND instance=?`, c.profile, artist, occurrence, release,
+		d.Field, strings.TrimSpace(d.Value), d.ObservedAt.UTC().Format(time.RFC3339Nano), d.Source, instance)
+	return err
+}
+
 // writeMBIDDeclaration stores one declared MusicBrainz ID for the recording or for exactly one
-// linked artist. Other fields (genres, tags, dates) arrive with their providers in ISSUE-217 and 218.
+// linked artist. Descriptive fields are stored separately by writeDescriptiveDeclaration.
 func writeMBIDDeclaration(ctx context.Context, tx *sql.Conn, c enrichmentClaim, event string, original ingest.Snapshot,
 	missingArtists []string, instance string, declaration enrichment.Declaration) error {
 	id, err := uuid.Parse(declaration.Value)
@@ -447,8 +534,26 @@ func (s *Sqlite) closeEnrichment(ctx context.Context, c enrichmentClaim, answers
 		}
 	}
 	return s.withIngestWriter(ctx, func(tx *sql.Conn) error {
-		_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND lease=?`,
-			string(status), instance, c.receipt, c.lease)
-		return err
+		return finishClaimedEnrichment(ctx, tx, c, string(status), instance)
 	})
+}
+
+// deleteSuccessfulRuns keeps completed jobs compact; found declarations are already durable and
+// these rows are needed only until the job finishes or is recovered.
+func deleteSuccessfulRuns(ctx context.Context, tx *sql.Conn, receipt string) error {
+	_, err := tx.ExecContext(ctx, `DELETE FROM enrichment_provider_runs WHERE receipt_id=? AND state='found'`, receipt)
+	return err
+}
+
+// finishClaimedEnrichment removes successful runs only for the lease that actually closed the job.
+func finishClaimedEnrichment(ctx context.Context, tx *sql.Conn, c enrichmentClaim, state, instance string) error {
+	result, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state=?,instance=nullif(?,''),lease=NULL,lease_until=NULL WHERE receipt_id=? AND state='working' AND lease=? AND lease_until>?`, state, instance, c.receipt, c.lease, time.Now().Unix())
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil || n == 0 {
+		return err
+	}
+	return deleteSuccessfulRuns(ctx, tx, c.receipt)
 }

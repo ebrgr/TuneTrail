@@ -306,3 +306,21 @@ func TestMusicBrainzAlbumPunctuationMatters(t *testing.T) {
 	s.Release = "Help!"
 	require.Equal(t, Absent, provider.Lookup(t.Context(), Request{Snapshot: s}).Status)
 }
+
+// TestMusicBrainzAmbiguousISRCStopsIdentityLookup refuses to select one of several recordings.
+func TestMusicBrainzAmbiguousISRCStopsIdentityLookup(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		require.Equal(t, "/ws/2/isrc/USABC1234567", r.URL.Path)
+		require.NoError(t, json.NewEncoder(w).Encode(map[string]any{"recordings": []any{map[string]any{"id": recordingA}, map[string]any{"id": recordingB}}}))
+	}))
+	defer server.Close()
+	budget := &mbCountingBudget{client: server.Client()}
+	req := Request{Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}, Prior: []Declaration{{Entity: "recording", Field: "isrc", Value: "USABC1234567"}}}
+	result := NewMusicBrainz(server.URL, "test", budget).Lookup(t.Context(), req)
+	require.Equal(t, Ambiguous, result.Status)
+	require.Empty(t, result.Declarations)
+	require.Equal(t, 1, calls)
+	require.Equal(t, 1, budget.calls)
+}

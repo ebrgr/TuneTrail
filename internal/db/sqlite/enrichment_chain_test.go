@@ -88,7 +88,7 @@ func TestEnrichmentChainRunsProvidersInStoredOrder(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"a", "b"}, calls)
-	require.Equal(t, []string{"source-b/identity=found"}, chainRuns(t, s, first), "only the answer that changed something is stored")
+	require.Empty(t, chainRuns(t, s, first), "successful runs are removed when the job closes")
 	require.Equal(t, "found", jobState(t, s, first))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE source='source-b' AND instance='b-instance' AND value=?`, fixtureRecording))
 	// The job keeps the first recorded instance, as the ISSUE-174 single-provider job did.
@@ -101,7 +101,7 @@ func TestEnrichmentChainRunsProvidersInStoredOrder(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"b", "a"}, calls, "the lower stored priority runs first")
-	require.Equal(t, []string{"source-b/identity=found"}, chainRuns(t, s, second))
+	require.Empty(t, chainRuns(t, s, second))
 }
 
 // TestEnrichmentChainSkipsDisabledAndUnavailableProviders covers the owner's switch and the process state.
@@ -167,7 +167,7 @@ func TestEnrichmentChainPassesPriorDeclarationsToLaterProviders(t *testing.T) {
 	require.Equal(t, fixtureRecording, seen[0].Value)
 	require.False(t, laterCalledWithNetwork)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE recording_id IS NOT NULL`))
-	require.Equal(t, []string{"source-a/identity=found"}, chainRuns(t, s, id))
+	require.Empty(t, chainRuns(t, s, id))
 }
 
 // TestEnrichmentChainAmbiguousAnswerContinuesAndNeverWrites keeps an unclear match out of the catalog.
@@ -179,7 +179,7 @@ func TestEnrichmentChainAmbiguousAnswerContinuesAndNeverWrites(t *testing.T) {
 		wantMetadata int
 		wantRuns     []string
 	}{
-		{"a later source resolves it", enrichment.Found, "found", 1, []string{"clear/identity=found", "unclear/identity=ambiguous"}},
+		{"a later source resolves it", enrichment.Found, "found", 1, []string{"unclear/identity=ambiguous"}},
 		{"nobody resolves it", enrichment.Absent, "ambiguous", 0, []string{"unclear/identity=ambiguous"}},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
@@ -236,7 +236,7 @@ func TestEnrichmentChainMetadataChainFollowsIdentity(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Equal(t, []string{"ids:identity", "both:identity", "genres:metadata", "both:metadata"}, calls)
-	require.Equal(t, []string{"genres/metadata=found"}, chainRuns(t, s, id))
+	require.Empty(t, chainRuns(t, s, id))
 	require.Equal(t, "found", jobState(t, s, id))
 	// Only MusicBrainz IDs are stored by this issue; genres arrive with their providers (ISSUE-217 and 218).
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values`))
@@ -282,7 +282,7 @@ func TestEnrichmentChainRecoveryKeepsFinalAnswers(t *testing.T) {
 	require.Equal(t, []string{"b"}, calls, "the final answer of the first source is not asked again")
 	require.Equal(t, "found", jobState(t, s, id))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_jobs WHERE receipt_id=? AND attempts=2`, id))
-	require.Equal(t, []string{"source-a/identity=found", "source-b/identity=failed"}, chainRuns(t, s, id))
+	require.Equal(t, []string{"source-b/identity=failed"}, chainRuns(t, s, id))
 }
 
 // TestEnrichmentChainStoresOnlyAnswersThatChangeSomething separates a failed call, which is stored
@@ -398,7 +398,7 @@ func TestEnrichmentChainProviderCannotWriteUnderAnotherSource(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_values`))
-	require.Equal(t, []string{"honest/identity=found"}, chainRuns(t, s, id))
+	require.Empty(t, chainRuns(t, s, id))
 }
 
 // TestMusicBrainzIdentityChain persists the middle provider's result before ListenBrainz decides.
@@ -430,9 +430,9 @@ func TestMusicBrainzIdentityChain(t *testing.T) {
 	found, err := s.ResolveNextEnrichmentChain(t.Context(), registry)
 	require.NoError(t, err)
 	require.True(t, found)
-	require.Equal(t, []string{"navidrome", "musicbrainz"}, order)
+	require.Equal(t, []string{"navidrome", "musicbrainz", "navidrome"}, order)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE source='musicbrainz-search' AND recording_id IS NOT NULL`))
-	require.Contains(t, chainRuns(t, s, id), "musicbrainz/identity=found")
+	require.Empty(t, chainRuns(t, s, id))
 }
 
 // chainMusicBrainzBudget routes the fixture through its local server client.
@@ -441,4 +441,162 @@ type chainMusicBrainzBudget struct{ client *http.Client }
 // Do invokes the job with the fixture client.
 func (b chainMusicBrainzBudget) Do(ctx context.Context, job func(context.Context, *http.Client) ([]byte, error)) ([]byte, error) {
 	return job(ctx, b.client)
+}
+
+// TestNavidromeISRCFeedsMusicBrainz verifies identity uses the stored ISRC in the same pass.
+func TestNavidromeISRCFeedsMusicBrainz(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	var paths []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		fmt.Fprintf(w, `{"recordings":[{"id":%q}]}`, fixtureRecording)
+	}))
+	defer server.Close()
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, chainProvider{"synthetic-instance", func(_ context.Context, r enrichment.Request) enrichment.Result {
+		if r.Chain == enrichment.ChainMetadata {
+			return enrichment.Result{Status: enrichment.Absent}
+		}
+		return enrichment.Result{Status: enrichment.Found, Declarations: []enrichment.Declaration{{Entity: "recording", Field: "isrc", Value: "USABC0500001", Source: "navidrome-subsonic", ObservedAt: time.Now()}}}
+	}}))
+	require.NoError(t, registry.Register(enrichment.MusicBrainzDescriptor, enrichment.NewMusicBrainz(server.URL, "test", chainMusicBrainzBudget{server.Client()})))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	chainReceipt(t, s, "ISRC", 1700003400)
+	found, err := s.ResolveNextEnrichmentChain(t.Context(), registry)
+	require.NoError(t, err)
+	require.True(t, found)
+	require.Equal(t, []string{"/ws/2/isrc/USABC0500001"}, paths)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='isrc'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_values WHERE source='musicbrainz-search' AND recording_id IS NOT NULL`))
+}
+
+// TestEnrichmentClosingLeasePreservesAnotherWorkersRuns fences successful-run cleanup.
+func TestEnrichmentClosingLeasePreservesAnotherWorkersRuns(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(chainDescriptor("worker", 100, enrichment.ChainIdentity), chainProvider{"fixture", func(context.Context, enrichment.Request) enrichment.Result {
+		return enrichment.Result{Status: enrichment.Absent}
+	}}))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	id := chainReceipt(t, s, "Lease", 1700003500)
+	c, err := s.claimEnrichment(t.Context())
+	require.NoError(t, err)
+	require.Equal(t, id, c.receipt)
+	execSQL(t, s, `INSERT INTO enrichment_provider_runs(receipt_id,provider,chain,state,instance,finished_at) VALUES(?,'worker','identity','found','fixture',1)`, id)
+	execSQL(t, s, `UPDATE enrichment_jobs SET lease='new-worker' WHERE receipt_id=?`, id)
+	require.NoError(t, s.closeEnrichment(t.Context(), c, []enrichmentAnswer{{status: enrichment.Found}}))
+	require.Equal(t, []string{"worker/identity=found"}, chainRuns(t, s, id))
+	require.Equal(t, "working", jobState(t, s, id))
+}
+
+// TestEnrichmentExhaustedRecoveryRemovesSuccessKeepsFailure covers the terminal claim path.
+func TestEnrichmentExhaustedRecoveryRemovesSuccessKeepsFailure(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	registry := enrichment.NewRegistry()
+	for _, id := range []string{"one", "two"} {
+		require.NoError(t, registry.Register(chainDescriptor(id, 100, enrichment.ChainIdentity), chainProvider{id, func(context.Context, enrichment.Request) enrichment.Result {
+			return enrichment.Result{Status: enrichment.Absent}
+		}}))
+	}
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	id := chainReceipt(t, s, "Exhausted", 1700003600)
+	execSQL(t, s, `UPDATE enrichment_jobs SET state='working',lease='expired',lease_until=0,attempts=2 WHERE receipt_id=?`, id)
+	execSQL(t, s, `INSERT INTO enrichment_provider_runs VALUES(?,'one','identity','found','fixture',1),(?,'two','identity','failed','fixture',1)`, id, id)
+	c, err := s.claimEnrichment(t.Context())
+	require.NoError(t, err)
+	require.Empty(t, c.lease)
+	require.Equal(t, "failed", jobState(t, s, id))
+	require.Equal(t, []string{"two/identity=failed"}, chainRuns(t, s, id))
+}
+
+// TestEnrichmentExpiredLeaseCannotRemoveSuccess keeps a run for the next worker to recover.
+func TestEnrichmentExpiredLeaseCannotRemoveSuccess(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(chainDescriptor("worker", 100, enrichment.ChainIdentity), chainProvider{"fixture", func(context.Context, enrichment.Request) enrichment.Result {
+		return enrichment.Result{Status: enrichment.Absent}
+	}}))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	id := chainReceipt(t, s, "Expired", 1700003700)
+	c, err := s.claimEnrichment(t.Context())
+	require.NoError(t, err)
+	execSQL(t, s, `INSERT INTO enrichment_provider_runs VALUES(?,'worker','identity','found','fixture',1)`, id)
+	execSQL(t, s, `UPDATE enrichment_jobs SET lease_until=0 WHERE receipt_id=?`, id)
+	require.NoError(t, s.closeEnrichment(t.Context(), c, []enrichmentAnswer{{status: enrichment.Found}}))
+	require.Equal(t, []string{"worker/identity=found"}, chainRuns(t, s, id))
+	require.Equal(t, "working", jobState(t, s, id))
+}
+
+// TestEnrichmentDisabledCleanup removes only completed success runs on jobs it closes.
+func TestEnrichmentDisabledCleanup(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(chainDescriptor("worker", 100, enrichment.ChainIdentity), chainProvider{"fixture", func(context.Context, enrichment.Request) enrichment.Result {
+		return enrichment.Result{Status: enrichment.Absent}
+	}}))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	id := chainReceipt(t, s, "Disabled", 1700003800)
+	_, err := s.claimEnrichment(t.Context())
+	require.NoError(t, err)
+	execSQL(t, s, `INSERT INTO enrichment_provider_runs VALUES(?,'worker','identity','found','fixture',1)`, id)
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), enrichment.NewRegistry()))
+	require.Equal(t, "disabled", jobState(t, s, id))
+	require.Empty(t, chainRuns(t, s, id))
+}
+
+// TestDescriptiveRepeatedAndMissingValues retains the first observation without duplicating it.
+func TestDescriptiveRepeatedAndMissingValues(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	value := "Rock"
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(chainDescriptor("source", 100, enrichment.ChainIdentity), chainProvider{"fixture", func(context.Context, enrichment.Request) enrichment.Result {
+		if value == "" {
+			return enrichment.Result{Status: enrichment.Absent}
+		}
+		return enrichment.Result{Status: enrichment.Found, Declarations: []enrichment.Declaration{{Entity: "recording", Field: "genre", Value: value, Source: "source", ObservedAt: time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)}}}
+	}}))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	for i := 0; i < 3; i++ {
+		id := admitOccurrenceFixture(t, s, ingest.Snapshot{Title: "Repeat", Artist: "Repeat artist", Release: "Repeat album"}, 1700004000+int64(i), fmt.Sprintf("repeat-%d", i))
+		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+		if i == 2 {
+			value = ""
+		}
+		_, err := s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+		require.Empty(t, chainRuns(t, s, id))
+	}
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='genre' AND value='Rock'`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE observed_at='2026-01-01T00:00:00Z'`))
+}
+
+// TestSubsonicChainSharesLookup collects identity and metadata with one set of requests.
+func TestSubsonicChainSharesLookup(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		switch r.URL.Path {
+		case "/rest/search3":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"One","artist":"One artist","album":"One album"}]}}}`)
+		case "/rest/getSong":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","albumId":"album","title":"One","artist":"One artist","album":"One album","year":2005,"genres":[{"name":"Rock"}],"isrc":["USABC0500001"],"bpm":120}}}`)
+		case "/rest/getAlbum":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","album":{"id":"album","name":"One album","releaseDate":{"year":2005,"month":4},"originalReleaseDate":{"year":2004}}}}`)
+		default:
+			t.Errorf("unexpected request: %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+	provider, err := enrichment.NewSubsonic(server.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	chainReceipt(t, s, "One", 1700004100)
+	_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+	require.NoError(t, err)
+	require.Equal(t, 3, calls)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='recording_year' AND value='2005'`))
+	require.Equal(t, 6, scalar(t, s, `SELECT count(*) FROM descriptive_metadata m JOIN metadata_sources s ON s.id=m.source_id WHERE s.source='navidrome-subsonic' AND length(s.instance)=64 AND ((m.occurrence_id IS NOT NULL AND m.kind IN ('genre','recording_year','isrc','bpm')) OR (m.release_id IS NOT NULL AND m.kind IN ('release_date','first_release_date')))`))
 }

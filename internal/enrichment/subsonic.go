@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"net/http"
@@ -70,7 +71,49 @@ type subsonicArtist struct {
 	MBID string `json:"musicBrainzId"`
 }
 
+type subsonicGenre struct {
+	Name string `json:"name"`
+}
+
+type subsonicDate struct {
+	Year  int `json:"year"`
+	Month int `json:"month"`
+	Day   int `json:"day"`
+}
+
+// format preserves the partial precision of a valid OpenSubsonic date.
+func (d subsonicDate) format() string {
+	if d.Year < 1 || d.Year > 9999 || d.Month < 0 || d.Month > 12 || d.Day < 0 || d.Day > 31 || (d.Month == 0 && d.Day != 0) {
+		return ""
+	}
+	if d.Month == 0 {
+		return fmt.Sprintf("%04d", d.Year)
+	}
+	if d.Day == 0 {
+		return fmt.Sprintf("%04d-%02d", d.Year, d.Month)
+	}
+	t := time.Date(d.Year, time.Month(d.Month), d.Day, 0, 0, 0, 0, time.UTC)
+	if t.Month() != time.Month(d.Month) {
+		return ""
+	}
+	return fmt.Sprintf("%04d-%02d-%02d", d.Year, d.Month, d.Day)
+}
+
+type subsonicAlbum struct {
+	ID                  string          `json:"id"`
+	Name                string          `json:"name"`
+	Genres              []subsonicGenre `json:"genres"`
+	ReleaseDate         subsonicDate    `json:"releaseDate"`
+	OriginalReleaseDate subsonicDate    `json:"originalReleaseDate"`
+}
+
 type subsonicSong struct {
+	ID        string           `json:"id"`
+	AlbumID   string           `json:"albumId"`
+	Genres    []subsonicGenre  `json:"genres"`
+	Year      int              `json:"year"`
+	ISRC      []string         `json:"isrc"`
+	BPM       int              `json:"bpm"`
 	MediaType string           `json:"mediaType"`
 	Title     string           `json:"title"`
 	Artist    string           `json:"artist"`
@@ -90,6 +133,8 @@ type subsonicResponse struct {
 			Songs []subsonicSong `json:"song"`
 		} `json:"searchResult3"`
 		Artist subsonicArtist `json:"artist"`
+		Song   subsonicSong   `json:"song"`
+		Album  subsonicAlbum  `json:"album"`
 	} `json:"subsonic-response"`
 }
 
@@ -242,10 +287,10 @@ func (c *Subsonic) Lookup(ctx context.Context, req Request) Result {
 	s := req.Snapshot
 	missingRecording := !validUUID(s.Recording) && !validUUID(s.MappedRecording)
 	missingArtists := MissingArtistNames(s)
-	if !missingRecording && len(missingArtists) == 0 {
+	if !missingRecording && len(missingArtists) == 0 && req.Chain != ChainMetadata && req.Chain != ChainIdentity {
 		return Result{Status: Absent}
 	}
-	if s.Title == "" || s.Artist == "" || s.Release == "" {
+	if s.Title == "" || s.Artist == "" || s.Release == "" || s.TruncatedFields > 0 {
 		return Result{Status: Absent}
 	}
 	// Ignore event timestamps and unrelated fields so repeated listens share a bounded cache.
@@ -332,6 +377,49 @@ func (c *Subsonic) lookup(ctx context.Context, s ingest.Snapshot, recording bool
 		}
 		if validUUID(artist.MBID) {
 			result.Declarations = append(result.Declarations, Declaration{Entity: "artist", Name: name, Field: "musicbrainz_id", Value: uuid.MustParse(artist.MBID).String(), Source: sourceSubsonic, ObservedAt: at})
+		}
+	}
+	// The ID came from the unique, untruncated search result on this server.
+	if song.ID != "" {
+		detail, err := c.call(ctx, "getSong", url.Values{"id": {song.ID}})
+		if err != nil {
+			return Result{Status: Failed}
+		}
+		full := detail.Response.Song
+		if full.ID != song.ID || !songMatches(s, full) {
+			return Result{Status: Ambiguous}
+		}
+		add := func(entity, field, value string) {
+			if strings.TrimSpace(value) != "" {
+				result.Declarations = append(result.Declarations, Declaration{Entity: entity, Field: field, Value: strings.TrimSpace(value), Source: sourceSubsonic, ObservedAt: at})
+			}
+		}
+		for _, genre := range full.Genres {
+			add("recording", "genre", genre.Name)
+		}
+		if full.Year > 0 && full.Year <= 9999 {
+			add("recording", "recording_year", strconv.Itoa(full.Year))
+		}
+		for _, isrc := range full.ISRC {
+			add("recording", "isrc", isrc)
+		}
+		if full.BPM > 0 {
+			add("recording", "bpm", strconv.Itoa(full.BPM))
+		}
+		if full.AlbumID != "" {
+			album, err := c.call(ctx, "getAlbum", url.Values{"id": {full.AlbumID}})
+			if err != nil {
+				return Result{Status: Failed}
+			}
+			a := album.Response.Album
+			if a.ID != full.AlbumID || !equalMetadata(a.Name, s.Release) {
+				return Result{Status: Ambiguous}
+			}
+			for _, genre := range a.Genres {
+				add("release", "genre", genre.Name)
+			}
+			add("release", "release_date", a.ReleaseDate.format())
+			add("release", "first_release_date", a.OriginalReleaseDate.format())
 		}
 	}
 	if len(result.Declarations) > 0 {

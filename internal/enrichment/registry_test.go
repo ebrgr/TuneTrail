@@ -70,7 +70,7 @@ func TestRegistryAvailabilityFollowsTheProvider(t *testing.T) {
 	_, ok := r.Provider("missing")
 	require.False(t, ok)
 	require.True(t, SubsonicDescriptor.In(ChainIdentity))
-	require.False(t, SubsonicDescriptor.In(ChainMetadata))
+	require.True(t, SubsonicDescriptor.In(ChainMetadata))
 }
 
 // TestBuiltInDescriptorsAreValidAndOrdered pins the order that ISSUE-174 and 175 already had.

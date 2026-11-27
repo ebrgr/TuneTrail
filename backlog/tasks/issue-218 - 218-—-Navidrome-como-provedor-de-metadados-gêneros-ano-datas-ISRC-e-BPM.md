@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T21:34:00Z'
+updated_date: '2026-11-27T21:59:00Z'
 labels:
   - catalogo
   - ingestao
@@ -33,12 +33,12 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Gêneros, ano e datas do Navidrome gravados com fonte e instância, só depois de associação segura da faixa e do álbum
-- [ ] #2 ISRC e BPM guardados quando existirem, na tabela de metadados por entidade criada por migração (decision-012), e o ISRC disponível para a ponte com o MusicBrainz
-- [ ] #3 Campos ausentes ou vazios não geram pendência nem apagam dado anterior
-- [ ] #4 Testes com respostas simuladas, sem credenciais, cobrindo versões repetidas e resultados truncados
-- [ ] #5 Escrita dos metadados descritivos na tabela por entidade, com a fonte no cadastro de fontes e vínculo à entidade certa (se a ISSUE-217 não a tiver construído antes), e migração coordenada com a ISSUE-195
-- [ ] #6 A consulta por ISRC da ISSUE-216 ligada à cadeia de identidade, usando o ISRC colhido do Navidrome, com ISRC que leva a mais de uma gravação tratado como ambíguo
+- [x] #1 Gêneros, ano e datas do Navidrome gravados com fonte e instância, só depois de associação segura da faixa e do álbum
+- [x] #2 ISRC e BPM guardados quando existirem, na tabela de metadados por entidade criada por migração (decision-012), e o ISRC disponível para a ponte com o MusicBrainz
+- [x] #3 Campos ausentes ou vazios não geram pendência nem apagam dado anterior
+- [x] #4 Testes com respostas simuladas, sem credenciais, cobrindo versões repetidas e resultados truncados
+- [x] #5 Escrita dos metadados descritivos na tabela por entidade, com a fonte no cadastro de fontes e vínculo à entidade certa (se a ISSUE-217 não a tiver construído antes), e migração coordenada com a ISSUE-195
+- [x] #6 A consulta por ISRC da ISSUE-216 ligada à cadeia de identidade, usando o ISRC colhido do Navidrome, com ISRC que leva a mais de uma gravação tratado como ambíguo
 <!-- AC:END -->
 
 ## Comments
@@ -95,6 +95,33 @@ created: 2026-11-27T21:34:00Z
 ---
 
 Decisão do usuário em 27/11/2026: modelo D (metadados descritivos por entidade, com cadastro de fontes; MBIDs continuam por escuta), registrado na decision-012. Critérios 2 e 5 ajustados. Retoma a implementação.
+
+---
+
+author: codex
+created: 2026-11-27T21:43:00Z
+
+---
+
+Nova parada: modelo D isolado com cadastro de fontes e timestamps completos mede 637,75 B/escuta no cenário de uma escuta por faixa; incluindo duas execuções found por escuta que a implementação parcial pode registrar, o cenário sintético chega a 941,26 B/escuta. O limite de aproximadamente 650 B foi excedido. É aceitável estudar mudança no registro/recuperação das execuções para reduzir o custo, ou aceita-se o custo maior? Método e limitações em MEDICAO.md; código parcial sem commit.
+
+---
+
+author: claude
+created: 2026-11-27T21:49:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: «opção 1» — apagar os registros de sucesso de enrichment_provider_runs quando o trabalho terminar. A limitação de exportação foi aberta como ISSUE-234. Retoma a implementação.
+
+---
+
+author: codex
+created: 2026-11-27T21:59:00Z
+
+---
+
+Implementação verificada: migração 026 e modelo D; associação conservadora e metadados Navidrome; ISRC na identidade MusicBrainz; preservação e ciclo de vida; recuperação protegida pelo lease. Medição final de 671,33/220,36/65,54 B por escuta para 1/3/10 reproduções por faixa. make check aprovado, incluindo 13 jornadas; testes selecionados com race aprovados e testes de mutação detectaram as alterações. Exportação e restauração descritiva permanecem na ISSUE-234. Detalhes no HANDOFF.
 
 ---
 <!-- COMMENTS:END -->

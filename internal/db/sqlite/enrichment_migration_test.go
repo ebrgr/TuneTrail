@@ -72,7 +72,7 @@ func TestBootstrapEnrichmentRegistryFromV24(t *testing.T) {
 			require.NoError(t, checkDatabase(db))
 			version, err := schemaVersion(db)
 			require.NoError(t, err)
-			require.Equal(t, 25, version)
+			require.Equal(t, currentSchemaVersion, version)
 
 			// The old switch became the availability of the Subsonic provider, and the table is gone.
 			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM enrichment_providers WHERE id='navidrome-subsonic'
@@ -113,4 +113,32 @@ func TestBootstrapRejectsEnrichmentPreview(t *testing.T) {
 			require.Equal(t, before, after)
 		})
 	}
+}
+
+// TestBootstrapDescriptiveMetadataFromV25 preserves the existing event-scoped declarations.
+func TestBootstrapDescriptiveMetadataFromV25(t *testing.T) {
+	dir := t.TempDir()
+	path, err := bootstrapAtVersion(dir, true, 25)
+	require.NoError(t, err)
+	db, err := openExisting(path)
+	require.NoError(t, err)
+	s := &Sqlite{db: db}
+	testfixtures.Profile(t, s, 1, "metadata-v25", "Metadata", 100)
+	execSQL(t, s, `INSERT INTO recordings(id) VALUES(1);
+ INSERT INTO occurrences(id,recording_id,presented_title) VALUES(1,1,'Track');
+ INSERT INTO listens(profile_id,track_id,listened_at,event_id) VALUES(1,1,100,'v25-listen');
+ INSERT INTO metadata_values(profile_id,recording_id,occurrence_id,event_id,kind,value,instance,source,observed_at)
+ VALUES(1,1,1,'v25-listen','mbid','example','instance','fixture','2026-01-01')`)
+	before := queryDigest(t, db, `SELECT * FROM metadata_values`)
+	require.NoError(t, db.Close())
+	_, err = bootstrap(dir, false)
+	require.NoError(t, err)
+	db, err = openExisting(path)
+	require.NoError(t, err)
+	defer db.Close()
+	s = &Sqlite{db: db}
+	require.Equal(t, before, queryDigest(t, db, `SELECT * FROM metadata_values`))
+	require.Equal(t, 3, scalar(t, s, `SELECT count(*) FROM sqlite_schema WHERE type='trigger' AND name IN ('trg_metadata_scope_insert','trg_metadata_scope_update','trg_metadata_recording_reconcile')`))
+	require.NoError(t, checkDatabase(db))
+	assertForeignKeys(t, s)
 }

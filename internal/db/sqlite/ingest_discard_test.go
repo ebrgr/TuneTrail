@@ -66,6 +66,10 @@ func TestIngestDiscardProtectsListens(t *testing.T) {
 	require.NoError(t, err)
 	stale := preview.Receipts[0].Digest
 	resolveOccurrenceFixture(t, s, nil)
+	execSQL(t, s, `INSERT INTO metadata_sources(source,instance) VALUES('fixture','fingerprint');
+    INSERT INTO descriptive_metadata(profile_id,occurrence_id,source_id,kind,value,observed_at)
+    SELECT profile_id,occurrence_id,(SELECT id FROM metadata_sources WHERE source='fixture'),'genre','Rock','2026-01-01'
+    FROM ingest_events WHERE receipt_id='accepted'`)
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM outbox JOIN ingest_events USING(profile_id,event_id)
 		WHERE receipt_id='accepted' AND outbox.closed_at IS NULL`))
 	relayReceipt(t, s, 1, "linked", instant)
@@ -80,6 +84,7 @@ func TestIngestDiscardProtectsListens(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, preview.Receipts)
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM ingest_discards`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE value='Rock'`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM outbox WHERE closed_at IS NULL`))
 }
 

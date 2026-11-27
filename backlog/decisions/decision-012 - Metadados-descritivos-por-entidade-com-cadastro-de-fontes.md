@@ -17,9 +17,13 @@ Escolha do usuário em 27/11/2026 (modelo D das alternativas medidas):
 - Os MBIDs continuam em `metadata_values`, por escuta, sem mudança.
 - A migração única de metadados antes da ISSUE-195 (decision-011, A5) continua valendo e passa a criar essas tabelas.
 
+Acréscimo do usuário em 27/11/2026, após a segunda medição: as linhas de sucesso de `enrichment_provider_runs` são apagadas quando o trabalho de enriquecimento termina; as ambíguas e as falhas permanecem. Elas só servem para retomar um trabalho interrompido.
+
 ## Consequences
 
 - Não fica registrado qual escuta trouxe cada valor descritivo.
 - Apagar escutas não remove o valor em cascata: ele sai quando o perfil deixa de ter escutas daquela entidade.
 - Mesclagens de catálogo, desfazer mesclagem, exclusões e remoção de perfil precisam tratar a tabela nova.
 - Substitui, nas ISSUE-217, 218, 219 e 055 e no doc-048, os trechos que previam esses tipos em `metadata_values`.
+- Não fica o histórico de quais fontes responderam com sucesso em cada escuta; a origem continua em cada valor.
+- A exportação dos metadados descritivos é tratada na ISSUE-234.

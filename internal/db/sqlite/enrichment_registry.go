@@ -64,12 +64,36 @@ func (s *Sqlite) configureEnrichment(ctx context.Context, states []enrichmentPro
 		}
 		// Queued work with no source left to ask is closed instead of waiting forever. A receipt
 		// whose profile has an approved relay still has the profile-relay source.
-		_, err := tx.ExecContext(ctx, `UPDATE enrichment_jobs SET state='disabled',lease=NULL,lease_until=NULL
+		rows, err := tx.QueryContext(ctx, `UPDATE enrichment_jobs SET state='disabled',lease=NULL,lease_until=NULL
 			WHERE state IN ('pending','working')
 			AND NOT EXISTS (SELECT 1 FROM enrichment_providers WHERE enabled=1 AND available=1 AND eligibility='configured')
 			AND NOT EXISTS (SELECT 1 FROM enrichment_providers WHERE enabled=1 AND available=1 AND eligibility='profile-relay'
-				AND EXISTS (SELECT 1 `+listenBrainzRelay+` AND e.receipt_id=enrichment_jobs.receipt_id))`, enrichment.ListenBrainzBase)
-		return err
+				AND EXISTS (SELECT 1 `+listenBrainzRelay+` AND e.receipt_id=enrichment_jobs.receipt_id)) RETURNING receipt_id`, enrichment.ListenBrainzBase)
+		if err != nil {
+			return err
+		}
+		var closed []string
+		for rows.Next() {
+			var id string
+			if err := rows.Scan(&id); err != nil {
+				rows.Close()
+				return err
+			}
+			closed = append(closed, id)
+		}
+		if err := rows.Err(); err != nil {
+			rows.Close()
+			return err
+		}
+		if err := rows.Close(); err != nil {
+			return err
+		}
+		for _, id := range closed {
+			if err := deleteSuccessfulRuns(ctx, tx, id); err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 	// Admission only uses the enrichment tables after engine startup has configured them.
 	if err == nil {
