@@ -30,6 +30,32 @@ No VS Code, instale a extensão Go e use **TuneTrail: Desenvolvimento Go (localh
 
 `make e2e` roda as jornadas de `scripts/e2e.py` (administração, páginas públicas, permissões, isolamento, migração, encerramento) contra o binário real, com bancos novos e migrados criados em diretórios descartáveis, sem acessar o banco configurado em `.env`; o que cada jornada cobre está em `scripts/README.md`. Para validar uma cópia de banco de exemplo, use `python3 scripts/validate_multiuser.py --binary ./tunetrail --example-db /caminho/koito.db`; o original é aberto somente para leitura. A prévia fictícia isolada é iniciada por `make ui.preview`.
 
+### Camadas e imports
+
+`internal/architecture` contém um teste que lê os imports do código de produção (arquivos `.go` que não terminam em `_test.go`) e falha quando um pacote depende do que não deve. Ele roda com `go test ./...`, portanto em `make check`; para rodar só ele: `go test ./internal/architecture`.
+
+| Regra | O que proíbe |
+| --- | --- |
+| `web-without-sqlite` | `internal/adminui`, `internal/webui`, `internal/adminweb` e `engine/handlers` alcançarem `internal/db/sqlite`, mesmo por intermédio de outro pacote |
+| `only-engine-imports-sqlite` | qualquer pacote além de `engine`, que monta o programa, importar `internal/db/sqlite` |
+| `sql-only-in-sqlite` | fora de `internal/db/sqlite`, importar `database/sql` ou um driver SQL, ou escrever comandos SQL em strings |
+| `core-without-adapters` | `internal/ingest`, `internal/models` e `internal/db` alcançarem `internal/db/sqlite`, `internal/mbz` ou a interface web (`adminui`, `adminweb`, `webui`, `webassets`, `engine`) |
+| `domain-without-interface` | um pacote de domínio importar `adminui`, `webui` ou `engine` (e subpacotes). Domínio é todo pacote fora de `engine/...`, `adminui`, `webui` e `cmd/...`, inclusive os novos |
+| `sqlite-without-new-business-imports` | `internal/db/sqlite` importar um pacote do projeto fora da lista `sqliteBase` (contratos, tipos e auxiliares técnicos) |
+
+`webui` importar `adminui` é permitido por enquanto e está em estudo (ISSUE-232). A busca por SQL em strings reconhece apenas comandos com palavras-chave em maiúsculas, como o projeto os escreve. As migrações em `db/migrations_sqlite` fazem parte do adaptador SQLite.
+
+#### Exceções
+
+O que já quebrava uma regra quando o teste foi criado está na lista `exceptions` de `internal/architecture/architecture_test.go`, com o motivo de cada item. **A lista só pode diminuir:** ao remover uma dependência, apague a entrada na mesma mudança (o teste falha enquanto houver exceção sem uso).
+
+Quando o teste falhar, remova a dependência: declare no pacote que consome uma interface com o que ele precisa, ou leve o tipo compartilhado para um pacote de contratos (`internal/db`, `internal/ingest`, `internal/models`). Se não houver como, uma exceção nova precisa ser aprovada na issue que a introduz:
+
+1. acrescente em `exceptions` a regra, o pacote que quebra a regra, o import proibido (ou `sqlStatement`) e um motivo que diga o que é usado e qual issue vai removê-lo;
+2. registre a aprovação na tarefa do Backlog.md.
+
+Um pacote renomeado ou movido faz o teste falhar até que os nomes nas regras sejam atualizados.
+
 ## Arquivos da interface
 
 Os HTMLs estão em `assets/templates/public/` e `assets/templates/admin/`; CSS, JS, ícones e temas ficam em subpastas de `assets/`. O Makefile exporta `TUNETRAIL_WEB_DIR` e `TUNETRAIL_LANGS_DIR` para o checkout. Para `go run`, `go test` ou Delve fora do Makefile, informe esses caminhos explicitamente. A produção procura `assets/` ao lado do executável real, com symlinks resolvidos; um override explícito inválido falha sem fallback.

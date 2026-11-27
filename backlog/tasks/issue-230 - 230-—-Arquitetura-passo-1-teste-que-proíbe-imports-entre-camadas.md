@@ -1,10 +1,11 @@
 ---
 id: ISSUE-230
 title: '230 — Arquitetura, passo 1: teste que proíbe imports entre camadas'
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T15:45:00Z'
+updated_date: '2026-11-27T19:57:00Z'
 labels:
   - validacao
   - processo
@@ -29,3 +30,16 @@ Origem: pergunta do usuário em 27/11/2026 sobre a separação dos subsistemas e
 - [ ] #4 Teste comprovado por mutação: um import proibido acrescentado de propósito faz o teste falhar
 - [ ] #5 Regras e como acrescentar uma exceção documentadas
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T19:57:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-230` na branch `chore/issue-230-arquitetura-passo-1-teste-que` criada a partir de `main`.
+
+---
+<!-- COMMENTS:END -->
