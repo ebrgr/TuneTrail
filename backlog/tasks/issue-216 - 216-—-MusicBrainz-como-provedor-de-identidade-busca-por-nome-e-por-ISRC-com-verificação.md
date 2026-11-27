@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-26T20:27:00Z'
+updated_date: '2026-11-27T14:37:00Z'
 labels:
   - ingestao
   - catalogo
@@ -94,6 +94,15 @@ created: 2026-11-26T20:27:00Z
 ---
 
 Verificação: make check passou (13/13 percursos); go test -race nos pacotes solicitados passou, inclusive internal/mbz sem filtro para executar o teste de fila compartilhada. Testes locais simulam versões, créditos, álbum, duração, ambiguidades, 429, 503, JSON e limites; a cadeia SQLite verifica a ordem e que o ListenBrainz não faz requisição quando os campos foram resolvidos. Mutações: remover duração quebrou studio_versus_live, duration_outside_tolerance e unknown_duration; aceitar o primeiro candidato quebrou ambiguous_within_tolerance. Consulta ISRC testada isoladamente, ainda sem ligação ao Snapshot: critério 3 permanece aberto. Sem teste com MusicBrainz real. Cache negativo persistente segue como proposta registrada no comentário 4.
+
+---
+
+author: advisor
+created: 2026-11-27T14:37:00Z
+
+---
+
+Parecer do Advisor (Opus, effort medium, Modo A, 27/11/2026) sobre 74b60ee: APROVADO, sem falha crítica. Quatro melhorias: (1) quatro testes de ramos explícitos que hoje não pegam mutação (mesmo MBID em caixas diferentes, truncamento só por 100 resultados, Snapshot.Recording divergente, Failed não entra no cache); (2) normalizedMetadata remove pontuação e ficou mais frouxo que a regra medida na 215; (3) título só de pontuação vira busca só por artista e álbum; (4) opcional, ambiguidade por truncamento só se o último resultado tem score >= 95. A consulta com release na frase procede e invalida a comparação direta com os números da 215. A fila cheia virando Failed pertence à ISSUE-213. Texto completo em backlog/evidencias/issue-216/PARECER-ADVISOR.md.
 
 ---
 <!-- COMMENTS:END -->
