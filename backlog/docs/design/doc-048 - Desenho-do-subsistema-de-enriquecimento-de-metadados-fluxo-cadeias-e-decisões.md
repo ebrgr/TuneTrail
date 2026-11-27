@@ -85,3 +85,7 @@ Migração **025** (`enrichment_providers` e `enrichment_provider_runs`, no luga
 **Fica para as issues seguintes:** gravar gêneros, tags e datas (217, 218); cache negativo persistente entre escutas, que só importa quando o MusicBrainz por nome existir (216); a tela de configuração (220), para a qual `SetEnrichmentProvider` e `EnrichmentProviders` já existem; e o primeiro consumidor do orçamento do MusicBrainz (216). A elegibilidade `profile-relay` hoje é específica do ListenBrainz.
 
 **Para a ISSUE-195:** a 025 entra no arquivo único junto com a 024. A trava de bancos de preview do `bootstrap.go` (versões 24 a 28) precisa ser reescrita para o esquema final.
+
+## 7. Correção de 27/11/2026
+
+A afirmação das seções 4 e 6 de que `metadata_values` não muda está errada. A tabela só aceita `mbid`, `genre`, `tag`, `recording_year`, `release_date` e `artist_origin_country`: ISRC, BPM (ISSUE-218), a data do primeiro lançamento do grupo e a data completa da primeira publicação da gravação (ISSUE-217) exigem tipos novos e uma migração, que no SQLite recria a tabela. O usuário decidiu em 27/11/2026 por uma única migração para as duas issues, antes da consolidação (ISSUE-195). Hoje só `mbid` é gravado.

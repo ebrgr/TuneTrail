@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - ingestao
   - config
@@ -35,3 +35,16 @@ Origem: doc-046 §5.2 e doc-047. ENABLE_LBZ_RELAY, LBZ_RELAY_URL e LBZ_RELAY_TOK
 - [ ] #2 Se aprovado: variáveis, função de bootstrap e tabela removidas, referência e guia atualizados, com aviso para quem ainda as define
 - [ ] #3 Testes de relay e de upgrade verdes
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026 (C1): aposentar o relay por variáveis de ambiente aprovado.
+
+---
+<!-- COMMENTS:END -->

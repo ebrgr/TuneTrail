@@ -4,13 +4,14 @@ title: '210 — Banco, pacote C: fundir tracks em occurrences'
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - banco
   - catalogo
 milestone: m-11
 dependencies:
   - ISSUE-195
+  - ISSUE-224
 references:
   - >-
     backlog/docs/estudos/doc-047 -
@@ -33,3 +34,16 @@ Origem: doc-046 §5.2 e §5.5 (pacote C). tracks é a faixa do Koito v2, mantida
 - [ ] #2 Estatísticas, rankings, edição, fusão, exportação e reimportação com os mesmos resultados, provados por testes e por comparação de digests
 - [ ] #3 Planos de consulta e tempos antes e depois
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026 (B6): confirmado, só depois da subida da produção (ISSUE-224).
+
+---
+<!-- COMMENTS:END -->

@@ -4,6 +4,7 @@ title: 078 — Auditoria de acessibilidade, desempenho e aceite da UI responsiva
 status: Aberta
 assignee: []
 created_date: '2026-11-14T00:38:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - ui
   - validacao
@@ -37,4 +38,18 @@ Passos:
 - [ ] #2 Metas de desempenho e tamanho medidas e cumpridas
 - [ ] #3 Capturas finais comparadas com a base
 - [ ] #4 Aceite do usuário para a fase 1
+- [ ] #5 Inspeção de teclado e leitor de tela das telas multiusuário, pendência deixada pela ISSUE-164
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026 (C10): a inspeção de teclado e leitor de tela entra nesta auditoria.
+
+---
+<!-- COMMENTS:END -->

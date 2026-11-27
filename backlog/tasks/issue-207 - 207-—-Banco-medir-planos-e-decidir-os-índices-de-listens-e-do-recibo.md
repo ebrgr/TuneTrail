@@ -4,7 +4,7 @@ title: '207 — Banco: medir planos e decidir os índices de listens e do recibo
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - banco
   - ingestao
@@ -33,3 +33,16 @@ Origem: doc-047 §2 e §5 (nível 3). Em 300 mil escutas migradas do v2, três �
 - [ ] #2 Decisão por índice (remover, manter ou trocar) registrada com a economia em MB
 - [ ] #3 Lista de índices a remover entregue à ISSUE-195
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: medição dos índices autorizada (B3).
+
+---
+<!-- COMMENTS:END -->

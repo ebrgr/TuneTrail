@@ -4,7 +4,7 @@ title: '205 — Banco: fundir profile_relays e relay_destinations'
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - banco
   - ingestao
@@ -32,3 +32,16 @@ Origem: doc-046 §5.2 (pacote B). profile_relays (url e token) e relay_destinati
 - [ ] #2 Rascunho, aprovação de rede, geração e fencing da fila com o mesmo comportamento, provados pelos testes de relay existentes
 - [ ] #3 Upgrade v2 → atual com um relay configurado preserva URL, token e fila
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: pacote B aprovado antes da 195 (A4), com migração própria (A6).
+
+---
+<!-- COMMENTS:END -->

@@ -4,7 +4,7 @@ title: '204 — Banco, nível 1 (parte B): enxugar o recibo aceito'
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-27T15:00:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - banco
   - ingestao
@@ -46,6 +46,15 @@ created: 2026-11-27T15:00:00Z
 ---
 
 27/11/2026: texto corrigido. A estimativa de bytes é do schema 23; nenhuma consulta de produção lê ingest_revisions, mas 8 arquivos de teste leem.
+
+---
+
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: nível 1 aprovado (A1); parar de gravar a revisão automática do recibo aceito (A3); migração própria, consolidada depois pela 195 (A6). A retenção do conteúdo original passa a ter a ISSUE-225.
 
 ---
 <!-- COMMENTS:END -->

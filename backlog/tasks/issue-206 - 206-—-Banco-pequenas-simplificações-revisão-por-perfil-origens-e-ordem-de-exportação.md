@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - banco
   - ingestao
@@ -35,3 +35,16 @@ Origem: doc-046 §5.2 e doc-047 R4. Três simplificações pequenas e independen
 - [ ] #3 Exportação retomável preservada sem listen_export_order, com sequência que nunca se repete e teste de interrupção e retomada
 - [ ] #4 Bytes por escuta medidos antes e depois
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: pacote B aprovado antes da 195 (A4), com migração própria (A6).
+
+---
+<!-- COMMENTS:END -->

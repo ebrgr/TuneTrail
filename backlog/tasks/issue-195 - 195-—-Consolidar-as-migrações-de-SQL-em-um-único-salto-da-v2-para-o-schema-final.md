@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-23T00:31:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -19,6 +19,8 @@ dependencies:
   - ISSUE-205
   - ISSUE-206
   - ISSUE-214
+  - ISSUE-217
+  - ISSUE-218
 references:
   - >-
     backlog/docs/estudos/doc-046 -
@@ -42,6 +44,7 @@ Origem: pergunta do usuário em 22/11/2026 sobre simplificar as migrações. Pro
 - [ ] #2 Salto v2 → final com digest e contagens por perfil iguais, a partir do v2 sintético e da cópia real
 - [ ] #3 Ensaio em escala com 300 mil e 1 milhão de escutas, com backup, restauração e quick_check, e o tempo e o disco medidos (referência: 11,5 s e 5,5 vezes o tamanho para 300 mil)
 - [ ] #4 Migrações 022, 023 e 024 e as decisões das ISSUE-207 e 208 incorporadas; documentação de operação atualizada para o schema final
+- [ ] #5 DB_ALTERATIONS.md atualizado até o schema final
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -86,6 +89,15 @@ created: 2026-11-24T19:54:00Z
 ---
 
 24/11/2026: a dependência da ISSUE-055 foi trocada pela ISSUE-214 (subsistema de enriquecimento), que carrega a migração de metadados que a decisão de 22/11/2026 pedia antes da consolidação. A 055 continua como guarda-chuva dos provedores e da interface e não precisa bloquear a 195, porque metadata_values já existe na 024. Atenção: o schema agora é 24, e a consolidação cobre 003 a 024.
+
+---
+
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: subir a produção uma única vez (B1, ISSUE-224); ensaio com 300 mil e 1 milhão de escutas (B2); só entram antes da subida as integrações que reformam tabelas existentes (B7); a migração de metadados das ISSUE-217 e 218 entra antes desta consolidação (A5) e cada issue do banco traz a própria migração, dobrada aqui (A6). A ISSUE-225 (limpeza do conteúdo original) deve ser combinada se exigir mudança de esquema.
 
 ---
 <!-- COMMENTS:END -->

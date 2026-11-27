@@ -4,7 +4,7 @@ title: '211 — Teste estático: toda consulta a tabela por perfil filtra por pe
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-24T00:51:00Z'
+updated_date: '2026-11-27T15:21:00Z'
 labels:
   - validacao
   - banco
@@ -32,3 +32,16 @@ Origem: doc-046 §4.4. O SQLite não tem segurança por linha: o isolamento entr
 - [ ] #2 Lista de exceções justificada, uma por uma, e revisada pelo Reviewer
 - [ ] #3 Teste integrado ao make check
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-27T15:21:00Z
+
+---
+
+Decisão do usuário em 27/11/2026 (C5): teste estático aprovado, prioridade baixa.
+
+---
+<!-- COMMENTS:END -->
