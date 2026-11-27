@@ -4,7 +4,7 @@ title: '217 — MusicBrainz como provedor de metadados por MBID: gêneros, tags 
 status: Aberta
 assignee: []
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T15:21:00Z'
+updated_date: '2026-11-27T21:34:00Z'
 labels:
   - catalogo
   - ingestao
@@ -30,12 +30,12 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Gêneros e tags de gravação, lançamento e artista gravados em metadata_values, com tag popular separada de gênero
-- [ ] #2 Datas com precisão parcial preservada e distinção entre edição, primeiro lançamento do grupo e primeira publicação da gravação, em tipos de metadata_values criados por migração
+- [ ] #1 Gêneros e tags de gravação, lançamento e artista gravados na tabela de metadados por entidade (decision-012), com tag popular separada de gênero
+- [ ] #2 Datas com precisão parcial preservada e distinção entre edição, primeiro lançamento do grupo e primeira publicação da gravação, em tipos criados pela migração única de metadados
 - [ ] #3 Ausência, erro ou resposta parcial não apagam dado anterior, e a gravação nunca sobrescreve um valor de origem manual quando ela existir
 - [ ] #4 Licença dos dados suplementares verificada e registrada antes de exibir
 - [ ] #5 Testes com respostas simuladas: dado parcial, lançamentos truncados, MBID inexistente e indisponibilidade
-- [ ] #6 Escrita em metadata_values dos tipos que não são mbid, com vínculo à entidade certa (se a ISSUE-218 não a tiver construído antes), e migração coordenada com a ISSUE-195
+- [ ] #6 Escrita dos metadados descritivos na tabela por entidade, com vínculo à entidade certa (se a ISSUE-218 não a tiver construído antes), e migração coordenada com a ISSUE-195
 <!-- AC:END -->
 
 ## Comments
@@ -56,6 +56,15 @@ created: 2026-11-27T15:21:00Z
 ---
 
 Decisão do usuário em 27/11/2026 (A5): migração única de metadados antes da 195, com a ISSUE-218; a 195 passa a depender das duas.
+
+---
+
+author: claude
+created: 2026-11-27T21:34:00Z
+
+---
+
+27/11/2026: o usuário escolheu guardar os metadados descritivos por entidade, com cadastro de fontes (decision-012). Os critérios que citavam metadata_values foram ajustados; trechos da descrição que preveem esses tipos em metadata_values ficam substituídos.
 
 ---
 <!-- COMMENTS:END -->

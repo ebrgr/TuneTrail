@@ -4,7 +4,7 @@ title: 055 — Aproveitar tags e datas de lançamento das músicas
 status: Aberta
 assignee: []
 created_date: '2026-11-12T23:39:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-27T21:34:00Z'
 labels:
   - catalogo
   - ingestao
@@ -48,7 +48,7 @@ Registradas em doc-048: separar tags de gêneros, incluir artistas, preservar co
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Gêneros, tags, ano e datas de gravação, lançamento e artista gravados em metadata_values, por perfil, com fonte, instância e data (ISSUE-217 e 218)
+- [ ] #1 Gêneros, tags, ano e datas de gravação, lançamento e artista gravados na tabela de metadados por entidade (decision-012), por perfil, com fonte, instância e data (ISSUE-217 e 218)
 - [ ] #2 Tag popular distinta de gênero; datas com precisão parcial; edição distinta do primeiro lançamento do grupo
 - [ ] #3 Ausência ou erro de uma fonte nunca apaga dado anterior, e a edição manual prevalece
 - [ ] #4 Migração, exportação e reimportação v2 cobertas, com isolamento entre perfis testado (ISSUE-214)
@@ -127,6 +127,15 @@ created: 2026-11-24T19:54:00Z
 ---
 
 24/11/2026: issue reescrita sobre o schema 24 e dividida nas ISSUE-214 a 223, conforme as decisões do usuário registradas em doc-048. O modelo de catálogo compartilhado do ESTUDO.md fica substituído por metadata_values por perfil. A ISSUE-195 passa a depender da 214, que carrega a migração; esta issue segue como guarda-chuva e não bloqueia a consolidação.
+
+---
+
+author: claude
+created: 2026-11-27T21:34:00Z
+
+---
+
+27/11/2026: o usuário escolheu guardar os metadados descritivos por entidade, com cadastro de fontes (decision-012). Os critérios que citavam metadata_values foram ajustados; trechos da descrição que preveem esses tipos em metadata_values ficam substituídos.
 
 ---
 <!-- COMMENTS:END -->

@@ -89,3 +89,7 @@ Migração **025** (`enrichment_providers` e `enrichment_provider_runs`, no luga
 ## 7. Correção de 27/11/2026
 
 A afirmação das seções 4 e 6 de que `metadata_values` não muda está errada. A tabela só aceita `mbid`, `genre`, `tag`, `recording_year`, `release_date` e `artist_origin_country`: ISRC, BPM (ISSUE-218), a data do primeiro lançamento do grupo e a data completa da primeira publicação da gravação (ISSUE-217) exigem tipos novos e uma migração, que no SQLite recria a tabela. O usuário decidiu em 27/11/2026 por uma única migração para as duas issues, antes da consolidação (ISSUE-195). Hoje só `mbid` é gravado.
+
+## 8. Metadados por entidade (27/11/2026, decision-012)
+
+Prevalece sobre as seções 4, 6 e 7 no que diz respeito aos metadados descritivos. Gênero, tag, ano, datas, país de origem, ISRC e BPM passam a ser gravados por perfil e por entidade (faixa ou gravação, lançamento, artista) em uma tabela nova, com a fonte e a instância em um cadastro de fontes. Os MBIDs continuam em `metadata_values`, por escuta. Motivo e medição: `backlog/evidencias/issue-218/MEDICAO.md`.

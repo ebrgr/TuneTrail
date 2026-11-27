@@ -4,7 +4,7 @@ title: 219 — Capturar tags, ano e data enviados pelo cliente na escuta
 status: Aberta
 assignee: []
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-24T19:54:00Z'
+updated_date: '2026-11-27T21:34:00Z'
 labels:
   - ingestao
   - catalogo
@@ -28,7 +28,20 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Tags, ano e data enviados pelo cliente chegam a metadata_values com fonte 'cliente' e sem alterar escutas já aceitas
+- [ ] #1 Tags, ano e data enviados pelo cliente chegam à tabela de metadados por entidade (decision-012) com fonte 'cliente' e sem alterar escutas já aceitas
 - [ ] #2 Digest compatível com v1, v2 e v3, com teste de reenvio e de reimportação v2
 - [ ] #3 Clientes que enviam esses campos identificados e documentados
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-27T21:34:00Z
+
+---
+
+27/11/2026: o usuário escolheu guardar os metadados descritivos por entidade, com cadastro de fontes (decision-012). Os critérios que citavam metadata_values foram ajustados; trechos da descrição que preveem esses tipos em metadata_values ficam substituídos.
+
+---
+<!-- COMMENTS:END -->

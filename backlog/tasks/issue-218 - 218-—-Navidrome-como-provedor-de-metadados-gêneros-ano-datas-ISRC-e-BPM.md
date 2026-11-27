@@ -1,10 +1,11 @@
 ---
 id: ISSUE-218
 title: '218 — Navidrome como provedor de metadados: gêneros, ano, datas, ISRC e BPM'
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T15:21:00Z'
+updated_date: '2026-11-27T21:34:00Z'
 labels:
   - catalogo
   - ingestao
@@ -13,6 +14,8 @@ dependencies:
   - ISSUE-214
 references:
   - backlog/evidencias/issue-055/ESTUDO-COMPLEMENTAR.md
+  - backlog/evidencias/issue-218/MEDICAO.md
+  - backlog/evidencias/issue-218/HANDOFF.md
 documentation:
   - doc-048
 priority: medium
@@ -31,10 +34,10 @@ Origem: decisão do usuário em 24/11/2026 (subsistema de enriquecimento compart
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
 - [ ] #1 Gêneros, ano e datas do Navidrome gravados com fonte e instância, só depois de associação segura da faixa e do álbum
-- [ ] #2 ISRC e BPM guardados quando existirem, em tipos novos de metadata_values criados por migração, e o ISRC disponível para a ponte com o MusicBrainz
+- [ ] #2 ISRC e BPM guardados quando existirem, na tabela de metadados por entidade criada por migração (decision-012), e o ISRC disponível para a ponte com o MusicBrainz
 - [ ] #3 Campos ausentes ou vazios não geram pendência nem apagam dado anterior
 - [ ] #4 Testes com respostas simuladas, sem credenciais, cobrindo versões repetidas e resultados truncados
-- [ ] #5 Escrita em metadata_values dos tipos que não são mbid, com vínculo à entidade certa (se a ISSUE-217 não a tiver construído antes), e migração coordenada com a ISSUE-195
+- [ ] #5 Escrita dos metadados descritivos na tabela por entidade, com a fonte no cadastro de fontes e vínculo à entidade certa (se a ISSUE-217 não a tiver construído antes), e migração coordenada com a ISSUE-195
 - [ ] #6 A consulta por ISRC da ISSUE-216 ligada à cadeia de identidade, usando o ISRC colhido do Navidrome, com ISRC que leva a mais de uma gravação tratado como ambíguo
 <!-- AC:END -->
 
@@ -56,6 +59,42 @@ created: 2026-11-27T15:21:00Z
 ---
 
 Decisão do usuário em 27/11/2026 (A5, A7): migração única de metadados antes da 195, com a ISSUE-217; a ligação da consulta por ISRC fica nesta issue.
+
+---
+
+author: ebrgr
+created: 2026-11-27T21:26:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-218` na branch `feat/issue-218-navidrome-como-provedor-de-metadados` criada a partir de `main`.
+
+---
+
+author: codex
+created: 2026-11-27T21:26:00Z
+
+---
+
+Plano: medir primeiro o custo por escuta; em seguida, se dentro do limite, preparar a migração compartilhada, associar metadados e ISRC com segurança, validar preservação e executar os testes exigidos.
+
+---
+
+author: codex
+created: 2026-11-27T21:27:00Z
+
+---
+
+Dúvida para decisão: a medição sintética com os índices atuais e oito valores por escuta resultou em 3.806,82 bytes/escuta, acima do limite aproximado de 500 B. Parada antes da implementação conforme instrução. Aceitar esse custo ou estudar outra modelagem? Qualquer mudança no vínculo por escuta exige decisão expressa. Método e limites em backlog/evidencias/issue-218/MEDICAO.md.
+
+---
+
+author: claude
+created: 2026-11-27T21:34:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: modelo D (metadados descritivos por entidade, com cadastro de fontes; MBIDs continuam por escuta), registrado na decision-012. Critérios 2 e 5 ajustados. Retoma a implementação.
 
 ---
 <!-- COMMENTS:END -->
