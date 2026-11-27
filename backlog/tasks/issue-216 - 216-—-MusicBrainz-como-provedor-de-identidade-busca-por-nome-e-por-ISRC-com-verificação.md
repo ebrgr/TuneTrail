@@ -3,11 +3,11 @@ id: ISSUE-216
 title: >-
   216 — MusicBrainz como provedor de identidade: busca por nome e por ISRC com
   verificação
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T14:49:00Z'
+updated_date: '2026-11-27T14:51:00Z'
 labels:
   - ingestao
   - catalogo
@@ -112,6 +112,15 @@ created: 2026-11-27T14:49:00Z
 ---
 
 Parecer do Reviewer (27/11/2026) sobre o diff final 3d6c9f3: nenhum item obrigatório. Recomendado corrigir antes do aceite: (1) Instance() devolve a URL crua do MusicBrainz e NewMusicBrainz não valida, ao contrário do Subsonic, então uma URL de espelho com credencial seria gravada em metadata_values.instance e nos backups; (2) créditos de artista comparados só com EqualFold, enquanto o álbum usa a normalização medida na 215. Riscos menores: escuta de vários artistas sem artist_names não casa; o teste de integração não confere duração, estado do job nem instância; consulta com release sem medição; lookupISRC sem chamador. Detalhes em backlog/evidencias/issue-216/PARECER-REVIEWER.md. Revisão feita por quem aplicou as melhorias do Advisor, portanto não independente.
+
+---
+
+author: ebrgr
+created: 2026-11-27T14:51:00Z
+
+---
+
+Aceite do usuário (27/11/2026): aceita a ISSUE-216 como está, sem corrigir os riscos do Reviewer. Ficam registrados e NÃO corrigidos: (1) Instance() devolve a URL crua do MusicBrainz e NewMusicBrainz não valida a URL, então um espelho com credencial embutida em KOITO_MUSICBRAINZ_URL seria gravado em metadata_values.instance e nos backups; (2) créditos de artista comparados com EqualFold, sem a normalização usada no álbum; (3) escuta de vários artistas sem artist_names não é resolvida; (4) o teste de integração não confere duração, estado do job nem instância; (5) a consulta inclui release e a ISSUE-215 mediu sem ela; (6) lookupISRC sem chamador. O critério 3 (ISRC) fica aberto até as ISSUE-218 e 219. Prioridade e teto por minuto em lote estão na ISSUE-213.
 
 ---
 <!-- COMMENTS:END -->
