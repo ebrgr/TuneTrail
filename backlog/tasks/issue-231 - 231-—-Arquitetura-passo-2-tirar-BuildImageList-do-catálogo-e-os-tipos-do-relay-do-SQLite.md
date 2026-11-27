@@ -3,11 +3,11 @@ id: ISSUE-231
 title: >-
   231 — Arquitetura, passo 2: tirar BuildImageList do catálogo e os tipos do
   relay do SQLite
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-27T15:45:00Z'
-updated_date: '2026-11-27T21:04:00Z'
+updated_date: '2026-11-27T21:06:00Z'
 labels:
   - banco
   - processo
@@ -92,6 +92,24 @@ created: 2026-11-27T21:04:00Z
 ---
 
 Pedido do usuário em 27/11/2026: «arrume a 2 e 3 e depois aceito». Reaberta para aplicar as melhorias 2 e 3 do Advisor.
+
+---
+
+author: ebrgr
+created: 2026-11-27T21:06:00Z
+
+---
+
+Verificação: melhorias 2 e 3 do Advisor aplicadas; make check completo; regra leaf-stays-narrow com quatro mutações detectadas e teste de arquitetura com -race; as demais mudanças são comentários.
+
+---
+
+author: claude
+created: 2026-11-27T21:06:00Z
+
+---
+
+Aceite do usuário em 27/11/2026: «aceito e publique após e me mostre após as proximas tarefas».
 
 ---
 <!-- COMMENTS:END -->
