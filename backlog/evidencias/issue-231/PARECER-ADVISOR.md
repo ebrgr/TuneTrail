@@ -16,8 +16,8 @@
 ## Melhorias, todas opcionais
 
 1. **Deste diff (evidência):** `TestRelayClaimOrder` passa sem o `slices.SortFunc`. Confirmado pelo implementador; `VERIFICACAO.md` foi corrigido.
-2. **Deste diff:** `internal/imageurl` está em `sqliteBase`, mas nada limita os imports dele; ele traz `imagecache` e dependências (que o sqlite já recebia via `catalog`). Sugestão: regra para os imports de `imageurl`, ou mover as constantes de tamanho. Não aplicada.
-3. **Deste diff:** o comentário de `RelayPayload` não diz que `db.ErrNotFound` também aparece quando a reivindicação perdeu o bloqueio (lease, geração ou versão). Não aplicada.
+2. **Deste diff:** `internal/imageurl` está em `sqliteBase`, mas nada limita os imports dele; ele traz `imagecache` e dependências (que o sqlite já recebia via `catalog`). Sugestão: regra para os imports de `imageurl`, ou mover as constantes de tamanho. **Aplicada** a regra `leaf-stays-narrow`, a pedido do usuário.
+3. **Deste diff:** o comentário de `RelayPayload` não diz que `db.ErrNotFound` também aparece quando a reivindicação perdeu o bloqueio (lease, geração ou versão). **Aplicada** a pedido do usuário.
 4. **Anteriores, fora do escopo:** `TestWorkerPacesFailedClaims` trava até o limite do Go numa regressão; `/first-activity` responde 500 com histórico vazio; `RelayQueueStatus` devolve `sql.ErrNoRows` dentro do próprio pacote.
 
 ## Verificado pelo Advisor

@@ -1,10 +1,10 @@
 # ISSUE-231 — Parecer do Reviewer
 
-Revisão em 27/11/2026 do diff `main...HEAD` (commit `846606a`), feita pelo mesmo agente que implementou, sem delegação. Não é uma revisão independente.
+Revisão em 27/11/2026 do diff `main...HEAD` (commit `846606a`; reauditado o acréscimo das melhorias 2 e 3 do Advisor), feita pelo mesmo agente que implementou, sem delegação. Não é uma revisão independente.
 
 **APROVADO** — nenhum item obrigatório.
 
-- [RISCO] `internal/architecture/architecture_test.go`, `sqliteBase` — `internal/imageurl` foi liberado para o armazenamento e nenhuma regra impede que ele passe a importar um pacote de negócio.
+- Resolvido depois do parecer do Advisor: a regra `leaf-stays-narrow` limita os imports de `internal/imageurl`, liberado para o armazenamento. Vale para imports diretos; `imagecache` não é limitado.
 - [RISCO] `internal/relayoutbox/worker_test.go`, `TestWorkerPacesFailedClaims` — se o worker deixar de reconhecer a configuração inválida, o teste trava até o limite do Go em vez de falhar logo. Comportamento anterior a esta tarefa.
 - [RISCO] `internal/db/sqlite/relay_worker_store.go`, `RelayQueueStatus` — continua devolvendo `sql.ErrNoRows`. Só o próprio pacote o chama; fora do escopo.
 

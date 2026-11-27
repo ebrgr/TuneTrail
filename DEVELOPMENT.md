@@ -42,6 +42,7 @@ No VS Code, instale a extensão Go e use **TuneTrail: Desenvolvimento Go (localh
 | `core-without-adapters` | `internal/ingest`, `internal/models` e `internal/db` alcançarem `internal/db/sqlite`, `internal/mbz` ou a interface web (`adminui`, `adminweb`, `webui`, `webassets`, `engine`) |
 | `domain-without-interface` | um pacote de domínio importar `adminui`, `webui` ou `engine` (e subpacotes). Domínio é todo pacote fora de `engine/...`, `adminui`, `webui` e `cmd/...`, inclusive os novos |
 | `sqlite-without-new-business-imports` | `internal/db/sqlite` importar um pacote do projeto fora da lista `sqliteBase` (contratos, tipos e auxiliares técnicos) |
+| `leaf-stays-narrow` | um pacote folha importar um pacote do projeto fora da sua lista em `leafImports`. Hoje: `internal/imageurl` importa só `imagecache`, `internal/db` e `internal/models` (imports diretos) |
 
 `webui` importar `adminui` é permitido por enquanto e está em estudo (ISSUE-232). A busca por SQL em strings reconhece apenas comandos com palavras-chave em maiúsculas, como o projeto os escreve. As migrações em `db/migrations_sqlite` fazem parte do adaptador SQLite.
 

@@ -38,3 +38,5 @@ Na primeira rodada, as duas mutações de ordem do lote **não** eram detectadas
 ## Teste de arquitetura
 
 As exceções passaram de 13 para 8. `internal/imageurl` entrou na lista `sqliteBase`.
+
+A regra `leaf-stays-narrow`, acrescentada depois do parecer do Advisor, limita `internal/imageurl` a `imagecache`, `internal/db` e `internal/models`. Quatro mutações detectadas: importar `internal/catalog`, `internal/importer`, `internal/db/sqlite` ou `internal/logger`.

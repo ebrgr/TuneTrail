@@ -242,7 +242,8 @@ func TestRelayOutboxClaims(t *testing.T) {
 }
 
 // TestRelayClaimOrder sends the longest waiting items first and breaks ties by
-// ID. The due times are set against the ID order so neither can pass by chance.
+// ID. The due times go against the ID order, so a wrong comparator fails. A
+// removed sort goes unnoticed: SQLite happens to return the rows already ordered.
 func TestRelayClaimOrder(t *testing.T) {
 	s, _ := relayStoreFixture(t)
 	now := time.Now().Add(time.Minute).UTC().Truncate(time.Second)

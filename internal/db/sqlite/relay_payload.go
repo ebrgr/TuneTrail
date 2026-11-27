@@ -16,7 +16,9 @@ import (
 )
 
 // RelayPayload reconstructs a claimed item from its immutable accepted receipt.
-// It returns db.ErrNotFound when the claim no longer has a source to send.
+// It returns db.ErrNotFound when nothing matches the claim: the item or its
+// accepted receipt is gone, or the claim lost its fence (lease owner, generation
+// or work version). FailRelaySource is fenced too, so a lost claim retires nothing.
 func (s *Sqlite) RelayPayload(ctx context.Context, batch relay.Batch, item relay.Item) ([]byte, error) {
 	var version int
 	var snapshot string

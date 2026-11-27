@@ -34,6 +34,7 @@ const (
 	pkgWebAssets = "internal/webassets"
 	pkgEngine    = "engine"
 	pkgHandlers  = "engine/handlers"
+	pkgImageURL  = "internal/imageurl"
 )
 
 const (
@@ -43,6 +44,7 @@ const (
 	ruleCore         = "core-without-adapters"
 	ruleDomain       = "domain-without-interface"
 	ruleSQLiteImport = "sqlite-without-new-business-imports"
+	ruleLeaf         = "leaf-stays-narrow"
 )
 
 // sqlStatement is the target of a violation caused by SQL text in a string.
@@ -55,6 +57,7 @@ var ruleText = map[string]string{
 	ruleCore:         "internal/ingest, internal/models and internal/db must not reach adapters or the web interface",
 	ruleDomain:       "domain packages must not import adminui, webui or engine",
 	ruleSQLiteImport: "internal/db/sqlite must not gain imports of business packages",
+	ruleLeaf:         "a leaf package imports only the module packages listed for it in leafImports",
 }
 
 // sqliteBase lists the module packages internal/db/sqlite may import for good:
@@ -64,12 +67,18 @@ var sqliteBase = []string{
 	"db/migrations_sqlite",
 	"internal/cfg",
 	pkgDB,
-	"internal/imageurl",
+	pkgImageURL,
 	pkgIngest,
 	"internal/logger",
 	pkgModels,
 	"internal/retry",
 	"internal/utils",
+}
+
+// leafImports limits packages that sqliteBase lets the storage adapter use, so
+// that they cannot bring a business package in behind it. Direct imports only.
+var leafImports = map[string][]string{
+	pkgImageURL: {"imagecache", pkgDB, pkgModels},
 }
 
 type exception struct {
@@ -243,6 +252,9 @@ func check(files []sourceFile) []violation {
 			if inSQLite && local && !within(target, pkgSQLite) && !slices.Contains(sqliteBase, target) {
 				report(ruleSQLiteImport, file.pkg, target, file.path)
 			}
+			if allowed, leaf := leafImports[file.pkg]; leaf && local && !slices.Contains(allowed, target) {
+				report(ruleLeaf, file.pkg, target, file.path)
+			}
 		}
 		if !within(file.pkg, pkgSQLite) {
 			for _, line := range file.sql {
@@ -357,6 +369,9 @@ func TestArchitecture(t *testing.T) {
 	}
 	named := append([]string{pkgSQLite, pkgDB, pkgIngest, pkgModels, pkgMBZ, pkgAdminUI,
 		pkgAdminWeb, pkgWebUI, pkgWebAssets, pkgEngine, pkgHandlers}, sqliteBase...)
+	for leaf, allowed := range leafImports {
+		named = append(append(named, leaf), allowed...)
+	}
 	for _, pkg := range named {
 		if !packages[pkg] {
 			t.Errorf("package %s is named by a rule but has no source; update the rules", pkg)
@@ -409,6 +424,9 @@ func TestRulesRejectForbiddenImports(t *testing.T) {
 		{"sqlite gains a business import", []sourceFile{
 			imports(pkgSQLite, "internal/importer"), imports("internal/importer")},
 			[]string{ruleSQLiteImport + " internal/db/sqlite"}},
+		{"leaf gains an import", []sourceFile{
+			imports(pkgImageURL, "internal/catalog", pkgModels), imports("internal/catalog"), imports(pkgModels)},
+			[]string{ruleLeaf + " internal/imageurl"}},
 		{"allowed imports", []sourceFile{
 			imports(pkgEngine, pkgSQLite, pkgWebUI), imports(pkgWebUI, pkgAdminUI),
 			imports(pkgSQLite, "database/sql", pkgModels, "github.com/pressly/goose/v3"), imports(pkgModels),
