@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T14:51:00Z'
+updated_date: '2026-11-27T14:54:00Z'
 labels:
   - ingestao
   - catalogo
@@ -121,6 +121,15 @@ created: 2026-11-27T14:51:00Z
 ---
 
 Aceite do usuário (27/11/2026): aceita a ISSUE-216 como está, sem corrigir os riscos do Reviewer. Ficam registrados e NÃO corrigidos: (1) Instance() devolve a URL crua do MusicBrainz e NewMusicBrainz não valida a URL, então um espelho com credencial embutida em KOITO_MUSICBRAINZ_URL seria gravado em metadata_values.instance e nos backups; (2) créditos de artista comparados com EqualFold, sem a normalização usada no álbum; (3) escuta de vários artistas sem artist_names não é resolvida; (4) o teste de integração não confere duração, estado do job nem instância; (5) a consulta inclui release e a ISSUE-215 mediu sem ela; (6) lookupISRC sem chamador. O critério 3 (ISRC) fica aberto até as ISSUE-218 e 219. Prioridade e teto por minuto em lote estão na ISSUE-213.
+
+---
+
+author: ebrgr
+created: 2026-11-27T14:54:00Z
+
+---
+
+Publicação: versão 0.79 (tag `v0.79`), branch `feat/issue-216-musicbrainz-como-provedor-de-identidade` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

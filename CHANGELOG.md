@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.79] - 2026-11-27
+
 - Profiles can fill missing MusicBrainz IDs by search, unless MusicBrainz is disabled (ISSUE-216).
 
 ## [0.78] - 2026-11-26
