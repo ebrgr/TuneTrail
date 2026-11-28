@@ -1,0 +1,82 @@
+package sqlite
+
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/ebrgr/TuneTrail/internal/enrichment"
+	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/ebrgr/TuneTrail/internal/mbz"
+	"github.com/stretchr/testify/require"
+)
+
+// A permanent album name difference: count requests over repeated listens of one track.
+func TestZZAlbumDivergenceRepeats(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		switch r.URL.Path {
+		case "/rest/search3":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Div","artist":"Artist","album":"Album"}]}}}`)
+		case "/rest/getSong":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","albumId":"album","title":"Div","artist":"Artist","album":"Album","year":2005}}}`)
+		case "/rest/getAlbum":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","album":{"id":"album","name":"Album (Deluxe)"}}}`)
+		}
+	}))
+	defer srv.Close()
+	provider, err := enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	snap := ingest.Snapshot{Title: "Div", Artist: "Artist", Release: "Album", Recording: fixtureRecording, ArtistMBIDs: []string{"33333333-3333-4333-8333-333333333333"}}
+	for i := 0; i < 5; i++ {
+		admitOccurrenceFixture(t, s, snap, 1700005000+int64(i), fmt.Sprintf("div-%d", i))
+		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+		_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+		t.Logf("listen %d: calls=%d track values=%d markers=%d", i+1, calls,
+			scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='recording_year'`), scalar(t, s, `SELECT count(*) FROM metadata_retries`))
+	}
+}
+
+// ---- internal/enrichment ----
+
+package enrichment
+
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/ebrgr/TuneTrail/internal/ingest"
+	"github.com/stretchr/testify/require"
+)
+
+// The cached answer must not depend on Prior, which is outside the cache key.
+func TestZZCacheIgnoresPrior(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/search3"):
+			fmt.Fprintf(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Title","artist":"Artist","album":"Album","mediaType":"song","musicBrainzId":"%s"}]}}}`, recordingID)
+		case strings.HasSuffix(r.URL.Path, "/getSong"):
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","title":"Title","artist":"Artist","album":"Album","year":2005}}}`)
+		}
+	}))
+	defer srv.Close()
+	p, err := NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	req := Request{Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}}
+	with := req
+	with.Prior = []Declaration{{Entity: "recording", Field: "musicbrainz_id", Value: recordingID, Source: "other"}}
+	t.Logf("with prior: %+v", p.Lookup(t.Context(), with).Declarations)
+	t.Logf("same snapshot without prior: %+v", p.Lookup(t.Context(), req).Declarations)
+}

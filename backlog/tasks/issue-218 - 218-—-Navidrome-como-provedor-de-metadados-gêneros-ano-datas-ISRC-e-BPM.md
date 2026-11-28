@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:23:00Z'
+updated_date: '2026-11-28T01:33:00Z'
 labels:
   - catalogo
   - ingestao
@@ -162,6 +162,15 @@ created: 2026-11-28T01:23:00Z
 ---
 
 Verificação final das correções: detector de corrida aprovado nos testes de enriquecimento/migração e no teste de instância ampliado; make check aprovado, 13 jornadas. As seis mutações compilaram e foram detectadas; cenários de gatilhos, custo e riscos documentados no HANDOFF e MEDICAO.
+
+---
+
+author: claude
+created: 2026-11-28T01:33:00Z
+
+---
+
+Segunda revisão (commit 7aef45c): os cinco itens anteriores foram resolvidos; REPROVADO por dois itens novos (consultas repetidas quando há divergência de dados; cache do Navidrome ignora o Prior). make check aprovado. Detalhes em PARECER-REVIEWER.md.
 
 ---
 <!-- COMMENTS:END -->

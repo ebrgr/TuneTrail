@@ -34,3 +34,38 @@ Os testes existentes não cobrem nenhum dos cinco casos.
 `make check` e o detector de corridas não foram repetidos (o Codex relata `make check` aprovado); serão rodados depois das correções. Mesclagens foram lidas, não reproduzidas.
 
 **Advisor:** a mudança altera o banco e a fila de enriquecimento; recomenda-se acioná-lo depois das correções.
+
+---
+
+## Segunda revisão — commit `7aef45c`
+
+27/11/2026, sobre `git diff 37ae3aa 7aef45c`.
+
+**REPROVADO** — dois itens obrigatórios. Os cinco itens do primeiro parecer foram resolvidos.
+
+### Itens obrigatórios
+
+1. **[BUG]** `internal/enrichment/subsonic.go`, `lookup` (`partial`) — divergência de dados é tratada como falha passageira. Álbum com nome diferente no `getAlbum` marca o resultado como `Retryable`: não entra no cache e grava `metadata_retries`, que nunca sai. Reproduzido: cinco escutas da mesma faixa, com IDs completos e metadado já gravado, geram **15 chamadas** (3 por escuta), para sempre. Contraria a regra de consultar só quando faltar algo. O mesmo ramo vale para a divergência no `getSong`. Corrigir: só erro de chamada é repetível; divergência é resposta definitiva, entra no cache e não grava marcador.
+2. **[BUG]** `internal/enrichment/subsonic.go`, `Lookup` — os campos pendentes agora dependem de `req.Prior`, que fica fora da chave do cache. Reproduzido: uma consulta com o ID da gravação em `Prior`, seguida de outra igual sem ele, devolve o resultado guardado, sem o MBID da gravação, por 10 minutos. Alcance estreito (exige a mesma escuta com `Prior` diferente). Corrigir: incluir na chave os campos pendentes calculados, com teste.
+
+### Ajustes pequenos, a fazer junto
+
+- `internal/db/sqlite/bootstrap.go` — a guarda de prévia da versão 26 só exige `descriptive_metadata`. Um banco criado pelo commit anterior desta branch passa pela guarda e não tem `metadata_retries`. Exigir também essa tabela (verificado pela leitura).
+- `026_descriptive_metadata.sql` — `metadata_retries` não tem índice por `occurrence_id`: com chaves estrangeiras ligadas, excluir uma ocorrência custa 0,08 ms sem marcadores e 2,5 ms com 100 mil. Com o item 1 corrigido a tabela fica pequena; avaliar o índice e o efeito em bytes.
+
+### Riscos aceitos ou a decidir
+
+- Faixa com mais de quatro ISRCs sem resultado por nome devolve `failed`, sem cache. Caso raro.
+- Metadado já gravado não é atualizado depois (limitação registrada no `HANDOFF.md`).
+- Os gatilhos ficaram mais longos, com consultas curtas de atalho; o resultado é o mesmo dos anteriores (abaixo).
+
+### Verificado nesta revisão
+
+- `make check` aprovado, com 13/13 jornadas.
+- `go test -race` em `internal/enrichment` e nos testes de enriquecimento, mesclagem e exclusão de `internal/db/sqlite`: aprovado. A suíte completa de `sqlite` com detector de corridas não foi rodada.
+- Gatilhos novos contra os de `37ae3aa`: 4.000 bases aleatórias, 100 mil exclusões com chaves estrangeiras ligadas, **nenhuma diferença** nas linhas mantidas.
+- Desempenho (`medir_gatilhos.py` repetido e `medir_gatilhos_fk.py`, biblioteca com um artista em 20% das faixas, 100 mil escutas): gravação 0,06 ms (antes 40 ms); exclusão de uma escuta 0,05 ms (antes 80 ms); apagar todas as escutas 3,1 s; apagar o perfil 0,9 s.
+- API pública do MusicBrainz aceita `inc=artist-credits` na consulta por ISRC (código de uma gravação conhecida, agente genérico).
+- As mutações relatadas pelo Codex não foram repetidas.
+
+Reproduções dos dois itens em `reproducoes-parecer-2.go.txt`. **Advisor:** recomendado depois das correções.
