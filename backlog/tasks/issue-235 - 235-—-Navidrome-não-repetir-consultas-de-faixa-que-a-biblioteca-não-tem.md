@@ -4,7 +4,7 @@ title: '235 — Navidrome: não repetir consultas de faixa que a biblioteca não
 status: Aberta
 assignee: []
 created_date: '2026-11-28T01:53:00Z'
-updated_date: '2026-11-28T01:53:00Z'
+updated_date: '2026-11-28T02:20:00Z'
 labels:
   - ingestao
   - catalogo
@@ -27,3 +27,16 @@ Origem: parecer do Advisor da ISSUE-218 (27/11/2026). A ISSUE-218 só deixa de c
 - [ ] #2 Falha passageira continua sendo tentada de novo
 - [ ] #3 Custo em bytes por escuta medido antes da implementação e aprovado pelo usuário
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-28T02:20:00Z
+
+---
+
+27/11/2026: o escopo passa a ser atendido pela ISSUE-217 (marca durável por fonte, migração 027), por decisão do usuário sobre respostas sem dado. Permanece aberta até o aceite da 217; não implementar em separado.
+
+---
+<!-- COMMENTS:END -->
