@@ -1,0 +1,18 @@
+{
+  "files": 190,
+  "differences": [
+    {
+      "file": "public/empty.html",
+      "result": "different",
+      "base_sha256": "277f75a3ebb187c28f8ec64c2a33b4334cd194aa8a7506abb03427d397656b6b",
+      "new_sha256": "4659b690981dec427792ccb0a815552f214b9d8b74b6956fe62f2206e88502cd"
+    },
+    {
+      "file": "public/home.html",
+      "result": "different",
+      "base_sha256": "4fe3c62a0c6574f7743addb862f713937dc2dd56fec838aa7b684267363d17ae",
+      "new_sha256": "3aede09e502c567baa2f357ffa92e0c92be362712d2e6d10b67dfdcfa3e63ecf"
+    }
+  ],
+  "exit_code": 2
+}
