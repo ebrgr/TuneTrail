@@ -3,11 +3,11 @@ id: ISSUE-166
 title: >-
   166 — Títulos das páginas: remover o Koito da Home e padronizar com o nome do
   perfil e a tradução
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T20:48:00Z'
-updated_date: '2026-11-28T02:04:00Z'
+updated_date: '2026-11-28T02:21:00Z'
 labels:
   - ui
   - i18n
@@ -70,6 +70,24 @@ created: 2026-11-28T02:04:00Z
 ---
 
 Reviewer: APROVADO (backlog/evidencias/issue-166/PARECER-REVIEWER.md).
+
+---
+
+author: ebrgr
+created: 2026-11-28T02:07:00Z
+
+---
+
+Reviewer aprovado; testes novos conferidos antes e depois. make check executado neste envio, sobre a v0.82. Sugestão opcional: encurtar a entrada do CHANGELOG para citar só a página inicial.
+
+---
+
+author: ebrgr
+created: 2026-11-28T02:21:00Z
+
+---
+
+Aceite do usuário em 27/11/2026: «Aceito a 166».
 
 ---
 <!-- COMMENTS:END -->
