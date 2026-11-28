@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:41:00Z'
+updated_date: '2026-11-28T01:48:00Z'
 labels:
   - catalogo
   - ingestao
@@ -21,6 +21,7 @@ references:
   - backlog/evidencias/issue-218/PLANOS-GATILHOS.txt
   - backlog/evidencias/issue-218/MUTACOES.txt
   - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-2.md
+  - backlog/evidencias/issue-218/PARECER-ADVISOR.md
 documentation:
   - doc-048
 priority: medium
@@ -199,6 +200,15 @@ created: 2026-11-28T01:41:00Z
 ---
 
 Terceira revisão (commit 6916f01): APROVADO para os dois itens. Rodados somente os testes dessas alterações, a pedido do usuário; make check pendente sobre este commit. Dois ajustes pequenos seguem abertos (PARECER-REVIEWER.md).
+
+---
+
+author: advisor
+created: 2026-11-28T01:48:00Z
+
+---
+
+Advisor (Opus 5.5) sobre a branch: um bloqueio (a consulta por ISRC declara a gravação mesmo com conflito de artista conhecido, reproduzido) e três pontos para decisão do usuário. Detalhes em PARECER-ADVISOR.md.
 
 ---
 <!-- COMMENTS:END -->
