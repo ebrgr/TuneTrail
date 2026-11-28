@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:53:00Z'
+updated_date: '2026-11-28T01:56:00Z'
 labels:
   - catalogo
   - ingestao
@@ -219,6 +219,15 @@ created: 2026-11-28T01:53:00Z
 ---
 
 Decisão do usuário em 27/11/2026: o MBID sempre tem preferência sobre o ISRC. Volta ao Codex para o bloqueio do Advisor sob essa regra e para a guarda de prévia da versão 26. Instruções: backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-3.md.
+
+---
+
+author: codex
+created: 2026-11-28T01:56:00Z
+
+---
+
+Terceira rodada: MBIDs conhecidos prevalecem sobre ISRC, com descarte integral e busca por nome em caso de conflito ou ausência de artista; a guarda da versão 26 exige as duas tabelas. Reproduções e testes direcionados passaram; detalhes no HANDOFF.
 
 ---
 <!-- COMMENTS:END -->

@@ -142,3 +142,21 @@ func TestBootstrapDescriptiveMetadataFromV25(t *testing.T) {
 	require.NoError(t, checkDatabase(db))
 	assertForeignKeys(t, s)
 }
+
+// TestSchemaVersionRejectsIncompleteV26 distinguishes the previous layout from the final one.
+func TestSchemaVersionRejectsIncompleteV26(t *testing.T) {
+	for _, missing := range []string{"descriptive_metadata", "metadata_retries"} {
+		t.Run(missing, func(t *testing.T) {
+			dir := t.TempDir()
+			path, err := bootstrapAtVersion(dir, true, 26)
+			require.NoError(t, err)
+			db, err := openExisting(path)
+			require.NoError(t, err)
+			defer db.Close()
+			_, err = db.Exec("DROP TABLE " + missing)
+			require.NoError(t, err)
+			_, err = schemaVersion(db)
+			require.ErrorContains(t, err, "ISSUE-174 development preview")
+		})
+	}
+}

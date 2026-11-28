@@ -187,6 +187,53 @@ func (r mbRecording) artistIDsConsistent(s ingest.Snapshot, prior []Declaration)
 	return true
 }
 
+// supportsKnownArtists requires each known artist to appear by name or ID and rejects conflicts.
+func (r mbRecording) supportsKnownArtists(s ingest.Snapshot, prior []Declaration) bool {
+	known := slices.Clone(s.ArtistMbidMappings)
+	known = append(known, s.PositionalArtistMappings(s.ArtistMBIDs)...)
+	known = append(known, s.PositionalArtistMappings(s.MappedArtistMBIDs)...)
+	for _, p := range prior {
+		if p.Entity == "artist" && p.Field == "musicbrainz_id" {
+			known = append(known, ingest.ArtistMapping{Name: p.Name, MBID: p.Value})
+		}
+	}
+	// Preserve unaligned received IDs without guessing their positions or names.
+	for _, id := range append(slices.Clone(s.ArtistMBIDs), s.MappedArtistMBIDs...) {
+		if !validUUID(id) {
+			continue
+		}
+		mapped := false
+		for _, k := range known {
+			if validUUID(k.MBID) && strings.EqualFold(k.MBID, id) {
+				mapped = true
+				break
+			}
+		}
+		if !mapped {
+			known = append(known, ingest.ArtistMapping{MBID: id})
+		}
+	}
+	for _, k := range known {
+		if !validUUID(k.MBID) {
+			continue
+		}
+		found := false
+		for _, credit := range r.Credits {
+			sameName := strings.TrimSpace(k.Name) != "" && equalMetadata(k.Name, credit.Name)
+			if sameName && validUUID(credit.Artist.ID) && !strings.EqualFold(k.MBID, credit.Artist.ID) {
+				return false
+			}
+			if sameName || (validUUID(credit.Artist.ID) && strings.EqualFold(k.MBID, credit.Artist.ID)) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
 // Lookup returns only missing declarations and caches bounded successful answers.
 func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 	s := req.Snapshot
@@ -293,10 +340,11 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 			if !isrcFailed && len(recordings) == 1 {
 				result := Result{Status: Found}
 				for id, rec := range recordings {
-					result.Declarations = append(result.Declarations, Declaration{Entity: "recording", Field: "musicbrainz_id", Value: id, Source: musicBrainzSource, ObservedAt: time.Now().UTC()})
-					if !rec.artistIDsConsistent(s, req.Prior) {
+					// Existing MusicBrainz identities take precedence over ISRC evidence.
+					if !rec.supportsKnownArtists(s, req.Prior) {
 						continue
 					}
+					result.Declarations = append(result.Declarations, Declaration{Entity: "recording", Field: "musicbrainz_id", Value: id, Source: musicBrainzSource, ObservedAt: time.Now().UTC()})
 					complete := true
 					for _, name := range s.ArtistCreditNames() {
 						found := false
@@ -327,10 +375,13 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 						result.Declarations = append(result.Declarations, Declaration{Entity: "artist", Name: name, Field: "musicbrainz_id", Value: uuid.MustParse(matches[0].Artist.ID).String(), Source: musicBrainzSource, ObservedAt: time.Now().UTC()})
 					}
 				}
-				if ctx.Err() == nil {
-					m.cacheResult(key, result)
+				if len(result.Declarations) > 0 {
+					if ctx.Err() == nil {
+						m.cacheResult(key, result)
+					}
+					return result
 				}
-				return result
+				// Conflicting ISRC evidence is discarded; a name search may still resolve it.
 			}
 		}
 	}

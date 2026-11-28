@@ -177,7 +177,7 @@ func TestReviewerSubsonicIncompleteEvidenceStillQueries(t *testing.T) {
 	require.Equal(t, 2, calls)
 }
 
-// TestReviewerISRCCreditsRejectKnownArtistConflict keeps the recording while withholding unsafe artist claims.
+// TestReviewerISRCCreditsRejectKnownArtistConflict discards the entire conflicting ISRC result.
 func TestReviewerISRCCreditsRejectKnownArtistConflict(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"recordings":[{"id":"%s","artist-credit":[{"name":"A","artist":{"id":"%s"}},{"name":"B","artist":{"id":"%s"}}]}]}`, recordingA, mbArtistID, recordingB)
@@ -186,9 +186,8 @@ func TestReviewerISRCCreditsRejectKnownArtistConflict(t *testing.T) {
 	p := NewMusicBrainz(srv.URL, "test", &mbCountingBudget{client: srv.Client()})
 	snap := ingest.Snapshot{Title: "Title", Artist: "A & B", Release: "Album", ArtistNames: []string{"A", "B"}, ArtistMbidMappings: []ingest.ArtistMapping{{Name: "B", MBID: recordingA}}}
 	result := p.Lookup(t.Context(), Request{Snapshot: snap, Prior: []Declaration{{Entity: "recording", Field: "isrc", Value: "USABC1234567"}}})
-	require.Equal(t, Found, result.Status)
-	require.Len(t, result.Declarations, 1)
-	require.Equal(t, "recording", result.Declarations[0].Entity)
+	require.Equal(t, Absent, result.Status)
+	require.Empty(t, result.Declarations)
 }
 
 // TestSubsonicPermanentDivergenceCachesSafeClaims distinguishes conflicts from transport errors.
@@ -264,4 +263,112 @@ func TestSubsonicCacheSeparatesPendingIdentifiers(t *testing.T) {
 	require.Len(t, artistResult.Declarations, 2)
 	require.Equal(t, "artist", artistResult.Declarations[0].Entity)
 	require.Equal(t, 8, calls)
+}
+
+// TestISRCRespectsKnownArtistMBIDs discards conflicting or unrelated credits before name fallback.
+func TestISRCRespectsKnownArtistMBIDs(t *testing.T) {
+	for _, tc := range []struct {
+		name, creditName, creditID string
+		want                       Status
+		fallback                   bool
+	}{
+		{"different ID", "B", recordingB, Absent, true},
+		{"missing known artist", "Other", recordingB, Absent, true},
+		{"same ID different name", "Alias", recordingA, Found, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var paths []string
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				paths = append(paths, r.URL.Path)
+				if strings.Contains(r.URL.Path, "/isrc/") {
+					fmt.Fprintf(w, `{"recordings":[{"id":"%s","artist-credit":[{"name":"A","artist":{"id":"%s"}},{"name":"%s","artist":{"id":"%s"}}]}]}`, recordingB, mbArtistID, tc.creditName, tc.creditID)
+					return
+				}
+				fmt.Fprint(w, `{"recordings":[]}`)
+			}))
+			defer srv.Close()
+			p := NewMusicBrainz(srv.URL, "test", &mbCountingBudget{client: srv.Client()})
+			snapshot := ingest.Snapshot{Title: "Title", Artist: "A & B", Release: "Album", ArtistNames: []string{"A", "B"}, ArtistMbidMappings: []ingest.ArtistMapping{{Name: "B", MBID: recordingA}}}
+			result := p.Lookup(t.Context(), Request{Snapshot: snapshot, Prior: []Declaration{{Entity: "recording", Field: "isrc", Value: "USABC1234567"}}})
+			require.Equal(t, tc.want, result.Status)
+			if tc.fallback {
+				require.Empty(t, result.Declarations)
+				require.Len(t, paths, 2)
+				require.Equal(t, "/ws/2/recording", paths[1])
+			} else {
+				require.Len(t, paths, 1)
+				require.Equal(t, recordingB, result.Declarations[0].Value)
+			}
+		})
+	}
+}
+
+// TestISRCIsSkippedForKnownRecording checks both incoming and previously declared MBIDs.
+func TestISRCIsSkippedForKnownRecording(t *testing.T) {
+	for _, source := range []string{"snapshot", "mapped", "prior"} {
+		t.Run(source, func(t *testing.T) {
+			var paths []string
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				paths = append(paths, r.URL.Path)
+				fmt.Fprint(w, `{"recordings":[]}`)
+			}))
+			defer srv.Close()
+			p := NewMusicBrainz(srv.URL, "test", &mbCountingBudget{client: srv.Client()})
+			req := Request{Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}, Prior: []Declaration{{Entity: "recording", Field: "isrc", Value: "USABC1234567"}}}
+			switch source {
+			case "snapshot":
+				req.Snapshot.Recording = recordingA
+			case "mapped":
+				req.Snapshot.MappedRecording = recordingA
+			case "prior":
+				req.Prior = append(req.Prior, Declaration{Entity: "recording", Field: "musicbrainz_id", Value: recordingA})
+			}
+			require.Equal(t, Absent, p.Lookup(t.Context(), req).Status)
+			require.Equal(t, []string{"/ws/2/recording"}, paths)
+		})
+	}
+}
+
+// TestISRCKnownArtistEvidence covers named, prior and unaligned known artist IDs.
+func TestISRCKnownArtistEvidence(t *testing.T) {
+	credit := func(name, id string) mbCredit { var c mbCredit; c.Name = name; c.Artist.ID = id; return c }
+	for _, tc := range []struct {
+		name     string
+		snapshot ingest.Snapshot
+		prior    []Declaration
+		credits  []mbCredit
+		want     bool
+	}{
+		{"same name without returned ID", ingest.Snapshot{ArtistMbidMappings: []ingest.ArtistMapping{{Name: "B", MBID: recordingA}}}, nil, []mbCredit{credit("B", "")}, true},
+		{"prior artist absent", ingest.Snapshot{}, []Declaration{{Entity: "artist", Name: "B", Field: "musicbrainz_id", Value: recordingA}}, []mbCredit{credit("Other", recordingB)}, false},
+		{"unnamed prior matches by ID", ingest.Snapshot{}, []Declaration{{Entity: "artist", Field: "musicbrainz_id", Value: recordingA}}, []mbCredit{credit("", recordingB), credit("Alias", recordingA)}, true},
+		{"unaligned ID present", ingest.Snapshot{ArtistNames: []string{"A", "B"}, ArtistMBIDs: []string{recordingA}}, nil, []mbCredit{credit("Alias", recordingA)}, true},
+		{"unaligned ID absent", ingest.Snapshot{ArtistNames: []string{"A", "B"}, ArtistMBIDs: []string{recordingA}}, nil, []mbCredit{credit("Other", recordingB)}, false},
+		{"conflicting same name despite ID elsewhere", ingest.Snapshot{ArtistMbidMappings: []ingest.ArtistMapping{{Name: "B", MBID: recordingA}}}, nil, []mbCredit{credit("B", recordingB), credit("Alias", recordingA)}, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.Equal(t, tc.want, (mbRecording{Credits: tc.credits}).supportsKnownArtists(tc.snapshot, tc.prior))
+		})
+	}
+}
+
+// TestISRCConflictCanResolveByName uses the known artist ID in the fallback candidate.
+func TestISRCConflictCanResolveByName(t *testing.T) {
+	var paths []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths = append(paths, r.URL.Path)
+		if strings.Contains(r.URL.Path, "/isrc/") {
+			fmt.Fprintf(w, `{"recordings":[{"id":"%s","artist-credit":[{"name":"Artist","artist":{"id":"%s"}}]}]}`, recordingB, recordingB)
+			return
+		}
+		fmt.Fprintf(w, `{"recordings":[{"id":"%s","score":100,"artist-credit":[{"name":"Artist","artist":{"id":"%s"}}],"releases":[{"title":"Album"}]}]}`, recordingA, mbArtistID)
+	}))
+	defer srv.Close()
+	p := NewMusicBrainz(srv.URL, "test", &mbCountingBudget{client: srv.Client()})
+	snapshot := ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album", ArtistMbidMappings: []ingest.ArtistMapping{{Name: "Artist", MBID: mbArtistID}}}
+	result := p.Lookup(t.Context(), Request{Snapshot: snapshot, Prior: []Declaration{{Entity: "recording", Field: "isrc", Value: "USABC1234567"}}})
+	require.Equal(t, Found, result.Status)
+	require.Len(t, result.Declarations, 1)
+	require.Equal(t, recordingA, result.Declarations[0].Value)
+	require.Equal(t, []string{"/ws/2/isrc/USABC1234567", "/ws/2/recording"}, paths)
 }

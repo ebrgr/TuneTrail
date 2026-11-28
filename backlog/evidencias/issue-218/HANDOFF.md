@@ -53,3 +53,12 @@ Verificação das correções: `make check` aprovado, com 13 jornadas de ponta a
   - `go test ./internal/enrichment -run '^(TestSubsonicPermanentDivergenceCachesSafeClaims|TestSubsonicCacheSeparatesPendingIdentifiers|TestReviewerSubsonicPartialIdentityRetries|TestSubsonicRejectsChangedSongOrAlbum)$' -count=1`
   - `go test ./internal/db/sqlite -run '^(TestSubsonicAlbumDivergenceDoesNotRetry|TestSubsonicDivergenceClearsPreviousRetry)$' -count=1`
 - A guarda de prévia e o índice de `metadata_retries` seguem fora do escopo desta rodada, conforme instrução.
+
+## Terceira rodada de correções
+
+- A evidência por ISRC é descartada integralmente quando um crédito conflita com um MBID de artista conhecido ou quando o artista conhecido não aparece por nome nem ID; a busca por nome continua. MBID de gravação conhecido impede a consulta por ISRC.
+- A identificação do esquema 26 exige as tabelas `descriptive_metadata` e `metadata_retries`.
+- Os testes novos reproduziram as duas falhas antes da correção. Após a correção passaram somente os testes direcionados:
+  - `go test ./internal/enrichment -run '^(TestReviewerISRCCreditsRejectKnownArtistConflict|TestISRCRespectsKnownArtistMBIDs|TestISRCIsSkippedForKnownRecording|TestISRCKnownArtistEvidence|TestISRCConflictCanResolveByName|TestReviewerMultipleISRCDistinctRecordings|TestMusicBrainzAmbiguousISRCStopsIdentityLookup)$' -count=1`
+  - `go test ./internal/db/sqlite -run '^(TestSchemaVersionRejectsIncompleteV26|TestBootstrapRejectsEnrichmentPreview)$' -count=1`
+- Conforme solicitado, não foram executados `make check`, suíte completa, detector de corrida, mutações ou medições nesta rodada.

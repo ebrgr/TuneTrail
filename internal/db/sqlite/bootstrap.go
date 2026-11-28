@@ -138,7 +138,7 @@ func schemaVersion(db *sql.DB) (int, error) {
 		var preview bool
 		query := `SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enrichment_recording_claims')`
 		if version == 26 {
-			query = `SELECT NOT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='descriptive_metadata')`
+			query = `SELECT NOT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='descriptive_metadata') OR NOT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='metadata_retries')`
 		} else if version == 25 {
 			query = `SELECT NOT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='enrichment_providers')`
 		}
