@@ -84,3 +84,17 @@ Reproduções dos dois itens em `reproducoes-parecer-2.go.txt`. **Advisor:** rec
 - Não rodados sobre `6916f01`: `make check`, suíte completa, detector de corridas e medições. `make issue.review` roda o `make check`.
 
 Pendentes, não obrigatórios: guarda de prévia da versão 26 e índice de `metadata_retries` por `occurrence_id`.
+
+---
+
+## Quarta revisão — commit `c00b09e`
+
+27/11/2026, sobre `git diff bf3bb07 c00b09e`.
+
+**APROVADO.**
+
+- O resultado por ISRC é conferido contra os MBIDs conhecidos antes de qualquer declaração; em conflito é descartado inteiro e a busca por nome segue. Cobre IDs da escuta (inclusive os sem posição alinhada), do catálogo (via foto aumentada) e de `Prior`. A reprodução do Advisor agora devolve `absent` pelos dois caminhos.
+- A guarda da versão 26 exige as duas tabelas.
+- Rodados somente os testes dessas alterações: os nove passam no código novo. Sobre `bf3bb07`, falham os três de comportamento do ISRC e o caso `metadata_retries` da guarda; os demais, que fixam comportamento mantido, passam nos dois. `TestISRCKnownArtistEvidence` testa função nova e não existe no código anterior.
+- Limite conhecido: sem nenhum MBID conhecido, não há com o que comparar o resultado do ISRC.
+- O critério 1, no caso em que só o álbum diverge, fica para a ISSUE-236.
