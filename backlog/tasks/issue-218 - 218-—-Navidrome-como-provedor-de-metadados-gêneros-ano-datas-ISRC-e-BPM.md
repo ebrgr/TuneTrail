@@ -5,7 +5,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T02:00:00Z'
+updated_date: '2026-11-28T02:03:00Z'
 labels:
   - catalogo
   - ingestao
@@ -255,6 +255,15 @@ created: 2026-11-28T02:00:00Z
 ---
 
 Aceite do usuário em 27/11/2026: «aceito e publique».
+
+---
+
+author: ebrgr
+created: 2026-11-28T02:03:00Z
+
+---
+
+Publicação: versão 0.82 (tag `v0.82`), branch `feat/issue-218-navidrome-como-provedor-de-metadados` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

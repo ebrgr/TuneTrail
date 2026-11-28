@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.82] - 2026-11-27
+
 - Configured Navidrome libraries can enrich tracks with genres, dates, ISRCs and BPM, and use ISRCs to find MusicBrainz recordings (ISSUE-218).
 
 ## [0.81] - 2026-11-27
