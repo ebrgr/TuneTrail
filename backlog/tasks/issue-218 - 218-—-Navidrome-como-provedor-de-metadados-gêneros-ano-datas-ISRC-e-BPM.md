@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-27T22:02:00Z'
+updated_date: '2026-11-28T01:02:00Z'
 labels:
   - catalogo
   - ingestao
@@ -17,6 +17,7 @@ references:
   - backlog/evidencias/issue-218/MEDICAO.md
   - backlog/evidencias/issue-218/HANDOFF.md
   - backlog/evidencias/issue-218/PARECER-REVIEWER.md
+  - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES.md
 documentation:
   - doc-048
 priority: medium
@@ -132,6 +133,15 @@ created: 2026-11-27T22:02:00Z
 ---
 
 Parecer do Reviewer sobre 3e1ab90: REPROVADO, cinco itens obrigatórios (quatro na busca de identidade e um de desempenho nos gatilhos da 026). Detalhes e reproduções em PARECER-REVIEWER.md. Aguarda decisão do usuário sobre as correções.
+
+---
+
+author: claude
+created: 2026-11-28T01:02:00Z
+
+---
+
+Reviewer reprovou (5 itens, PARECER-REVIEWER.md). A pedido do usuário, a tarefa volta ao Codex para avaliar e corrigir, incluindo a regra nova de consultar o Navidrome só quando faltar ID ou metadado. Instruções: backlog/evidencias/issue-218/INSTRUCOES-CORRECOES.md.
 
 ---
 <!-- COMMENTS:END -->
