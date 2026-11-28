@@ -1,11 +1,11 @@
 ---
 id: ISSUE-218
 title: '218 — Navidrome como provedor de metadados: gêneros, ano, datas, ISRC e BPM'
-status: Em andamento
+status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:57:00Z'
+updated_date: '2026-11-28T02:00:00Z'
 labels:
   - catalogo
   - ingestao
@@ -237,6 +237,24 @@ created: 2026-11-28T01:57:00Z
 ---
 
 Quarta revisão (commit c00b09e): APROVADO. O MBID tem preferência sobre o ISRC; guarda do esquema 26 completa. Pontos restantes do Advisor abertos nas ISSUE-235, 236 e 237.
+
+---
+
+author: ebrgr
+created: 2026-11-28T02:00:00Z
+
+---
+
+Reviewer aprovado na quarta rodada (c00b09e); Advisor atendido, com os demais pontos nas ISSUE-235, 236 e 237. make check executado neste envio. Para o aceite: no critério 1, quando só o álbum diverge, os valores da faixa são gravados (decisão pendente na ISSUE-236). A suíte completa de sqlite com detector de corridas não foi rodada nesta branch.
+
+---
+
+author: ebrgr
+created: 2026-11-28T02:00:00Z
+
+---
+
+Aceite do usuário em 27/11/2026: «aceito e publique».
 
 ---
 <!-- COMMENTS:END -->
