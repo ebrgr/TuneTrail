@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-23T00:31:00Z'
-updated_date: '2026-11-28T01:53:00Z'
+updated_date: '2026-11-28T02:22:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -107,6 +107,15 @@ created: 2026-11-28T01:53:00Z
 ---
 
 Atenção: os gatilhos da migração 026 (ISSUE-218) usam INDEXED BY com nomes de índices das tabelas que esta tarefa recria; ver ISSUE-237.
+
+---
+
+author: claude
+created: 2026-11-28T02:22:00Z
+
+---
+
+27/11/2026: a ISSUE-217 acrescenta a migração 027 (marcas de resposta sem dado por perfil, entidade e fonte); incluí-la na consolidação.
 
 ---
 <!-- COMMENTS:END -->

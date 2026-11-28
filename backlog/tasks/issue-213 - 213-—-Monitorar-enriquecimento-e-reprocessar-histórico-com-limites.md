@@ -4,7 +4,7 @@ title: 213 — Monitorar enriquecimento e reprocessar histórico com limites
 status: Aberta
 assignee: []
 created_date: '2026-11-24T11:43:00Z'
-updated_date: '2026-11-28T02:20:00Z'
+updated_date: '2026-11-28T02:22:00Z'
 labels:
   - operacao
   - ingestao
@@ -31,7 +31,6 @@ Permitir enriquecer gradualmente o histórico existente com limites configuráve
 - [ ] #2 Mostrar progresso, provedor, resultados, falhas e estado de espera na central de monitoramento, com acesso pela central de saúde.
 - [ ] #3 Respeitar permissões e isolamento de perfis; indisponibilidade de provedor não impede registrar escutas.
 - [ ] #4 O orçamento compartilhado do MusicBrainz ganha classe de prioridade, de modo que o enriquecimento em lote do histórico fique abaixo do trabalho de escutas novas e do resolvedor, e um teto por minuto configurável por provedor (requisito que saiu da ISSUE-216 por decisão do usuário em 26/11/2026; hoje o orçamento é uma fila FIFO com um limite global em queue/queue.go)
-- [ ] #5 Listar na central de saúde, por perfil, as faixas, lançamentos e artistas sem dado em todas as fontes disponíveis (marcas da ISSUE-217) e permitir reconsultá-los, inclusive com um serviço habilitado depois
 <!-- AC:END -->
 
 ## Comments
@@ -61,6 +60,15 @@ created: 2026-11-28T02:20:00Z
 ---
 
 Decisão do usuário em 27/11/2026: o que ficar sem dado deve ser acessível na Central de saúde para reconsulta posterior. A ISSUE-217 cria o registro (migração 027); a listagem e a reconsulta são desta tarefa.
+
+---
+
+author: claude
+created: 2026-11-28T02:22:00Z
+
+---
+
+27/11/2026: o critério 5 (lista e reconsulta do que ficou sem dado) passa para a ISSUE-238, a pedido do usuário de abrir e organizar as tarefas conforme o novo plano. Esta tarefa segue com o enriquecimento do histórico, limites e prioridade, que a ISSUE-238 usa.
 
 ---
 <!-- COMMENTS:END -->

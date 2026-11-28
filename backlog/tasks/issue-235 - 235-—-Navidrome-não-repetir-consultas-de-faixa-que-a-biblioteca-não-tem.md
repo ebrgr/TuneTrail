@@ -4,13 +4,14 @@ title: '235 — Navidrome: não repetir consultas de faixa que a biblioteca não
 status: Aberta
 assignee: []
 created_date: '2026-11-28T01:53:00Z'
-updated_date: '2026-11-28T02:20:00Z'
+updated_date: '2026-11-28T02:22:00Z'
 labels:
   - ingestao
   - catalogo
 milestone: m-13
 dependencies:
   - ISSUE-218
+  - ISSUE-217
 type: enhancement
 ordinal: 248000
 ---
@@ -23,7 +24,7 @@ Origem: parecer do Advisor da ISSUE-218 (27/11/2026). A ISSUE-218 só deixa de c
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Escutas repetidas de uma faixa sem metadado no Navidrome não geram chamadas dentro do prazo definido, medido por teste com servidor simulado
+- [ ] #1 Escutas repetidas de uma faixa sem metadado no Navidrome não geram chamadas, sem prazo de repetição (a reconsulta é pedida pela central de saúde), e fonte ou instância nova é consultada, medido por teste com servidor simulado
 - [ ] #2 Falha passageira continua sendo tentada de novo
 - [ ] #3 Custo em bytes por escuta medido antes da implementação e aprovado pelo usuário
 <!-- AC:END -->
@@ -37,6 +38,15 @@ created: 2026-11-28T02:20:00Z
 ---
 
 27/11/2026: o escopo passa a ser atendido pela ISSUE-217 (marca durável por fonte, migração 027), por decisão do usuário sobre respostas sem dado. Permanece aberta até o aceite da 217; não implementar em separado.
+
+---
+
+author: claude
+created: 2026-11-28T02:22:00Z
+
+---
+
+Critério 1 alinhado à decisão de 27/11/2026: sem prazo para nova tentativa. Implementação e medição na ISSUE-217; a reconsulta fica na ISSUE-238.
 
 ---
 <!-- COMMENTS:END -->

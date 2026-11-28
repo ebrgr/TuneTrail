@@ -4,7 +4,7 @@ title: 234 — Exportação e importação dos metadados descritivos por entidad
 status: Aberta
 assignee: []
 created_date: '2026-11-27T21:48:00Z'
-updated_date: '2026-11-27T21:48:00Z'
+updated_date: '2026-11-28T02:22:00Z'
 labels:
   - catalogo
   - operacao
@@ -28,3 +28,16 @@ Origem: limitação encontrada na implementação da ISSUE-218 e pedido do usuá
 - [ ] #2 Exportar e importar um perfil recupera os valores com a fonte, sem expor a instância, com teste de ida e volta
 - [ ] #3 Reimportação não duplica valores e arquivos sem metadados continuam importando
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: claude
+created: 2026-11-28T02:22:00Z
+
+---
+
+27/11/2026: a ISSUE-217 cria marcas de resposta sem dado (migração 027). Decidir, com o formato, se elas entram na exportação ou se são estado operacional que não viaja.
+
+---
+<!-- COMMENTS:END -->
