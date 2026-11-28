@@ -23,3 +23,24 @@
 - `make check`: aprovado na execução final, incluindo a suíte Go, lint, testes de scripts e 13 jornadas de ponta a ponta.
 - `CGO_ENABLED=1 go test -race ./internal/enrichment ./internal/db/sqlite -run 'Test(Subsonic|MusicBrainz|Navidrome|Descriptive|Bootstrap.*Enrichment|BootstrapDescriptive|Enrichment|IngestDiscardProtectsListens)' -count=1`: aprovado; os últimos testes de integração foram repetidos separadamente com `-race`.
 - O script de análise AST do graphify foi executado na worktree após as alterações de código.
+
+## Parecer do Reviewer — correções
+
+1. **Identidade e detalhes:** falha ou divergência em `getSong`/`getAlbum` preserva as declarações já seguras; divergência do álbum conserva os valores seguros da faixa. Respostas parciais não entram no cache. `metadata_retries` mantém a necessidade de nova tentativa por perfil, ocorrência e fonte mesmo após reinício; a última escuta remove o marcador, e uma resposta completa o limpa.
+2. **ISRC inexistente ou indisponível:** 404 é ausência somente para o endpoint de ISRC; ausência e erro seguem para busca por nome. Se o ISRC falhou e a busca não encontrou nada, o resultado é falha e não é guardado como ausência.
+3. **Vários ISRCs:** até quatro códigos ordenados compartilham o orçamento do MusicBrainz; gravações distintas são reunidas, e mais de uma é ambígua. Uma consulta falha impede declarar com base apenas nas demais; acima do limite segue para a busca por nome. Resultados conclusivos usam cache.
+4. **Artistas:** `inc=artist-credits` recupera créditos na consulta por ISRC, com checagem de nome, unicidade e conflitos de IDs conhecidos. A [API MusicBrainz](https://musicbrainz.org/doc/MusicBrainz_API) documenta os includes para ISRC e gravação.
+5. **Escala:** os quatro gatilhos separam vínculos e usam os índices por entidade e perfil/faixa. Consultas curtas próximas da faixa e no início do perfil evitam scans repetidos nos lotes medidos; o fallback pode percorrer as faixas do próprio artista ou lançamento quando as consultas curtas não encontram suporte. `MEDICAO.md` descreve os cenários de até 100 mil escutas e `PLANOS-GATILHOS.txt` contém os planos.
+6. **Consulta condicionada:** o armazenamento identifica metadados de faixa da mesma ocorrência, perfil, fonte e instância e informa o provedor sem alterar a chave de cache. Com esses dados e sem IDs pendentes, não há rede; com ID pendente, ausência de metadados de faixa ou marcador de falha parcial, a consulta continua. Não há atualização periódica de valores já gravados nesta issue. Se o servidor não retorna metadados de faixa, escutas futuras voltam a consultá-lo.
+
+Os testes de reprodução falharam antes das correções. As seis mutações compilaram e foram detectadas; há também mutação específica para a declaração de créditos. O registro resumido está em `MUTACOES.txt`.
+
+### Resposta aos riscos
+
+- **Lease vencido:** a tentativa por provedor tem timeout de 20 s, e cada etapa concluída renova o lease de 60 s. Se o lease vencer antes da gravação, o executor antigo não encerra nem apaga a execução alheia; o worker recupera após o vencimento, preservando os passos finais, com limite de duas tentativas e falha terminal ao esgotá-las. Os testes cobrem expiração, perda do lease e recuperação esgotada. Com o processo parado ou banco indisponível a recuperação aguarda o serviço voltar; não há garantia de conclusão enquanto isso não ocorrer.
+- **Tipo concreto `*Subsonic`:** continua existindo na otimização que evita repetir metadados na mesma passagem. É acoplamento de extensibilidade; os testes atuais de recuperação e de uma consulta por passagem não demonstraram erro funcional que justificasse alterar o contrato de provedores nesta correção. Um segundo provedor com a mesma propriedade exigirá generalizar a capacidade.
+- **Exportação:** o formato continua sem os metadados descritivos e a ISSUE-234 acompanha exportação/restauração. A instância da fonte não é exportada.
+
+A entrada existente de `[Unreleased]` já descreve a funcionalidade ainda não publicada; as correções do parecer não acrescentam uma segunda entrada para regressões de código que ainda não foi lançado.
+
+Verificação das correções: `make check` aprovado, com 13 jornadas de ponta a ponta; `CGO_ENABLED=1 go test -race ./internal/enrichment ./internal/db/sqlite -run 'Test(Reviewer|Subsonic|MusicBrainz|Navidrome|Descriptive|Bootstrap.*Enrichment|BootstrapDescriptive|Enrichment|IngestDiscardProtectsListens)' -count=1` aprovado. O teste de instância foi ampliado e repetido separadamente com `-race`. O grafo AST foi atualizado. Nenhum serviço real com credencial foi consultado.

@@ -151,8 +151,14 @@ func TestSubsonicRejectsChangedSongOrAlbum(t *testing.T) {
 			c, err := NewSubsonic(server.URL, "", "test", time.Second, time.Nanosecond)
 			require.NoError(t, err)
 			result := c.Lookup(t.Context(), Request{Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}})
-			require.Equal(t, Ambiguous, result.Status)
-			require.Empty(t, result.Declarations)
+			if bad == "song" {
+				require.Equal(t, Ambiguous, result.Status)
+				require.Empty(t, result.Declarations)
+			} else {
+				require.Equal(t, Found, result.Status)
+				require.Len(t, result.Declarations, 1)
+				require.Equal(t, "isrc", result.Declarations[0].Field)
+			}
 		})
 	}
 }

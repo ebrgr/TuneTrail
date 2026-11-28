@@ -50,3 +50,17 @@ Após a decisão da opção 1, `python3 backlog/evidencias/issue-218/medir_model
 | 10 | 65,54 |
 
 O pior cenário fica abaixo do limite de aproximadamente 700 bytes. Os valores são estimativas de armazenamento, não medições em dados reais. Uma busca bem-sucedida do Navidrome já coleta metadados durante a identidade e evita outra consulta do mesmo provedor na cadeia de metadados na mesma passagem; o script mantém o registro de sucesso até o fechamento simulado.
+
+## Correções do parecer — gatilhos e armazenamento
+
+A migração 026 foi medida novamente após separar as consultas por entidade. O script `medir_gatilhos.py` monta tabelas e índices reais em SQLite em memória, com perfis e valores fictícios, desativa as chaves estrangeiras para isolar os gatilhos e mede inserção de metadados, inserção repetida, exclusões individuais e exclusão em lote. Cada grupo de dez faixas compartilha artista e lançamento; o lote contém metadados para todas as faixas. Tempos são médias de uma execução local, não garantias para produção.
+
+| Escutas | Inserir ms | Repetir ms | Excluir escuta ms | Excluir ocorrência ms | Excluir faixa ms | Lote ms/escuta |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1.000 | 0,061 | 0,049 | 0,039 | 0,031 | 0,017 | 0,013 |
+| 10.000 | 0,068 | 0,058 | 0,056 | 0,040 | 0,019 | 0,015 |
+| 100.000 | 0,068 | 0,053 | 0,069 | 0,050 | 0,028 | 0,020 |
+
+Com `--shared`, um artista e um lançamento concentram toda a biblioteca: a exclusão em lote levou 0,011 / 0,016 / 0,016 ms por escuta para 1.000 / 10.000 / 100.000 escutas. Com `--shared --selective`, 16 escutas de outro artista permanecem durante a exclusão parcial; o lote levou 0,011 / 0,011 / 0,013 ms por escuta. A busca curta perto da faixa afetada e no início do perfil evita repetir uma varredura longa nesses casos; quando não encontra suporte, há consulta de fallback por artista ou lançamento, que ainda pode depender da quantidade de faixas dessa entidade. Os planos, inclusive dos caminhos limitados a 16, estão em `PLANOS-GATILHOS.txt`.
+
+A tabela `metadata_retries` usa chave primária por perfil, ocorrência e fonte. A medição de bytes foi repetida com a migração final, inserindo e removendo o marcador de falha parcial e a execução bem-sucedida em transações separadas e sem VACUUM após a remoção: **671,33 / 220,36 / 65,54 B por escuta** para 1 / 3 / 10 reproduções por faixa, abaixo do limite de 700 B no primeiro cenário. Os números abrangem as tabelas isoladas, a fonte, os índices e os registros transitórios exercitados; não incluem o banco completo ou dados reais.

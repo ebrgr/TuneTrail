@@ -37,6 +37,8 @@ type Request struct {
 	Snapshot  ingest.Snapshot
 	// Chain names the question being asked.
 	Chain Chain `json:"-"`
+	// MetadataPresent is scoped to this occurrence, profile, source and instance.
+	MetadataPresent bool `json:"-"`
 	// Credential and Generation bind a token-bound provider to the approved credential of the
 	// profile that owns the receipt. The credential is never logged or stored.
 	Credential string `json:"-"`
@@ -56,6 +58,8 @@ type Request struct {
 type Result struct {
 	Status       Status
 	Declarations []Declaration
+	// Retryable marks a partial response that should be attempted on a later listen.
+	Retryable bool
 }
 
 // Provider isolates source-specific lookup from persistence and reconciliation.

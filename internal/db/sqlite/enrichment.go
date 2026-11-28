@@ -158,7 +158,13 @@ func (b snapshotBinding) prepare(ctx context.Context, c *enrichmentClaim, d enri
 	if err != nil {
 		return enrichmentTarget{}, err
 	}
-	return enrichmentTarget{request: enrichment.Request{ProfileID: c.profile, Snapshot: snapshot, Chain: chain, Prior: prior}, timeout: 20 * time.Second}, nil
+	var metadataPresent bool
+	if err := b.s.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM descriptive_metadata m
+ JOIN metadata_sources s ON s.id=m.source_id WHERE m.profile_id=? AND m.occurrence_id=? AND s.source=? AND s.instance=?
+ AND NOT EXISTS (SELECT 1 FROM metadata_retries r WHERE r.profile_id=m.profile_id AND r.occurrence_id=m.occurrence_id AND r.source_id=m.source_id))`, c.profile, c.occurrence, d.Source, p.Instance()).Scan(&metadataPresent); err != nil {
+		return enrichmentTarget{}, err
+	}
+	return enrichmentTarget{request: enrichment.Request{ProfileID: c.profile, Snapshot: snapshot, Chain: chain, Prior: prior, MetadataPresent: metadataPresent}, timeout: 20 * time.Second}, nil
 }
 
 func (snapshotBinding) current(context.Context, enrichmentReader, enrichmentClaim, enrichmentTarget) (bool, error) {
@@ -401,6 +407,19 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 				return err
 			}
 			if err := writeMBIDDeclaration(ctx, tx, c, event, original, missingArtists, p.Instance(), declaration); err != nil {
+				return err
+			}
+		}
+		// A partial lookup must be retried even if its useful track claims were saved.
+		if result.Retryable && p.Instance() != "" {
+			if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_sources(source,instance) VALUES(?,?)`, d.Source, p.Instance()); err != nil {
+				return err
+			}
+			if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_retries(profile_id,occurrence_id,source_id) SELECT ?,?,id FROM metadata_sources WHERE source=? AND instance=?`, c.profile, c.occurrence, d.Source, p.Instance()); err != nil {
+				return err
+			}
+		} else if status == enrichment.Found || status == enrichment.Absent {
+			if _, err := tx.ExecContext(ctx, `DELETE FROM metadata_retries WHERE profile_id=? AND occurrence_id=? AND source_id IN (SELECT id FROM metadata_sources WHERE source=? AND instance=?)`, c.profile, c.occurrence, d.Source, p.Instance()); err != nil {
 				return err
 			}
 		}

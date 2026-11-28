@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:02:00Z'
+updated_date: '2026-11-28T01:23:00Z'
 labels:
   - catalogo
   - ingestao
@@ -18,6 +18,8 @@ references:
   - backlog/evidencias/issue-218/HANDOFF.md
   - backlog/evidencias/issue-218/PARECER-REVIEWER.md
   - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES.md
+  - backlog/evidencias/issue-218/PLANOS-GATILHOS.txt
+  - backlog/evidencias/issue-218/MUTACOES.txt
 documentation:
   - doc-048
 priority: medium
@@ -142,6 +144,24 @@ created: 2026-11-28T01:02:00Z
 ---
 
 Reviewer reprovou (5 itens, PARECER-REVIEWER.md). A pedido do usuário, a tarefa volta ao Codex para avaliar e corrigir, incluindo a regra nova de consultar o Navidrome só quando faltar ID ou metadado. Instruções: backlog/evidencias/issue-218/INSTRUCOES-CORRECOES.md.
+
+---
+
+author: codex
+created: 2026-11-28T01:22:00Z
+
+---
+
+Correções do parecer: identidade preservada nas falhas de detalhes; fallback e agregação de ISRCs com créditos de artista; gatilhos por entidade e consultas Navidrome condicionadas. Reproduções e mutações dos seis itens; make check aprovado (13 jornadas); detector de corrida em execução. Medição e riscos em backlog/evidencias/issue-218/MEDICAO.md e HANDOFF.md; exportação permanece na ISSUE-234.
+
+---
+
+author: codex
+created: 2026-11-28T01:23:00Z
+
+---
+
+Verificação final das correções: detector de corrida aprovado nos testes de enriquecimento/migração e no teste de instância ampliado; make check aprovado, 13 jornadas. As seis mutações compilaram e foram detectadas; cenários de gatilhos, custo e riscos documentados no HANDOFF e MEDICAO.
 
 ---
 <!-- COMMENTS:END -->

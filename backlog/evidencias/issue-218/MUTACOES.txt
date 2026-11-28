@@ -1,0 +1,8 @@
+Item 1: compilou e o teste falhou como esperado.
+Item 2: compilou e o teste falhou como esperado.
+Item 3: compilou e o teste falhou como esperado.
+Item 4: compilou e o teste falhou como esperado.
+Item 6: compilou e o teste falhou como esperado.
+Item 5: compilou e o teste falhou como esperado.
+Item 4, gravação de créditos: compilou e o teste falhou como esperado.
+Item 6: compilou e o teste atualizado falhou como esperado.

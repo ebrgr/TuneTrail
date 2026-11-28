@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -79,5 +80,60 @@ func TestDescriptivePurge(t *testing.T) {
  INSERT INTO descriptive_metadata(profile_id,occurrence_id,source_id,kind,value,observed_at) VALUES(1,1,1,'genre','Rock','2026-01-01')`)
 	require.NoError(t, s.PurgeAllData(t.Context()))
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM descriptive_metadata`))
+	assertForeignKeys(t, s)
+}
+
+// TestReviewerDescriptiveTriggerPlans requires indexed entity-specific support checks.
+func TestReviewerDescriptiveTriggerPlans(t *testing.T) {
+	s := mergeFixture(t)
+	var ddl string
+	require.NoError(t, s.db.QueryRow(`SELECT sql FROM sqlite_schema WHERE type='trigger' AND name='trg_descriptive_scope_insert'`).Scan(&ddl))
+	require.NotContains(t, ddl, "l.profile_id=NEW.profile_id AND (", "separate support checks by entity to constrain the listen index")
+	for _, query := range []string{
+		`SELECT 1 FROM occurrences o INDEXED BY idx_occurrences_release CROSS JOIN listens l INDEXED BY idx_listens_profile_track WHERE o.release_id=1 AND l.profile_id=1 AND l.track_id=o.id`,
+		`SELECT 1 FROM artist_tracks a CROSS JOIN listens l INDEXED BY idx_listens_profile_track WHERE a.artist_id=1 AND l.profile_id=1 AND l.track_id=a.track_id`,
+		`SELECT 1 FROM occurrence_credits c INDEXED BY idx_occurrence_credits_artist CROSS JOIN listens l INDEXED BY idx_listens_profile_track WHERE c.artist_id=1 AND l.profile_id=1 AND l.track_id=c.occurrence_id`,
+	} {
+		rows, err := s.db.Query("EXPLAIN QUERY PLAN " + query)
+		require.NoError(t, err)
+		var plans []string
+		for rows.Next() {
+			var a, b, c int
+			var detail string
+			require.NoError(t, rows.Scan(&a, &b, &c, &detail))
+			plans = append(plans, detail)
+		}
+		require.NoError(t, rows.Err())
+		require.NoError(t, rows.Close())
+		require.Contains(t, strings.Join(plans, "\n"), "idx_listens_profile_track (profile_id=? AND track_id=?)")
+	}
+}
+
+// TestReviewerBoundedProbeFallsBack preserves support beyond the first profile entries.
+func TestReviewerBoundedProbeFallsBack(t *testing.T) {
+	s := mergeFixture(t)
+	execSQL(t, s, `INSERT INTO metadata_sources VALUES(1,'test','instance');
+ INSERT INTO descriptive_metadata(profile_id,artist_id,source_id,kind,value,observed_at) VALUES(1,1,1,'genre','Artist','2026');
+ INSERT INTO descriptive_metadata(profile_id,release_id,source_id,kind,value,observed_at) VALUES(1,1,1,'genre','Album','2026');
+ INSERT INTO tracks(id,release_id,duration) VALUES(10,1,120);
+ INSERT INTO artist_tracks VALUES(1,10,1);
+ INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,10,100)`)
+	for i := 0; i < 20; i++ {
+		execSQL(t, s, `INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,2,?)`, 1000+i)
+	}
+	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=1`)
+	require.Equal(t, 2, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE profile_id=1`))
+	assertForeignKeys(t, s)
+}
+
+// TestReviewerRetryMarkerFollowsLastListen removes retry state with its profile's last support.
+func TestReviewerRetryMarkerFollowsLastListen(t *testing.T) {
+	s := mergeFixture(t)
+	execSQL(t, s, `INSERT INTO metadata_sources VALUES(1,'test','instance'); INSERT INTO metadata_retries VALUES(1,1,1);
+ INSERT INTO listens(profile_id,track_id,listened_at) VALUES(1,1,101)`)
+	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=1 AND listened_at=100`)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
+	execSQL(t, s, `DELETE FROM listens WHERE profile_id=1 AND track_id=1`)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
 	assertForeignKeys(t, s)
 }

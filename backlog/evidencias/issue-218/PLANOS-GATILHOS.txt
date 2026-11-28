@@ -1,0 +1,37 @@
+occurrence:
+  SEARCH listens USING COVERING INDEX idx_listens_profile_track (profile_id=? AND track_id=?)
+release:
+  SEARCH o USING COVERING INDEX idx_occurrences_release (release_id=?)
+  SEARCH l USING COVERING INDEX idx_listens_profile_track (profile_id=? AND track_id=?)
+artist_tracks:
+  SEARCH a USING COVERING INDEX sqlite_autoindex_artist_tracks_1 (artist_id=?)
+  SEARCH l USING COVERING INDEX idx_listens_profile_track (profile_id=? AND track_id=?)
+artist_credits:
+  SEARCH c USING INDEX idx_occurrence_credits_artist (artist_id=?)
+  SEARCH l USING COVERING INDEX idx_listens_profile_track (profile_id=? AND track_id=?)
+metadata_occurrence:
+  SEARCH descriptive_metadata USING COVERING INDEX idx_descriptive_occurrence (profile_id=? AND occurrence_id=?)
+metadata_release:
+  SEARCH descriptive_metadata USING COVERING INDEX idx_descriptive_release (profile_id=? AND release_id=?)
+metadata_artist:
+  SEARCH descriptive_metadata USING COVERING INDEX idx_descriptive_artist (profile_id=? AND artist_id=?)
+bounded_profile_release:
+  CO-ROUTINE recent
+  SEARCH listens USING COVERING INDEX idx_listens_profile_track (profile_id=?)
+  SCAN recent
+  SEARCH o USING COVERING INDEX idx_occurrences_release (release_id=? AND rowid=?)
+bounded_profile_artist:
+  CO-ROUTINE recent
+  SEARCH listens USING COVERING INDEX idx_listens_profile_track (profile_id=?)
+  SCAN recent
+  SEARCH a USING COVERING INDEX sqlite_autoindex_artist_tracks_1 (artist_id=? AND track_id=?)
+bounded_profile_credit:
+  CO-ROUTINE recent
+  SEARCH listens USING COVERING INDEX idx_listens_profile_track (profile_id=?)
+  SCAN recent
+  SEARCH c USING INDEX sqlite_autoindex_occurrence_credits_1 (occurrence_id=?)
+bounded_near_track:
+  CO-ROUTINE recent
+  SEARCH listens USING COVERING INDEX idx_listens_profile_track (profile_id=? AND track_id>?)
+  SCAN recent
+  SEARCH a USING COVERING INDEX sqlite_autoindex_artist_tracks_1 (artist_id=? AND track_id=?)

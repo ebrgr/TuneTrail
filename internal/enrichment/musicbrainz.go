@@ -20,6 +20,8 @@ import (
 
 const musicBrainzSource = "musicbrainz-search"
 
+var errISRCNotFound = errors.New("ISRC not found")
+
 // MusicBrainzDescriptor places open identity lookup between Subsonic and ListenBrainz.
 var MusicBrainzDescriptor = Descriptor{ID: "musicbrainz", Source: musicBrainzSource, Chains: []Chain{ChainIdentity}, Priority: 150, Eligibility: EligibleConfigured}
 
@@ -108,6 +110,9 @@ func (m *MusicBrainz) call(ctx context.Context, path string, query url.Values) (
 			return nil, err
 		}
 		defer resp.Body.Close()
+		if resp.StatusCode == http.StatusNotFound && strings.HasPrefix(path, "/ws/2/isrc/") {
+			return nil, errISRCNotFound
+		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			return nil, errors.New("MusicBrainz HTTP error")
 		}
@@ -156,7 +161,11 @@ func (r mbRecording) matches(s ingest.Snapshot, prior []Declaration) bool {
 			return false
 		}
 	}
-	// A conflicting known artist ID is evidence against this recording.
+	return r.artistIDsConsistent(s, prior) && len(r.Credits) > 0
+}
+
+// artistIDsConsistent prevents artist claims when a known credit conflicts.
+func (r mbRecording) artistIDsConsistent(s ingest.Snapshot, prior []Declaration) bool {
 	known := slices.Clone(s.ArtistMbidMappings)
 	known = append(known, s.PositionalArtistMappings(s.ArtistMBIDs)...)
 	known = append(known, s.PositionalArtistMappings(s.MappedArtistMBIDs)...)
@@ -175,7 +184,7 @@ func (r mbRecording) matches(s ingest.Snapshot, prior []Declaration) bool {
 			}
 		}
 	}
-	return len(r.Credits) > 0
+	return true
 }
 
 // Lookup returns only missing declarations and caches bounded successful answers.
@@ -221,20 +230,106 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 	if ok && time.Now().Before(cached.until) {
 		return cached.result
 	}
-	// ISRC evidence is queried through the same shared request budget before a name search.
+	// Bound ISRC lookups to four codes so the shared one-request-per-second budget leaves
+	// time for name fallback and other providers within the job's finite lease.
+	isrcFailed := false
 	if missingRecording {
-		isrcs := map[string]bool{}
+		unique := map[string]bool{}
 		for _, p := range req.Prior {
 			if p.Entity == "recording" && p.Field == "isrc" && strings.TrimSpace(p.Value) != "" {
-				isrcs[strings.TrimSpace(p.Value)] = true
+				unique[strings.TrimSpace(p.Value)] = true
 			}
 		}
-		if len(isrcs) > 1 {
-			return Result{Status: Ambiguous}
+		codes := make([]string, 0, len(unique))
+		for code := range unique {
+			codes = append(codes, code)
 		}
-		for isrc := range isrcs {
-			result := m.lookupISRC(ctx, isrc)
-			if result.Status != Absent {
+		slices.Sort(codes)
+		if len(codes) > 4 {
+			isrcFailed = true
+		} else {
+			recordings := map[string]mbRecording{}
+			for _, code := range codes {
+				list, status := m.lookupISRCRecordings(ctx, code)
+				if status == Failed {
+					isrcFailed = true
+					continue
+				}
+				if status == Ambiguous {
+					result := Result{Status: Ambiguous}
+					if ctx.Err() == nil {
+						m.cacheResult(key, result)
+					}
+					return result
+				}
+				for _, rec := range list {
+					id := uuid.MustParse(rec.ID).String()
+					if old, ok := recordings[id]; ok {
+						for _, credit := range rec.Credits {
+							duplicate := false
+							for _, existing := range old.Credits {
+								if equalMetadata(existing.Name, credit.Name) && strings.EqualFold(existing.Artist.ID, credit.Artist.ID) {
+									duplicate = true
+									break
+								}
+							}
+							if !duplicate {
+								old.Credits = append(old.Credits, credit)
+							}
+						}
+						recordings[id] = old
+					} else {
+						recordings[id] = rec
+					}
+				}
+			}
+			if !isrcFailed && len(recordings) > 1 {
+				result := Result{Status: Ambiguous}
+				if ctx.Err() == nil {
+					m.cacheResult(key, result)
+				}
+				return result
+			}
+			if !isrcFailed && len(recordings) == 1 {
+				result := Result{Status: Found}
+				for id, rec := range recordings {
+					result.Declarations = append(result.Declarations, Declaration{Entity: "recording", Field: "musicbrainz_id", Value: id, Source: musicBrainzSource, ObservedAt: time.Now().UTC()})
+					if !rec.artistIDsConsistent(s, req.Prior) {
+						continue
+					}
+					complete := true
+					for _, name := range s.ArtistCreditNames() {
+						found := false
+						for _, credit := range rec.Credits {
+							if equalMetadata(name, credit.Name) {
+								found = true
+								break
+							}
+						}
+						if !found {
+							complete = false
+							break
+						}
+					}
+					if !complete {
+						continue
+					}
+					for _, name := range names {
+						var matches []mbCredit
+						for _, credit := range rec.Credits {
+							if equalMetadata(name, credit.Name) {
+								matches = append(matches, credit)
+							}
+						}
+						if len(matches) != 1 || !validUUID(matches[0].Artist.ID) {
+							continue
+						}
+						result.Declarations = append(result.Declarations, Declaration{Entity: "artist", Name: name, Field: "musicbrainz_id", Value: uuid.MustParse(matches[0].Artist.ID).String(), Source: musicBrainzSource, ObservedAt: time.Now().UTC()})
+					}
+				}
+				if ctx.Err() == nil {
+					m.cacheResult(key, result)
+				}
 				return result
 			}
 		}
@@ -285,38 +380,61 @@ func (m *MusicBrainz) Lookup(ctx context.Context, req Request) Result {
 			}
 		}
 	}
+	if isrcFailed && result.Status == Absent {
+		return Result{Status: Failed}
+	}
 	if ctx.Err() == nil {
-		m.mu.Lock()
-		if len(m.cache) >= 1024 {
-			clear(m.cache)
-		}
-		m.cache[key] = cachedResult{result: result, until: time.Now().Add(10 * time.Minute)}
-		m.mu.Unlock()
+		m.cacheResult(key, result)
 	}
 	return result
 }
 
-// lookupISRC resolves ISRC evidence supplied by an earlier identity provider.
-// It accepts only one distinct recording ID and treats multiple IDs as ambiguous.
-func (m *MusicBrainz) lookupISRC(ctx context.Context, isrc string) Result {
+// cacheResult retains bounded successful or negative lookup results.
+func (m *MusicBrainz) cacheResult(key string, result Result) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if len(m.cache) >= 1024 {
+		clear(m.cache)
+	}
+	m.cache[key] = cachedResult{result: result, until: time.Now().Add(10 * time.Minute)}
+}
+
+// lookupISRCRecordings requests credits and preserves the distinction between 404 and failure.
+func (m *MusicBrainz) lookupISRCRecordings(ctx context.Context, isrc string) ([]mbRecording, Status) {
 	if strings.TrimSpace(isrc) == "" || strings.ContainsAny(isrc, "/\\") {
-		return Result{Status: Absent}
+		return nil, Absent
 	}
-	response, err := m.call(ctx, "/ws/2/isrc/"+url.PathEscape(isrc), url.Values{"fmt": {"json"}})
+	response, err := m.call(ctx, "/ws/2/isrc/"+url.PathEscape(isrc), url.Values{"fmt": {"json"}, "inc": {"artist-credits"}})
+	if errors.Is(err, errISRCNotFound) {
+		return nil, Absent
+	}
 	if err != nil {
-		return Result{Status: Failed}
+		return nil, Failed
 	}
-	ids := map[string]bool{}
-	for _, r := range response.Recordings {
-		if validUUID(r.ID) {
-			ids[uuid.MustParse(r.ID).String()] = true
+	ids := map[string]mbRecording{}
+	for _, rec := range response.Recordings {
+		if validUUID(rec.ID) {
+			ids[uuid.MustParse(rec.ID).String()] = rec
 		}
 	}
-	if len(ids) > 1 || len(response.Recordings) > 1 || response.Count > 1 {
-		return Result{Status: Ambiguous}
+	if len(ids) > 1 || response.Count > len(response.Recordings) {
+		return nil, Ambiguous
 	}
-	for id := range ids {
-		return Result{Status: Found, Declarations: []Declaration{{Entity: "recording", Field: "musicbrainz_id", Value: id, Source: musicBrainzSource, ObservedAt: time.Now().UTC()}}}
+	result := make([]mbRecording, 0, len(ids))
+	for _, rec := range ids {
+		result = append(result, rec)
 	}
-	return Result{Status: Absent}
+	if len(result) == 0 {
+		return nil, Absent
+	}
+	return result, Found
+}
+
+// lookupISRC keeps the single-code interface used by callers and its existing tests.
+func (m *MusicBrainz) lookupISRC(ctx context.Context, isrc string) Result {
+	records, status := m.lookupISRCRecordings(ctx, isrc)
+	if status != Found {
+		return Result{Status: status}
+	}
+	return Result{Status: Found, Declarations: []Declaration{{Entity: "recording", Field: "musicbrainz_id", Value: uuid.MustParse(records[0].ID).String(), Source: musicBrainzSource, ObservedAt: time.Now().UTC()}}}
 }

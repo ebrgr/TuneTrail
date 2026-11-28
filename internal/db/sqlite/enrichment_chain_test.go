@@ -600,3 +600,89 @@ func TestSubsonicChainSharesLookup(t *testing.T) {
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='recording_year' AND value='2005'`))
 	require.Equal(t, 6, scalar(t, s, `SELECT count(*) FROM descriptive_metadata m JOIN metadata_sources s ON s.id=m.source_id WHERE s.source='navidrome-subsonic' AND length(s.instance)=64 AND ((m.occurrence_id IS NOT NULL AND m.kind IN ('genre','recording_year','isrc','bpm')) OR (m.release_id IS NOT NULL AND m.kind IN ('release_date','first_release_date')))`))
 }
+
+// TestReviewerSubsonicSkipsCompleteMetadata avoids requests for an already enriched occurrence.
+func TestReviewerSubsonicSkipsCompleteMetadata(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		switch r.URL.Path {
+		case "/rest/search3":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Complete","artist":"Artist","album":"Album"}]}}}`)
+		case "/rest/getSong":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","albumId":"album","title":"Complete","artist":"Artist","album":"Album","year":2005}}}`)
+		case "/rest/getAlbum":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","album":{"id":"album","name":"Album"}}}`)
+		}
+	}))
+	defer srv.Close()
+	provider, err := enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	snap := ingest.Snapshot{Title: "Complete", Artist: "Artist", Release: "Album", Recording: fixtureRecording, ArtistMBIDs: []string{"33333333-3333-4333-8333-333333333333"}}
+	for i := 0; i < 2; i++ {
+		admitOccurrenceFixture(t, s, snap, 1700005000+int64(i), fmt.Sprintf("complete-%d", i))
+		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+		_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+		provider, err = enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+		require.NoError(t, err)
+		registry = enrichment.NewRegistry()
+		require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	}
+	require.Equal(t, 3, calls)
+	// An independent instance must not reuse another library's metadata.
+	provider, err = enrichment.NewSubsonic(srv.URL, "fixture=other", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry = enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	admitOccurrenceFixture(t, s, snap, 1700005010, "complete-other")
+	resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+	_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+	require.NoError(t, err)
+	require.Equal(t, 6, calls)
+}
+
+// TestReviewerPartialDetailFailureRetriesOnNextListen preserves useful fields without blocking retry.
+func TestReviewerPartialDetailFailureRetriesOnNextListen(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	albumCalls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/rest/search3":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Retry","artist":"Artist","album":"Album"}]}}}`)
+		case "/rest/getSong":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","albumId":"album","title":"Retry","artist":"Artist","album":"Album","year":2005}}}`)
+		case "/rest/getAlbum":
+			albumCalls++
+			if albumCalls == 1 {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","album":{"id":"album","name":"Album","releaseDate":{"year":2005}}}}`)
+		}
+	}))
+	defer srv.Close()
+	provider, err := enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	snap := ingest.Snapshot{Title: "Retry", Artist: "Artist", Release: "Album", Recording: fixtureRecording, ArtistMBIDs: []string{"33333333-3333-4333-8333-333333333333"}}
+	for i := 0; i < 2; i++ {
+		admitOccurrenceFixture(t, s, snap, 1700005100+int64(i), fmt.Sprintf("retry-%d", i))
+		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+		_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+		provider, err = enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+		require.NoError(t, err)
+		registry = enrichment.NewRegistry()
+		require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	}
+	require.Equal(t, 2, albumCalls)
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='release_date'`))
+}
