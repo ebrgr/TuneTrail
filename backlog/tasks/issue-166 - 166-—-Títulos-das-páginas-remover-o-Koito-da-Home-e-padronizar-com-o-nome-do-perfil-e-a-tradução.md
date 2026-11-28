@@ -7,7 +7,7 @@ status: Done
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T20:48:00Z'
-updated_date: '2026-11-28T02:21:00Z'
+updated_date: '2026-11-28T02:26:00Z'
 labels:
   - ui
   - i18n
@@ -88,6 +88,15 @@ created: 2026-11-28T02:21:00Z
 ---
 
 Aceite do usuário em 27/11/2026: «Aceito a 166».
+
+---
+
+author: ebrgr
+created: 2026-11-28T02:26:00Z
+
+---
+
+Publicação: versão 0.83 (tag `v0.83`), branch `fix/issue-166-titulos-das-paginas-remover-o` integrada ao `main` por fast-forward.
 
 ---
 <!-- COMMENTS:END -->

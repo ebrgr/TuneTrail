@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.83] - 2026-11-27
+
 - Page tabs no longer carry the Koito brand: the home tab shows the profile name and the other tabs show their translated page names (ISSUE-166).
 
 ## [0.82] - 2026-11-27
