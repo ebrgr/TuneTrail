@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:40:00Z'
+updated_date: '2026-11-28T01:41:00Z'
 labels:
   - catalogo
   - ingestao
@@ -190,6 +190,15 @@ created: 2026-11-28T01:40:00Z
 ---
 
 Segunda rodada: divergências definitivas não ficam repetíveis e limpam marcador anterior; chave do cache distingue gravação e artistas pendentes após Prior. Reproduções e testes direcionados passaram; guarda de prévia e índice permanecem fora do escopo desta rodada.
+
+---
+
+author: claude
+created: 2026-11-28T01:41:00Z
+
+---
+
+Terceira revisão (commit 6916f01): APROVADO para os dois itens. Rodados somente os testes dessas alterações, a pedido do usuário; make check pendente sobre este commit. Dois ajustes pequenos seguem abertos (PARECER-REVIEWER.md).
 
 ---
 <!-- COMMENTS:END -->

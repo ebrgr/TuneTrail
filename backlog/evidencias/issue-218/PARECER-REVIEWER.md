@@ -69,3 +69,18 @@ Os testes existentes não cobrem nenhum dos cinco casos.
 - As mutações relatadas pelo Codex não foram repetidas.
 
 Reproduções dos dois itens em `reproducoes-parecer-2.go.txt`. **Advisor:** recomendado depois das correções.
+
+---
+
+## Terceira revisão — commit `6916f01`
+
+27/11/2026, sobre `git diff 2fc8eb9 6916f01`.
+
+**APROVADO** para os dois itens obrigatórios da segunda revisão.
+
+- Divergência em `getSong`/`getAlbum` não é mais repetível: entra no cache, não grava `metadata_retries` e remove um marcador anterior. Três escutas da mesma faixa: 3 chamadas, só na primeira.
+- A chave do cache inclui a gravação e os artistas pendentes depois de considerar `Prior`.
+- A pedido do usuário, só os testes dessas duas alterações foram rodados: seis passam no código novo (quatro em `internal/enrichment`, dois em `internal/db/sqlite`). Sobre o código de `2fc8eb9`, os cinco novos ou ajustados falham; `TestSubsonicRejectsChangedSongOrAlbum`, já existente, passa nos dois.
+- Não rodados sobre `6916f01`: `make check`, suíte completa, detector de corridas e medições. `make issue.review` roda o `make check`.
+
+Pendentes, não obrigatórios: guarda de prévia da versão 26 e índice de `metadata_retries` por `occurrence_id`.
