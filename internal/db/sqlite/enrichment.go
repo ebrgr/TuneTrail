@@ -418,7 +418,7 @@ func (s *Sqlite) finishEnrichmentStep(ctx context.Context, c enrichmentClaim, d 
 			if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO metadata_retries(profile_id,occurrence_id,source_id) SELECT ?,?,id FROM metadata_sources WHERE source=? AND instance=?`, c.profile, c.occurrence, d.Source, p.Instance()); err != nil {
 				return err
 			}
-		} else if status == enrichment.Found || status == enrichment.Absent {
+		} else if status == enrichment.Found || status == enrichment.Absent || (status == enrichment.Ambiguous && result.Status == enrichment.Ambiguous) {
 			if _, err := tx.ExecContext(ctx, `DELETE FROM metadata_retries WHERE profile_id=? AND occurrence_id=? AND source_id IN (SELECT id FROM metadata_sources WHERE source=? AND instance=?)`, c.profile, c.occurrence, d.Source, p.Instance()); err != nil {
 				return err
 			}

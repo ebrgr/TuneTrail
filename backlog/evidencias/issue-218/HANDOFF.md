@@ -44,3 +44,12 @@ Os testes de reprodução falharam antes das correções. As seis mutações com
 A entrada existente de `[Unreleased]` já descreve a funcionalidade ainda não publicada; as correções do parecer não acrescentam uma segunda entrada para regressões de código que ainda não foi lançado.
 
 Verificação das correções: `make check` aprovado, com 13 jornadas de ponta a ponta; `CGO_ENABLED=1 go test -race ./internal/enrichment ./internal/db/sqlite -run 'Test(Reviewer|Subsonic|MusicBrainz|Navidrome|Descriptive|Bootstrap.*Enrichment|BootstrapDescriptive|Enrichment|IngestDiscardProtectsListens)' -count=1` aprovado. O teste de instância foi ampliado e repetido separadamente com `-race`. O grafo AST foi atualizado. Nenhum serviço real com credencial foi consultado.
+
+## Segunda rodada de correções
+
+- Divergências em `getSong` ou `getAlbum` são definitivas: preservam as declarações seguras, podem ser armazenadas no cache e não criam marcador de nova tentativa; uma divergência definitiva também remove um marcador anterior. Falhas de chamada continuam repetíveis.
+- A chave do cache Subsonic inclui os campos de gravação e artistas pendentes após considerar `Prior`, evitando reaproveitar declarações incompletas.
+- Antes das correções, os testes novos reproduziram ambas as falhas; após as correções passaram os testes direcionados:
+  - `go test ./internal/enrichment -run '^(TestSubsonicPermanentDivergenceCachesSafeClaims|TestSubsonicCacheSeparatesPendingIdentifiers|TestReviewerSubsonicPartialIdentityRetries|TestSubsonicRejectsChangedSongOrAlbum)$' -count=1`
+  - `go test ./internal/db/sqlite -run '^(TestSubsonicAlbumDivergenceDoesNotRetry|TestSubsonicDivergenceClearsPreviousRetry)$' -count=1`
+- A guarda de prévia e o índice de `metadata_retries` seguem fora do escopo desta rodada, conforme instrução.

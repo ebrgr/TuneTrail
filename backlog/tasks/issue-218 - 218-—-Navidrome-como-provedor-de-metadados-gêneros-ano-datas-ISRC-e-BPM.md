@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:37:00Z'
+updated_date: '2026-11-28T01:40:00Z'
 labels:
   - catalogo
   - ingestao
@@ -181,6 +181,15 @@ created: 2026-11-28T01:37:00Z
 ---
 
 A pedido do usuário, volta ao Codex para os dois itens da segunda revisão, rodando somente os testes dessas duas alterações. Instruções: backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-2.md.
+
+---
+
+author: codex
+created: 2026-11-28T01:40:00Z
+
+---
+
+Segunda rodada: divergências definitivas não ficam repetíveis e limpam marcador anterior; chave do cache distingue gravação e artistas pendentes após Prior. Reproduções e testes direcionados passaram; guarda de prévia e índice permanecem fora do escopo desta rodada.
 
 ---
 <!-- COMMENTS:END -->

@@ -50,7 +50,11 @@ func TestReviewerSubsonicPartialIdentityRetries(t *testing.T) {
 					require.Len(t, result.Declarations, 2)
 				}
 			}
-			require.Equal(t, 2, searches)
+			if failing == "mismatch" {
+				require.Equal(t, 1, searches)
+			} else {
+				require.Equal(t, 2, searches)
+			}
 		})
 	}
 }
@@ -185,4 +189,79 @@ func TestReviewerISRCCreditsRejectKnownArtistConflict(t *testing.T) {
 	require.Equal(t, Found, result.Status)
 	require.Len(t, result.Declarations, 1)
 	require.Equal(t, "recording", result.Declarations[0].Entity)
+}
+
+// TestSubsonicPermanentDivergenceCachesSafeClaims distinguishes conflicts from transport errors.
+func TestSubsonicPermanentDivergenceCachesSafeClaims(t *testing.T) {
+	for _, divergent := range []string{"song", "album"} {
+		t.Run(divergent, func(t *testing.T) {
+			calls := 0
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				calls++
+				switch {
+				case strings.HasSuffix(r.URL.Path, "/search3"):
+					fmt.Fprintf(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Title","artist":"Artist","album":"Album","mediaType":"song","musicBrainzId":"%s"}]}}}`, recordingID)
+				case strings.HasSuffix(r.URL.Path, "/getSong"):
+					id := "song"
+					if divergent == "song" {
+						id = "other"
+					}
+					fmt.Fprintf(w, `{"subsonic-response":{"status":"ok","song":{"id":"%s","albumId":"album","title":"Title","artist":"Artist","album":"Album","year":2005}}}`, id)
+				case strings.HasSuffix(r.URL.Path, "/getAlbum"):
+					fmt.Fprint(w, `{"subsonic-response":{"status":"ok","album":{"id":"album","name":"Different"}}}`)
+				}
+			}))
+			defer srv.Close()
+			p, err := NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+			require.NoError(t, err)
+			req := Request{Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album"}}
+			result := p.Lookup(t.Context(), req)
+			require.Equal(t, Found, result.Status)
+			require.False(t, result.Retryable)
+			require.Equal(t, recordingID, result.Declarations[0].Value)
+			if divergent == "album" {
+				require.Len(t, result.Declarations, 2)
+			} else {
+				require.Len(t, result.Declarations, 1)
+			}
+			before := calls
+			require.Equal(t, result, p.Lookup(t.Context(), req))
+			require.Equal(t, before, calls)
+		})
+	}
+}
+
+// TestSubsonicCacheSeparatesPendingIdentifiers keeps Prior-dependent answers independent.
+func TestSubsonicCacheSeparatesPendingIdentifiers(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/search3"):
+			fmt.Fprintf(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Title","artist":"Artist","album":"Album","mediaType":"song","musicBrainzId":"%s","artists":[{"name":"Artist","musicBrainzId":"%s"}]}]}}}`, recordingID, artistID)
+		case strings.HasSuffix(r.URL.Path, "/getSong"):
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","title":"Title","artist":"Artist","album":"Album","year":2005}}}`)
+		}
+	}))
+	defer srv.Close()
+	p, err := NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	req := Request{Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album", ArtistMBIDs: []string{artistID}}}
+	prior := req
+	prior.Prior = []Declaration{{Entity: "recording", Field: "musicbrainz_id", Value: recordingID}}
+	first := p.Lookup(t.Context(), prior)
+	require.Len(t, first.Declarations, 1)
+	require.Equal(t, "recording_year", first.Declarations[0].Field)
+	second := p.Lookup(t.Context(), req)
+	require.Len(t, second.Declarations, 2)
+	require.Equal(t, "musicbrainz_id", second.Declarations[0].Field)
+	require.Equal(t, 4, calls)
+	artistReq := Request{Chain: ChainIdentity, Snapshot: ingest.Snapshot{Title: "Title", Artist: "Artist", Release: "Album", Recording: recordingID}}
+	artistPrior := artistReq
+	artistPrior.Prior = []Declaration{{Entity: "artist", Name: "Artist", Field: "musicbrainz_id", Value: artistID}}
+	require.Len(t, p.Lookup(t.Context(), artistPrior).Declarations, 1)
+	artistResult := p.Lookup(t.Context(), artistReq)
+	require.Len(t, artistResult.Declarations, 2)
+	require.Equal(t, "artist", artistResult.Declarations[0].Entity)
+	require.Equal(t, 8, calls)
 }

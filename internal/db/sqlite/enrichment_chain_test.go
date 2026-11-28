@@ -686,3 +686,75 @@ func TestReviewerPartialDetailFailureRetriesOnNextListen(t *testing.T) {
 	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
 	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='release_date'`))
 }
+
+// TestSubsonicAlbumDivergenceDoesNotRetry keeps permanent mismatches out of the retry queue.
+func TestSubsonicAlbumDivergenceDoesNotRetry(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		switch r.URL.Path {
+		case "/rest/search3":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Div","artist":"Artist","album":"Album"}]}}}`)
+		case "/rest/getSong":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"song","albumId":"album","title":"Div","artist":"Artist","album":"Album","year":2005}}}`)
+		case "/rest/getAlbum":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","album":{"id":"album","name":"Album (Deluxe)"}}}`)
+		}
+	}))
+	defer srv.Close()
+	provider, err := enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	snap := ingest.Snapshot{Title: "Div", Artist: "Artist", Release: "Album", Recording: fixtureRecording, ArtistMBIDs: []string{"33333333-3333-4333-8333-333333333333"}}
+	for i := 0; i < 3; i++ {
+		admitOccurrenceFixture(t, s, snap, 1700005200+int64(i), fmt.Sprintf("div-%d", i))
+		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+		_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+	}
+	require.Equal(t, 3, calls)
+	require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM descriptive_metadata WHERE kind='recording_year'`))
+	require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
+}
+
+// TestSubsonicDivergenceClearsPreviousRetry prevents stale markers after a permanent mismatch.
+func TestSubsonicDivergenceClearsPreviousRetry(t *testing.T) {
+	s := convertedOccurrenceFixture(t)
+	calls, songCalls := 0, 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		switch r.URL.Path {
+		case "/rest/search3":
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","searchResult3":{"song":[{"id":"song","title":"Div","artist":"Artist","album":"Album"}]}}}`)
+		case "/rest/getSong":
+			songCalls++
+			if songCalls <= 2 {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			fmt.Fprint(w, `{"subsonic-response":{"status":"ok","song":{"id":"other","title":"Div","artist":"Artist","album":"Album"}}}`)
+		}
+	}))
+	defer srv.Close()
+	provider, err := enrichment.NewSubsonic(srv.URL, "", "test", time.Second, time.Nanosecond)
+	require.NoError(t, err)
+	registry := enrichment.NewRegistry()
+	require.NoError(t, registry.Register(enrichment.SubsonicDescriptor, provider))
+	require.NoError(t, s.ConfigureEnrichmentProviders(t.Context(), registry))
+	snap := ingest.Snapshot{Title: "Div", Artist: "Artist", Release: "Album", Recording: fixtureRecording, ArtistMBIDs: []string{"33333333-3333-4333-8333-333333333333"}}
+	for i := 0; i < 3; i++ {
+		admitOccurrenceFixture(t, s, snap, 1700005300+int64(i), fmt.Sprintf("div-retry-%d", i))
+		resolveOccurrenceFixture(t, s, &mbz.MbzErrorCaller{})
+		_, err = s.ResolveNextEnrichmentChain(t.Context(), registry)
+		require.NoError(t, err)
+		if i == 0 {
+			require.Equal(t, 1, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
+		} else {
+			require.Zero(t, scalar(t, s, `SELECT count(*) FROM metadata_retries`))
+		}
+	}
+	require.Equal(t, 6, calls)
+}

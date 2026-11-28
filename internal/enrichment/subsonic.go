@@ -307,12 +307,16 @@ func (c *Subsonic) Lookup(ctx context.Context, req Request) Result {
 	if s.Title == "" || s.Artist == "" || s.Release == "" || s.TruncatedFields > 0 {
 		return Result{Status: Absent}
 	}
-	// Ignore event timestamps and unrelated fields so repeated listens share a bounded cache.
-	keyBytes, err := json.Marshal(Request{ProfileID: req.ProfileID, Snapshot: ingest.Snapshot{
+	// Key by the snapshot and unresolved fields, including those narrowed by prior declarations.
+	keyBytes, err := json.Marshal(struct {
+		Request   Request
+		Recording bool
+		Artists   []string
+	}{Request: Request{ProfileID: req.ProfileID, Snapshot: ingest.Snapshot{
 		Title: s.Title, Artist: s.Artist, Release: s.Release, DurationMS: s.DurationMS,
 		DiscNumber: s.DiscNumber, TrackNumber: s.TrackNumber, Recording: s.Recording, MappedRecording: s.MappedRecording,
 		ArtistNames: s.ArtistNames, ArtistMBIDs: s.ArtistMBIDs, MappedArtistMBIDs: s.MappedArtistMBIDs, ArtistMbidMappings: s.ArtistMbidMappings,
-	}})
+	}}, Recording: missingRecording, Artists: missingArtists})
 	if err != nil {
 		return Result{Status: Failed}
 	}
@@ -393,25 +397,25 @@ func (c *Subsonic) lookup(ctx context.Context, s ingest.Snapshot, recording bool
 			result.Declarations = append(result.Declarations, Declaration{Entity: "artist", Name: name, Field: "musicbrainz_id", Value: uuid.MustParse(artist.MBID).String(), Source: sourceSubsonic, ObservedAt: at})
 		}
 	}
-	// Preserve independently matched claims while ensuring failed details are retried.
-	partial := func(status Status) Result {
+	// Preserve independently matched claims; only transport failures require another attempt.
+	partial := func(status Status, retry bool) Result {
 		if len(result.Declarations) > 0 {
 			result.Status = Found
 		} else {
 			result.Status = status
 		}
-		result.Retryable = true
+		result.Retryable = retry
 		return result
 	}
 	// The ID came from the unique, untruncated search result on this server.
 	if song.ID != "" {
 		detail, err := c.call(ctx, "getSong", url.Values{"id": {song.ID}})
 		if err != nil {
-			return partial(Failed)
+			return partial(Failed, true)
 		}
 		full := detail.Response.Song
 		if full.ID != song.ID || !songMatches(s, full) {
-			return partial(Ambiguous)
+			return partial(Ambiguous, false)
 		}
 		add := func(entity, field, value string) {
 			if strings.TrimSpace(value) != "" {
@@ -433,11 +437,11 @@ func (c *Subsonic) lookup(ctx context.Context, s ingest.Snapshot, recording bool
 		if full.AlbumID != "" {
 			album, err := c.call(ctx, "getAlbum", url.Values{"id": {full.AlbumID}})
 			if err != nil {
-				return partial(Failed)
+				return partial(Failed, true)
 			}
 			a := album.Response.Album
 			if a.ID != full.AlbumID || !equalMetadata(a.Name, s.Release) {
-				return partial(Ambiguous)
+				return partial(Ambiguous, false)
 			}
 			for _, genre := range a.Genres {
 				add("release", "genre", genre.Name)
