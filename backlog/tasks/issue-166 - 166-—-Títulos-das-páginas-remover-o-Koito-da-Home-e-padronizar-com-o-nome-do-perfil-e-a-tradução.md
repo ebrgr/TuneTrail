@@ -3,10 +3,11 @@ id: ISSUE-166
 title: >-
   166 — Títulos das páginas: remover o Koito da Home e padronizar com o nome do
   perfil e a tradução
-status: Aberta
-assignee: []
+status: Em andamento
+assignee:
+  - '@ebrgr'
 created_date: '2026-11-17T20:48:00Z'
-updated_date: '2026-11-17T20:48:00Z'
+updated_date: '2026-11-28T01:49:00Z'
 labels:
   - ui
   - i18n
@@ -29,3 +30,25 @@ Origem: pergunta do usuário em 2026-11-17 (a aba da Home mostrava 'Koito - Tune
 - [ ] #2 Os títulos de histórico, rankings, busca, retrospectiva e mídia seguem o idioma escolhido (en e pt-BR) e um padrão único com o sufixo TuneTrail
 - [ ] #3 Testes cobrem os títulos em en e pt-BR; o rodapé de atribuição e a opção de importação do Koito permanecem
 <!-- AC:END -->
+
+## Comments
+
+<!-- COMMENTS:BEGIN -->
+author: ebrgr
+created: 2026-11-28T01:49:00Z
+
+---
+
+Início: worktree Orca `/Users/evertonberger/orca/workspaces/TuneTrail/issue-166` na branch `fix/issue-166-titulos-das-paginas-remover-o` criada a partir de `main`.
+
+---
+
+author: claude
+created: 2026-11-28T01:49:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: a página inicial usa «<nome do perfil> - TuneTrail»; as demais usam «<página traduzida> - TuneTrail». O perfil não entra no título das outras páginas. Implementação despachada ao agente DeepSeek (dsh).
+
+---
+<!-- COMMENTS:END -->
