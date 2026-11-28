@@ -4,7 +4,7 @@ title: '210 — Banco, pacote C: fundir tracks em occurrences'
 status: Aberta
 assignee: []
 created_date: '2026-11-24T00:51:00Z'
-updated_date: '2026-11-27T15:21:00Z'
+updated_date: '2026-11-28T01:53:00Z'
 labels:
   - banco
   - catalogo
@@ -44,6 +44,15 @@ created: 2026-11-27T15:21:00Z
 ---
 
 Decisão do usuário em 27/11/2026 (B6): confirmado, só depois da subida da produção (ISSUE-224).
+
+---
+
+author: claude
+created: 2026-11-28T01:53:00Z
+
+---
+
+Atenção: os gatilhos da migração 026 (ISSUE-218) usam INDEXED BY com nomes de índices das tabelas que esta tarefa recria; ver ISSUE-237.
 
 ---
 <!-- COMMENTS:END -->

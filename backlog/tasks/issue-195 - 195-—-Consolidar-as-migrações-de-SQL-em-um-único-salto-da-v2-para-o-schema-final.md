@@ -6,7 +6,7 @@ title: >-
 status: Aberta
 assignee: []
 created_date: '2026-11-23T00:31:00Z'
-updated_date: '2026-11-27T15:21:00Z'
+updated_date: '2026-11-28T01:53:00Z'
 labels:
   - ingestao
 milestone: m-11
@@ -98,6 +98,15 @@ created: 2026-11-27T15:21:00Z
 ---
 
 Decisão do usuário em 27/11/2026: subir a produção uma única vez (B1, ISSUE-224); ensaio com 300 mil e 1 milhão de escutas (B2); só entram antes da subida as integrações que reformam tabelas existentes (B7); a migração de metadados das ISSUE-217 e 218 entra antes desta consolidação (A5) e cada issue do banco traz a própria migração, dobrada aqui (A6). A ISSUE-225 (limpeza do conteúdo original) deve ser combinada se exigir mudança de esquema.
+
+---
+
+author: claude
+created: 2026-11-28T01:53:00Z
+
+---
+
+Atenção: os gatilhos da migração 026 (ISSUE-218) usam INDEXED BY com nomes de índices das tabelas que esta tarefa recria; ver ISSUE-237.
 
 ---
 <!-- COMMENTS:END -->
