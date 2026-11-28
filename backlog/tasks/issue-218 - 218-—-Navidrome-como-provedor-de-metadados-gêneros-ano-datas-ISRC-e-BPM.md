@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:48:00Z'
+updated_date: '2026-11-28T01:53:00Z'
 labels:
   - catalogo
   - ingestao
@@ -22,6 +22,7 @@ references:
   - backlog/evidencias/issue-218/MUTACOES.txt
   - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-2.md
   - backlog/evidencias/issue-218/PARECER-ADVISOR.md
+  - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-3.md
 documentation:
   - doc-048
 priority: medium
@@ -209,6 +210,15 @@ created: 2026-11-28T01:48:00Z
 ---
 
 Advisor (Opus 5.5) sobre a branch: um bloqueio (a consulta por ISRC declara a gravação mesmo com conflito de artista conhecido, reproduzido) e três pontos para decisão do usuário. Detalhes em PARECER-ADVISOR.md.
+
+---
+
+author: claude
+created: 2026-11-28T01:53:00Z
+
+---
+
+Decisão do usuário em 27/11/2026: o MBID sempre tem preferência sobre o ISRC. Volta ao Codex para o bloqueio do Advisor sob essa regra e para a guarda de prévia da versão 26. Instruções: backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-3.md.
 
 ---
 <!-- COMMENTS:END -->
