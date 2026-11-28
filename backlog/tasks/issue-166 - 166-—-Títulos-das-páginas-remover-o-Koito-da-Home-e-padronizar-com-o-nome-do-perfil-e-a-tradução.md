@@ -7,7 +7,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-17T20:48:00Z'
-updated_date: '2026-11-28T02:00:00Z'
+updated_date: '2026-11-28T02:04:00Z'
 labels:
   - ui
   - i18n
@@ -15,6 +15,7 @@ milestone: m-10
 dependencies: []
 references:
   - backlog/evidencias/issue-166/reference-changes.txt
+  - backlog/evidencias/issue-166/PARECER-REVIEWER.md
 priority: low
 type: bug
 ordinal: 179000
@@ -60,6 +61,15 @@ created: 2026-11-28T02:00:00Z
 ---
 
 Verificação (deepseek): títulos conforme a decisão — a Home usa o nome do perfil (p.Title = p.Profile.Name em internal/webui/handlers.go; o sufixo ' - TuneTrail' vem do head compartilhado) e as demais páginas usam o nome traduzido pela chave page.* (en.json e pt-BR.json); a palavra Koito saiu de todos os títulos. O rodapé de atribuição (Koito 0.3.2 com o logo) e a opção Koito no formato de importação permanecem. Testes novos em internal/webui/titles_issue166_test.go cobrem, em en e pt-BR: Home, diretório de perfis, histórico, os três rankings, busca, retrospectiva (anual e mensal), mídia e páginas de erro; asseguram a ausência de Koito no título e a permanência do rodapé e da opção de importação. Referência de UI regenerada (só public/home.html e public/empty.html mudam: o título). make check verde (e2e 13/13).
+
+---
+
+author: claude
+created: 2026-11-28T02:04:00Z
+
+---
+
+Reviewer: APROVADO (backlog/evidencias/issue-166/PARECER-REVIEWER.md).
 
 ---
 <!-- COMMENTS:END -->
