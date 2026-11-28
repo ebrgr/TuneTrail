@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Page tabs no longer carry the Koito brand: the home tab shows the profile name and the other tabs show their translated page names (ISSUE-166).
+
 ## [0.82] - 2026-11-27
 
 - Configured Navidrome libraries can enrich tracks with genres, dates, ISRCs and BPM, and use ISRCs to find MusicBrainz recordings (ISSUE-218).

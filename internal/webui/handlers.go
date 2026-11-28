@@ -181,7 +181,9 @@ func (h *Pages) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	slug := p.Profile.Slug
 	switch p.Section {
 	case "home":
-		p.Title = "Koito"
+		// ISSUE-166: the home tab carries the profile name, never the Koito
+		// brand; the shared head template appends the " - TuneTrail" suffix.
+		p.Title = p.Profile.Name
 		h.loadHome(ctx, &p)
 	case "chart/top/artists", "chart/top/albums", "chart/top/tracks":
 		kind := strings.TrimPrefix(p.Section, "chart/top/")
