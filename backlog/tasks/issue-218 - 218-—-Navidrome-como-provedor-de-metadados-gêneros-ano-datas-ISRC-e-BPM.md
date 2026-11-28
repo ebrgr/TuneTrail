@@ -5,7 +5,7 @@ status: Em andamento
 assignee:
   - '@ebrgr'
 created_date: '2026-11-24T19:53:00Z'
-updated_date: '2026-11-28T01:33:00Z'
+updated_date: '2026-11-28T01:37:00Z'
 labels:
   - catalogo
   - ingestao
@@ -20,6 +20,7 @@ references:
   - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES.md
   - backlog/evidencias/issue-218/PLANOS-GATILHOS.txt
   - backlog/evidencias/issue-218/MUTACOES.txt
+  - backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-2.md
 documentation:
   - doc-048
 priority: medium
@@ -171,6 +172,15 @@ created: 2026-11-28T01:33:00Z
 ---
 
 Segunda revisão (commit 7aef45c): os cinco itens anteriores foram resolvidos; REPROVADO por dois itens novos (consultas repetidas quando há divergência de dados; cache do Navidrome ignora o Prior). make check aprovado. Detalhes em PARECER-REVIEWER.md.
+
+---
+
+author: claude
+created: 2026-11-28T01:37:00Z
+
+---
+
+A pedido do usuário, volta ao Codex para os dois itens da segunda revisão, rodando somente os testes dessas duas alterações. Instruções: backlog/evidencias/issue-218/INSTRUCOES-CORRECOES-2.md.
 
 ---
 <!-- COMMENTS:END -->
